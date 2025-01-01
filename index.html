@@ -7,12 +7,19 @@
 </head>
 <body>
   <h1>Welcome to the Loan Application System</h1>
-  <a href="signin.html">Sign In</a> | <a href="signup.html">Sign Up</a>
+  <button id="signInButton">Sign In</button> | <button id="signUpButton">Sign Up</button>
+
+  <script>
+    // Redirect to Sign In page
+    document.getElementById('signInButton').addEventListener('click', function() {
+      window.location.href = 'signin.html'; // Redirect to Sign In page
+    });
+
+    // Redirect to Sign Up page
+    document.getElementById('signUpButton').addEventListener('click', function() {
+      window.location.href = 'signup.html'; // Redirect to Sign Up page
+    });
+  </script>
+
 </body>
-</html><link rel="manifest" href="/manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(() => console.log('Service Worker registered.'));
-  }
-</script>
+</html>
