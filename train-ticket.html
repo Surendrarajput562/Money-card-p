@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train Ticket Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      margin: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    form {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>Book Your Train</h2>
+  <form id="trainForm">
+    <label for="trainName">Train Name</label>
+    <input type="text" id="trainName" name="trainName" required placeholder="Enter train name (e.g., Shatabdi Express)">
+
+    <label for="trainNumber">Train Number</label>
+    <input type="text" id="trainNumber" name="trainNumber" required placeholder="Enter train number">
+
+    <label for="departure">Departure Station</label>
+    <input type="text" id="departure" name="departure" required placeholder="Enter departure station">
+
+    <label for="arrival">Arrival Station</label>
+    <input type="text" id="arrival" name="arrival" required placeholder="Enter arrival station">
+
+    <label for="price">Ticket Price</label>
+    <input type="number" id="price" name="price" required placeholder="Enter ticket price">
+
+    <label for="date">Travel Date</label>
+    <input type="date" id="date" name="date" required>
+
+    <button type="submit">Book Train</button>
+  </form>
+
+  <script>
+    document.getElementById("trainForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        // Collect form data
+        const service = 'train'; // Service type (train)
+        const trainName = document.getElementById("trainName").value.trim();
+        const trainNumber = document.getElementById("trainNumber").value.trim();
+        const departure = document.getElementById("departure").value.trim();
+        const arrival = document.getElementById("arrival").value.trim();
+        const price = document.getElementById("price").value.trim();
+        const date = document.getElementById("date").value.trim();
+
+        // Validate inputs
+        if (!trainName || !trainNumber || !departure || !arrival || !price || !date) {
+            alert("Please fill all the fields correctly.");
+            return;
+        }
+
+        // Prepare data for backend
+        const requestData = {
+            service,
+            company: trainName, // Train name is treated as company
+            details: {
+                trainNumber,
+                departure,
+                arrival,
+                price,
+                date,
+            }
+        };
+
+        // API call to backend
+        fetch('/book-ticket', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(`Booking Successful: ${data.message}`);
+        })
+        .catch(error => {
+            alert(`Error: ${error.message}`);
+        });
+    });
+  </script>
+</body>

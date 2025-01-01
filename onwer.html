@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+  <script src="dashboard.js" defer></script>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <div id="loanApplications"></div>
+  <div id="creditCardApplications"></div>
+  <div id="rechargeRequests"></div>
+  <button onclick="fetchAllApplications()">Load All Applications</button>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conditional Button Visibility</title>
+  <style>
+    #myButton {
+      display: none; /* Default: Button hidden */
+      padding: 10px 20px;
+      font-size: 16px;
+      color: white;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #myButton:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <!-- Button -->
+  <button id="myButton" onclick="openNewPage()">Open New Page</button>
+
+  <!-- Trigger to show the button -->
+  <button onclick="showButton()">Show Button</button>
+
+  <script>
+    // Function to show the hidden button
+    function showButton() {
+      document.getElementById("myButton").style.display = "block";
+    }
+
+    // Function to open a new page
+    function openNewPage() {
+      window.open("admin.html", "_blank");
+    }
+
+    // Function to open a new page
+    function openNewPage() {
+      window.open("accountmanagment.html", "_blank");
+    }
+
+    // Function to open a new page
+    function openNewPage() {
+      window.open("adminproduct.html", "_blank");
+    }
+
+    // Function to open a new page
+    function openNewPage() {
+      window.open("deshboard.html", "_blank");
+    }
+
+
+    Function to open a new page
+    function openNewPage() {
+      window.open("onwer.html", "_blank");
+    }
+
+    function openNewPage() {
+      window.open("newpage.html", "_blank");
+    }
+  </script>
+</body>
+</html>
