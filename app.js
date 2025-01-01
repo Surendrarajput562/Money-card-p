@@ -125,7 +125,7 @@ fetch('/tickets')
   .catch((err) => console.error("Error fetching tickets:", err));
 
 // Avoid duplicate server instances (Node.js backend)
-const PORT = 3000;
+const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
