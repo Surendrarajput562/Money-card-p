@@ -171,13 +171,16 @@ app.post('/verifyPayment', (req, res) => {
   }
 });
 
-// Serve Static Files
-app.use(express.static(path.join(__dirname))); // Root directory को static directory मानें
 
-// Default Route (Home Page)
+
+
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html')); // index.html को root directory से serve करें
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+
 
 // Start the server
 const PORT = process.env.PORT || 4000;  // 3000 से 4000 बदल दिया है
