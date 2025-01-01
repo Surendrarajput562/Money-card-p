@@ -12,6 +12,8 @@ const firebaseConfig = {
 };
 
 
+
+
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -47,7 +49,7 @@ function toggleTheme() {
   document.body.classList.toggle('dark-theme');
 }
 
-// Recharge form submission handling (optional)
+// Recharge form submission handling
 document.getElementById('rechargeForm').addEventListener('submit', function(event) {
   event.preventDefault();
   
