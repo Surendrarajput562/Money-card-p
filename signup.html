@@ -4,46 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign Up</title>
-  <!-- Firebase and App Scripts -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
   <script src="app.js" defer></script>
 </head>
 <body>
-  <h1>Create an Account</h1>
+  <h1>Sign Up</h1>
   <form id="signupForm">
-    <input type="text" name="username" placeholder="Username" required />
-    <input type="email" name="email" placeholder="Email" required />
-    <input type="password" name="password" placeholder="Password" required />
+    <input type="email" id="email" placeholder="Enter your email" required><br>
+    <input type="password" id="password" placeholder="Enter your password" required><br>
     <button type="submit">Sign Up</button>
   </form>
 
   <script>
-    // Handle Sign Up form submission
-    document.getElementById('signupForm').addEventListener('submit', function(event) {
-      event.preventDefault();
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
-      const username = event.target.username.value;
-      const email = event.target.email.value;
-      const password = event.target.password.value;
-
-      // Firebase Sign Up Logic
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-
-          // Save username and email to Firestore or Realtime Database
-          const db = firebase.database();
-          db.ref('users/' + user.uid).set({
-            username: username,
-            email: email
-          });
-
-          // Redirect to Home or Login Page after successful sign up
-          window.location.href = 'homepage.html';
+          window.location.href = 'homepage.html';  // Redirect to homepage
         })
         .catch((error) => {
-          console.error("Error signing up:", error.message);
+          alert('Error creating user: ' + error.message);
         });
     });
   </script>
