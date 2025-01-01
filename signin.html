@@ -4,14 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign In</title>
+  <!-- Firebase and App Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <!-- Your app.js contains Firebase configuration and initialization -->
   <script src="app.js" defer></script>
 </head>
 <body>
   <h1>Sign In</h1>
   <button id="signInButton">Sign in with Google</button>
   <div id="profileInfo"></div>
+
+  <script>
+    // Sign In Button Click
+    document.getElementById('signInButton').addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+
+      // Sign-in with Google
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          const profileInfoDiv = document.getElementById('profileInfo');
+
+          // Show Profile Info
+          profileInfoDiv.innerHTML = `
+            <h3>Welcome, ${user.displayName}</h3>
+            <img src="${user.photoURL}" alt="Profile Picture" width="100">
+            <p>Email: ${user.email}</p>
+          `;
+
+          // Redirect to home page
+          window.location.href = 'home.html'; // Redirect to home.html after successful sign-in
+        })
+        .catch((error) => {
+          console.error("Error signing in with Google:", error);
+        });
+    });
+  </script>
 </body>
 </html>
-
