@@ -36,7 +36,7 @@ document.getElementById('signInButton').addEventListener('click', () => {
         .catch(error => console.error("Error:", error));
 
         // After successful sign-in or sign-up, redirect to home.html
-        window.location.href = 'home.html';
+        window.location.href = 'homepage.html';
       });
     })
     .catch((error) => {
