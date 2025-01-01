@@ -171,16 +171,12 @@ app.post('/verifyPayment', (req, res) => {
   }
 });
 
-
-
-
+// Serving static files (index.html, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-
 
 // Start the server
 const PORT = process.env.PORT || 4000;  // 3000 से 4000 बदल दिया है
