@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "public",
+    "public": "build",  // Make sure this directory exists
     "rewrites": [
       {
         "source": "/**",

@@ -1,0 +1,12 @@
+<div id="rewards">
+  <h3>Your Rewards: ₹<span id="rewardPoints">0</span></h3>
+</div>
+
+<script>
+  const userId = "userId1"; // Replace with logged-in user ID
+  const dbRef = firebase.database().ref(`users/${userId}/rewards`);
+
+  dbRef.on("value", (snapshot) => {
+      document.getElementById("rewardPoints").innerText = snapshot.val();
+  });
+</script>

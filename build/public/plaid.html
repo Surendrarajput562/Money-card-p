@@ -1,0 +1,23 @@
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+
+<button id="link-button">Connect Your Bank</button>
+
+<script>
+  const linkToken = 'YOUR_LINK_TOKEN'; // Backend से प्राप्त करें
+
+  const handler = Plaid.create({
+    token: linkToken,
+    onSuccess: function(public_token, metadata) {
+      console.log('Public Token:', public_token);
+      console.log('Metadata:', metadata);
+      // Public token को backend पर भेजें
+    },
+    onExit: function(err, metadata) {
+      console.error('Error:', err);
+    },
+  });
+
+  document.getElementById('link-button').addEventListener('click', function() {
+    handler.open();
+  });
+</script>

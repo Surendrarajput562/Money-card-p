@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wallet</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <h1>Wallet</h1>
+  <p>Balance: ₹<span id="walletBalance">0</span></p>
+  <button id="addMoneyButton">Add Money</button>
+  <button id="deductMoneyButton">Deduct Money</button>
+
+  <script>
+    // Add Money Functionality
+    document.getElementById("addMoneyButton").addEventListener("click", function () {
+      fetch("/api/payments/createOrder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: 500 }),
+      })
+        .then((res) => res.json())
+        .then((data) => {<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Wallet</h1>
+  <p>Balance: ₹<span id="walletBalance">1000</span></p>
+  <button onclick="location.href='transactions.html'">View Transactions</button>
+  <button onclick="location.href='index.html'">Back to Home</button>
+</body>
+</html>
+          if (data.success) {
+            const options = {
+              key: "YOUR-API-KEY",
+              amount: data.order.amount,
+              currency: data.order.currency,
+              order_id: data.order.id,
+              handler: function (response) {
+                alert("Payment successful");
+              },
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+          }
+        });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Product Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Admin Dashboard - Manage Products</h1>
+  <form id="productForm">
+    <h2>Add New Product</h2>
+    <label for="name">Product Name:</label>
+    <input type="text" id="name" required>
+
+    <label for="description">Description:</label>
+    <textarea id="description" required></textarea>
+
+    <label for="price">Price:</label>
+    <input type="number" id="price" required>
+
+    <label for="imageUrl">Image URL:</label>
+    <input type="text" id="imageUrl" required>
+
+    <button type="submit">Add Product</button>
+  </form>
+
+  <h2>Existing Products</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Price</th>
+        <th>Image</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="productTable"></tbody>
+  </table>
+
+  <script>
+    // Fetch and Display Products
+    async function fetchProducts() {
+      const response = await fetch('/admin/products');
+      const products = await response.json();
+      const productTable = document.getElementById('productTable');
+      productTable.innerHTML = ''; // Clear previous data
+
+      for (const id in products) {
+        const { name, description, price, imageUrl } = products[id];
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+          <td>${name}</td>
+          <td>${description}</td>
+          <td>${price}</td>
+          <td><img src="${imageUrl}" alt="${name}" width="50"></td>
+          <td>
+            <button onclick="deleteProduct('${id}')">Delete</button>
+          </td>
+        `;
+        productTable.appendChild(row);
+      }
+    }
+
+    // Add New Product
+    document.getElementById('productForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const product = {
+        name: document.getElementById('name').value,
+        description: document.getElementById('description').value,
+        price: parseFloat(document.getElementById('price').value),
+        imageUrl: document.getElementById('imageUrl').value,
+      };
+
+      const response = await fetch('/admin/add-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product),
+      });
+
+      if (response.ok) {
+        alert('Product added successfully!');
+        fetchProducts(); // Refresh product list
+      } else {
+        alert('Failed to add product!');
+      }
+    };
+
+    // Delete Product
+    async function deleteProduct(productId) {
+      const response = await fetch(`/admin/delete-product/${productId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Product deleted successfully!');
+        fetchProducts(); // Refresh product list
+      } else {
+        alert('Failed to delete product!');
+      }
+    }
+
+    // Fetch products on page load
+    window.onload = fetchProducts;
+  </script>
+</body>
+</html>
