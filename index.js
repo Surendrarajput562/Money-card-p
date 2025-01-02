@@ -36,17 +36,38 @@ app.get('/', (req, res) => {
 
 // **2. Signup Route**
 app.post('/signup', (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;  // Role added for owner/user distinction
   admin.auth().createUser({ email, password })
-    .then((userRecord) => res.status(201).send(`User created with UID: ${userRecord.uid}`))
+    .then((userRecord) => {
+      // Save the role information in Firebase
+      const userRef = db.ref('users/' + userRecord.uid);
+      userRef.set({ email, role })  // Store role in Firebase
+        .then(() => res.status(201).send(`User created with UID: ${userRecord.uid}`))
+        .catch((error) => res.status(500).send(`Error saving role: ${error.message}`));
+    })
     .catch((error) => res.status(500).send(`Error creating user: ${error.message}`));
 });
 
 // **3. Signin Route**
 app.post('/signin', (req, res) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
   admin.auth().getUserByEmail(email)
-    .then((userRecord) => res.status(200).send(`User signed in with UID: ${userRecord.uid}`))
+    .then((userRecord) => {
+      if (userRecord.email === email) {
+        const userRef = db.ref('users').child(userRecord.uid);
+        userRef.once('value', snapshot => {
+          const userData = snapshot.val();
+          const role = userData.role;
+
+          // Check user role for redirection
+          if (role === 'admin') {
+            res.status(200).send({ uid: userRecord.uid, redirectTo: 'ownerHomepage.html' });
+          } else {
+            res.status(200).send({ uid: userRecord.uid, redirectTo: 'homepage.html' });
+          }
+        });
+      }
+    })
     .catch((error) => res.status(500).send(`Error signing in user: ${error.message}`));
 });
 
@@ -179,7 +200,7 @@ app.get("/", (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 4000;  // 3000 से 4000 बदल दिया है
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
