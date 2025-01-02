@@ -1,9 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="google93501a1915fca013.html" />
   <title>Welcome to Loan Application System</title>
   <style>
     body {
@@ -23,19 +23,26 @@
   <h1>Welcome to the Loan Application System</h1>
   
   <div>
-    <button id="signInButton">Sign In</button>
-    <button id="signUpButton">Sign Up</button>
+    <button id="signInButton">Sign In (User)</button>
+    <button id="signUpButton">Sign Up (User)</button>
+    <br><br>
+    <button id="ownerLoginButton">Owner Login</button> <!-- Owner Login Button -->
   </div>
 
   <script>
-    // Redirect to Sign In page
+    // Redirect to User Sign In page
     document.getElementById('signInButton').addEventListener('click', function() {
-      window.location.href = '/signin.html'; // Redirect to Sign In page (relative path)
+      window.location.href = '/signin.html'; // Redirect to Sign In page
     });
 
-    // Redirect to Sign Up page
+    // Redirect to User Sign Up page
     document.getElementById('signUpButton').addEventListener('click', function() {
-      window.location.href = '/signup.html'; // Redirect to Sign Up page (relative path)
+      window.location.href = '/signup.html'; // Redirect to Sign Up page
+    });
+
+    // Redirect to Owner Login page
+    document.getElementById('ownerLoginButton').addEventListener('click', function() {
+      window.location.href = '/ownerlogin.html'; // Redirect to Owner Login page
     });
   </script>
 </body>
