@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Page</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Online Shopping</h1>
+  </header>
+
+  <section id="products">
+    <!-- Products will be dynamically added here -->
+  </section>
+
+  <!-- Modal for Payment -->
+  <div id="paymentModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Payment Options</h2>
+      <button onclick="processPayment('online')">Pay Online</button>
+      <button onclick="processPayment('offline')">Pay Offline</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

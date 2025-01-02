@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMI Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    .calculator {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    .calculator h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    .btn {
+      background: #007bff;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+    }
+    .btn:hover {
+      background: #0056b3;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      background: #e8f0fe;
+      border-left: 5px solid #007bff;
+    }
+    .result h3 {
+      margin: 0;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h2>EMI Calculator</h2>
+    <div class="form-group">
+      <label for="loanAmount">Loan Amount (₹)</label>
+      <input type="number" id="loanAmount" placeholder="Enter loan amount" />
+    </div>
+    <div class="form-group">
+      <label for="interestRate">Interest Rate (%)</label>
+      <input type="number" id="interestRate" placeholder="Enter annual interest rate" />
+    </div>
+    <div class="form-group">
+      <label for="loanTenure">Loan Tenure (Years)</label>
+      <input type="number" id="loanTenure" placeholder="Enter loan tenure in years" />
+    </div>
+    <button class="btn" onclick="calculateEMI()">Calculate EMI</button>
+    <div class="result" id="result" style="display: none;">
+      <h3 id="emiResult"></h3>
+    </div>
+  </div>
+
+  <script>
+    function calculateEMI() {
+      const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+      const interestRate = parseFloat(document.getElementById('interestRate').value);
+      const loanTenure = parseFloat(document.getElementById('loanTenure').value);
+
+      if (isNaN(loanAmount) || isNaN(interestRate) || isNaN(loanTenure)) {
+        alert('Please fill out all fields correctly.');
+        return;
+      }
+
+      const monthlyInterestRate = interestRate / 12 / 100;
+      const numberOfMonths = loanTenure * 12;
+
+      const emi =
+        (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfMonths)) /
+        (Math.pow(1 + monthlyInterestRate, numberOfMonths) - 1);
+
+      document.getElementById('emiResult').textContent = `Your EMI is ₹${emi.toFixed(2)} per month.`;
+      document.getElementById('result').style.display = 'block';
+    }
+  </script>
+</body>
+</html
