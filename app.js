@@ -2,7 +2,7 @@
 // Firebase configuration 
 const firebaseConfig = {
   apiKey: "AIzaSyADDJ1cCxrwRIMH4hi7-YdcTRY_71fr2C0",
-  authDomain: "eighth-way-402410.firebaseapp.com",
+  authDomain: "eighth-way-402410.web.app",
   databaseURL: "https://eighth-way-402410-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "eighth-way-402410",
   storageBucket: "eighth-way-402410.firebasestorage.app",
