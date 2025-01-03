@@ -1,0 +1,11 @@
+{
+  "indexes": [
+    {
+      "collectionId": "yourCollectionName",
+      "fields": [
+        { "fieldPath": "field1", "order": "ASCENDING" },
+        { "fieldPath": "field2", "order": "DESCENDING" }
+      ]
+    }
+  ]
+}
