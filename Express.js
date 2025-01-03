@@ -1,14 +1,18 @@
 const express = require('express');
 const app = express();
+const path = require('path');
 
-// Static files serve करने के लिए
-app.use(express.static('public'));
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Route to serve the main HTML file
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html'); // Main HTML File
+    res.sendFile(path.join(__dirname, 'index.html')); // Ensure the file path is correct
 });
 
-const PORT = process.env.PORT || 4000;  // 3000 से 4000 बदल दिया है
+// Ensure PORT is defined (if not, fallback to 4000)
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

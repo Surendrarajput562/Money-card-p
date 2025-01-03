@@ -1,7 +1,11 @@
 {
   "projects": {
     "production": "eighth-way-402410",
-    "Y": "eighth-way-402410"
+    "Y": "eighth-way-402410",
+    "default": "eighth-way-402410",
+    "production ": "eighth-way-402410",
+    "index.html": "eighth-way-402410",
+    "ok": "eighth-way-402410"
   },
   "targets": {},
   "etags": {}
