@@ -1,0 +1,46 @@
+{
+  "rules": {
+    "users": {
+      "$userId": {
+        ".read": "auth != null && (auth.token.admin === true || auth.uid === $userId)",
+        ".write": "auth != null && (auth.token.admin === true || auth.uid === $userId)"
+      }
+    },
+    "loans": {
+      "$loanId": {
+        ".read": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())",
+        ".write": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())"
+      }
+    },
+    "tickets": {
+      "$ticketId": {
+        ".read": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())",
+        ".write": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())"
+      }
+    },
+    "flights": {
+      "$flightId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.token.admin === true"
+      }
+    },
+    "processing": {
+      "$processId": {
+        ".read": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())",
+        ".write": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())"
+      }
+    },
+    "creditCards": {
+      "$cardId": {
+        ".read": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())",
+        ".write": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())"
+      }
+    },
+    "recharges": {
+      "$rechargeId": {
+        ".read": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())",
+        ".write": "auth != null && (auth.token.admin === true || auth.uid === data.child('userId').val())"
+      }
+    }
+  }
+}

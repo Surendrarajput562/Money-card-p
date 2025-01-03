@@ -2,7 +2,7 @@
 // Firebase configuration 
 const firebaseConfig = {
   apiKey: "AIzaSyADDJ1cCxrwRIMH4hi7-YdcTRY_71fr2C0",
-  authDomain: "eighth-way-402410.firebaseapp.com",
+  authDomain: "eighth-way-402410.web.app",
   databaseURL: "https://eighth-way-402410-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "eighth-way-402410",
   storageBucket: "eighth-way-402410.firebasestorage.app",
@@ -167,7 +167,11 @@ function processPayment(method) {
 }
 
 // Avoid duplicate server instances (Node.js backend)
+<<<<<<< HEAD
 const PORT = process.env.PORT ||  5000;
+=======
+const PORT = process.env.PORT || 5000;  // 3000 से 4000 बदल दिया है
+>>>>>>> f8d54eeae8e95a316173854f94e9ca2a8b0c5543
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

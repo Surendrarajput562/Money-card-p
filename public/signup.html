@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+</DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -11,27 +11,22 @@
 </head>
 <body>
   <h1>Sign Up</h1>
+  <!-- Email and Password Sign-Up -->
   <form id="signupForm">
-    <input type="email" id="email" placeholder="Enter your email" required><br>
-    <input type="password" id="password" placeholder="Enter your password" required><br>
-    <button type="submit">Sign Up</button>
+    <input type="email" id="newEmail" placeholder="Enter your email" required><br>
+    <input type="password" id="newPassword" placeholder="Enter your password" required><br>
+    <button type="button" onclick="signUpWithEmail()">Sign Up with Email</button>
   </form>
 
-  <script>
-    document.getElementById('signupForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+  <!-- Phone Sign-Up -->
+  <h3>Sign Up with Phone Number</h3>
+  <input type="text" id="phoneNumber" placeholder="Enter your phone number" required><br>
+  <button id="sendOTPButton" onclick="sendOTP()">Send OTP</button>
+  <input type="text" id="otp" placeholder="Enter OTP" required><br>
+  <button onclick="verifyOTP()">Verify OTP</button>
 
-      firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          window.location.href = 'homepage.html';  // Redirect to homepage
-        })
-        .catch((error) => {
-          alert('Error creating user: ' + error.message);
-        });
-    });
-  </script>
+  <!-- Google Sign-Up -->
+  <h3>Sign Up with Google</h3>
+  <button onclick="googleSignIn()">Sign Up with Google</button>
 </body>
 </html>
