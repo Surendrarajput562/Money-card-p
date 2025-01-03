@@ -29,9 +29,9 @@ const razorpay = new Razorpay({
 // Firebase Database References
 const db = admin.database();
 
-// **1. Root Route**
+// **1. Root Route** for Single Page App
 app.get('/', (req, res) => {
-  res.send('Hello from Node.js with Firebase!');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve index.html
 });
 
 // **2. Signup Route**
@@ -192,19 +192,14 @@ app.post('/verifyPayment', (req, res) => {
   }
 });
 
-// Serving static files (index.html, etc.)
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Serve other pages based on SPA logic
+app.get("/:page", (req, res) => {
+  const page = req.params.page;
+  res.sendFile(path.join(__dirname, 'public', `${page}.html`));
 });
 
 // Start the server
-<<<<<<< HEAD
-const PORT = process.env.PORT || 4005;  // 3000 से 4001  बदल दिया है
-=======
-const PORT = process.env.PORT || 5000;
->>>>>>> f8d54eeae8e95a316173854f94e9ca2a8b0c5543
+const PORT = process.env.PORT || 4005;
 app.listen(PORT, () => {
-    console.log(`Server is running on  port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
