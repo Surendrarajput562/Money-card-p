@@ -1,3 +1,6 @@
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/database';
 
 // Firebase configuration 
 const firebaseConfig = {
@@ -10,6 +13,9 @@ const firebaseConfig = {
   appId: "1:595819547411:web:be98f1880df09ce6fa28e6",
   measurementId: "G-B5H7TQBVVV"
 };
+      
+
+
 
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
@@ -47,11 +53,48 @@ function checkUserRole(user) {
   userRef.once('value', (snapshot) => {
     const userData = snapshot.val();
     if (userData && userData.role === 'owner') {
-      window.location.href = 'ownerDashboard.html'; // Redirect to owner dashboard
+      loadPage('ownerDashboard'); // Load owner dashboard page
     } else {
-      window.location.href = 'homepage.html'; // Redirect to homepage for normal users
+      loadPage('homepage'); // Load homepage for normal users
     }
   });
+}
+
+// Load page dynamically (SPA navigation)
+function loadPage(page) {
+  history.pushState(null, null, `#${page}`);
+  switch (page) {
+    case 'ownerDashboard':
+      loadOwnerDashboard();
+      break;
+    case 'homepage':
+      loadHomepage();
+      break;
+    default:
+      loadHomepage();
+  }
+}
+
+// Load homepage content
+function loadHomepage() {
+  // Clear previous content
+  const appContent = document.getElementById('app-content');
+  appContent.innerHTML = `
+    <h1>Welcome to the Homepage</h1>
+    <!-- Add other homepage content here -->
+  `;
+  // You can add more homepage specific code here
+}
+
+// Load owner dashboard content
+function loadOwnerDashboard() {
+  // Clear previous content
+  const appContent = document.getElementById('app-content');
+  appContent.innerHTML = `
+    <h1>Owner Dashboard</h1>
+    <!-- Add owner dashboard content here -->
+  `;
+  // You can add more owner dashboard specific code here
 }
 
 // Sign In with Email and Password
@@ -83,12 +126,18 @@ document.getElementById('signUpButton').addEventListener('click', () => {
         email: newEmail,
         role: 'customer'  // Default role is customer
       });
-      window.location.href = 'homepage.html';
+      loadPage('homepage');
     })
     .catch((error) => {
       console.error("Error:", error.message);
     });
-});
+}
+
+// Initialize page load based on URL hash
+window.onload = function() {
+  const page = window.location.hash.substring(1);
+  loadPage(page || 'homepage');
+};
 
 // Function to toggle theme (optional)
 function toggleTheme() {
@@ -164,14 +213,4 @@ function processPayment(method) {
   }
 
   closeModal();
-}
-
-// Avoid duplicate server instances (Node.js backend)
-<<<<<<< HEAD
-const PORT = process.env.PORT ||  5000;
-=======
-const PORT = process.env.PORT || 5000;  // 3000 से 4000 बदल दिया है
->>>>>>> f8d54eeae8e95a316173854f94e9ca2a8b0c5543
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+                                              }
