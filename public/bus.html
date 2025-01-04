@@ -7,27 +7,41 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background: linear-gradient(135deg, #ffd700, #228b22); /* Golden and Green Background */
       margin: 0;
       padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      position: relative;
     }
+
     h2 {
       text-align: center;
+      font-size: 32px;
+      font-weight: bold;
       margin-top: 20px;
     }
+
     form {
       max-width: 500px;
       margin: 20px auto;
       padding: 20px;
-      background: #fff;
+      background: #222;
       border-radius: 8px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      animation: fadeIn 1s forwards;
     }
+
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: bold;
     }
+
     input, button {
       width: 100%;
       padding: 10px;
@@ -35,6 +49,7 @@
       border: 1px solid #ddd;
       border-radius: 5px;
     }
+
     button {
       background-color: #28a745;
       color: #fff;
@@ -42,34 +57,141 @@
       cursor: pointer;
       border: none;
     }
+
     button:hover {
       background-color: #218838;
+    }
+
+    .moving-bus {
+      position: absolute;
+      top: 70%;
+      left: 0;
+      width: 150px;
+      height: 90px;
+      background-color: red;
+      border-radius: 10px;
+      animation: moveBus 5s linear infinite, bounceBus 0.5s ease-in-out infinite;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 5px;
+    }
+
+    .bus-wheels {
+      position: absolute;
+      bottom: 5px;
+      width: 30px;
+      height: 30px;
+      background-color: #fff;
+      border-radius: 50%;
+      animation: wheelRotation 1s linear infinite;
+    }
+
+    .bus-wheels.right {
+      right: 10px;
+    }
+
+    .driver {
+      position: absolute;
+      top: 10px;
+      left: 45px;
+      width: 30px;
+      height: 30px;
+      background-color: #fff;
+      border-radius: 50%;
+    }
+
+    .bus-seats {
+      position: absolute;
+      top: 45px;
+      left: 25px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .seat {
+      width: 15px;
+      height: 15px;
+      background-color: #fff;
+      margin: 2px;
+      border-radius: 50%;
+    }
+
+    .time-display {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    @keyframes moveBus {
+      0% { left: -150px; }
+      100% { left: 100%; }
+    }
+
+    @keyframes bounceBus {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    @keyframes wheelRotation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <h2>Book Your Bus Ticket</h2>
-  <form id="busForm">
-    <label for="busName">Bus Name</label>
-    <input type="text" id="busName" name="busName" required placeholder="Enter bus name (e.g., Volvo)">
-    
-    <label for="busNumber">Bus Number</label>
-    <input type="text" id="busNumber" name="busNumber" required placeholder="Enter bus number">
-    
-    <label for="departure">Departure</label>
-    <input type="text" id="departure" name="departure" required placeholder="Departure city">
 
-    <label for="arrival">Arrival</label>
-    <input type="text" id="arrival" name="arrival" required placeholder="Arrival city">
+  <div class="moving-bus">
+    <div class="bus-wheels"></div>
+    <div class="bus-wheels right"></div>
+    <div class="driver"></div>
+    <div class="bus-seats">
+      <div class="seat"></div>
+      <div class="seat"></div>
+      <div class="seat"></div>
+      <div class="seat"></div>
+      <div class="seat"></div>
+      <div class="seat"></div>
+      <div class="seat"></div>
+      <div class="seat"></div>
+      <div class="seat"></div>
+      <div class="seat"></div>
+    </div>
+  </div>
 
-    <label for="price">Price</label>
-    <input type="number" id="price" name="price" required placeholder="Enter price">
+  <div class="time-display" id="timeDisplay"></div>
 
-    <label for="date">Date</label>
-    <input type="date" id="date" name="date" required>
+  <div class="container">
+    <h2>Book Your Bus Ticket</h2>
+    <form id="busForm">
+      <label for="busName">Bus Name</label>
+      <input type="text" id="busName" name="busName" required placeholder="Enter bus name (e.g., Volvo)">
+      
+      <label for="busNumber">Bus Number</label>
+      <input type="text" id="busNumber" name="busNumber" required placeholder="Enter bus number">
+      
+      <label for="departure">Departure</label>
+      <input type="text" id="departure" name="departure" required placeholder="Departure city">
 
-    <button type="submit">Book Bus</button>
-  </form>
+      <label for="arrival">Arrival</label>
+      <input type="text" id="arrival" name="arrival" required placeholder="Arrival city">
+
+      <label for="price">Price</label>
+      <input type="number" id="price" name="price" required placeholder="Enter price">
+
+      <label for="date">Date</label>
+      <input type="date" id="date" name="date" required>
+
+      <button type="submit">Book Bus</button>
+    </form>
+  </div>
 
   <script>
     document.getElementById("busForm").addEventListener("submit", function(event) {
@@ -112,6 +234,15 @@
             alert(`Error: ${error.message}`);
         });
     });
+
+    // Show time on screen
+    function updateTime() {
+      const currentTime = new Date().toLocaleTimeString();
+      document.getElementById("timeDisplay").textContent = `Time: ${currentTime}`;
+    }
+
+    setInterval(updateTime, 1000);
   </script>
+
 </body>
 </html>
