@@ -1,42 +1,13 @@
 {
   "hosting": {
-    "public": "public",  // यहां 'public' फोल्डर का पथ होना चाहिए
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "public": "public",
     "rewrites": [
-      { "source": "/index.html", "destination": "/index.html" },
-      { "source": "/signin.html", "destination": "/signin.html" },
-      { "source": "/signup.html", "destination": "/signup.html" },
-      { "source": "/homepage.html", "destination": "/homepage.html" },
-      { "source": "/ownerlogin.html", "destination": "/ownerlogin.html" },
-      { "source": "/ownerDashboard.html", "destination": "/ownerDashboard.html" },
-      { "source": "/finaldeshboard.html", "destination": "/finaldeshboard.html" },
-      { "source": "/customer.html", "destination": "/customer.html" },
-      { "source": "/admin.html", "destination": "/admin.html" },
-      { "source": "/adminproduct.html", "destination": "/adminproduct.html" },
-      { "source": "/emi-calculator.html", "destination": "/emi-calculator.html" },
-      { "source": "/loanapplication.html", "destination": "/loanapplication.html" },
-      { "source": "/wallet-page.html", "destination": "/wallet-page.html" },
-      { "source": "/profile.html", "destination": "/profile.html" },
-      { "source": "/shopnow.html", "destination": "/shopnow.html" },
-      { "source": "/404.html", "destination": "/404.html" },
-      { "source": "/wallet.html", "destination": "/wallet.html" },
-      { "source": "/helpandsupport.html", "destination": "/helpandsupport.html" },
-      { "source": "/plaid.html", "destination": "/plaid.html" },
-      { "source": "/plaidpayy.html", "destination": "/plaidpayy.html" },
-      { "source": "/bus.html", "destination": "/bus.html" },
-      { "source": "/civil.html", "destination": "/civil.html" },
-      { "source": "/creditcard.html", "destination": "/creditcard.html" },
-      { "source": "/customershop.html", "destination": "/customershop.html" },
-      { "source": "/flight-ticket.html", "destination": "/flight-ticket.html" },
-      { "source": "/movie-ticket.html", "destination": "/movie-ticket.html" },
-      { "source": "/team.html", "destination": "/team.html" },
-      { "source": "/transactions.html", "destination": "/transactions.html" },
-      { "source": "/videos.html", "destination": "/videos.html" },
-      { "source": "/**", "destination": "/index.html" }  // यह सभी अन्य पृष्ठों के लिए रीडायरेक्ट करेगा
-    ]
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false
   }
 }
