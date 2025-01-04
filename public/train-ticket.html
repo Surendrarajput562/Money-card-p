@@ -7,45 +7,74 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f8f9fa;
-      margin: 20px;
+      background: linear-gradient(45deg, #FFD700, #FF6347, #000000);
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     h2 {
       text-align: center;
+      font-size: 30px;
+      color: white;
+      margin-bottom: 30px;
     }
     form {
       max-width: 500px;
-      margin: 0 auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 1s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: bold;
+      color: #333;
     }
     input, button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-bottom: 15px;
-      border: 1px solid #ddd;
+      border: 2px solid #ddd;
       border-radius: 5px;
+      font-size: 16px;
+    }
+    input:focus, button:focus {
+      outline: none;
+      border-color: #FF6347;
     }
     button {
       background-color: #007bff;
       color: white;
       border: none;
       cursor: pointer;
+      font-size: 18px;
     }
     button:hover {
       background-color: #0056b3;
     }
+    .hidden-btn {
+      display: none;
+      animation: slideIn 0.5s forwards;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(100%); }
+      to { opacity: 1; transform: translateX(0); }
+    }
   </style>
 </head>
 <body>
-  <h2>Book Your Train</h2>
+
+  <h2>Book Your Train Ticket</h2>
   <form id="trainForm">
     <label for="trainName">Train Name</label>
     <input type="text" id="trainName" name="trainName" required placeholder="Enter train name (e.g., Shatabdi Express)">
@@ -65,15 +94,14 @@
     <label for="date">Travel Date</label>
     <input type="date" id="date" name="date" required>
 
-    <button type="submit">Book Train</button>
+    <button type="submit" class="hidden-btn">Book Train</button>
   </form>
 
   <script>
     document.getElementById("trainForm").addEventListener("submit", function(event) {
         event.preventDefault();
 
-        // Collect form data
-        const service = 'train'; // Service type (train)
+        const service = 'train';
         const trainName = document.getElementById("trainName").value.trim();
         const trainNumber = document.getElementById("trainNumber").value.trim();
         const departure = document.getElementById("departure").value.trim();
@@ -81,16 +109,14 @@
         const price = document.getElementById("price").value.trim();
         const date = document.getElementById("date").value.trim();
 
-        // Validate inputs
         if (!trainName || !trainNumber || !departure || !arrival || !price || !date) {
             alert("Please fill all the fields correctly.");
             return;
         }
 
-        // Prepare data for backend
         const requestData = {
             service,
-            company: trainName, // Train name is treated as company
+            company: trainName,
             details: {
                 trainNumber,
                 departure,
@@ -100,7 +126,6 @@
             }
         };
 
-        // API call to backend
         fetch('/book-ticket', {
             method: 'POST',
             headers: {
@@ -108,18 +133,20 @@
             },
             body: JSON.stringify(requestData)
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             alert(`Booking Successful: ${data.message}`);
+            document.querySelector("button").style.display = "none";
         })
         .catch(error => {
             alert(`Error: ${error.message}`);
         });
     });
+
+    setTimeout(function() {
+      document.querySelector(".hidden-btn").style.display = "block";
+    }, 1000);
   </script>
+
 </body>
+</html>
