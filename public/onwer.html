@@ -38,3 +38,39 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner - Credit Card Application</title>
+</head>
+<body>
+  <div class="container">
+    <h1>User Details</h1>
+    <div id="userDetails"></div>
+  </div>
+
+  <script>
+    // Retrieve user details from local storage
+    const userDetails = JSON.parse(localStorage.getItem("userDetails"));
+
+    if (userDetails) {
+      document.getElementById("userDetails").innerHTML = `
+        <p><strong>Full Name:</strong> ${userDetails.fullName}</p>
+        <p><strong>Email:</strong> ${userDetails.email}</p>
+        <p><strong>Mobile Number:</strong> ${userDetails.mobileNumber}</p>
+        <p><strong>PAN Number:</strong> ${userDetails.panNumber}</p>
+        <p><strong>Annual Income:</strong> ₹${userDetails.income}</p>
+      `;
+    } else {
+      document.getElementById("userDetails").textContent = "No details available.";
+    }
+  </script>
+</body>
+</html>
