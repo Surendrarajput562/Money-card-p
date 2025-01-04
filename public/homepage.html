@@ -1,68 +1,251 @@
-npm<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home Page</title>
-  <link rel="stylesheet" href="styles.css"> <!-- Linking external CSS -->
+  <title>PayOnline Services</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(to bottom, #c71585, #00bfff);
+      color: white;
+    }
+
+    header {
+      background: #c71585;
+      color: white;
+      padding: 1em;
+      text-align: center;
+    }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .service-grid button {
+      background: white;
+      color: #c71585;
+      border: none;
+      border-radius: 10px;
+      height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .service-grid button i {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .service-grid button:hover {
+      background: #c71585;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1em;
+      background: #c71585;
+    }
+
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      width: 250px;
+      height: 100%;
+      background-color: #c71585;
+      color: white;
+      transition: 0.3s;
+      padding: 1em;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .side-menu a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      transition: background 0.3s;
+    }
+
+    .side-menu a:hover {
+      background: #ff69b4;
+    }
+
+    .side-menu .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 2em;
+      cursor: pointer;
+    }
+
+    .menu-icon {
+      font-size: 2em;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      cursor: pointer;
+    }
+
+    #account-details, #payments {
+      margin: 20px;
+      padding: 20px;
+      background-color: #fff;
+      color: #333;
+      border-radius: 10px;
+    }
+  </style>
 </head>
 <body>
-  <!-- Header -->
+
   <header>
+    <span class="menu-icon" onclick="toggleMenu()">&#x2630;</span>
     <h1>PayOnline Services</h1>
     <p>UPI Lite: ₹0.00 | UPI ID: 1234567890@upi</p>
   </header>
 
-  <!-- Account Section -->
+  <div class="side-menu" id="sideMenu">
+    <span class="close-btn" onclick="toggleMenu()">&#10005;</span>
+    <a href="#">Profile Settings</a>
+    <a href="#">Settings</a>
+    <a href="#">QR Code</a>
+    <a href="#">Log Out</a>
+  </div>
+
   <section id="account-details">
     <h2>Account Details</h2>
     <p>Your current balance: ₹500.00</p>
     <p>Account Status: Active</p>
   </section>
 
-  <!-- Payments Section -->
   <section id="payments">
     <h2>Payments</h2>
     <div class="service-grid">
-      <button onclick="location.href='scanpay.html'">Scan & Pay</button>
-      <button onclick="location.href='flight-ticket.html'">Flight Booking</button>
-      <button onclick="location.href='train-ticket.html'">Train Booking</button>
-      <button onclick="location.href='bus.html'">Bus Booking</button>
-      <button onclick="location.href='civil.html'">Civil Score</button>
-      <button onclick="location.href='creditcard.html'">Apply Creditcard</button>
-      <button onclick="location.href='emi-calculator.html'">Emi Calculate</button>
-      <button onclick="location.href='loanapplication.html'">Apply Loans</button>
-      <button onclick="location.href='movie-ticket.html'">Movie Ticket Booking</button>
-      <button onclick="location.href='mobilerecharge.html'">Mobile Recharge</button>
-      <button onclick="location.href='marchant.html'">Marchant Upi</button>
-    <button onclick="location.href='plaid.html'">pay emi </button> 
-      <button onclick="location.href='team.html'">Apply Any Join Our Team</button>
-      <button onclick="location.href='videos.html'">Videos</button>
-    
-      
-      <button onclick="location.href='palidpayy.html'">Pay Loan Wallen</button>
-      <button onclick="location.href='wallet.html'">Loan Wallen</button> 
-      <button onclick="location.href='refeandrearn.html'">refar and earn</button>
-      <button onclick="location.href='myreward.html'">My rewards</button>
-      <button onclick="location.href='shopnow.html'">Shop Now</button>
-      <button onclick="location.href='customer.html'">Apply Loans </button>  
-      <button onclick="location.href='customershop.html'">Easy Shop</button>
-      <button onclick="location.href='helpandsupport.html'">halp and Support</button>
-      <button onclick="location.href='profile.html'">Offers</button>
-      <button onclick="location.href='offers.html'">Offers</button>
+      <button onclick="location.href='scanpay.html'">
+        <i class="fas fa-qrcode"></i>
+        <span>Scan & Pay</span>
+      </button>
+      <button onclick="location.href='flight-ticket.html'">
+        <i class="fas fa-plane"></i>
+        <span>Flight Booking</span>
+      </button>
+      <button onclick="location.href='train-ticket.html'">
+        <i class="fas fa-train"></i>
+        <span>Train Booking</span>
+      </button>
+      <button onclick="location.href='bus.html'">
+        <i class="fas fa-bus"></i>
+        <span>Bus Booking</span>
+      </button>
+      <button onclick="location.href='civil.html'">
+        <i class="fas fa-balance-scale"></i>
+        <span>Civil Score</span>
+      </button>
+      <button onclick="location.href='creditcard.html'">
+        <i class="fas fa-credit-card"></i>
+        <span>Apply Creditcard</span>
+      </button>
+      <button onclick="location.href='emi-calculator.html'">
+        <i class="fas fa-calculator"></i>
+        <span>EMI Calculator</span>
+      </button>
+      <button onclick="location.href='loanapplication.html'">
+        <i class="fas fa-hand-holding-usd"></i>
+        <span>Apply Loans</span>
+      </button>
+      <button onclick="location.href='movie-ticket.html'">
+        <i class="fas fa-film"></i>
+        <span>Movie Ticket</span>
+      </button>
+      <button onclick="location.href='mobilerecharge.html'">
+        <i class="fas fa-mobile-alt"></i>
+        <span>Mobile Recharge</span>
+      </button>
+      <button onclick="location.href='marchant.html'">
+        <i class="fas fa-store"></i>
+        <span>Merchant UPI</span>
+      </button>
+      <button onclick="location.href='plaid.html'">
+        <i class="fas fa-money-bill-alt"></i>
+        <span>Pay EMI</span>
+      </button>
+      <button onclick="location.href='team.html'">
+        <i class="fas fa-users"></i>
+        <span>Join Team</span>
+      </button>
+      <button onclick="location.href='videos.html'">
+        <i class="fas fa-video"></i>
+        <span>Videos</span>
+      </button>
+      <button onclick="location.href='palidpayy.html'">
+        <i class="fas fa-wallet"></i>
+        <span>Pay Loan</span>
+      </button>
+      <button onclick="location.href='wallet.html'">
+        <i class="fas fa-wallet"></i>
+        <span>Loan Wallet</span>
+      </button>
+      <button onclick="location.href='refeandrearn.html'">
+        <i class="fas fa-gift"></i>
+        <span>Refer & Earn</span>
+      </button>
+      <button onclick="location.href='myreward.html'">
+        <i class="fas fa-trophy"></i>
+        <span>My Rewards</span>
+      </button>
+      <button onclick="location.href='shopnow.html'">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Shop Now</span>
+      </button>
+      <button onclick="location.href='customer.html'">
+        <i class="fas fa-hand-holding"></i>
+        <span>Apply Loans</span>
+      </button>
+      <button onclick="location.href='customershop.html'">
+        <i class="fas fa-store-alt"></i>
+        <span>Easy Shop</span>
+      </button>
+      <button onclick="location.href='helpandsupport.html'">
+        <i class="fas fa-life-ring"></i>
+        <span>Help & Support</span>
+      </button>
+      <button onclick="location.href='offers.html'">
+        <i class="fas fa-tags"></i>
+        <span>Offers</span>
+      </button>
     </div>
   </section>
 
-  <!-- Offers Section -->
-  <section id="offers">
-    <h2>Offers</h2>
-    <p>Get cashback up to ₹500 on your first UPI transaction!</p>
-    <p>Exclusive movie ticket discounts available now.</p>
-  </section>
-
-  <!-- Footer -->
   <footer>
-    <p>&copy; 2024 PayOnline Services. All rights reserved.</p>
+    <p>&copy; 2025 PayOnline Services. All rights reserved.</p>
   </footer>
+
+  <script>
+    function toggleMenu() {
+      var menu = document.getElementById("sideMenu");
+      if (menu.style.left === "-250px") {
+        menu.style.left = "0";
+      } else {
+        menu.style.left = "-250px";
+      }
+    }
+  </script>
 </body>
-</html>
+                           </html>
