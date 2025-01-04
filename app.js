@@ -76,24 +76,20 @@ function loadPage(page) {
 
 // Load homepage content
 function loadHomepage() {
-  // Clear previous content
   const appContent = document.getElementById('app-content');
   appContent.innerHTML = `
     <h1>Welcome to the Homepage</h1>
     <!-- Add other homepage content here -->
   `;
-  // You can add more homepage specific code here
 }
 
 // Load owner dashboard content
 function loadOwnerDashboard() {
-  // Clear previous content
   const appContent = document.getElementById('app-content');
   appContent.innerHTML = `
     <h1>Owner Dashboard</h1>
     <!-- Add owner dashboard content here -->
   `;
-  // You can add more owner dashboard specific code here
 }
 
 // Sign In with Email and Password
@@ -119,7 +115,6 @@ document.getElementById('signUpButton').addEventListener('click', () => {
   auth.createUserWithEmailAndPassword(newEmail, newPassword)
     .then((userCredential) => {
       const user = userCredential.user;
-      // Save user role (can be 'owner' or 'customer')
       const userRef = firebase.database().ref('users/' + user.uid);
       userRef.set({
         email: newEmail,
@@ -212,4 +207,50 @@ function processPayment(method) {
   }
 
   closeModal();
-              }
+}
+
+// Credit Card form submission handling
+document.getElementById("creditCardForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  // Collect user details
+  const fullName = document.getElementById("fullName").value;
+  const email = document.getElementById("email").value;
+  const mobileNumber = document.getElementById("mobileNumber").value;
+  const panNumber = document.getElementById("panNumber").value;
+  const income = document.getElementById("income").value;
+
+  // Simulate API request response
+  const response = { success: true, message: "Application submitted successfully!" };
+
+  // Update response message
+  document.getElementById("responseMessage").textContent = response.message;
+
+  // Send user details to the owner page
+  localStorage.setItem("userDetails", JSON.stringify({
+    fullName,
+    email,
+    mobileNumber,
+    panNumber,
+    income
+  }));
+
+  // Show hidden buttons after form submission
+  const hiddenButtons = document.querySelectorAll('.hidden-btn');
+  hiddenButtons.forEach((btn, index) => {
+    setTimeout(() => {
+      btn.style.display = 'block';
+    }, index * 500); // Delay each button's appearance
+  });
+});
+
+// Submit Details button action
+document.getElementById("submitDetailsBtn").addEventListener("click", function () {
+  window.location.href = "owner.html";  // Redirect to owner.html to view the user details
+});
+
+// Apply button action
+document.getElementById("applyBtn").addEventListener("click", function () {
+  const redirectUrl = "https://www.google.com";  // Replace with the actual redirect URL
+  window.location.href = redirectUrl;  // Redirect to the URL
+});
