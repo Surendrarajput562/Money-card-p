@@ -14,12 +14,15 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
+      overflow: hidden;
     }
     h2 {
       text-align: center;
       font-size: 30px;
       color: white;
       margin-bottom: 30px;
+      z-index: 2;
     }
     form {
       max-width: 500px;
@@ -29,6 +32,7 @@
       border-radius: 15px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       animation: fadeIn 1s ease-out;
+      z-index: 2;
     }
     @keyframes fadeIn {
       from { opacity: 0; }
@@ -70,6 +74,79 @@
       from { opacity: 0; transform: translateX(100%); }
       to { opacity: 1; transform: translateX(0); }
     }
+    /* Train animation styles */
+    .track {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 30px;
+      background: #555;
+    }
+    .train {
+      position: absolute;
+      bottom: 30px;
+      width: 200px;
+      height: 50px;
+      background: #FF6347;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      animation: moveTrain 10s linear infinite;
+    }
+    @keyframes moveTrain {
+      from { left: -220px; }
+      to { left: 100%; }
+    }
+    .train .driver {
+      position: absolute;
+      left: 10px;
+      top: -20px;
+      font-size: 14px;
+    }
+    .train .sits {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      font-size: 12px;
+    }
+    .station {
+      position: absolute;
+      left: 90%;
+      bottom: 60px;
+      width: 150px;
+      height: 70px;
+      background: #3e8e41;
+      text-align: center;
+      line-height: 70px;
+      color: white;
+      font-size: 18px;
+      border-radius: 8px;
+    }
+    .public, .tt {
+      position: absolute;
+      bottom: 20px;
+      width: 20px;
+      height: 20px;
+      background-color: #ffcd39;
+      border-radius: 50%;
+      animation: movePublic 10s linear infinite;
+    }
+    .public:nth-child(1) { left: 20%; }
+    .public:nth-child(2) { left: 40%; }
+    .public:nth-child(3) { left: 60%; }
+    .public:nth-child(4) { left: 80%; }
+    .tt {
+      left: 90%;
+      bottom: 40px;
+      background-color: #000;
+    }
+    @keyframes movePublic {
+      from { transform: translateX(0); }
+      to { transform: translateX(100vw); }
+    }
   </style>
 </head>
 <body>
@@ -96,6 +173,20 @@
 
     <button type="submit" class="hidden-btn">Book Train</button>
   </form>
+
+  <!-- Train Animation -->
+  <div class="track"></div>
+  <div class="train">
+    <span class="driver">Driver</span>
+    <span>Train</span>
+    <span class="sits">Seats: 10</span>
+  </div>
+  <div class="station">Station</div>
+  <div class="public"></div>
+  <div class="public"></div>
+  <div class="public"></div>
+  <div class="public"></div>
+  <div class="tt"></div>
 
   <script>
     document.getElementById("trainForm").addEventListener("submit", function(event) {
