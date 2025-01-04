@@ -8,6 +8,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
   <script src="app.js" defer></script>
+
+  <!-- Link to external CSS -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <h1>Sign Up</h1>
@@ -17,12 +20,12 @@
     <input type="email" id="email" placeholder="Enter your email" required><br>
     <input type="text" id="mobile" placeholder="Enter your mobile number" required><br>
     <input type="password" id="password" placeholder="Create a password" required><br>
-    <button type="button" onclick="signUpWithEmail()">Sign Up with Email</button>
+    <button type="button" id="signUpButton">Create Account</button>
   </form>
 
   <!-- Google Sign-Up -->
   <h3>Or Sign Up using Google</h3>
-  <button onclick="googleSignUp()">Sign Up with Google</button>
+  <button id="signInButton">Sign Up with Google</button>
 
   <h3>Already have an account?</h3>
   <a href="signin.html">Sign In</a> <!-- Link to Sign In page -->
