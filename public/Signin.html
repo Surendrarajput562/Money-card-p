@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In</title>
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <h1>Sign In</h1>
+
+  <!-- Email and Password Sign In -->
+  <form id="signinForm">
+    <input type="email" id="signinEmail" placeholder="Enter your email" required><br>
+    <input type="password" id="signinPassword" placeholder="Enter your password" required><br>
+    <button type="button" onclick="signInWithEmail()">Sign In with Email</button>
+  </form>
+
+  <h3>Or Sign In using Google</h3>
+  <button onclick="googleSignIn()">Sign In with Google</button>
+
+  <h3>Don't have an account?</h3>
+  <a href="signup.html">Sign Up</a> <!-- Link to Sign Up page -->
+</body>
+</html>
