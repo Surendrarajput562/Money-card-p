@@ -214,4 +214,4 @@ function processPayment(method) {
   }
 
   closeModal();
-}
+                                      }
