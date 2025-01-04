@@ -17,6 +17,7 @@ const firebaseConfig = {
 
 
 
+
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -131,7 +132,7 @@ document.getElementById('signUpButton').addEventListener('click', () => {
     .catch((error) => {
       console.error("Error:", error.message);
     });
-}
+});
 
 // Initialize page load based on URL hash
 window.onload = function() {
@@ -213,4 +214,4 @@ function processPayment(method) {
   }
 
   closeModal();
-                                              }
+}
