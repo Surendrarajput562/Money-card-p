@@ -11,20 +11,20 @@
 </head>
 <body>
   <h1>Sign Up</h1>
-
-  <!-- Registration using Name, Email, Mobile Number, and Password -->
+  <!-- Registration Form -->
   <form id="signupForm">
     <input type="text" id="name" placeholder="Enter your name" required><br>
-    <input type="email" id="newEmail" placeholder="Enter your email" required><br>
-    <input type="text" id="phoneNumber" placeholder="Enter your mobile number" required><br>
-    <input type="password" id="newPassword" placeholder="Create a password" required><br>
-    <button type="button" onclick="signUpWithEmailAndPassword()">Sign Up</button>
+    <input type="email" id="email" placeholder="Enter your email" required><br>
+    <input type="text" id="mobile" placeholder="Enter your mobile number" required><br>
+    <input type="password" id="password" placeholder="Create a password" required><br>
+    <button type="button" onclick="signUpWithEmail()">Sign Up with Email</button>
   </form>
 
+  <!-- Google Sign-Up -->
   <h3>Or Sign Up using Google</h3>
   <button onclick="googleSignUp()">Sign Up with Google</button>
 
-  <h3>Or Sign Up using Email</h3>
-  <button onclick="emailSignUp()">Sign Up with Email</button>
+  <h3>Already have an account?</h3>
+  <a href="signin.html">Sign In</a> <!-- Link to Sign In page -->
 </body>
 </html>
