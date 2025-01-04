@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to Loan Application System</title>
+  <title>Loan Application System</title>
+
+  <!-- Google Site Verification -->
+  <meta name="google-site-verification" content="google93501a1915fca013.html">
 
   <!-- Firebase SDK -->
   <script defer src="/__/firebase/11.1.0/firebase-app-compat.js"></script>
   <script defer src="/__/firebase/11.1.0/firebase-auth-compat.js"></script>
   <script defer src="/__/firebase/11.1.0/firebase-database-compat.js"></script>
-  <script defer src="/__/firebase/11.1.0/firebase-firestore-compat.js"></script>
-  <script defer src="/__/firebase/11.1.0/firebase-storage-compat.js"></script>
   <script defer src="/__/firebase/init.js"></script>
 
   <style>
@@ -19,61 +20,137 @@
       text-align: center;
       margin-top: 50px;
     }
-    button {
-      padding: 10px 20px;
+    input, button {
+      padding: 10px;
       font-size: 16px;
-      cursor: pointer;
       margin: 10px;
     }
-    .button-container {
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      align-items: center;
+    .hidden {
+      display: none;
+    }
+    .form-container {
+      margin: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Welcome to the Loan Application System</h1>
-  
-  <div class="button-container">
-    <!-- User Buttons -->
-    <button id="signInButton">Sign In (User)</button>
-    <button id="signUpButton">Sign Up (User)</button>
-    <br><br>
-    
-    <!-- Owner Login Button -->
+  <h1>Loan Application System</h1>
+
+  <!-- Login and Sign Up Buttons -->
+  <div id="buttons">
+    <button id="signInButton">Sign In</button>
+    <button id="signUpButton">Sign Up</button>
     <button id="ownerLoginButton">Owner Login</button>
   </div>
 
-  <p id="load">Firebase SDK Loading&hellip;</p>
+  <!-- User Login Form -->
+  <div id="loginForm" class="form-container hidden">
+    <h3>Sign In</h3>
+    <input type="email" id="loginEmail" placeholder="Enter your email"><br>
+    <input type="password" id="loginPassword" placeholder="Enter your password"><br>
+    <button id="loginSubmitButton">Login</button><br>
+    <a href="#" id="forgotPasswordLink">Forgot Password?</a><br>
+    <span id="errorMessage" style="color: red;"></span>
+  </div>
+
+  <!-- User Sign Up Form -->
+  <div id="signUpForm" class="form-container hidden">
+    <h3>Sign Up</h3>
+    <input type="text" id="signupName" placeholder="Enter your name"><br>
+    <input type="email" id="signupEmail" placeholder="Enter your email"><br>
+    <input type="text" id="signupMobile" placeholder="Enter your mobile number"><br>
+    <input type="password" id="signupPassword" placeholder="Create a password"><br>
+    <button id="signUpSubmitButton">Create Account</button><br>
+    <h3>Or Sign Up using Google</h3>
+    <button id="googleSignUpButton">Sign Up with Google</button>
+  </div>
+
+  <!-- Forgot Password Form -->
+  <div id="forgotPasswordForm" class="form-container hidden">
+    <h3>Forgot Password</h3>
+    <input type="email" id="forgotPasswordEmail" placeholder="Enter your email"><br>
+    <button id="resetPasswordButton">Reset Password</button><br>
+    <span id="resetMessage"></span>
+  </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const loadEl = document.querySelector('#load');
-      try {
-        let app = firebase.app();
-        loadEl.textContent = 'Firebase SDK loaded successfully!';
-      } catch (e) {
-        console.error(e);
-        loadEl.textContent = 'Error loading Firebase SDK, check the console.';
+    const validOwnerEmail = "rajputsurendra562@gmail.com";
+    const validOwnerPassword = "6268520141";
+
+    // Show Login Form
+    document.getElementById('signInButton').addEventListener('click', function() {
+      toggleForms('loginForm');
+    });
+
+    // Show Sign Up Form
+    document.getElementById('signUpButton').addEventListener('click', function() {
+      toggleForms('signUpForm');
+    });
+
+    // Show Forgot Password Form
+    document.getElementById('forgotPasswordLink').addEventListener('click', function() {
+      toggleForms('forgotPasswordForm');
+    });
+
+    // Show Owner Login Form
+    document.getElementById('ownerLoginButton').addEventListener('click', function() {
+      toggleForms('loginForm');
+    });
+
+    // Login Process
+    document.getElementById('loginSubmitButton').addEventListener('click', function() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      if (email === validOwnerEmail && password === validOwnerPassword) {
+        window.location.href = '/admin.html';  // Redirect to Admin Dashboard for Owner
+      } else {
+        firebase.auth().signInWithEmailAndPassword(email, password)
+          .then((userCredential) => {
+            window.location.href = '/homepage.html';  // Redirect to homepage for User
+          })
+          .catch((error) => {
+            document.getElementById('errorMessage').textContent = "Incorrect credentials. Please try again.";
+          });
       }
     });
 
-    // Redirect to User Sign In page
-    document.getElementById('signInButton').addEventListener('click', function() {
-      window.location.href = '/signin.html'; // Redirect to Sign In page
+    // Sign Up Process
+    document.getElementById('signUpSubmitButton').addEventListener('click', function() {
+      const name = document.getElementById('signupName').value;
+      const email = document.getElementById('signupEmail').value;
+      const mobile = document.getElementById('signupMobile').value;
+      const password = document.getElementById('signupPassword').value;
+      
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          window.location.href = '/homepage.html';  // Redirect to homepage after successful sign-up
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
     });
 
-    // Redirect to User Sign Up page
-    document.getElementById('signUpButton').addEventListener('click', function() {
-      window.location.href = '/signup.html'; // Redirect to Sign Up page
+    // Reset Password Process
+    document.getElementById('resetPasswordButton').addEventListener('click', function() {
+      const email = document.getElementById('forgotPasswordEmail').value;
+      firebase.auth().sendPasswordResetEmail(email)
+        .then(() => {
+          document.getElementById('resetMessage').textContent = 'Password reset email sent! Please check your inbox.';
+        })
+        .catch((error) => {
+          document.getElementById('resetMessage').textContent = 'Error: ' + error.message;
+        });
     });
 
-    // Redirect to Owner Login page
-    document.getElementById('ownerLoginButton').addEventListener('click', function() {
-      window.location.href = '/ownerlogin.html'; // Redirect to Owner Login page
-    });
+    // Function to toggle visibility of forms
+    function toggleForms(formId) {
+      const forms = ['loginForm', 'signUpForm', 'forgotPasswordForm'];
+      forms.forEach((form) => {
+        document.getElementById(form).classList.add('hidden');
+      });
+      document.getElementById(formId).classList.remove('hidden');
+    }
   </script>
 </body>
 </html>
