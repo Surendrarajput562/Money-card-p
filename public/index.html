@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loan Application System</title>
+  <title>WALCOME MONEY CARD </title>
 
   <!-- Google Site Verification -->
   <meta name="google-site-verification" content="google93501a1915fca013.html">
@@ -19,25 +19,130 @@
       font-family: Arial, sans-serif;
       text-align: center;
       margin-top: 50px;
+      overflow: hidden;
+      background: linear-gradient(45deg, #00b894, #6c5ce7, #f39c12, #0984e3); 
+      background-size: 400% 400%;
+      animation: gradientBG 10s ease infinite;
     }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px;
+    
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
+
+    .background-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('https://media2.giphy.com/media/xMhO6LrD0NF2iEPF8a/giphy.gif?cid=6c09b9525oq3ebf5z13mj67tj2du9dw84bszq7tih1b1a6ys&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g'); /* Bank animation image URL */
+      background-size: cover;
+      background-position: center;
+      z-index: -1;
+      animation: moveBackground 10s linear infinite;
+    }
+
+    @keyframes moveBackground {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
     .hidden {
       display: none;
     }
+
+    h1 {
+      font-size: 2.5em;
+      color: white;
+      margin-bottom: 40px;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     .form-container {
       margin: 20px;
+      opacity: 0;
+      transform: translateY(100px);
+      animation: slideIn 1s forwards;
+    }
+
+    @keyframes slideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    input, button {
+      padding: 12px;
+      font-size: 16px;
+      margin: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 80%;
+      max-width: 300px;
+      transition: transform 0.3s ease;
+    }
+
+    input:focus, button:focus {
+      outline: none;
+      border-color: #0984e3;
+      transform: scale(1.05);
+    }
+
+    button {
+      background-color: #0984e3;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      background-color: #6c5ce7;
+    }
+
+    .buttons {
+      margin-bottom: 40px;
+    }
+
+    .buttons button {
+      font-size: 18px;
+    }
+
+    /* Public animation (people walking or any animation) */
+    .public-animation {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 100px;
+      background-image: url('https://media3.giphy.com/media/1Tcu1q0nbXLL3pz4GU/giphy.gif?cid=6c09b952f9fmkcwiw7mak0s0vxyftu4aiwv9cj433rjqsaza&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g'); /* Public people animation URL */
+      background-size: cover;
+      animation: movePublic 10s linear infinite;
+    }
+
+    @keyframes movePublic {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 0%; }
     }
   </style>
 </head>
 <body>
-  <h1>Loan Application System</h1>
+  <div class="background-animation"></div>
+  <div class="public-animation"></div>
 
-  <!-- Login and Sign Up Buttons -->
-  <div id="buttons">
+  <h1>WELCOME TO
+  MONEY CARD</h1>
+
+  <!-- Buttons to navigate to Sign In, Sign Up, and Owner Login -->
+  <div class="buttons">
     <button id="signInButton">Sign In</button>
     <button id="signUpButton">Sign Up</button>
     <button id="ownerLoginButton">Owner Login</button>
@@ -154,3 +259,12 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+    
+      
