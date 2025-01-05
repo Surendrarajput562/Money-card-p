@@ -215,7 +215,6 @@ app.post('/book-flight', (req, res) => {
     .catch((error) => res.status(500).send('Error processing flight booking request: ' + error.message));
 });
 
-
 // **13. Train Booking Route**
 app.post('/book-train', (req, res) => {
   const { origin, destination, date, passengers } = req.body;
@@ -232,8 +231,6 @@ app.post('/book-train', (req, res) => {
     .catch((error) => res.status(500).send('Error processing train booking request: ' + error.message));
 });
 
-
-
 // **12. Bus Booking Route**
 app.post('/book-bus', (req, res) => {
   const { origin, destination, date, passengers } = req.body;
@@ -249,7 +246,6 @@ app.post('/book-bus', (req, res) => {
     .then(() => res.status(200).send('Bus booking request successful.'))
     .catch((error) => res.status(500).send('Error processing bus booking request: ' + error.message));
 });
-
 
 // Start the server
 const PORT = process.env.PORT || 4005;
