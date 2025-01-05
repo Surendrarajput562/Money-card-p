@@ -7,6 +7,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
+const fetch = require('node-fetch');
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
@@ -171,7 +172,7 @@ app.post('/apply-credit-card', (req, res) => {
 // **11. Razorpay Payment Integration**
 app.post('/createOrder', async (req, res) => {
   const { amount } = req.body;
-  const options = { amount: amount * 100, currency: 'INR', receipt: `receipt_${Date.now()}` };
+  const options = { amount: (amount + 99) * 100, currency: 'INR', receipt: `receipt_${Date.now()}` };  // Adding 99 service charge
   try {
     const order = await razorpay.orders.create(options);
     res.status(200).json({ orderId: order.id, amount: order.amount / 100 });
@@ -190,12 +191,6 @@ app.post('/verifyPayment', (req, res) => {
   } else {
     res.status(400).json({ error: 'Invalid payment signature' });
   }
-});
-
-// Serve other pages based on SPA logic
-app.get("/:page", (req, res) => {
-  const page = req.params.page;
-  res.sendFile(path.join(__dirname, 'public', `${page}.html`));
 });
 
 // **14. Flight Booking Route**
