@@ -93,13 +93,6 @@
       }
     }
 
-    /* Modern Layout - Column Style */
-    .form-column {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
     .cibil-score {
       font-size: 36px;
       font-weight: bold;
@@ -112,7 +105,6 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.2); }
     }
-
   </style>
 </head>
 <body>
@@ -135,7 +127,7 @@
       </div>
 
       <button type="submit">Check CIBIL Score</button>
-      <button class="hidden-btn">Download CIBIL Report</button>
+      <button class="hidden-btn" onclick="handlePayment()">Pay Now (₹99)</button>
     </form>
     <div class="cibil-score" id="cibilScore"></div>
   </div>
@@ -153,7 +145,7 @@
       const response = await fetch("/get-cibil", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, pan, dob, email, paymentStatus: true }),
+        body: JSON.stringify({ name, pan, dob, email, paymentStatus: false }),
       });
 
       const data = await response.json();
@@ -166,10 +158,57 @@
       }
     });
 
-    // Show hidden button after form submission
-    setTimeout(function () {
-      document.querySelector(".hidden-btn").style.display = "block";
-    }, 2000);
+    function handlePayment() {
+      // Add Razorpay Payment Integration here
+      fetch("/create-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount: 99 }),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.orderId) {
+          // Trigger Razorpay payment gateway with orderId and user details
+          var options = {
+            key: 'rzp_live_eGGQDN62teIXQZ',
+            amount: data.amount * 100, // In paise
+            currency: 'INR',
+            name: 'CIBIL Score Payment',
+            order_id: data.orderId,
+            handler: function (response) {
+              // Payment success handler
+              fetch('/verify-payment', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: data.orderId,
+                  razorpay_signature: response.razorpay_signature
+                })
+              })
+              .then((verifyRes) => verifyRes.json())
+              .then((verifyData) => {
+                if (verifyData.message === 'Payment verified successfully') {
+                  document.querySelector(".hidden-btn").style.display = 'none';
+                  alert("Payment successful. CIBIL report is now available.");
+                } else {
+                  alert("Payment verification failed.");
+                }
+              });
+            },
+          };
+          var rzp1 = new Razorpay(options);
+          rzp1.open();
+        }
+      })
+      .catch((error) => {
+        console.error('Payment creation failed', error);
+      });
+    }
   </script>
 
 </body>
