@@ -198,6 +198,59 @@ app.get("/:page", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', `${page}.html`));
 });
 
+// **14. Flight Booking Route**
+app.post('/book-flight', (req, res) => {
+  const { origin, destination, date, passengers, flightClass } = req.body;
+  const ref = db.ref('flightBookings');
+  const newBookingRef = ref.push();
+  newBookingRef.set({
+    origin,
+    destination,
+    date,
+    passengers,
+    flightClass,
+    status: 'Pending',
+  })
+    .then(() => res.status(200).send('Flight booking request successful.'))
+    .catch((error) => res.status(500).send('Error processing flight booking request: ' + error.message));
+});
+
+
+// **13. Train Booking Route**
+app.post('/book-train', (req, res) => {
+  const { origin, destination, date, passengers } = req.body;
+  const ref = db.ref('trainBookings');
+  const newBookingRef = ref.push();
+  newBookingRef.set({
+    origin,
+    destination,
+    date,
+    passengers,
+    status: 'Pending',
+  })
+    .then(() => res.status(200).send('Train booking request successful.'))
+    .catch((error) => res.status(500).send('Error processing train booking request: ' + error.message));
+});
+
+
+
+// **12. Bus Booking Route**
+app.post('/book-bus', (req, res) => {
+  const { origin, destination, date, passengers } = req.body;
+  const ref = db.ref('busBookings');
+  const newBookingRef = ref.push();
+  newBookingRef.set({
+    origin,
+    destination,
+    date,
+    passengers,
+    status: 'Pending',
+  })
+    .then(() => res.status(200).send('Bus booking request successful.'))
+    .catch((error) => res.status(500).send('Error processing bus booking request: ' + error.message));
+});
+
+
 // Start the server
 const PORT = process.env.PORT || 4005;
 app.listen(PORT, () => {
