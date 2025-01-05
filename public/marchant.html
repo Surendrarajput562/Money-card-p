@@ -4,25 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Merchant Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .button {
+            padding: 15px 30px;
+            border-radius: 30px;
+            background-color: #0984e3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #6c5ce7;
+        }
+
+        #payment-qr {
+            margin-top: 20px;
+            width: 200px;
+            height: 200px;
+        }
+
+        .history-section {
+            margin-top: 40px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-item {
+            background-color: #eaf2f8;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
+
     <h1>Merchant Dashboard</h1>
-    
-    <h2>Your Payment QR Code</h2>
-    <img id="payment-qr" src="" alt="QR Code will appear here">
+
+    <!-- First Page: Enter UPI Link -->
+    <div class="form-container" id="upi-form">
+        <h2>Enter UPI Payment Link</h2>
+        <input type="text" id="upi-link" placeholder="Enter your UPI link (e.g., merchant@upi)" style="padding: 10px; width: 60%; border-radius: 5px; border: 1px solid #ccc;">
+        <button class="button" id="generate-qr">Generate QR</button>
+    </div>
+
+    <!-- First Page: Payment QR -->
+    <div class="form-container hidden" id="qr-container">
+        <h2>Your Payment QR Code</h2>
+        <img id="payment-qr" src="" alt="QR Code will appear here">
+    </div>
+
+    <!-- Second Page: Payment Information -->
+    <div class="form-container hidden" id="payment-info">
+        <h2>Payment Information</h2>
+        <p id="payment-msg">Please pay ₹30 to continue using the payment system.</p>
+        <button class="button" id="make-payment">Pay ₹30</button>
+    </div>
+
+    <!-- Payment History Section -->
+    <div class="history-section hidden" id="history-section">
+        <h2>Payment History</h2>
+        <div id="history-list">
+            <!-- Payment history will be populated here -->
+        </div>
+    </div>
 
     <script>
-        // Fetch the QR code from the backend
-        document.addEventListener('DOMContentLoaded', function () {
-            fetch('/generate-qr')
+        // Function to generate QR code
+        document.getElementById('generate-qr').addEventListener('click', function() {
+            const upiLink = document.getElementById('upi-link').value;
+            if (upiLink) {
+                // Call the backend to generate QR code
+                fetch('/generate-qr', {
+                    method: 'POST',
+                    body: JSON.stringify({ upiLink: upiLink }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                 .then(response => response.json())
                 .then(data => {
                     if (data.qrCodeUrl) {
-                        document.getElementById('payment-qr').src = data.qrCodeUrl; // Set the QR code image source
+                        document.getElementById('payment-qr').src = data.qrCodeUrl;
                     }
                 })
-                .catch(error => console.error('Error fetching QR code:', error));
+                .catch(error => console.error('Error generating QR code:', error));
+
+                // Hide first page, show QR code section
+                document.getElementById('upi-form').classList.add('hidden');
+                document.getElementById('qr-container').classList.remove('hidden');
+                
+                // After 2 seconds, hide QR and show payment info
+                setTimeout(function() {
+                    document.getElementById('qr-container').classList.add('hidden');
+                    document.getElementById('payment-info').classList.remove('hidden');
+                }, 2000);
+            } else {
+                alert('Please enter a UPI link.');
+            }
         });
+
+        // Function to check if the user is in the free trial period (30 days)
+        function checkSubscription() {
+            fetch('/check-subscription', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isFree) {
+                        document.getElementById('payment-msg').innerText = "Free trial active. No payment required.";
+                        document.getElementById('make-payment').disabled = true; // Disable payment button
+                    } else {
+                        document.getElementById('payment-msg').innerText = "Please pay ₹30 to continue using the payment system.";
+                        document.getElementById('make-payment').disabled = false; // Enable payment button
+                    }
+                })
+                .catch(error => console.error('Error checking subscription:', error));
+        }
+
+        // Function to handle payment action (₹30)
+        document.getElementById('make-payment').addEventListener('click', function() {
+            alert('Payment of ₹30 received. You can now use the system.');
+            // Payment successful, hide payment info and show history section
+            document.getElementById('payment-info').classList.add('hidden');
+            document.getElementById('history-section').classList.remove('hidden');
+        });
+
+        // Call check subscription when the page loads
+        checkSubscription();
+
+        // Dummy function to display payment history
+        function displayPaymentHistory() {
+            const history = [
+                { date: '2025-01-01', amount: '₹500' },
+                { date: '2025-01-02', amount: '₹300' }
+            ];
+
+            const historyList = document.getElementById('history-list');
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.classList.add('history-item');
+                div.innerHTML = `Date: ${item.date} | Amount: ${item.amount}`;
+                historyList.appendChild(div);
+            });
+        }
+
+        // Load payment history
+        displayPaymentHistory();
     </script>
+
 </body>
 </html>
