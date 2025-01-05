@@ -279,6 +279,29 @@ app.use(express.static('public'));
 
 
 
+app.post('/process-payment', async (req, res) => {
+  const { totalAmount, serviceCharge, remainingAmount, serviceChargeUPI, scanUPI } = req.body;
+
+  try {
+    const serviceChargeTransfer = await transferToUPI(serviceChargeUPI, serviceCharge);
+    const remainingAmountTransfer = await transferToUPI(scanUPI, remainingAmount);
+
+    if (serviceChargeTransfer.success && remainingAmountTransfer.success) {
+      res.status(200).json({ success: true, message: 'Payment processed successfully' });
+    } else {
+      res.status(500).json({ success: false, message: 'Failed to transfer amounts' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Error processing payment' });
+  }
+});
+
+async function transferToUPI(upiID, amount) {
+  console.log(`Transferring ₹${amount} to ${upiID}`);
+  return { success: true }; // Simulated success
+}
+
+
 
 // Start the server
 const PORT = process.env.PORT || 4005;
