@@ -254,3 +254,39 @@ document.getElementById("applyBtn").addEventListener("click", function () {
   const redirectUrl = "https://www.google.com";  // Replace with the actual redirect URL
   window.location.href = redirectUrl;  // Redirect to the URL
 });
+
+
+// Common booking function
+const bookService = (req, res, serviceName) => {
+  const { company, details } = req.body;
+
+  if (!company || !details) {
+    return res.status(400).send({ error: "Missing required fields" });
+  }
+
+  // Save data to respective service node in Realtime Database
+  db.ref(`${serviceName}`).push({ company, details })
+    .then(() => {
+      res.status(200).send({ message: `${serviceName} booking saved successfully.` });
+    })
+    .catch(error => {
+      res.status(500).send({ error: `Failed to save ${serviceName} booking: ${error.message}` });
+    });
+};
+
+// Flight booking endpoint
+app.post("/book-flight", (req, res) => {
+  bookService(req, res, "flights");
+});
+
+// Train booking endpoint
+app.post("/book-train", (req, res) => {
+  bookService(req, res, "trains");
+});
+
+// Bus booking endpoint
+app.post("/book-bus", (req, res) => {
+  bookService(req, res, "buses");
+});
+
+// Start the server
