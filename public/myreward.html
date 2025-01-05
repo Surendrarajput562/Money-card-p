@@ -1,12 +1,104 @@
-<div id="rewards">
-  <h3>Your Rewards: ₹<span id="rewardPoints">0</span></h3>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Rewards</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-<script>
-  const userId = "userId1"; // Replace with logged-in user ID
-  const dbRef = firebase.database().ref(`users/${userId}/rewards`);
+    #rewards {
+      background: linear-gradient(45deg, #ff66b2, #8a2be2); /* Dark pink to violet gradient */
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      color: white;
+      width: 300px;
+      animation: fadeIn 1s ease-in-out;
+    }
 
-  dbRef.on("value", (snapshot) => {
-      document.getElementById("rewardPoints").innerText = snapshot.val();
-  });
-</script>
+    #rewardPoints {
+      font-size: 32px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .reward-icon {
+      font-size: 36px;
+      animation: bounce 1.5s infinite alternate;
+    }
+
+    @keyframes bounce {
+      0% {
+        transform: translateY(0);
+      }
+      100% {
+        transform: translateY(-15px);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div id="rewards">
+    <h3>Your Rewards: ₹<span id="rewardPoints">0</span></h3>
+    <div class="reward-icon">🎉🪙🪙</div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+
+  <script>
+    // Firebase configuration and initialization
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // Replace with the logged-in user ID
+    const userId = "userId1"; 
+    const dbRef = db.ref(`users/${userId}/rewards`);
+
+    dbRef.on("value", (snapshot) => {
+        const rewardPoints = snapshot.val();
+        document.getElementById("rewardPoints").innerText = rewardPoints ? rewardPoints : 0;
+    });
+  </script>
+
+</body>
+</html>
