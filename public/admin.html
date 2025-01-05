@@ -79,3 +79,126 @@
   <script src="admin.js"></script>
 </body>
 </html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #ff6347;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            padding: 20px;
+        }
+
+        .user-card {
+            background-color: #fff;
+            margin: 15px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-card h3 {
+            margin: 0 0 10px;
+            color: #ff6347;
+        }
+
+        .user-card p {
+            margin: 5px 0;
+        }
+
+        .user-card button {
+            background-color: #ff6347;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .user-card button:hover {
+            background-color: #ff4500;
+        }
+
+        .user-card .link {
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Owner Dashboard</h1>
+    <p>यहां से आप सभी सबमिटेड जानकारी देख सकते हैं और एजेंट बना सकते हैं।</p>
+</header>
+
+<div class="dashboard-container">
+    <!-- User Card Example -->
+    <div class="user-card" id="user1">
+        <h3>पूरा नाम: <span id="userName1">अमन कुमार</span></h3>
+        <p>ईमेल: <span id="userEmail1">aman@example.com</span></p>
+        <p>फोन नंबर: <span id="userPhone1">9876543210</span></p>
+        <p>स्थान: <span id="userLocation1">दिल्ली</span></p>
+        <p>अनुभव: <span id="userExperience1">3 साल</span></p>
+        
+        <input type="text" id="userLinkInput" placeholder="लिंक डालें">
+        <button onclick="sendLink('user1')">एजेंट लिंक भेजें</button>
+
+        <!-- Link after sending -->
+        <div class="link" id="userLink1" style="display: none;">
+            <a id="dynamicLink" href="#" target="_blank">यहां क्लिक करें एजेंट बनने के लिए</a>
+        </div>
+    </div>
+
+    <!-- Additional User Cards can go here -->
+</div>
+
+<script>
+    function sendLink(userId) {
+        // Get the link from the input field
+        let userLink = document.querySelector(`#${userId} #userLinkInput`).value;
+
+        if (userLink) {
+            // Hide the button and show the link after sending
+            document.querySelector(`#${userId} button`).style.display = 'none';
+            document.querySelector(`#${userId} .link`).style.display = 'block';
+
+            // Set the dynamic link
+            document.querySelector(`#${userId} #dynamicLink`).href = userLink;
+
+            // Simulating the process of generating and sending the agent link.
+            alert("एजेंट लिंक भेज दिया गया है!");
+        } else {
+            alert("कृपया एक लिंक डालें!");
+        }
+    }
+</script>
+
+</body>
+</html>
+
