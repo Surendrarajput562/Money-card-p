@@ -4,37 +4,175 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Credit Card Application</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Background Gradient */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, red, blue, pink, chocolate);
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Animation Container */
+    .animation-container {
+      position: relative;
+      height: 200px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .animation img {
+      max-width: 150px;
+      animation: float 3s infinite;
+    }
+
+    /* Text inside animation */
+    .animation p {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    /* Coin Rain Animation */
+    .coin {
+      position: absolute;
+      top: -50px;
+      width: 20px;
+      height: 20px;
+      background: gold;
+      border-radius: 50%;
+      animation: fall 4s infinite linear;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-50px) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 0;
+      }
+    }
+
+    /* Container Styles */
+    .container {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 0 auto;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    h1 {
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 14px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 12px;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #e57373;
+    }
+
+    .hidden-btn {
+      display: none;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
+  <div class="animation-container">
+    <div class="animation">
+      <img src="credit-card-holder.png" alt="Credit Card Holder">
+      <p>Apply for your Credit Card Today!</p>
+    </div>
+  </div>
+
   <div class="container">
     <h1>Apply for a Credit Card</h1>
     <form id="creditCardForm">
       <label for="fullName">Full Name:</label>
-      <input type="text" id="fullName" name="fullName" required>
+      <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
 
       <label for="email">Email:</label>
-      <input type="email" id="email" name="email" required>
+      <input type="email" id="email" name="email" placeholder="Enter your email" required>
 
       <label for="mobileNumber">Mobile Number:</label>
-      <input type="text" id="mobileNumber" name="mobileNumber" required>
+      <input type="text" id="mobileNumber" name="mobileNumber" placeholder="Enter your mobile number" required>
 
       <label for="panNumber">PAN Number:</label>
-      <input type="text" id="panNumber" name="panNumber" required>
+      <input type="text" id="panNumber" name="panNumber" placeholder="Enter your PAN number" required>
 
       <label for="income">Annual Income:</label>
-      <input type="number" id="income" name="income" required>
+      <input type="number" id="income" name="income" placeholder="Enter your annual income" required>
 
       <button type="submit">Submit</button>
     </form>
 
     <!-- Hidden Buttons for Animation -->
     <button class="hidden-btn" id="submitDetailsBtn">Submit Details</button>
-    <button class="hidden-btn" id="applyBtn">Apply</button>
+    <button class="hidden-btn" id="applyBtn">Apply Now</button>
 
     <p id="responseMessage"></p>
   </div>
 
-  <script src="app.js"></script>
+  <script>
+    // Coin Rain
+    function createCoin() {
+      const coin = document.createElement("div");
+      coin.classList.add("coin");
+      coin.style.left = Math.random() * 100 + "vw";
+      coin.style.animationDuration = Math.random() * 3 + 2 + "s";
+      document.body.appendChild(coin);
+      setTimeout(() => coin.remove(), 5000);
+    }
+    setInterval(createCoin, 300);
+  </script>
 </body>
 </html>
