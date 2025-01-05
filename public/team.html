@@ -4,16 +4,171 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>हमारी टीम में शामिल हों</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(45deg, red, green, darkviolet);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Header Section */
+        header {
+            text-align: center;
+            color: white;
+            font-size: 2em;
+            padding: 20px;
+            margin-top: 50px;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        header h1 {
+            font-size: 3em;
+        }
+
+        header p {
+            font-size: 1.2em;
+            color: lightyellow;
+        }
+
+        /* Form Section */
+        #join-form {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+            animation: formAppear 2s ease-out;
+        }
+
+        #join-form h2 {
+            color: white;
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        #join-form label {
+            font-size: 1.1em;
+            color: white;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        #join-form input, #join-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: none;
+            font-size: 1em;
+        }
+
+        #join-form button {
+            padding: 10px 20px;
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #join-form button:hover {
+            background-color: #ff4500;
+        }
+
+        /* Success Message */
+        .success-message {
+            display: none;
+            text-align: center;
+            color: white;
+            font-size: 2em;
+            margin-top: 20px;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .success-message p {
+            font-size: 1.5em;
+        }
+
+        /* Firework animation */
+        .firework {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: gold;
+            border-radius: 50%;
+            animation: fireworkEffect 1.5s ease-in-out infinite;
+        }
+
+        /* Visiting card section */
+        .visiting-card {
+            display: none;
+            text-align: center;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .visiting-card h3 {
+            font-size: 2em;
+        }
+
+        .visiting-card p {
+            font-size: 1.5em;
+        }
+
+        .icon {
+            font-size: 2em;
+            margin: 10px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes formAppear {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fireworkEffect {
+            0% { top: 0; left: 50%; opacity: 1; transform: scale(1); }
+            100% { top: 100%; left: random(); opacity: 0; transform: scale(0); }
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>हमारी टीम में शामिल हों</h1>
         <p>वित्तीय उत्पाद बेचें और सफल लीड्स के माध्यम से पैसे कमाएं।</p>
     </header>
+    
     <section id="join-form">
         <h2>अपनी जानकारी भरें</h2>
-        <form action="process_form.php" method="POST">
+        <form id="teamForm" action="#" method="POST" onsubmit="submitForm(event)">
             <label for="name">पूरा नाम:</label>
             <input type="text" id="name" name="name" required>
 
@@ -32,5 +187,67 @@
             <button type="submit">जमा करें</button>
         </form>
     </section>
+
+    <div class="success-message" id="successMessage">
+        <p>आपकी जानकारी सफलतापूर्वक सबमिट हो गई है। कृपया इंतजार करें...</p>
+    </div>
+
+    <div class="visiting-card" id="visitingCard">
+        <h3>विजिटिंग कार्ड</h3>
+        <p>आपका ID: <span id="userID"></span></p>
+        <p>पासवर्ड: <span id="userPassword"></span></p>
+        <p>URL: <span id="userLink"></span></p>
+        <div class="icon">🎉🎉🧑‍🎓🧑‍🎓👨‍💻👨‍💻</div>
+        <div class="icon">💌💳💰</div>
+    </div>
+
+    <script>
+        function submitForm(event) {
+            event.preventDefault(); // Prevent form submission
+            // Display success message
+            document.getElementById('successMessage').style.display = 'block';
+            
+            // Hide form after submission
+            document.getElementById('join-form').style.display = 'none';
+
+            // Firework animation effect
+            for (let i = 0; i < 10; i++) {
+                createFirework();
+            }
+
+            // Simulate a delay before showing the visiting card and redirecting
+            setTimeout(() => {
+                // Generate unique ID, password, and link for the new agent
+                const userID = "AGENT" + Math.floor(Math.random() * 1000);
+                const userPassword = "password123";
+                const userLink = "http://example.com/agent/" + userID;
+
+                // Show the visiting card with the generated details
+                document.getElementById('userID').textContent = userID;
+                document.getElementById('userPassword').textContent = userPassword;
+                document.getElementById('userLink').textContent = userLink;
+
+                document.getElementById('visitingCard').style.display = 'block';
+                
+                // Optionally, you can also redirect to the agent's URL if needed
+                // window.location.href = userLink;
+
+            }, 5000);
+        }
+
+        // Function to create firework effect
+        function createFirework() {
+            const firework = document.createElement('div');
+            firework.classList.add('firework');
+            document.body.appendChild(firework);
+
+            // Random positions for the fireworks
+            const randomLeft = Math.floor(Math.random() * window.innerWidth);
+            firework.style.left = `${randomLeft}px`;
+
+            // Set the animation for the firework
+            firework.style.animation = 'fireworkEffect 1.5s ease-in-out';
+        }
+    </script>
 </body>
-</html>
+    </html>
