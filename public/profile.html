@@ -4,49 +4,154 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Profile</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
   <script src="app.js" defer></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 10px;
+      margin: 0;
+      padding: 0;
+      background-color: #e0f7fa; /* light sky blue */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
     }
+
     .container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 80%;
       max-width: 600px;
-      margin: 0 auto;
+      transition: all 0.5s ease;
+      animation: fadeIn 1s ease-out;
     }
+
+    h1 {
+      text-align: center;
+      color: #d32f2f; /* red color */
+      font-size: 28px;
+    }
+
     .form-group {
       margin-bottom: 15px;
     }
+
     label {
       display: block;
       margin-bottom: 5px;
+      color: #7b1fa2; /* purple color */
     }
+
     input, button {
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #bdc3c7;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+
+    button {
+      background-color: #ff9800; /* orange */
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    button:hover {
+      background-color: #ff5722; /* deep orange */
+    }
+
     #profileDisplay {
-      border-top: 1px solid #ccc;
       margin-top: 20px;
+      border-top: 1px solid #bdc3c7;
       padding-top: 20px;
+      display: none;
     }
+
     .profile-info {
       margin-bottom: 10px;
+      color: #2c3e50;
     }
+
     img {
       width: 100px;
       height: 100px;
       border-radius: 50%;
+      border: 2px solid #34495e;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    img:hover {
+      transform: scale(1.1);
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      animation: avatarPulse 1.5s infinite ease-in-out;
+    }
+
+    @keyframes avatarPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .closeButton {
+      background-color: #34495e;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s ease;
+    }
+
+    .closeButton:hover {
+      background-color: #2c3e50;
+    }
+
+    .updateButton {
+      background-color: #3498db;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    .updateButton:hover {
+      background-color: #2980b9;
+    }
+
+    /* Animation for fading in the page */
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    /* Button animation */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="profileFormContainer">
     <h1>User Profile</h1>
     <form id="profileForm">
       <div class="form-group">
@@ -81,91 +186,9 @@
       <div id="profileInfo">
         <!-- User's profile info will be displayed here -->
       </div>
+      <button class="closeButton" onclick="closeProfilePage()">Close Profile</button>
+      <button class="updateButton" onclick="showProfileForm()">Update Details</button>
     </div>
   </div>
-
-  <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "your-api-key",
-      authDomain: "your-auth-domain",
-      projectId: "your-project-id",
-      storageBucket: "your-storage-bucket",
-      messagingSenderId: "your-sender-id",
-      appId: "your-app-id"
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const database = firebase.database();
-
-    // Form submission for saving profile
-    document.getElementById('profileForm').addEventListener('submit', (event) => {
-      event.preventDefault();
-
-      const photoFile = document.getElementById('photo').files[0];
-      const name = document.getElementById('name').value;
-      const dob = document.getElementById('dob').value;
-      const mobile = document.getElementById('mobile').value;
-      const pan = document.getElementById('pan').value;
-      const email = document.getElementById('email').value;
-
-      if (!photoFile || !name || !dob || !mobile || !pan || !email) {
-        alert('Please fill all the fields.');
-        return;
-      }
-
-      // Upload photo to Firebase Storage
-      const storageRef = firebase.storage().ref();
-      const photoRef = storageRef.child('profile_photos/' + photoFile.name);
-      photoRef.put(photoFile).then((snapshot) => {
-        snapshot.ref.getDownloadURL().then((photoURL) => {
-          // Save profile details to Realtime Database
-          const userId = auth.currentUser ? auth.currentUser.uid : 'guest_user';
-          database.ref('users/' + userId).set({
-            name,
-            dob,
-            mobile,
-            pan,
-            email,
-            photoURL
-          }).then(() => {
-            displayProfile({ name, dob, mobile, pan, email, photoURL });
-          }).catch((error) => {
-            console.error("Error saving profile:", error);
-          });
-        });
-      }).catch((error) => {
-        console.error("Error uploading photo:", error);
-      });
-    });
-
-    // Function to display profile info
-    function displayProfile(profile) {
-      const profileInfoDiv = document.getElementById('profileInfo');
-      profileInfoDiv.innerHTML = `
-        <div class="profile-info"><strong>Name:</strong> ${profile.name}</div>
-        <div class="profile-info"><strong>Date of Birth:</strong> ${profile.dob}</div>
-        <div class="profile-info"><strong>Mobile:</strong> ${profile.mobile}</div>
-        <div class="profile-info"><strong>PAN Card:</strong> ${profile.pan}</div>
-        <div class="profile-info"><strong>Email:</strong> ${profile.email}</div>
-        <div class="profile-info"><strong>Photo:</strong> <img src="${profile.photoURL}" alt="Profile Photo"></div>
-      `;
-    }
-
-    // Fetch and display existing profile data (if available)
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        const userId = user.uid;
-        database.ref('users/' + userId).once('value').then((snapshot) => {
-          const profile = snapshot.val();
-          if (profile) {
-            displayProfile(profile);
-          }
-        });
-      }
-    });
-  </script>
 </body>
 </html>
