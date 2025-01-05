@@ -123,10 +123,10 @@
 
   <div class="side-menu" id="sideMenu">
     <span class="close-btn" onclick="toggleMenu()">&#10005;</span>
-    <a href="#">Profile Settings</a>
-    <a href="#">Settings</a>
-    <a href="#">QR Code</a>
-    <a href="#">Log Out</a>
+    <a href="#" onclick="openProfileSettings()">Profile Settings</a>
+    <a href="#" onclick="openSettings()">Settings</a>
+    <a href="#" onclick="openQRCode()">QR Code</a>
+    <a href="#" onclick="logOut()">Log Out</a>
   </div>
 
   <section id="account-details">
@@ -241,11 +241,33 @@
     function toggleMenu() {
       var menu = document.getElementById("sideMenu");
       if (menu.style.left === "-250px") {
-        menu.style.left = "0";
+        menu.style.left = "0"; // Open the menu
       } else {
-        menu.style.left = "-250px";
+        menu.style.left = "-250px"; // Close the menu
       }
     }
+
+    function openProfileSettings() {
+      window.location.href = 'profile.html'; // Redirect to profile settings page
+    }
+
+    function openSettings() {
+      window.location.href = 'settings.html'; // Redirect to settings page
+    }
+
+    function openQRCode() {
+      alert('Opening QR Code...');
+      // Add your QR code functionality here
+    }
+
+    function logOut() {
+      alert('Logging out...');
+      // Perform the logout logic here (like clearing session, etc.)
+      setTimeout(function() {
+        window.location.href = 'logout.html'; // Redirect to logout page
+      }, 2000); // Wait for 2 seconds before redirecting
+    }
   </script>
+
 </body>
-                           </html>
+  </html>
