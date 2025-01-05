@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EMI Calculator</title>
   <style>
+    /* Global Styles */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -13,29 +14,41 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #f4f4f4;
+      background: linear-gradient(45deg, #ff6ec7, #ff9a8b, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: gradientBG 10s ease infinite;
+      overflow: hidden;
     }
+
+    /* Calculator Box */
     .calculator {
-      background: #fff;
+      background: rgba(255, 255, 255, 0.8);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       max-width: 400px;
       width: 100%;
+      position: relative;
+      z-index: 2;
     }
+
+    /* Title and form labels */
     .calculator h2 {
       text-align: center;
       color: #333;
       margin-bottom: 20px;
     }
+
     .form-group {
       margin-bottom: 15px;
     }
+
     .form-group label {
       display: block;
       font-weight: bold;
       margin-bottom: 5px;
     }
+
     .form-group input {
       width: 100%;
       padding: 10px;
@@ -43,6 +56,8 @@
       border-radius: 5px;
       font-size: 16px;
     }
+
+    /* Button Styling */
     .btn {
       background: #007bff;
       color: #fff;
@@ -52,19 +67,61 @@
       cursor: pointer;
       width: 100%;
       font-size: 16px;
+      transition: background 0.3s ease;
     }
+
     .btn:hover {
       background: #0056b3;
     }
+
+    /* Result Box */
     .result {
       margin-top: 20px;
       padding: 10px;
       background: #e8f0fe;
       border-left: 5px solid #007bff;
+      display: none;
     }
+
     .result h3 {
       margin: 0;
       color: #333;
+      animation: fadeIn 1s;
+    }
+
+    /* Coin Animation */
+    .coin {
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      background-color: gold;
+      border-radius: 50%;
+      animation: coinFall 3s infinite;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes coinFall {
+      from {
+        top: -30px;
+        left: 50%;
+        opacity: 1;
+      }
+      to {
+        top: 100vh;
+        left: random();
+        opacity: 0;
+      }
+    }
+
+    /* Animated Background Gradient */
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
   </style>
 </head>
@@ -84,7 +141,7 @@
       <input type="number" id="loanTenure" placeholder="Enter loan tenure in years" />
     </div>
     <button class="btn" onclick="calculateEMI()">Calculate EMI</button>
-    <div class="result" id="result" style="display: none;">
+    <div class="result" id="result">
       <h3 id="emiResult"></h3>
     </div>
   </div>
@@ -100,6 +157,11 @@
         return;
       }
 
+      // Trigger coin rain effect
+      for (let i = 0; i < 100; i++) {
+        createCoin();
+      }
+
       const monthlyInterestRate = interestRate / 12 / 100;
       const numberOfMonths = loanTenure * 12;
 
@@ -107,9 +169,24 @@
         (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfMonths)) /
         (Math.pow(1 + monthlyInterestRate, numberOfMonths) - 1);
 
+      // Display EMI result with animation
       document.getElementById('emiResult').textContent = `Your EMI is ₹${emi.toFixed(2)} per month.`;
       document.getElementById('result').style.display = 'block';
+
+      // Play voice message
+      const msg = new SpeechSynthesisUtterance("Congratulations! Your EMI is ₹" + emi.toFixed(2));
+      window.speechSynthesis.speak(msg);
+    }
+
+    function createCoin() {
+      const coin = document.createElement('div');
+      coin.classList.add('coin');
+      document.body.appendChild(coin);
+
+      // Randomize position of falling coins
+      const randomLeft = Math.floor(Math.random() * window.innerWidth);
+      coin.style.left = `${randomLeft}px`;
     }
   </script>
 </body>
-</html
+</html>
