@@ -4,20 +4,134 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scan and Pay</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    .container {
+      text-align: center;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    h2 {
+      color: #4CAF50;
+    }
+    #qrCode {
+      width: 100%;
+      max-width: 250px;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #paymentForm input {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    #history {
+      margin-top: 30px;
+      text-align: left;
+      padding: 10px;
+      background-color: #f1f1f1;
+      border-radius: 8px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Scan and Pay</h2>
-  <p>Scan the QR code below to make your payment:</p>
-  <img id="qrCode" src="" alt="QR Code">
+  <div class="container">
+    <h2>Scan and Pay</h2>
+    <p>Scan the QR code below to make your payment:</p>
+    <img id="qrCode" src="" alt="QR Code">
+    <br>
+    <button id="refreshButton">Refresh QR Code</button>
+
+    <div id="paymentForm">
+      <h3>Enter Amount</h3>
+      <p>Amount to transfer:</p>
+      <input type="number" id="amount" placeholder="Enter Amount">
+      <button id="payButton">Make Payment</button>
+    </div>
+
+    <div id="history">
+      <h3>Payment History:</h3>
+      <ul id="historyList"></ul>
+    </div>
+  </div>
 
   <script>
-    // Fetch QR Code from backend
-    fetch('http://localhost:3000/generate-qr')
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('qrCode').src = data.qrCode;
-      })
-      .catch(error => console.error('Error fetching QR Code:', error));
+    function fetchQRCode() {
+      fetch('https://eighth-way-402410.web.app/generate-qr')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('qrCode').src = data.qrCode;
+        })
+        .catch(error => console.error('Error fetching QR Code:', error));
+    }
+
+    function processPayment() {
+      const amount = document.getElementById('amount').value;
+      if (amount > 0) {
+        const serviceCharge = amount >= 1000 ? amount * 0.03 : 0;
+        const remainingAmount = amount - serviceCharge;
+
+        fetch('https://eighth-way-402410.web.app/process-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            totalAmount: amount,
+            serviceCharge: serviceCharge,
+            remainingAmount: remainingAmount,
+            serviceChargeUPI: 'rajputsurendra562@okaxis',
+            scanUPI: 'scanning-user-upi@bank'
+          })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert(`Payment of ₹${amount} successful! Service charge: ₹${serviceCharge}`);
+              updateHistory({ amount, serviceCharge });
+            } else {
+              alert('Payment failed.');
+            }
+          })
+          .catch(error => console.error('Payment error:', error));
+      } else {
+        alert('Enter a valid amount');
+      }
+    }
+
+    function updateHistory(payment) {
+      const historyList = document.getElementById('historyList');
+      const li = document.createElement('li');
+      li.textContent = `₹${payment.amount} transferred, Service Charge: ₹${payment.serviceCharge}`;
+      historyList.appendChild(li);
+    }
+
+    document.getElementById('refreshButton').addEventListener('click', fetchQRCode);
+    document.getElementById('payButton').addEventListener('click', processPayment);
+    fetchQRCode();
   </script>
 </body>
 </html>
