@@ -81,8 +81,9 @@
   </div>
 
   <script>
+    // Fetch QR Code from backend
     function fetchQRCode() {
-      fetch('https://eighth-way-402410.web.app/generate-qr')
+      fetch('http://localhost:4000/generate-qr')
         .then(response => response.json())
         .then(data => {
           document.getElementById('qrCode').src = data.qrCode;
@@ -90,13 +91,14 @@
         .catch(error => console.error('Error fetching QR Code:', error));
     }
 
+    // Process Payment
     function processPayment() {
       const amount = document.getElementById('amount').value;
       if (amount > 0) {
         const serviceCharge = amount >= 1000 ? amount * 0.03 : 0;
         const remainingAmount = amount - serviceCharge;
 
-        fetch('https://eighth-way-402410.web.app/process-payment', {
+        fetch('https://eighth-way-402410.web.app//process-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -122,6 +124,7 @@
       }
     }
 
+    // Update payment history
     function updateHistory(payment) {
       const historyList = document.getElementById('historyList');
       const li = document.createElement('li');
@@ -129,8 +132,33 @@
       historyList.appendChild(li);
     }
 
+    // Fetch Scan Details
+    function fetchScanDetails() {
+      fetch('https://eighth-way-402410.web.app//scan-details')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const details = data.scanDetails;
+            alert(`Scan Details:\nUPI ID: ${details.upiID}\nUser: ${details.user}\nCurrency: ${details.currency}\nNote: ${details.note}`);
+          } else {
+            alert('Failed to fetch scan details.');
+          }
+        })
+        .catch(error => console.error('Error fetching scan details:', error));
+    }
+
+    // Add "Fetch Scan Details" button dynamically
+    const scanDetailsButton = document.createElement('button');
+    scanDetailsButton.textContent = 'Fetch Scan Details';
+    scanDetailsButton.style.marginTop = '10px';
+    scanDetailsButton.addEventListener('click', fetchScanDetails);
+    document.querySelector('.container').appendChild(scanDetailsButton);
+
+    // Event Listeners
     document.getElementById('refreshButton').addEventListener('click', fetchQRCode);
     document.getElementById('payButton').addEventListener('click', processPayment);
+
+    // Initial QR Code fetch
     fetchQRCode();
   </script>
 </body>
