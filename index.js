@@ -242,6 +242,44 @@ app.post('/book-bus', (req, res) => {
     .catch((error) => res.status(500).send('Error processing bus booking request: ' + error.message));
 });
 
+
+
+
+app.use(express.static('public'));
+
+// Book Movie Ticket endpoint
+app.post('/book-movie', (req, res) => {
+  const { movieName, movieTime, price } = req.body;
+
+  if (!movieName || !movieTime || !price) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  // Save booking details to Firebase Realtime Database
+  const ref = db.ref('movieBookings');
+  const newBookingRef = ref.push();
+  newBookingRef.set({
+    movieName,
+    movieTime,
+    price,
+    status: 'Booked',
+  })
+    .then(() => res.status(200).json({ message: 'Movie ticket booked successfully!' }))
+    .catch((error) => res.status(500).json({ message: 'Error booking ticket: ' + error.message }));
+});
+
+// Tickets Page (for displaying booked tickets)
+app.get('/tickets', (req, res) => {
+  res.sendFile(__dirname + '/public/tickets.html');
+});
+
+// Serve static files (for other pages like the movie booking form)
+app.use(express.static('public'));
+
+
+
+
+
 // Start the server
 const PORT = process.env.PORT || 4005;
 app.listen(PORT, () => {
