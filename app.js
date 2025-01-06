@@ -329,7 +329,7 @@ app.post("/verify-payment", async (req, res) => {
   try {
     const crypto = require("crypto");
     const generatedSignature = crypto
-      .createHmac("sha256", "YOUR_RAZORPAY_SECRET")  // Replace with your Razorpay Secret
+      .createHmac("sha256", "LEPmFHMmkOQAaKdtQhubngVw")  // Replace with your Razorpay Secret
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
