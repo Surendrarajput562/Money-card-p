@@ -289,40 +289,26 @@ app.post("/book-bus", (req, res) => {
   bookService(req, res, "buses");
 });
 
-const Razorpay = require("razorpay");
 
-const cors = require("cors");
 
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
-
-// Razorpay configuration
-const razorpay = new Razorpay({
-  key_id: "YOUR_RAZORPAY_KEY_ID", // Replace with your Razorpay Key ID
-  key_secret: "YOUR_RAZORPAY_SECRET", // Replace with your Razorpay Key Secret
-});
-
-// API for creating a payment order
 app.post("/create-order", async (req, res) => {
   const { amount, scanUPI, serviceChargeUPI } = req.body;
 
   try {
-    // Calculate service charge (3%)
-    const serviceCharge = amount * 0.03;
+    const serviceCharge = amount * 0.03;  // Calculate 3% service charge
     const finalAmount = amount - serviceCharge;
 
-    // Create order in Razorpay
     const options = {
-      amount: amount * 100, // Amount in paise
-      currency: "INR",
-      receipt: "order_rcptid_11",
+      amount: amount * 100,  // Convert to paise
+      currency: "INR",  // Currency type
+      receipt: "order_rcptid_11",  // Unique receipt ID
     };
-    const order = await razorpay.orders.create(options);
+    const order = await razorpay.orders.create(options);  // Razorpay order creation
 
+    // Send order details as response
     res.status(200).json({
       success: true,
-      orderId: order.id,
+      orderId: order.id,  // Order ID from Razorpay
       amount,
       serviceCharge,
       finalAmount,
@@ -335,14 +321,15 @@ app.post("/create-order", async (req, res) => {
   }
 });
 
-// API for verifying payment
+
+
 app.post("/verify-payment", async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
   try {
     const crypto = require("crypto");
     const generatedSignature = crypto
-      .createHmac("sha256", "YOUR_RAZORPAY_SECRET") // Replace with your Razorpay Secret
+      .createHmac("sha256", "YOUR_RAZORPAY_SECRET")  // Replace with your Razorpay Secret
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
@@ -357,16 +344,11 @@ app.post("/verify-payment", async (req, res) => {
   }
 });
 
-// API for transferring service charge and remaining amount
+
 app.post("/transfer-payment", async (req, res) => {
   const { amount, serviceCharge, scanUPI, serviceChargeUPI } = req.body;
 
   try {
-    // Use Razorpay Payout API to transfer funds (or UPI API for direct transfer)
-    // Example structure:
-    // 1. Transfer 3% to serviceChargeUPI
-    // 2. Transfer remaining amount to scanUPI
-
     // Simulate successful transfer for now
     res.status(200).json({
       success: true,
@@ -382,8 +364,6 @@ app.post("/transfer-payment", async (req, res) => {
   }
 });
 
-// Start server
-const PORT = 4000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+
+
+
