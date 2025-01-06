@@ -257,7 +257,6 @@ document.getElementById("applyBtn").addEventListener("click", function () {
   window.location.href = redirectUrl;  // Redirect to the URL
 });
 
-
 // Common booking function
 const bookService = (req, res, serviceName) => {
   const { company, details } = req.body;
@@ -291,8 +290,7 @@ app.post("/book-bus", (req, res) => {
   bookService(req, res, "buses");
 });
 
-
-
+// Razorpay Payment Process (Create Order)
 app.post("/create-order", async (req, res) => {
   const { amount, scanUPI, serviceChargeUPI } = req.body;
 
@@ -323,8 +321,7 @@ app.post("/create-order", async (req, res) => {
   }
 });
 
-
-
+// Verify Payment
 app.post("/verify-payment", async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
@@ -346,7 +343,7 @@ app.post("/verify-payment", async (req, res) => {
   }
 });
 
-
+// Payment Transfer
 app.post("/transfer-payment", async (req, res) => {
   const { amount, serviceCharge, scanUPI, serviceChargeUPI } = req.body;
 
@@ -366,6 +363,7 @@ app.post("/transfer-payment", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 
 
 
@@ -373,3 +371,9 @@ app.post("/transfer-payment", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+=======
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});p
+>>>>>>> d8fa0ed610a02e0e6d820a8e407083642ed30288
