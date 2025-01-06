@@ -268,11 +268,9 @@ app.get('/tickets', (req, res) => {
   res.sendFile(__dirname + '/public/tickets.html');
 });
 
+
+
 // Start the server
-<<<<<<< HEAD
-=======
-const PORT = process.env.PORT || 4000;
->>>>>>> d8fa0ed610a02e0e6d820a8e407083642ed30288
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
