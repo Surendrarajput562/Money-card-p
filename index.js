@@ -270,11 +270,7 @@ app.get('/tickets', (req, res) => {
 
 
 
-<<<<<<< HEAD
-
-=======
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
->>>>>>> 691db654cd93c0504e2df3aa4f7f383ad9426dc5
