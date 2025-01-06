@@ -193,7 +193,7 @@ app.post('/verifyPayment', (req, res) => {
   }
 });
 
-// **14. Flight Booking Route**
+// **12. Flight Booking Route**
 app.post('/book-flight', (req, res) => {
   const { origin, destination, date, passengers, flightClass } = req.body;
   const ref = db.ref('flightBookings');
@@ -226,7 +226,7 @@ app.post('/book-train', (req, res) => {
     .catch((error) => res.status(500).send('Error processing train booking request: ' + error.message));
 });
 
-// **12. Bus Booking Route**
+// **14. Bus Booking Route**
 app.post('/book-bus', (req, res) => {
   const { origin, destination, date, passengers } = req.body;
   const ref = db.ref('busBookings');
@@ -242,12 +242,7 @@ app.post('/book-bus', (req, res) => {
     .catch((error) => res.status(500).send('Error processing bus booking request: ' + error.message));
 });
 
-
-
-
-app.use(express.static('public'));
-
-// Book Movie Ticket endpoint
+// **15. Movie Booking**
 app.post('/book-movie', (req, res) => {
   const { movieName, movieTime, price } = req.body;
 
@@ -273,33 +268,8 @@ app.get('/tickets', (req, res) => {
   res.sendFile(__dirname + '/public/tickets.html');
 });
 
-// Serve static files (for other pages like the movie booking
-
-
-
-app.post('/process-payment', async (req, res) => {
-  const { totalAmount, serviceCharge, remainingAmount, serviceChargeUPI, scanUPI } = req.body;
-
-  try {
-    const serviceChargeTransfer = await transferToUPI(serviceChargeUPI, serviceCharge);
-    const remainingAmountTransfer = await transferToUPI(scanUPI, remainingAmount);
-
-    if (serviceChargeTransfer.success && remainingAmountTransfer.success) {
-      res.status(200).json({ success: true, message: 'Payment processed successfully' });
-    } else {
-      res.status(500).json({ success: false, message: 'Failed to transfer amounts' });
-    }
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Error processing payment' });
-  }
-});
-
-async function transferToUPI(upiID, amount) {
-  console.log(`Transferring ₹${amount} to ${upiID}`);
-  return { success: true }; // Simulated success
-}
-
 // Start the server
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
