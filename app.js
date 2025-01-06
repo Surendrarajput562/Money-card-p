@@ -363,15 +363,8 @@ app.post("/transfer-payment", async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 691db654cd93c0504e2df3aa4f7f383ad9426dc5
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-<<<<<<< HEAD
-	
-=======
->>>>>>> 691db654cd93c0504e2df3aa4f7f383ad9426dc5
