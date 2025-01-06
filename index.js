@@ -273,9 +273,7 @@ app.get('/tickets', (req, res) => {
   res.sendFile(__dirname + '/public/tickets.html');
 });
 
-// Serve static files (for other pages like the movie booking form)
-app.use(express.static('public'));
-
+// Serve static files (for other pages like the movie booking
 
 
 
