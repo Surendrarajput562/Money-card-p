@@ -304,7 +304,6 @@ async function transferToUPI(upiID, amount) {
 
 
 // Start the server
-const PORT = process.env.PORT || 4005;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

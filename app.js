@@ -1,6 +1,8 @@
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/database';
+
+// Import Firebase and required services
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getDatabase, ref, set } from 'firebase/database';
 
 // Firebase configuration 
 const firebaseConfig = {
@@ -15,11 +17,11 @@ const firebaseConfig = {
 };
       
 
-
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const provider = new firebase.auth.GoogleAuthProvider();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
 
 // Google Sign-In/Sign-Up
 document.getElementById('signInButton').addEventListener('click', () => {
@@ -367,3 +369,7 @@ app.post("/transfer-payment", async (req, res) => {
 
 
 
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
