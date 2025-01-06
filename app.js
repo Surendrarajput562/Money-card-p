@@ -289,4 +289,101 @@ app.post("/book-bus", (req, res) => {
   bookService(req, res, "buses");
 });
 
-// Start the server
+const Razorpay = require("razorpay");
+
+const cors = require("cors");
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+// Razorpay configuration
+const razorpay = new Razorpay({
+  key_id: "YOUR_RAZORPAY_KEY_ID", // Replace with your Razorpay Key ID
+  key_secret: "YOUR_RAZORPAY_SECRET", // Replace with your Razorpay Key Secret
+});
+
+// API for creating a payment order
+app.post("/create-order", async (req, res) => {
+  const { amount, scanUPI, serviceChargeUPI } = req.body;
+
+  try {
+    // Calculate service charge (3%)
+    const serviceCharge = amount * 0.03;
+    const finalAmount = amount - serviceCharge;
+
+    // Create order in Razorpay
+    const options = {
+      amount: amount * 100, // Amount in paise
+      currency: "INR",
+      receipt: "order_rcptid_11",
+    };
+    const order = await razorpay.orders.create(options);
+
+    res.status(200).json({
+      success: true,
+      orderId: order.id,
+      amount,
+      serviceCharge,
+      finalAmount,
+      scanUPI,
+      serviceChargeUPI,
+    });
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({ success: false, error: "Failed to create order" });
+  }
+});
+
+// API for verifying payment
+app.post("/verify-payment", async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  try {
+    const crypto = require("crypto");
+    const generatedSignature = crypto
+      .createHmac("sha256", "YOUR_RAZORPAY_SECRET") // Replace with your Razorpay Secret
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (generatedSignature === razorpay_signature) {
+      res.status(200).json({ success: true, message: "Payment verified successfully" });
+    } else {
+      res.status(400).json({ success: false, error: "Payment verification failed" });
+    }
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+});
+
+// API for transferring service charge and remaining amount
+app.post("/transfer-payment", async (req, res) => {
+  const { amount, serviceCharge, scanUPI, serviceChargeUPI } = req.body;
+
+  try {
+    // Use Razorpay Payout API to transfer funds (or UPI API for direct transfer)
+    // Example structure:
+    // 1. Transfer 3% to serviceChargeUPI
+    // 2. Transfer remaining amount to scanUPI
+
+    // Simulate successful transfer for now
+    res.status(200).json({
+      success: true,
+      message: "Payment transferred successfully",
+      details: {
+        serviceChargeTransferredTo: serviceChargeUPI,
+        remainingTransferredTo: scanUPI,
+      },
+    });
+  } catch (error) {
+    console.error("Error transferring payment:", error);
+    res.status(500).json({ success: false, error: "Failed to transfer payment" });
+  }
+});
+
+// Start server
+const PORT = 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
