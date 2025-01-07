@@ -1,40 +1,16 @@
 {
   "hosting": {
     "public": "public",
-    "rewrites": [
-      {
-        "source": "/",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/homepage",
-        "destination": "/homepage.html"
-      },
-      {
-        "source": "/profile",
-        "destination": "/profile.html"
-      },
-      {
-        "source": "/1wallet",
-        "destination": "/1wallet.html"
-      },
-      {
-        "source": "/creditcard",
-        "destination": "/creditcard.html"
-      },
-      {
-        "source": "/404",
-        "destination": "/404.html"
-      },
-      {
-        "source": "/**",
-        "destination": "/404.html"
-      }
-    ],
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ]
   },
   "functions": [
