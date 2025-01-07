@@ -1,89 +1,253 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Application System</title>
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/11.1.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/11.1.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/11.1.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/11.1.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/11.1.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/11.1.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/11.1.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/11.1.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/11.1.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/11.1.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+  <!-- Google Site Verification -->
+  <meta name="google-site-verification" content="cnByhYhRwx1kG9VuYsNr7l5JfR43jehCKUr5NNYcKyo">
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
+  <!-- Firebase SDK -->
+  <script defer src="/__/firebase/11.1.0/firebase-app-compat.js"></script>
+  <script defer src="/__/firebase/11.1.0/firebase-auth-compat.js"></script>
+  <script defer src="/__/firebase/11.1.0/firebase-database-compat.js"></script>
+  <script defer src="/__/firebase/11.1.0/firebase-firestore-compat.js"></script>
+  <script defer src="/__/firebase/11.1.0/firebase-functions-compat.js"></script>
+  <script defer src="/__/firebase/11.1.0/firebase-messaging-compat.js"></script>
+  <script defer src="/__/firebase/11.1.0/firebase-storage-compat.js"></script>
+  <script defer src="/__/firebase/11.1.0/firebase-analytics-compat.js"></script>
+  <script defer src="/__/firebase/11.1.0/firebase-remote-config-compat.js"></script>
+  <script defer src="/__/firebase/11.1.0/firebase-performance-compat.js"></script>
+  <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      overflow: hidden;
+      background: linear-gradient(45deg, #00b894, #6c5ce7, #f39c12, #0984e3);
+      background-size: 400% 400%;
+      animation: gradientBG 10s ease infinite;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .background-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('https://example.com/bank-animation.gif');
+      background-size: cover;
+      background-position: center;
+      z-index: -1;
+      animation: moveBackground 10s linear infinite;
+    }
+
+    @keyframes moveBackground {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: white;
+      margin-bottom: 40px;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .form-container {
+      margin: 20px;
+      opacity: 0;
+      transform: translateY(100px);
+      animation: slideIn 1s forwards;
+    }
+
+    @keyframes slideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
-    </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
+    }
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+    input, button {
+      padding: 12px;
+      font-size: 16px;
+      margin: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 80%;
+      max-width: 300px;
+      transition: transform 0.3s ease;
+    }
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
-  </body>
-</html>
+    input:focus, button:focus {
+      outline: none;
+      border-color: #0984e3;
+      transform: scale(1.05);
+    }
+
+    button {
+      background-color: #0984e3;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      background-color: #6c5ce7;
+    }
+
+    .buttons {
+      margin-bottom: 40px;
+    }
+
+    .buttons button {
+      font-size: 18px;
+    }
+
+    .public-animation {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 100px;
+      background-image: url('https://example.com/public-animation.gif');
+      background-size: cover;
+      animation: movePublic 10s linear infinite;
+    }
+
+    @keyframes movePublic {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 0%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-animation"></div>
+  <div class="public-animation"></div>
+
+  <h1>Loan Application System</h1>
+
+  <!-- Buttons to navigate to Sign In, Sign Up, and Owner Login -->
+  <div class="buttons">
+    <button id="signInButton">Sign In</button>
+    <button id="signUpButton">Sign Up</button>
+    <button id="ownerLoginButton">Owner Login</button>
+  </div>
+
+  <!-- User Login Form -->
+  <div id="loginForm" class="form-container hidden">
+    <h3>Sign In</h3>
+    <input type="email" id="loginEmail" placeholder="Enter your email"><br>
+    <input type="password" id="loginPassword" placeholder="Enter your password"><br>
+    <button id="loginSubmitButton">Login</button><br>
+    <a href="#" id="forgotPasswordLink">Forgot Password?</a><br>
+    <span id="errorMessage" style="color: red;"></span>
+  </div>
+
+  <!-- User Sign Up Form -->
+  <div id="signUpForm" class="form-container hidden">
+    <h3>Sign Up</h3>
+    <input type="text" id="signupName" placeholder="Enter your name"><br>
+    <input type="email" id="signupEmail" placeholder="Enter your email"><br>
+    <input type="text" id="signupMobile" placeholder="Enter your mobile number"><br>
+    <input type="password" id="signupPassword" placeholder="Create a password"><br>
+    <button id="signUpSubmitButton">Create Account</button><br>
+    <h3>Or Sign Up using Google</h3>
+    <button id="googleSignUpButton">Sign Up with Google</button>
+  </div>
+
+  <!-- Forgot Password Form -->
+  <div id="forgotPasswordForm" class="form-container hidden">
+    <h3>Forgot Password</h3>
+    <input type="email" id="forgotPasswordEmail" placeholder="Enter your email"><br>
+    <button id="resetPasswordButton">Reset Password</button><br>
+    <span id="resetMessage"></span>
+  </div>
+
+  <script>
+    const validOwnerEmail = "rajputsurendra562@gmail.com";
+    const validOwnerPassword = "6268520141";
+
+    // Show Login Form
+    document.getElementById('signInButton').addEventListener('click', function() {
+      toggleForms('loginForm');
+    });
+
+    // Show Sign Up Form
+    document.getElementById('signUpButton').addEventListener('click', function() {
+      toggleForms('signUpForm');
+    });
+
+    // Show Forgot Password Form
+    document.getElementById('forgotPasswordLink').addEventListener('click', function() {
+      toggleForms('forgotPasswordForm');
+    });
+
+    // Show Owner Login Form
+    document.getElementById('ownerLoginButton').addEventListener('click', function() {
+      toggleForms('loginForm');
+    });
+
+    // Login Process
+    document.getElementById('loginSubmitButton').addEventListener('click', function() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      if (email === validOwnerEmail && password === validOwnerPassword) {
+        window.location.href = '/admin.html';  // Redirect to Admin Dashboard for Owner
+      } else {
+        firebase.auth().signInWithEmailAndPassword(email, password)
+          .then((userCredential) => {
+            window.location.href = '/homepage.html';  // Redirect to homepage for User
+          })
+          .catch((error) => {
+            document.getElementById('errorMessage').textContent = "Incorrect credentials. Please try again.";
+          });
+      }
+    });
+
+    // Sign Up Process
+    document.getElementById('signUpSubmitButton').addEventListener('click', function() {
+      const name = document.getElementById('signupName').value;
+      const email = document.getElementById('signupEmail').value;
+      const mobile = document.getElementById('signupMobile').value;
+      const password = document.getElementById('signupPassword').value;
+
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          window.location.href = '/homepage.html';  // Redirect to homepage after successful sign-up
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
+    });
+
+    // Reset Password Process
+    document.getElementById('resetPasswordButton').addEventListener('click', function() {
+      const email = document.getElementById('forgotPasswordEmail').value;
+      firebase.auth().sendPasswordResetEmail(email)
+        .then(() => {
+          document.getElementById('resetMessage').textContent = 'Password reset email sent! Please check your inbox.';
+        })
+        .catch((error) => {
+          document.getElementById('resetMessage').textContent = 'Error: ' + error.message;
+        });
