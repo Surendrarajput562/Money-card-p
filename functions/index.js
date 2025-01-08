@@ -35,21 +35,21 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve index.html
 });
 
-// **2. Signup Route**
+// **Signup Route**
 app.post('/signup', (req, res) => {
-  const { email, password, role } = req.body;  // Role added for owner/user distinction
+  const { email, password, role } = req.body; // Role added for owner/user distinction
   admin.auth().createUser({ email, password })
     .then((userRecord) => {
-      // Save the role information in Firebase
+      // Firebase mein role information save karna
       const userRef = db.ref('users/' + userRecord.uid);
-      userRef.set({ email, role })  // Store role in Firebase
+      userRef.set({ email, role })  // Role ko Firebase mein store karna
         .then(() => res.status(201).send(`User created with UID: ${userRecord.uid}`))
         .catch((error) => res.status(500).send(`Error saving role: ${error.message}`));
     })
     .catch((error) => res.status(500).send(`Error creating user: ${error.message}`));
 });
 
-// **3. Signin Route**
+// **Signin Route**
 app.post('/signin', (req, res) => {
   const { email, password } = req.body;
   admin.auth().getUserByEmail(email)
@@ -60,7 +60,7 @@ app.post('/signin', (req, res) => {
           const userData = snapshot.val();
           const role = userData.role;
 
-          // Check user role for redirection
+          // User ke role ke hisaab se redirect karna
           if (role === 'admin') {
             res.status(200).send({ uid: userRecord.uid, redirectTo: 'ownerHomepage.html' });
           } else {
@@ -71,7 +71,6 @@ app.post('/signin', (req, res) => {
     })
     .catch((error) => res.status(500).send(`Error signing in user: ${error.message}`));
 });
-
 // **4. Add User Data to Realtime Database**
 app.post('/addUser', (req, res) => {
   const { username, email, name } = req.body;
