@@ -23,6 +23,7 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 
+
 // Google Sign-In/Sign-Up
 document.getElementById('signInButton').addEventListener('click', () => {
   auth.signInWithPopup(provider)
@@ -37,7 +38,10 @@ document.getElementById('signInButton').addEventListener('click', () => {
         })
         .then(response => response.json())
         .then(data => console.log(data))
-        .catch(error => console.error("Error:", error));
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Token verification failed. Please try again.");
+        });
 
         // After successful sign-in or sign-up, check for owner
         checkUserRole(user);
@@ -45,6 +49,7 @@ document.getElementById('signInButton').addEventListener('click', () => {
     })
     .catch((error) => {
       console.error("Error signing in with Google:", error);
+      alert("Google sign-in failed. Please try again.");
     });
 });
 
@@ -53,59 +58,35 @@ function checkUserRole(user) {
   const userRef = firebase.database().ref('users/' + user.uid);
   userRef.once('value', (snapshot) => {
     const userData = snapshot.val();
-    if (userData && userData.role === 'owner') {
-      loadPage('ownerDashboard'); // Load owner dashboard page
+    if (userData) {
+      if (userData.role === 'owner') {
+        window.location.href = 'owner.html'; // Redirect to owner dashboard page
+      } else {
+        window.location.href = 'homepage.html'; // Redirect to homepage for normal users
+      }
     } else {
-      loadPage('homepage'); // Load homepage for normal users
+      console.error("User data not found in the database");
+      alert("Error: User data not found. Please sign up again.");
     }
+  }, (error) => {
+    console.error("Error fetching user data:", error);
+    alert("Error fetching user data. Please try again.");
   });
-}
-
-// Load page dynamically (SPA navigation)
-function loadPage(page) {
-  history.pushState(null, null, `#${page}`);
-  switch (page) {
-    case 'ownerDashboard':
-      loadOwnerDashboard();
-      break;
-    case 'homepage':
-      loadHomepage();
-      break;
-    default:
-      loadHomepage();
-  }
-}
-
-// Load homepage content
-function loadHomepage() {
-  const appContent = document.getElementById('app-content');
-  appContent.innerHTML = `
-    <h1>Welcome to the Homepage</h1>
-    <!-- Add other homepage content here -->
-  `;
-}
-
-// Load owner dashboard content
-function loadOwnerDashboard() {
-  const appContent = document.getElementById('app-content');
-  appContent.innerHTML = `
-    <h1>Owner Dashboard</h1>
-    <!-- Add owner dashboard content here -->
-  `;
 }
 
 // Sign In with Email and Password
 document.getElementById('signInEmailButton').addEventListener('click', () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  
+
   auth.signInWithEmailAndPassword(email, password)
     .then((userCredential) => {
       const user = userCredential.user;
-      checkUserRole(user);
+      checkUserRole(user); // Check if user is owner or customer
     })
     .catch((error) => {
       console.error("Error:", error.message);
+      alert("Error signing in. Please check your credentials.");
     });
 });
 
@@ -113,7 +94,7 @@ document.getElementById('signInEmailButton').addEventListener('click', () => {
 document.getElementById('signUpButton').addEventListener('click', () => {
   const newEmail = document.getElementById('newEmail').value;
   const newPassword = document.getElementById('newPassword').value;
-  
+
   auth.createUserWithEmailAndPassword(newEmail, newPassword)
     .then((userCredential) => {
       const user = userCredential.user;
@@ -121,24 +102,39 @@ document.getElementById('signUpButton').addEventListener('click', () => {
       userRef.set({
         email: newEmail,
         role: 'customer'  // Default role is customer
+      }).then(() => {
+        console.log("User created successfully with UID:", user.uid);
+        window.location.href = 'homepage.html'; // Redirect to homepage after sign-up
+      }).catch((error) => {
+        console.error("Error saving user data:", error);
+        alert("Error saving user data. Please try again.");
       });
-      loadPage('homepage');
     })
     .catch((error) => {
       console.error("Error:", error.message);
+      alert("Error creating account. Please check your credentials.");
     });
 });
 
-// Initialize page load based on URL hash
-window.onload = function() {
-  const page = window.location.hash.substring(1);
-  loadPage(page || 'homepage');
-};
+// Password Reset Functionality
+document.getElementById('resetPasswordButton').addEventListener('click', () => {
+  const email = document.getElementById('email').value;
+
+  auth.sendPasswordResetEmail(email)
+    .then(() => {
+      alert('Password reset email sent!');
+    })
+    .catch((error) => {
+      console.error("Error:", error.message);
+      alert("Error sending password reset email. Please try again.");
+    });
+});
 
 // Function to toggle theme (optional)
 function toggleTheme() {
   document.body.classList.toggle('dark-theme');
 }
+
 
 // Recharge form submission handling
 document.getElementById('rechargeForm').addEventListener('submit', function(event) {
