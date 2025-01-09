@@ -35,6 +35,7 @@ const razorpay = new Razorpay({
 // Firebase Database References
 const db = admin.database();
 
+
 // **1. Root Route** for the App (Index Page with Sign Up and Sign In)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve index.html with Sign Up and Sign In form
@@ -67,7 +68,7 @@ app.post('/signin', (req, res) => {
 
           // User ke role ke hisaab se redirect karna
           if (role === 'admin') {
-            res.status(200).send({ redirectTo: 'owner.html' }); // Owner ko owner page par redirect karna
+            res.status(200).send({ redirectTo: 'admin.html' }); // Owner ko owner page par redirect karna
           } else {
             res.status(200).send({ redirectTo: 'homepage.html' }); // Regular user ko homepage par redirect karna
           }
@@ -97,7 +98,6 @@ app.post('/resetPassword', (req, res) => {
     })
     .catch((error) => res.status(500).send(`Error generating password reset link: ${error.message}`));
 });
-
 
 
 // **6. Loan Application Submission**
