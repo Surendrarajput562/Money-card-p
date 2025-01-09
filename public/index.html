@@ -87,7 +87,7 @@
       const password = document.getElementById('loginPassword').value;
 
       if (email === validOwnerEmail && password === validOwnerPassword) {
-        window.location.href = 'owner.html';  // Redirect to Admin Dashboard for Owner
+        window.location.href = 'admin.html';  // Redirect to Admin Dashboard for Owner
       } else {
         firebase.auth().signInWithEmailAndPassword(email, password)
           .then((userCredential) => {
