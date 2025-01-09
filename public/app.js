@@ -4,7 +4,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getDatabase, ref, set } from 'firebase/database';
 
-// Firebase configuration 
 const firebaseConfig = {
   apiKey: "AIzaSyADDJ1cCxrwRIMH4hi7-YdcTRY_71fr2C0",
   authDomain: "eighth-way-402410.web.app",
@@ -12,8 +11,8 @@ const firebaseConfig = {
   projectId: "eighth-way-402410",
   storageBucket: "eighth-way-402410.firebasestorage.app",
   messagingSenderId: "595819547411",
-  appId: "1:595819547411:web:be98f1880df09ce6fa28e6",
-  measurementId: "G-B5H7TQBVVV"
+  appId: "1:595819547411:web:977272a90ffaba8bfa28e6",
+  measurementId: "G-1XD13XN2E0"
 };
       
 
