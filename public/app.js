@@ -59,8 +59,8 @@ function checkUserRole(user) {
   userRef.once('value', (snapshot) => {
     const userData = snapshot.val();
     if (userData) {
-      if (userData.role === 'owner') {
-        window.location.href = 'owner.html'; // Redirect to owner dashboard page
+      if (userData.role === 'admin) {
+        window.location.href = 'admin.html'; // Redirect to owner dashboard page
       } else {
         window.location.href = 'homepage.html'; // Redirect to homepage for normal users
       }
