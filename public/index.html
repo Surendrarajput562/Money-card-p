@@ -19,13 +19,6 @@
 </head>
 <body>
   <h1>Loan Application System</h1>
-  <!-- Your app content here -->
-</body>
-</html> 
-  <div class="background-animation"></div>
-  <div class="public-animation"></div>
-
-  <h1>Loan Application System</h1>
 
   <!-- Buttons to navigate to Sign In, Sign Up, and Owner Login -->
   <div class="buttons">
@@ -94,11 +87,11 @@
       const password = document.getElementById('loginPassword').value;
 
       if (email === validOwnerEmail && password === validOwnerPassword) {
-        window.location.href = '/admin.html';  // Redirect to Admin Dashboard for Owner
+        window.location.href = 'owner.html';  // Redirect to Admin Dashboard for Owner
       } else {
         firebase.auth().signInWithEmailAndPassword(email, password)
           .then((userCredential) => {
-            window.location.href = '/homepage.html';  // Redirect to homepage for User
+            window.location.href = 'homepage.html';  // Redirect to homepage for User
           })
           .catch((error) => {
             document.getElementById('errorMessage').textContent = "Incorrect credentials. Please try again.";
@@ -115,10 +108,22 @@
 
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          window.location.href = '/homepage.html';  // Redirect to homepage after successful sign-up
+          window.location.href = 'signin.html';  // Redirect to Sign In after successful sign-up
         })
         .catch((error) => {
           console.error(error.message);
+        });
+    });
+
+    // Google Sign-In
+    document.getElementById('googleSignUpButton').addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+          window.location.href = 'homepage.html';  // Redirect to homepage after Google sign-up
+        })
+        .catch((error) => {
+          console.error("Error signing in with Google:", error);
         });
     });
 
@@ -143,6 +148,8 @@
       document.getElementById(formId).classList.remove('hidden');
     }
   </script>
+</body>
+</html>
 
   <style>
     body {
