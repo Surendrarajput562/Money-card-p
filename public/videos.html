@@ -77,7 +77,7 @@
       <h2>App Features - Video 1</h2>
       <iframe 
         id="video1"
-        src="https://youtu.be/M1MzIgkOuGM?si=CbwjpzM_szOYpwQz" 
+        src="https://www.youtube.com/embed/M1MzIgkOuGM" 
         title="YouTube video player" 
         frameborder="0" 
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -90,7 +90,7 @@
       <h2>App Features - Video 2</h2>
       <iframe 
         id="video2"
-        src="https://youtu.be/s9RDVMrJnWo?si=ySOdkbNNw6ebJEUu" 
+        src="https://www.youtube.com/embed/s9RDVMrJnWo" 
         title="YouTube video player" 
         frameborder="0" 
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -116,9 +116,8 @@
       // Adjust the background to green
       document.body.style.backgroundColor = 'green';
 
-      // Optionally, you can trigger play for the video iframe if it's an embedded player.
-      // Example for YouTube if you need to trigger autoplay
-      // iframe.src = iframe.src + '&autoplay=1';
+      // Autoplay the video
+      iframe.src += "&autoplay=1";
     }
   </script>
 </body>
