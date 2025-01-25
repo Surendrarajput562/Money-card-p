@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Betting Game</title>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            color: #333;
+        }
+        #wallet, #game-id {
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #bet-amount, #game-mode {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        #game-area {
+            margin-top: 20px;
+        }
+        #color-code {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        #color-options div {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ddd;
+        }
+        #result {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Color Betting Game</h1>
+        <div id="game-id">Welcome User: @username | Game ID: 12345</div>
+        <div id="wallet">Wallet Balance: ₹500</div>
+        <select id="game-mode">
+            <option value="30">30 Seconds</option>
+            <option value="60">1 Minute</option>
+        </select>
+        <input type="number" id="bet-amount" placeholder="Enter Bet Amount (Min ₹10)" />
+        <button id="start-game">Start Game</button>
+        <div id="game-area" style="display: none;">
+            <div id="color-code">#FF5733</div>
+            <div id="timer">Time Left: 30s</div>
+            <div id="color-options">
+                <!-- Colors will be generated dynamically -->
+            </div>
+        </div>
+        <div id="result" style="display: none;"></div>
+    </div>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        let walletBalance = 500;
+        let timerInterval;
+
+        document.getElementById("start-game").addEventListener("click", () => {
+            const betAmount = parseInt(document.getElementById("bet-amount").value);
+            const gameMode = parseInt(document.getElementById("game-mode").value);
+
+            if (betAmount < 10 || betAmount > walletBalance) {
+                alert("Invalid Bet Amount!");
+                return;
+            }
+
+            document.getElementById("game-area").style.display = "block";
+            document.getElementById("result").style.display = "none";
+            generateColors();
+
+            startTimer(gameMode);
+        });
+
+        function generateColors() {
+            const colorCode = getRandomColor();
+            document.getElementById("color-code").innerText = colorCode;
+
+            const colors = [colorCode, getRandomColor(), getRandomColor(), getRandomColor()];
+            const shuffledColors = colors.sort(() => Math.random() - 0.5);
+
+            const colorOptions = document.getElementById("color-options");
+            colorOptions.innerHTML = "";
+            shuffledColors.forEach(color => {
+                const div = document.createElement("div");
+                div.style.backgroundColor = color;
+                div.dataset.color = color;
+                div.onclick = () => chooseColor(div.dataset.color);
+                colorOptions.appendChild(div);
+            });
+        }
+
+        function chooseColor(selectedColor) {
+            const correctColor = document.getElementById("color-code").innerText;
+            const betAmount = parseInt(document.getElementById("bet-amount").value);
+
+            clearInterval(timerInterval);
+            document.getElementById("timer").innerText = "";
+
+            if (selectedColor === correctColor) {
+                walletBalance += betAmount;
+                alert("You Won!");
+            } else {
+                walletBalance -= betAmount;
+                alert("You Lost!");
+            }
+
+            updateWallet();
+            saveGameHistory(selectedColor === correctColor ? "Win" : "Lose", betAmount);
+
+            if (walletBalance <= 0) {
+                alert("Game Over! Add More Balance.");
+                location.reload();
+            }
+        }
+
+        function startTimer(duration) {
+            let timeLeft = duration;
+            document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById("timer").innerText = "Time's Up!";
+                }
+            }, 1000);
+        }
+
+        function getRandomColor() {
+            return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}`;
+        }
+
+        function updateWallet() {
+            document.getElementById("wallet").innerText = `Wallet Balance: ₹${walletBalance}`;
+        }
+
+        function saveGameHistory(result, betAmount) {
+            const gameId = "12345"; // Example Game ID
+            const userId = "exampleUserId"; // Example User ID
+
+            const gameHistory = {
+                gameId: gameId,
+                userId: userId,
+                result: result,
+                betAmount: betAmount,
+                timestamp: new Date().toISOString()
+            };
+
+            database.ref("gameHistory").push(gameHistory);
+        }
+    </script>
+</body>
+</html>
