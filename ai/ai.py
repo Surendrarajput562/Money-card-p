@@ -13,7 +13,7 @@ import time
 import html as htmllib
 from datetime import datetime
 
-API_KEY = os.getenv("OPENAI_API_KEY", "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")
+API_KEY = os.getenv("OPENAI_API_KEY", "")
 MODEL = "gpt-5.1"
 OUTFILE = "Coad.html"
 RATE_LIMIT_WAIT = 20

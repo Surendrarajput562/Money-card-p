@@ -6,8 +6,7 @@ import OpenAI from "openai";
 import readline from "readline";
 
 // **Direct API key here**
-const client = new OpenAI({ apiKey: "
-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" });
+const client = new OpenAI({ apiKey: "" });
 
 // Readline interface for user input
 const rl = readline.createInterface({

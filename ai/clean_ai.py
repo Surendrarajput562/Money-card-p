@@ -1,7 +1,7 @@
 import requests
 import json
 
-API_KEY = "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"
+API_KEY = ""
 URL = "https://api.openai.com/v1/chat/completions"
 
 while True:
