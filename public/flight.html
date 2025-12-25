@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flight  Travel Booking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f2f4f7;
+    }
+
+    .wrapper {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 0 12px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    #tpwl-search,
+    #tpwl-tickets {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <div class="card">
+      <div id="tpwl-search"></div>
+      <div id="tpwl-tickets"></div>
+    </div>
+  </div>
+
+  <script data-noptimize="1" data-cfasync="false" data-wpfc-render="false">
+    (function () {
+      var script = document.createElement("script");
+      script.async = true;
+      script.type = "module";
+      script.src = "https://trpwdg.com/wl_web/main.js?wl_id=2266";
+      document.head.appendChild(script);
+    })();
+  </script>
+
+</body>
+</html>

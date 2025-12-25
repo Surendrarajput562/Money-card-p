@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Rupi - Product Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+Devanagari:wght=400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+<style>
+/* Base & Global Styles (Same as before) */
+body{font-family:'Poppins', 'Noto Sans Devangari', sans-serif;margin:0;padding:0;background:linear-gradient(135deg,#ffd700,#f0e68c);color:#222;min-height:100vh;}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100;}
+header h1{margin:0;font-size:20px;font-weight:700;color:#111;}
+main{padding:20px;}
+h2{color:#444;border-bottom:2px solid #ffda47;padding-bottom:5px;margin-top:0;}
+input,textarea,select{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.98);box-sizing:border-box;}
+button.primary{background:#ffd700;padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s;}
+button.primary:hover{background:#ffc700;}
+button.ai-btn{background:#10b981; color:white; padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s;}
+button.ai-btn:hover{background:#059669;}
+button.danger-btn{background:#dc3545; color:white; padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s;}
+button.danger-btn:hover{background:#c82333;}
+button[disabled]{opacity:0.6; cursor:default;}
+
+.card{background:rgba(255,255,255,0.95);padding:15px;margin:12px 0;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.08);border-left:4px solid #ffd700;}
+.small{font-size:13px;color:#555}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+img.thumb{width:100%;height:140px;object-fit:cover;border-radius:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;}
+.meta{font-size:13px;color:#666}
+.btn-reject {padding: 8px 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background: #F44336; color: white; transition: opacity 0.2s; font-size: 12px;}
+.btn-reject:hover {opacity: 0.8;}
+
+/* Preloader & Loader */
+#preloader{position:fixed;top:0;left:0;width:100%;height:100%;background:#ffffffdd;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s;}
+.loader{border:6px solid #f3f3f3;border-top:6px solid #ffd700;border-radius:50%;width:50px;height:50px;animation:spin 1.5s linear infinite;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* Modal/Edit Form Styles */
+.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,0.4);}
+.modal-content{background-color:#fefefe;margin:10% auto;padding:20px;border:1px solid #888;width:80%;max-width:600px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.3);}
+.close{color:#aaa;float:right;font-size:28px;font-weight:bold;}
+.close:hover,.close:focus{color:#000;text-decoration:none;cursor:pointer;}
+
+/* New Image Preview and Log */
+#image-preview-container{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;padding:10px;border:1px dashed #ccc;border-radius:8px;min-height:40px;}
+#image-preview-container > div {position: relative; display: inline-block;}
+/* This background shows the transparency of a PNG file */
+#image-preview-container img{width:60px;height:60px;object-fit:cover;border-radius:4px; background: repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px;} 
+#log-output{margin-top:10px;font-size:12px;color:#111;background:#f9f9f9;padding:10px;border-radius:6px;max-height:100px;overflow-y:auto;}
+
+/* Login Form Specific Style */
+#login-form-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    display: none; 
+}
+
+/* Style for Background Color Change controls */
+#bg-color-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #f9f9f9;
+}
+#bg-color-controls label {
+    font-weight: 600;
+    min-width: 70px; /* To align better */
+}
+#bg-color-controls input[type="color"] {
+    width: 50px; /* Make the color input smaller */
+    height: 35px;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    margin: 0;
+}
+#bg-color-controls button {
+    flex-grow: 1;
+    margin: 0; /* Remove default button margin-top */
+    padding: 8px 12px;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+</head>
+<body>
+
+<div id="preloader">
+    <div class="loader"></div>
+</div>
+
+<header>
+    <h1>Gold Rupi — Product Management</h1>
+    <div style="display:flex; gap: 10px;">
+        <span id="user-display" style="font-size: 14px; font-weight: 600; color: #444; align-self: center;"></span>
+        <button onclick="handleLogout()" class="primary" style="padding:8px 12px; border:none; background:#ff6b6b; color:white; font-size:14px; margin-top:0;">
+            Logout
+        </button>
+    </div>
+</header>
+
+<main>
+
+<section id="login-form-container">
+    <h2>Admin Login</h2>
+    <input type="email" id="login-email" placeholder="Admin Email" required>
+    <input type="password" id="login-password" placeholder="Password" required>
+    <button class="primary" onclick="handleLogin()" style="width:100%;">Login</button>
+    <p class="small" style="text-align: center; margin-top: 15px;">*Only registered Admin email can log in.</p>
+</section>
+
+<section id="main-content-container" style="display: none;">
+    
+    <section id="products">
+        <h2>Add New Product ➕</h2>
+        <div class="card">
+            <div style="margin-bottom:15px;">
+                <label>🖼️ उत्पाद छवियां चुनें (गैलरी एक्सेस):</label>
+                <input type="file" id="prod-images" accept="image/*" multiple>
+                
+                <div id="image-preview-container"></div>
+                
+                <div style="display:flex; gap: 10px; margin-top: 10px;">
+                    <button id="generateDetailsBtn" class="ai-btn" disabled style="flex-grow: 1;" onclick="generateDetailsFromAI()">
+                        🤖 Gemini API से विवरण प्राप्त करें
+                    </button>
+                </div>
+
+                <div id="bg-color-controls">
+                    <label for="bg-color-picker">पृष्ठभूमि रंग:</label>
+                    <input type="color" id="bg-color-picker" value="#ffffff" title="Select Background Color">
+                    
+                    <button id="changeBgColorBtn" class="primary" disabled onclick="changeBackgroundColor()">
+                        🔄 रंग बदलकर इमेज तैयार करें
+                    </button>
+                </div>
+                
+                <p class="small" style="color:#d9534f; margin-top: 5px;">
+                    ⚠️ **ज़रूरी:** बैकग्राउंड बदलने के लिए **पारदर्शी बैकग्राउंड वाली PNG फ़ाइल** ही अपलोड करें।
+                </p>
+                <div style="display:flex; gap: 10px; margin-top: 10px;">
+                        <button id="resetImagesBtn" class="danger-btn" disabled style="flex-grow: 1;" onclick="resetImageInput()">
+                        ❌ सभी इमेज/क्रॉप रीसेट करें
+                    </button>
+                </div>
+                
+                <div id="log-output"></div>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div style="display:flex; flex-direction:column; gap: 5px;">
+                    <input id="prod-name" placeholder="1. Product Name / Title (English)" required>
+                    <div style="display: flex; gap: 5px; margin-top: -15px;">
+                        <button onclick="translateElement('prod-name', 'en', event)" class="primary" style="flex-grow: 1; padding: 5px 8px; font-size: 11px;">🔄 Hi → En</button>
+                        <button onclick="translateElement('prod-name', 'hi', event)" class="primary" style="flex-grow: 1; padding: 5px 8px; font-size: 11px;">🔄 En → Hi</button>
+                    </div>
+                </div>
+                <input id="prod-brand" placeholder="Brand Name" required>
+                <input id="prod-price" placeholder="Price (₹)" type="number" required>
+                <input id="prod-discount" placeholder="Discount %" type="number">
+            </div>
+            
+            <textarea id="prod-desc" placeholder="2. Description (पूरी जानकारी, material, usage, style) (English)" required></textarea>
+            
+            <div style="display: flex; gap: 10px; margin-top: -5px; margin-bottom: 10px;">
+                <button onclick="translateElement('prod-desc', 'en', event)" class="primary" style="flex-grow: 1; padding: 8px 15px;">🔄 Hindi → English</button>
+                <button onclick="translateElement('prod-desc', 'hi', event)" class="primary" style="flex-grow: 1; padding: 8px 15px;">🔄 English → Hindi</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px; margin: 8px 0;">
+                <select id="prod-colors" multiple style="min-height:100px;">
+                    <option value="" disabled>2. Select Colors (Ctrl/Cmd से चुनें)</option>
+                </select>
+                <select id="prod-sizes" multiple style="min-height:100px;">
+                    <option value="" disabled>2. Select Sizes (Ctrl/Cmd से चुनें)</option>
+                </select>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px; align-items:center;">
+                <select id="prod-category" required></select>
+                <select id="upload-target">
+                    <option value="imgbb">ImgBB (Fast Upload)</option>
+                    <option value="cloudflare">Cloudflare R2 (Your Worker)</option>
+                </select>
+                <button class="primary" onclick="addProduct()">🚀 उत्पाद जोड़ें</button>
+            </div>
+            <p class="small" style="margin-top: 5px;">*इमेज चुने गए स्थान (ImgBB या Cloudflare R2) पर अपलोड की जाएंगी।</p>
+        </div>
+    </section>
+
+    <section id="category-management">
+        <h2>Category Image & Landing Page Management 📸</h2>
+        <div id="category-list-for-images" class="grid">
+            </div>
+
+        <div id="categoryProductModal" class="modal">
+            <div class="modal-content" style="max-width: 90%;">
+                <span class="close" onclick="document.getElementById('categoryProductModal').style.display='none'">&times;</span>
+                <h2 id="category-modal-title">Products in Category:</h2>
+                <div id="category-products-list" class="grid">
+                    </div>
+                <p class="small" style="margin-top: 20px;">*Only products with uploaded category are shown here.</p>
+            </div>
+        </div>
+    </section>
+    <section id="all-products">
+        <h2>All Products 📦</h2>
+        <div id="product-list" class="grid">
+        </div>
+    </section>
+
+
+    <div id="editProductModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="document.getElementById('editProductModal').style.display='none'">&times;</span>
+        <h2>Edit Product Details</h2>
+        <div id="edit-form-content">
+            </div>
+        <button class="primary" onclick="updateProductDetails()">Save Changes</button>
+      </div>
+    </div>
+
+    <div id="cropImageModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="closeCropModal()">&times;</span>
+            <h2>Crop Image</h2>
+            <div style="margin-bottom: 10px; min-height: 300px;">
+                <img id="image-to-crop" style="max-width: 100%; display: block; height: auto;">
+            </div>
+            <button class="primary" onclick="getCroppedCanvas()" style="width:100%;">Crop और सहेजें</button>
+        </div>
+    </div>
+
+</section>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+// ---------- CONFIG (UPDATED) ----------
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.appspot.com", 
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597998bad55", 
+    measurementId: "G-3LS5W6F8QW"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const storage = firebase.storage(); 
+
+const imgbbKey = '021a2437b889915669b66554687bf17f'; 
+const GEMINI_API_KEY = 'AIzaSyB2qR9hTHE2v1czDVfZOuDmyVTdfV8ZKzw'; 
+const CLOUDFLARE_WORKER_URL = 'https://ebookandapk-uploder.rajputsurendra562.workers.dev'; 
+
+// --- DYNAMICALLY LOADED DATA ---
+let currentUser = null; 
+let categoriesData = {}; 
+let colorsData = {}; 
+let sizesData = {}; 
+let currentEditProductId = null; 
+let adminEmail = null; 
+
+// --- CROPPING/FILE VARIABLES ---
+let currentCropper = null;
+let currentCropFileIndex = -1;
+let filesToUpload = []; // यह Array फाइनल, क्रॉप की गई/चुनी गई Images को रखेगा
+// ----------------------------------------------------------------------
+
+
+// ---------- PRELOADER & UI HANDLERS (Same as before) --------
+function showPreloader(){
+    document.getElementById('preloader').style.display = 'flex';
+    document.getElementById('preloader').style.opacity = '1';
+}
+function hidePreloader(){
+  const preloader = document.getElementById('preloader');
+  if(preloader){
+    preloader.style.opacity = '0';
+    setTimeout(() => { preloader.style.display = 'none'; }, 500);
+  }
+}
+showPreloader();
+
+function log(msg){
+    const logEl = document.getElementById('log-output');
+    logEl.textContent = (new Date()).toLocaleTimeString() + ": " + msg + "\n" + logEl.textContent;
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('prod-images').addEventListener('change', updateImagePreviewAndButton);
+    loadDynamicOptions();
+});
+
+
+// UPDATED: Cropping/Gallery Logic
+function updateImagePreviewAndButton(e) {
+    const fileInput = e.target;
+    const selectedFiles = Array.from(fileInput.files || []);
+    const generateDetailsBtn = document.getElementById('generateDetailsBtn');
+    const resetImagesBtn = document.getElementById('resetImagesBtn'); 
+    const changeBgColorBtn = document.getElementById('changeBgColorBtn'); 
+
+    // यदि फाइलें चुनी गई हैं, तो filesToUpload को अपडेट करें
+    if (selectedFiles.length > 0) {
+        filesToUpload = selectedFiles; 
+    } else if (e.type === 'change') {
+        filesToUpload = [];
+    }
+    
+    updateFinalPreview(); 
+    
+    // Button States
+    const hasFiles = filesToUpload.length > 0;
+    generateDetailsBtn.disabled = !hasFiles;
+    resetImagesBtn.disabled = !hasFiles;
+    changeBgColorBtn.disabled = !hasFiles; 
+}
+
+// FINAL PREVIEW (After cropping/editing/BG Remove/Color Change)
+function updateFinalPreview() {
+    const preview = document.getElementById('image-preview-container');
+    preview.innerHTML = "";
+    filesToUpload.forEach((f, index) => {
+        const imgContainer = document.createElement("div");
+        imgContainer.style.position = 'relative';
+        imgContainer.style.display = 'inline-block';
+        
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(f); 
+        img.alt = f.name;
+
+        // Crop Button 
+        const cropButton = document.createElement("span");
+        cropButton.textContent = '✂️';
+        cropButton.title = 'Crop this image';
+        cropButton.style.cssText = 'position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.6); color: white; padding: 2px 5px; border-radius: 4px 0 4px 0; cursor: pointer; font-size: 10px; z-index: 10;';
+        cropButton.onclick = (e) => {
+            e.stopPropagation();
+            openCropper(f, index);
+        };
+        
+        // Delete Button
+        const deleteButton = document.createElement("span");
+        deleteButton.textContent = '🗑️';
+        deleteButton.title = 'Remove this image';
+        deleteButton.style.cssText = 'position: absolute; top: 0; right: 0; background: rgba(255,0,0,0.6); color: white; padding: 2px 5px; border-radius: 0 4px 0 4px; cursor: pointer; font-size: 10px; z-index: 10;';
+        deleteButton.onclick = (e) => {
+            e.stopPropagation();
+            filesToUpload.splice(index, 1);
+            updateFinalPreview();
+        };
+
+        imgContainer.appendChild(img);
+        imgContainer.appendChild(cropButton);
+        imgContainer.appendChild(deleteButton);
+        preview.appendChild(imgContainer);
+    });
+    
+    log(`Selected and prepared ${filesToUpload.length} file(s).`);
+}
+
+
+// FINAL UPDATED: Change Background Color (Client-side, Canvas-based, No API/Segmentation)
+async function changeBackgroundColor() {
+    if (filesToUpload.length === 0) return alert('पहले इमेज चुनें!');
+
+    const changeBgBtn = document.getElementById('changeBgColorBtn');
+    const selectedColor = document.getElementById('bg-color-picker').value;
+    
+    // Optional Warning (More user-friendly)
+    if (!filesToUpload.every(f => f.type.includes('png'))) {
+        const confirmResult = confirm("⚠️ चेतावनी: आपने PNG फ़ाइल अपलोड नहीं की है। यदि आप JPEG या नॉन-ट्रांसपेरेंट इमेज का उपयोग कर रहे हैं, तो यह पूरी इमेज के ऊपर नया बैकग्राउंड लगा देगा। कृपया पारदर्शी PNG का उपयोग करें। क्या आप जारी रखना चाहते हैं?");
+        if (!confirmResult) return;
+    }
+
+    changeBgBtn.disabled = true;
+    changeBgBtn.textContent = "⏳ नया BG रंग जोड़ा जा रहा है...";
+    showPreloader();
+    log(`Starting to apply solid background color: ${selectedColor}...`);
+
+    const finalProcessedFiles = [];
+
+    try {
+        for (let i = 0; i < filesToUpload.length; i++) {
+            const file = filesToUpload[i];
+            log(`Processing image ${i + 1}/${filesToUpload.length}: ${file.name}`);
+
+            // Load the image file
+            const image = await createImageBitmap(file);
+
+            const originalWidth = image.width;
+            const originalHeight = image.height;
+
+            // 1. Create a new Canvas for the Final Image
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = originalWidth;
+            finalCanvas.height = originalHeight;
+            const ctx = finalCanvas.getContext('2d');
+
+            // 2. Draw the Solid Color Background
+            ctx.fillStyle = selectedColor;
+            ctx.fillRect(0, 0, originalWidth, originalHeight);
+
+            // 3. Draw the Product image on top
+            // If the input file is a transparent PNG, only the product will be drawn on the new color.
+            ctx.drawImage(image, 0, 0, originalWidth, originalHeight);
+
+            // 4. Convert the Final Canvas back to a JPEG File (JPEG is efficient for solid backgrounds)
+            const blob = await new Promise(resolve => finalCanvas.toBlob(resolve, 'image/jpeg', 0.9)); // Quality 0.9
+
+            const newFile = new File([blob], `color_bg_${selectedColor.replace('#', '')}_${file.name.replace(/\.(jpeg|jpg|png|webp)$/i, '.jpeg')}`, { type: 'image/jpeg' });
+
+            finalProcessedFiles.push(newFile);
+        }
+
+        filesToUpload = finalProcessedFiles; // Replace old files with the new colored ones
+        updateFinalPreview();
+        log(`✅ Successfully applied background color ${selectedColor} for ${filesToUpload.length} image(s).`);
+
+    } catch (e) {
+        let errorMessage = `❌ Background Color Application Failed. Error: ${e.message}`;
+        console.error('Color Application Error:', e);
+        log(errorMessage);
+        alert(errorMessage);
+    } finally {
+        changeBgBtn.textContent = "🔄 रंग बदलकर इमेज तैयार करें";
+        changeBgBtn.disabled = false;
+        hidePreloader();
+    }
+}
+
+
+// Reset Function
+function resetImageInput() {
+    const fileInput = document.getElementById('prod-images');
+    fileInput.value = null; 
+    filesToUpload = []; 
+    updateImagePreviewAndButton({ target: fileInput, type: 'change' }); 
+    log("✅ सभी इमेज और क्रॉपिंग डेटा रीसेट कर दिया गया है।");
+}
+
+// -------------------------------------------------------------
+
+
+// -------- AUTHENTICATION (Same as before) --------
+function showLoginScreen(){
+    document.getElementById('main-content-container').style.display = 'none';
+    document.getElementById('login-form-container').style.display = 'block';
+    hidePreloader();
+}
+
+function showMainContent(userEmail){
+    document.getElementById('user-display').textContent = `Admin: ${userEmail}`;
+    document.getElementById('login-form-container').style.display = 'none';
+    document.getElementById('main-content-container').style.display = 'block';
+    loadProducts();
+    hidePreloader();
+}
+
+async function handleLogin() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+        return alert('Please enter both email and password.');
+    }
+    showPreloader();
+
+    try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        // Admin check will happen in onAuthStateChanged
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        alert(`Login Failed: ${error.message}`);
+        hidePreloader();
+    }
+}
+
+function handleLogout() {
+    auth.signOut().then(() => {
+        // Redirect to login or show login screen
+        currentUser = null;
+        adminEmail = null;
+        showLoginScreen();
+    }).catch((error) => {
+        console.error("Logout Error:", error);
+        alert('Logout Failed.');
+    });
+}
+
+
+auth.onAuthStateChanged(async user => {
+    if (!user) {
+        currentUser = null;
+        showLoginScreen();
+        return;
+    }
+    
+    currentUser = user;
+    
+    try {
+        // 1. Fetch the Admin Email from the correct path in the DB
+        const adminEmailRef = db.ref('ADMIN_CONTROL_LISTS/adminEmail'); 
+        const snapshot = await adminEmailRef.once('value');
+        
+        adminEmail = snapshot.val(); 
+
+        if (user.email === adminEmail) {
+            // ✅ User is Admin
+            console.log("Admin logged in successfully.");
+            showMainContent(user.email);
+        } else {
+            // ❌ User is NOT Admin
+            console.error(`Access Denied. User ${user.email} is not the Admin ${adminEmail}.`);
+            alert(`You are logged in, but not authorized as the Admin: ${adminEmail}`);
+            auth.signOut().then(() => {
+                showLoginScreen();
+            });
+        }
+    } catch (error) {
+        console.error("Admin Check Error:", error);
+        alert("CRITICAL ERROR: Failed to check Admin status from Database.");
+        auth.signOut().then(() => {
+            showLoginScreen();
+        });
+    }
+});
+
+
+// -------- DYNAMIC DATA LOADERS (UPDATED TO USE ROOT NODES) --------
+async function loadDynamicOptions() {
+    try {
+        const snapshot = await db.ref('/').once('value');
+        const data = snapshot.val() || {};
+
+        // 1. Categories (E_COMMERCE_CATEGORIES)
+        categoriesData = data.E_COMMERCE_CATEGORIES || {};
+        populateCategorySelect('prod-category');
+        
+        // 2. Colors (अब ROOT LEVEL पर /colors से लोड हो रहा है)
+        colorsData = data.colors || {}; // <--- बदला गया
+        setupProductOptions('prod-colors', 'colorsData');
+
+        // 3. Sizes (अब ROOT LEVEL पर /sizes से लोड हो रहा है)
+        sizesData = data.sizes || {}; // <--- बदला गया
+        setupProductOptions('prod-sizes', 'sizesData');
+
+        log("✅ Categories, Colors (new root node), and Sizes (new root node) loaded from Firebase schema.");
+
+        await loadCategoryImages(); 
+
+    } catch (e) {
+        console.error("Error loading dynamic options:", e);
+        log("❌ Failed to load dynamic options from Firebase.");
+    }
+}
+
+
+function populateCategorySelect(selectId) {
+    const select = document.getElementById(selectId);
+    select.innerHTML = '<option value="">Select Category</option>';
+    
+    Object.keys(categoriesData).forEach(mainKey => {
+        const mainCategory = categoriesData[mainKey];
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = mainKey.replace(/_/g, ' '); 
+        
+        Object.keys(mainCategory).forEach(subKey => {
+            const option = document.createElement('option');
+            option.value = subKey; 
+            option.textContent = subKey.replace(/_/g, ' '); 
+            optgroup.appendChild(option);
+        });
+        select.appendChild(optgroup);
+    });
+}
+
+function setupProductOptions(selectId, dataVarName) {
+    const select = document.getElementById(selectId);
+    let data;
+
+    if (dataVarName === 'colorsData') {
+        data = colorsData;
+        select.innerHTML = '<option value="" disabled>2. Select Colors (Ctrl/Cmd से चुनें)</option>';
+    } else if (dataVarName === 'sizesData') {
+        data = sizesData;
+        select.innerHTML = '<option value="" disabled>2. Select Sizes (Ctrl/Cmd से चुनें)</option>';
+    } else {
+        return;
+    }
+
+    Object.keys(data).forEach(key => {
+        const option = document.createElement('option');
+        const optionText = key.replace(/_/g, ' ');
+        option.value = key; 
+        option.textContent = optionText;
+        select.appendChild(option);
+    });
+}
+
+
+// --- Helper Function to convert File to Base64 (Same as before) ---
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result); 
+        reader.onerror = error => reject(error);
+    });
+}
+
+
+// -------- IMAGE CROPPING LOGIC (Same as before) --------
+
+function closeCropModal() {
+    document.getElementById('cropImageModal').style.display = 'none';
+    if (currentCropper) {
+        currentCropper.destroy();
+        currentCropper = null;
+    }
+}
+
+function openCropper(file, index) {
+    const modal = document.getElementById('cropImageModal');
+    const image = document.getElementById('image-to-crop');
+    
+    // यह महत्वपूर्ण है: URL.createObjectURL का उपयोग filesToUpload में मौजूद किसी भी फाइल के लिए होता है
+    image.src = URL.createObjectURL(file); 
+    
+    currentCropFileIndex = index;
+    modal.style.display = 'block';
+
+    if (currentCropper) {
+        currentCropper.destroy();
+    }
+
+    // New Cropper Instance
+    currentCropper = new Cropper(image, {
+        aspectRatio: 1 / 1, // Square Crop
+        viewMode: 1,
+        autoCropArea: 0.9,
+    });
+    log(`Opened cropping tool for image index ${index}.`);
+}
+
+function getCroppedCanvas() {
+    if (!currentCropper) return;
+
+    const croppedCanvas = currentCropper.getCroppedCanvas();
+    // यदि ओरिजिनल फाइल PNG थी (BG Remove के बाद), तो PNG में सेव करें
+    const originalFile = filesToUpload[currentCropFileIndex];
+    const mimeType = originalFile && originalFile.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    const extension = mimeType === 'image/png' ? '.png' : '.jpg';
+    
+    const dataUrl = croppedCanvas.toDataURL(mimeType, 0.9); // Quality 0.9
+    
+    const blob = dataURItoBlob(dataUrl);
+    
+    // Cropping के बाद भी transparency बरकरार रखने के लिए mimeType का उपयोग करें
+    const croppedFile = new File([blob], `cropped_image_${currentCropFileIndex}${extension}`, { type: mimeType }); 
+    
+    // filesToUpload में अपडेटेड फाइल डालें
+    filesToUpload[currentCropFileIndex] = croppedFile;
+    
+    updateFinalPreview();
+    closeCropModal();
+    log(`Image index ${currentCropFileIndex} cropped and saved as ${mimeType}.`);
+}
+
+function dataURItoBlob(dataURI) {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+}
+
+
+// -------- AI GENERATION (DIRECT GEMINI CALL) (Same as before) --------
+async function generateDetailsFromAI() {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY.length < 35) {
+        return log('❌ Error: Please set your valid GEMINI_API_KEY in the script configuration.');
+    }
+    if (!currentUser || currentUser.email !== adminEmail) {
+        return log('❌ Security Error: Must be logged in as Admin to use AI tool.');
+    }
+
+    const generateBtn = document.getElementById('generateDetailsBtn');
+    const imageFiles = filesToUpload; 
+
+    if (imageFiles.length === 0) return alert('पहले छवियां चुनें!');
+
+    generateBtn.disabled = true;
+    generateBtn.textContent = "🤖 Gemini API से विवरण प्राप्त हो रहा है...";
+    log("Starting Gemini details generation...");
+
+    try {
+        const firstImage = imageFiles[0];
+        const base64DataURI = await fileToBase64(firstImage);
+        log(`Image converted to Base64 (${firstImage.type}). Sending request to Gemini...`);
+
+        const imagePart = {
+            inlineData: {
+                data: base64DataURI.split(',')[1],
+                mimeType: firstImage.type
+            },
+        };
+
+        const promptText = `Analyze this product image. Provide a JSON output (without markdown formatting or extra text) with the following fields:
+        name (Detailed ENGLISH name/title, e.g., 'Luxury Stainless Steel Chronograph Watch'),
+        brand (e.g., 'ApparelCo'),
+        price (numeric, realistic estimate),
+        discount (numeric, 0-30),
+        description (detailed ENGLISH description focusing on material, style, and usage),
+        colors (array of colors, use names from your Color_List, e.g., ["Black", "Silver"]),
+        sizes (array of sizes, use names from your Size_List_Apparel, e.g., ["M", "L"]).
+        Ensure the JSON is clean and valid, starting and ending with curly braces {}.`;
+
+
+        const requestBody = {
+            contents: [{
+                parts: [
+                    imagePart,
+                    { text: promptText }
+                ],
+            }],
+            generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: "object",
+                    properties: {
+                        name: { type: "string" },
+                        brand: { type: "string" },
+                        price: { type: "number" },
+                        discount: { type: "number" },
+                        description: { type: "string" },
+                        colors: { type: "array", items: { type: "string" } },
+                        sizes: { type: "array", items: { type: "string" } }
+                    }
+                }
+            }
+        };
+
+        const response = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, requestBody, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+
+        let rawData;
+        try {
+            if (!response.data || !response.data.candidates || response.data.candidates.length === 0 || !response.data.candidates[0].content.parts[0].text) {
+                const finishReason = response.data.candidates?.[0]?.finishReason;
+                if (finishReason && finishReason !== "STOP") {
+                    throw new Error(`Gemini blocked content generation. Reason: ${finishReason}`);
+                }
+                throw new Error("Gemini returned an empty or invalid content structure.");
+            }
+            
+            const jsonString = response.data.candidates[0].content.parts[0].text.trim();
+            rawData = JSON.parse(jsonString);
+            log("✅ Real data received and parsed from Gemini.");
+
+        } catch (parseError) {
+             log(`❌ Error parsing AI JSON: ${parseError.message}. Raw AI text: ${response.data.candidates?.[0]?.content?.parts?.[0]?.text?.substring(0, 100) || 'N/A'}...`);
+             return alert('AI returned unreadable data. Please try again.');
+        }
+
+        // --- Populate Fields from rawData ---
+        const finalData = rawData; 
+        
+        document.getElementById('prod-name').value = finalData.name || '';
+        document.getElementById('prod-brand').value = finalData.brand || '';
+        document.getElementById('prod-price').value = finalData.price || 0;
+        document.getElementById('prod-discount').value = finalData.discount || 0;
+        document.getElementById('prod-desc').value = finalData.description || '';
+
+        
+        // Populate Selects (Colors and Sizes)
+        ['colors', 'sizes'].forEach(type => {
+            const selectEl = document.getElementById(`prod-${type}`);
+            const optionsToSelect = finalData[type] || [];
+            
+            Array.from(selectEl.options).forEach(option => option.selected = false);
+            Array.from(selectEl.options).forEach(option => {
+                if (optionsToSelect.some(opt => opt.toLowerCase().includes(option.value.toLowerCase().replace(/_/g, '')))) {
+                    option.selected = true;
+                }
+            });
+        });
+
+        log("✅ Gemini-जनरेटेड विवरण सफलतापूर्वक भरा गया (English में)।");
+
+    } catch(e) {
+        let errorMessage = `❌ Gemini विवरण प्राप्त करने में त्रुटि: ${e.message}`;
+        if (e.response) {
+            const status = e.response.status;
+            errorMessage = `❌ Gemini विवरण प्राप्त करने में त्रुटि: Request failed with status code ${status}. (${status === 400 ? 'API Key या Request Format में त्रुटि' : 'अन्य API त्रुटि'})`;
+             console.error("Gemini API Full Error:", e.response.data);
+        }
+        log(errorMessage);
+        alert('Failed to get details from Gemini. Check console for API error.');
+    }
+    
+    generateBtn.textContent = "🤖 Gemini API से विवरण प्राप्त करें";
+    generateBtn.disabled = false;
+}
+
+// -------- TRANSLATION FUNCTION (Same as before) --------
+async function translateElement(elementId, targetLang, event) {
+    const el = document.getElementById(elementId);
+    const originalText = el.value.trim();
+    
+    const btn = event.currentTarget; 
+    
+    if (!originalText) {
+        return alert("टेक्स्ट फ़ील्ड खाली है। पहले टेक्स्ट भरें।");
+    }
+    if (!currentUser || currentUser.email !== adminEmail) {
+        return alert('Admin login required for translation.');
+    }
+
+    const originalBtnText = btn.textContent;
+    btn.textContent = `⏳ Translating...`;
+    btn.disabled = true;
+
+    const sourceLang = targetLang === 'en' ? 'auto' : 'en'; 
+    const targetLangCode = targetLang === 'en' ? 'en' : 'hi';
+    const targetLangName = targetLang === 'en' ? 'English' : 'Hindi';
+
+    try {
+        const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(originalText)}`;
+
+        log(`Starting translation of ${elementId} to ${targetLangName} via public service...`);
+        
+        const response = await axios.get(apiUrl);
+        const translatedText = response.data[0][0][0];
+
+        el.value = translatedText;
+        log(`✅ ${elementId} successfully translated to ${targetLangName}.`);
+
+    } catch (e) {
+        let errorMessage = `❌ Translation Failed. (Network or Public API issue): ${e.message}`;
+        log(errorMessage);
+        alert('Translation failed. The public Google Translate service may be unavailable.');
+    }
+
+    btn.textContent = originalBtnText;
+    btn.disabled = false;
+}
+
+// -------- IMAGE UPLOAD HELPERS (Same as before) --------
+function uploadImgBB(file) {
+    if (!imgbbKey || imgbbKey.length < 32) return Promise.reject(new Error('Invalid ImgBB Key.'));
+
+    return new Promise((resolve, reject) => {
+        const form = new FormData();
+        form.append('image', file);
+        axios.post('https://api.imgbb.com/1/upload?key=' + imgbbKey, form).then(res => {
+            resolve(res.data.data.url);
+        }).catch(err => reject(err));
+    });
+}
+
+function uploadR2(file) {
+    if (!CLOUDFLARE_WORKER_URL || CLOUDFLARE_WORKER_URL.length < 10) return Promise.reject(new Error('Invalid Cloudflare Worker URL.'));
+    
+    return new Promise(async (resolve, reject) => {
+        try {
+            const fd = new FormData();
+            fd.append("file", file, file.name); 
+
+            const resp = await fetch(CLOUDFLARE_WORKER_URL, {
+                method: "POST",
+                body: fd
+            });
+
+            if (!resp.ok) {
+                const text = await resp.text();
+                return reject(new Error(`R2 Upload failed: ${resp.status} - ${text}`));
+            }
+
+            const json = await resp.json();
+            if (json.publicURL) {
+                resolve(json.publicURL);
+            } else {
+                reject(new Error(`R2 Worker returned invalid response: ${JSON.stringify(json)}`));
+            }
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+
+// -------- PRODUCTS: ADD (Same as before) --------
+async function addProduct(){ 
+    if (!currentUser || currentUser.email !== adminEmail) {
+        return alert('Authentication Error: You must be logged in as the Admin to add a product.');
+    }
+    
+    const name = document.getElementById('prod-name').value.trim();
+    const brand = document.getElementById('prod-brand').value.trim();
+    const price = parseFloat(document.getElementById('prod-price').value);
+    
+    const colors = Array.from(document.getElementById('prod-colors').selectedOptions).map(option => option.value).join(', ');
+    const sizes = Array.from(document.getElementById('prod-sizes').selectedOptions).map(option => option.value).join(', ');
+    
+    const discount = parseFloat(document.getElementById('prod-discount').value) || 0;
+    const desc = document.getElementById('prod-desc').value.trim();
+    const categoryId = document.getElementById('prod-category').value;
+    const uploadTarget = document.getElementById('upload-target').value; 
+    
+    const imageFiles = filesToUpload; 
+
+    if (!name || !brand || isNaN(price) || price <= 0 || !desc || !categoryId || imageFiles.length === 0) {
+        return alert('Please fill all required fields (Name, Brand, Price, Description, Category, Images).');
+    }
+
+    showPreloader();
+    try {
+        let uploadPromises;
+        
+        if (uploadTarget === 'imgbb') {
+            log('Uploading images to ImgBB...');
+            uploadPromises = Array.from(imageFiles).map(file => uploadImgBB(file));
+        } else if (uploadTarget === 'cloudflare') {
+            log('Uploading images to Cloudflare R2...');
+            uploadPromises = Array.from(imageFiles).map(file => uploadR2(file));
+        } else {
+            throw new Error('Invalid upload target selected.');
+        }
+
+        const imageUrls = await Promise.all(uploadPromises);
+        const imagesString = imageUrls.join(',');
+        
+        log(`Successfully uploaded ${imageUrls.length} image(s) to ${uploadTarget}.`);
+
+
+        const newProdRef = db.ref('products').push();
+        await newProdRef.set({
+            name, brand, price, color: colors, size: sizes, discount, description: desc, category: categoryId, images: imagesString, createdAt: Date.now(), stock: 'In Stock' 
+        });
+
+        alert(`Product "${name}" added successfully!`);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    } catch(e) {
+        console.error('Error adding product:', e);
+        log(`❌ Failed to add product: ${e.message}`);
+        alert('Failed to add product. Check console for error (e.g., PERMISSION_DENIED or Image Upload failure).');
+    } finally {
+        hidePreloader();
+    }
+}
+
+
+// -------- PRODUCTS: LOAD (Same as before) --------
+function loadProducts(){
+    db.ref('products').on('value', snap=>{
+        const data = snap.val() || {};
+        const list = document.getElementById('product-list');
+        list.innerHTML = '';
+
+        function getCategoryDisplayName(catKey) {
+            for (const mainCatKey in categoriesData) {
+                if (categoriesData[mainCatKey] && categoriesData[mainCatKey][catKey]) {
+                    return `${mainCatKey.replace(/_/g, ' ')} / ${catKey.replace(/_/g, ' ')}`;
+                }
+            }
+            return catKey || 'N/A';
+        }
+
+        Object.keys(data).reverse().forEach(k=>{
+            const p = data[k];
+            const firstImage = (p.images && p.images.split(',')[0]) || 'https://via.placeholder.com/100x140?text=No+Image';
+            
+            const stockStatus = p.stock || 'In Stock'; 
+            const statusText = stockStatus === 'Out of Stock' ? 'Out of Stock' : 'In Stock';
+            const statusColor = stockStatus === 'Out of Stock' ? 'red' : 'green';
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <img src="${firstImage}" class="thumb" alt="${p.name}">
+                <div style="margin-top:8px">
+                    <strong>${p.name}</strong>
+                    <div class="meta">Brand: ${p.brand || 'N/A'}</div>
+                    <div class="meta">Price: ₹${p.price || 0} ${p.discount ? `(${p.discount}% off)` : ''}</div>
+                    <div class="meta">Category: ${getCategoryDisplayName(p.category)}</div>
+                    <div class="meta" style="color:${statusColor}; font-weight:bold;">Status: ${statusText}</div>
+
+                    <div class="row" style="margin-top:6px; display:flex; gap:6px;">
+                        <button onclick="editProduct('${k}')" class="primary" style="padding:5px 8px; font-size:12px;">Edit</button>
+                        <button onclick="deleteProduct('${k}')" class="btn-reject" style="padding:5px 8px; font-size:12px;">Delete</button>
+                    </div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    });
+}
+
+
+// -------- PRODUCTS: EDIT (Same as before) --------
+function editProduct(pid){ 
+    if (!currentUser || currentUser.email !== adminEmail) {
+        return alert('Authentication Error: You must be logged in as the Admin to edit a product.');
+    }
+    currentEditProductId = pid;
+    const modal = document.getElementById('editProductModal');
+    const formContent = document.getElementById('edit-form-content');
+    formContent.innerHTML = 'Loading product details...';
+    modal.style.display = 'block';
+
+    db.ref('products/' + pid).once('value').then(snap => {
+        const p = snap.val();
+        if (!p) {
+            formContent.innerHTML = 'Product not found.';
+            return;
+        }
+
+        let catOptions = '';
+        Object.keys(categoriesData).forEach(mainKey => {
+            const mainCategory = categoriesData[mainKey];
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = mainKey.replace(/_/g, ' '); 
+            
+            Object.keys(mainCategory).forEach(subKey => {
+                const selected = subKey === p.category ? 'selected' : '';
+                optgroup.innerHTML += `<option value="${subKey}" ${selected}>${subKey.replace(/_/g, ' ')}</option>`;
+            });
+            catOptions += optgroup.outerHTML;
+        });
+
+
+        const currentColors = (p.color || '').split(',').map(c => c.trim());
+        const colorOptions = Object.keys(colorsData).map(color => {
+            const selected = currentColors.includes(color) ? 'selected' : '';
+            return `<option value="${color}" ${selected}>${color.replace(/_/g, ' ')}</option>`;
+        }).join('');
+
+        const currentSizes = (p.size || '').split(',').map(s => s.trim());
+        const sizeOptions = Object.keys(sizesData).map(size => {
+            const selected = currentSizes.includes(size) ? 'selected' : '';
+            return `<option value="${size}" ${selected}>${size.replace(/_/g, ' ')}</option>`;
+        }).join('');
+        
+        const currentStock = p.stock || 'In Stock';
+        const inStockChecked = currentStock === 'In Stock' ? 'checked' : '';
+        const outOfStockChecked = currentStock === 'Out of Stock' ? 'checked' : '';
+
+
+        formContent.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <input id="edit-prod-name" value="${p.name || ''}" placeholder="Product Name">
+                <input id="edit-prod-brand" value="${p.brand || ''}" placeholder="Brand">
+                <input id="edit-prod-price" value="${p.price || 0}" placeholder="Price" type="number">
+                <input id="edit-prod-discount" value="${p.discount || 0}" placeholder="Discount % (optional)" type="number">
+            </div>
+            <textarea id="edit-prod-desc" placeholder="Description">${p.description || ''}</textarea>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px; margin: 8px 0;">
+                <select id="edit-prod-colors" multiple style="min-height:100px;">
+                    ${colorOptions}
+                </select>
+                <select id="edit-prod-sizes" multiple style="min-height:100px;">
+                    ${sizeOptions}
+                </select>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+                <select id="edit-prod-category">
+                    <option value="">Select Category</option>
+                    ${catOptions}
+                </select>
+            </div>
+            
+            <div style="margin: 15px 0; border: 1px solid #ffda47; padding: 10px; border-radius: 8px;">
+                <label style="font-weight: 600; display: block; margin-bottom: 5px;">Stock Status:</label>
+                <label style="margin-right: 15px;">
+                    <input type="radio" name="edit-prod-stock" value="In Stock" ${inStockChecked}>
+                    In Stock
+                </label>
+                <label>
+                    <input type="radio" name="edit-prod-stock" value="Out of Stock" ${outOfStockChecked}>
+                    Out of Stock
+                </label>
+            </div>
+            
+            <p class="small">To change images, you must re-upload them. Uploading new images will REPLACE ALL existing ones.</p>
+            <input type="file" id="edit-prod-images" multiple>
+            <select id="edit-upload-target" style="margin-top:0;">
+                <option value="imgbb">ImgBB (Fast Upload)</option>
+                <option value="cloudflare">Cloudflare R2 (Your Worker)</option>
+            </select>
+        `;
+
+    }).catch(e => {
+        console.error('Error loading product for edit:', e);
+        formContent.innerHTML = 'Product not found. Error: ' + e.message;
+    });
+}
+
+async function updateProductDetails() {
+    if (!currentEditProductId) return alert('No product selected for editing.');
+    if (!currentUser || currentUser.email !== adminEmail) {
+        return alert('Authentication Error: You must be logged in as the Admin to update a product.');
+    }
+
+    const name = document.getElementById('edit-prod-name').value.trim();
+    const brand = document.getElementById('edit-prod-brand').value.trim();
+    const price = parseFloat(document.getElementById('edit-prod-price').value);
+    
+    const colors = Array.from(document.getElementById('edit-prod-colors').selectedOptions).map(option => option.value).join(', ');
+    const sizes = Array.from(document.getElementById('edit-prod-sizes').selectedOptions).map(option => option.value).join(', ');
+
+    const discount = parseFloat(document.getElementById('edit-prod-discount').value) || 0;
+    const desc = document.getElementById('edit-prod-desc').value.trim();
+    const categoryId = document.getElementById('edit-prod-category').value;
+    const imageFiles = document.getElementById('edit-prod-images').files;
+    const uploadTarget = document.getElementById('edit-upload-target').value;
+    
+    const stockStatusEl = document.querySelector('input[name="edit-prod-stock"]:checked');
+    const stockStatus = stockStatusEl ? stockStatusEl.value : 'In Stock'; 
+
+
+    if (!name || !brand || isNaN(price) || price <= 0 || !desc || !categoryId) {
+        return alert('Please fill all required fields (Name, Brand, Price, Description, Category).');
+    }
+
+    showPreloader();
+    try {
+        let imagesString = null;
+        if (imageFiles.length > 0) {
+            let uploadPromises;
+            if (uploadTarget === 'imgbb') {
+                uploadPromises = Array.from(imageFiles).map(file => uploadImgBB(file));
+            } else if (uploadTarget === 'cloudflare') {
+                uploadPromises = Array.from(imageFiles).map(file => uploadR2(file));
+            } else {
+                throw new Error('Invalid upload target selected for edit.');
+            }
+            const imageUrls = await Promise.all(uploadPromises);
+            imagesString = imageUrls.join(',');
+        } else {
+            const existingProd = await db.ref('products/' + currentEditProductId).once('value');
+            imagesString = existingProd.val().images || '';
+        }
+
+        await db.ref('products/' + currentEditProductId).update({
+            name, brand, price, color: colors, size: sizes, discount, description: desc, category: categoryId, images: imagesString, last_updated: Date.now(), stock: stockStatus
+        });
+
+        alert(`Product "${name}" updated successfully!`);
+        document.getElementById('editProductModal').style.display='none';
+        loadProducts(); 
+
+    } catch(e) {
+        console.error('Error updating product:', e);
+        alert('Failed to update product. Check console for error.');
+    } finally {
+        hidePreloader();
+    }
+}
+
+
+// -------- PRODUCTS: DELETE (Same as before) --------
+function deleteProduct(pid){ 
+    if (!currentUser || currentUser.email !== adminEmail) {
+        return alert('Authentication Error: You must be logged in as the Admin to delete a product.');
+    }
+    if(!confirm('Are you sure you want to delete this product?')) return;
+    db.ref('products/' + pid).remove().then(()=>{
+        alert('Product deleted successfully.');
+        loadProducts();
+    }).catch(e=>console.error('Error deleting product:', e));
+}
+
+
+// -------- CATEGORY IMAGE & LANDING PAGE MANAGEMENT (Same as before) --------
+async function loadCategoryImages() {
+    try {
+        const snapshot = await db.ref('category_images').once('value');
+        const existingImages = snapshot.val() || {};
+
+        const list = document.getElementById('category-list-for-images');
+        list.innerHTML = '';
+
+        Object.keys(categoriesData).forEach(mainKey => {
+            const currentImage = existingImages[mainKey] || 'https://via.placeholder.com/150x100?text=Upload+Main';
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.border = '2px solid #007bff'; 
+            card.innerHTML = `
+                <div style="border-bottom:1px solid #007bff; margin-bottom:8px; padding-bottom:5px;">
+                    <strong>MAIN: ${mainKey.replace(/_/g, ' ')}</strong>
+                    <div class="meta">Top Level Category</div>
+                </div>
+
+                <img src="${currentImage}" class="thumb" style="height:100px; cursor: pointer;" onclick="showCategoryProducts('${mainKey}')" alt="${mainKey}">
+                <input type="file" id="cat-img-${mainKey}" accept="image/*" style="margin-top:10px; padding: 5px; font-size: 12px;">
+                
+                <button onclick="uploadCategoryImage('${mainKey}', 'cat-img-${mainKey}')" class="primary" style="width:100%; padding: 8px 12px; font-size: 12px;">
+                    ⬆️ Upload/Change Image (Main)
+                </button>
+                <button onclick="showCategoryProducts('${mainKey}')" class="ai-btn" style="width:100%; padding: 8px 12px; font-size: 12px; margin-top: 5px;">
+                    📂 View Products (${mainKey})
+                </button>
+            `;
+            list.appendChild(card);
+        });
+
+
+        const allSubcategories = [];
+        Object.keys(categoriesData).forEach(mainKey => {
+            Object.keys(categoriesData[mainKey]).forEach(subKey => {
+                if (mainKey !== subKey) {
+                    allSubcategories.push({
+                        main: mainKey,
+                        sub: subKey
+                    });
+                }
+            });
+        });
+
+        allSubcategories.forEach(cat => {
+            const catKey = cat.sub;
+            const currentImage = existingImages[catKey] || 'https://via.placeholder.com/150x100?text=No+Image';
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div style="border-bottom:1px solid #eee; margin-bottom:8px; padding-bottom:5px;">
+                    <strong>SUB: ${cat.sub.replace(/_/g, ' ')}</strong>
+                    <div class="meta">${cat.main.replace(/_/g, ' ')}</div>
+                </div>
+
+                <img src="${currentImage}" class="thumb" style="height:100px; cursor: pointer;" onclick="showCategoryProducts('${catKey}')" alt="${catKey}">
+                <input type="file" id="cat-img-${catKey}" accept="image/*" style="margin-top:10px; padding: 5px; font-size: 12px;">
+                <button onclick="uploadCategoryImage('${catKey}', 'cat-img-${catKey}')" class="primary" style="width:100%; padding: 8px 12px; font-size: 12px;">
+                    ⬆️ Upload/Change Image (Sub)
+                </button>
+                <button onclick="showCategoryProducts('${catKey}')" class="ai-btn" style="width:100%; padding: 8px 12px; font-size: 12px; margin-top: 5px;">
+                    📂 View Products (${catKey})
+                </button>
+            `;
+            list.appendChild(card);
+        });
+
+    } catch (e) {
+        console.error("Error loading category images:", e);
+        log("❌ Failed to load category image controls.");
+    }
+}
+
+
+async function uploadCategoryImage(catKey, fileInputId) {
+    if (!currentUser || currentUser.email !== adminEmail) {
+        return alert('Authentication Error: Admin login required.');
+    }
+    const fileInput = document.getElementById(fileInputId);
+    if (fileInput.files.length === 0) return alert('Please select an image file first.');
+
+    const fileToUpload = fileInput.files[0];
+    showPreloader();
+    try {
+        log(`Uploading image for category ${catKey} to Cloudflare R2...`);
+        const imageUrl = await uploadR2(fileToUpload); 
+        
+        await db.ref('category_images/' + catKey).set(imageUrl);
+
+        alert(`Category Image for ${catKey} uploaded successfully to R2!`);
+        await loadCategoryImages(); 
+
+    } catch(e) {
+        console.error('Error uploading category image:', e);
+        log(`❌ Failed to upload category image to R2: ${e.message}`);
+        alert(`Failed to upload image to Cloudflare R2. Specific Error: ${e.message}`);
+    } finally {
+        hidePreloader();
+    }
+}
+
+function showCategoryProducts(catKey) {
+    
+    document.getElementById('category-modal-title').textContent = `Products in Category: ${catKey.replace(/_/g, ' ')}`;
+    const list = document.getElementById('category-products-list');
+    list.innerHTML = 'Loading products...';
+    document.getElementById('categoryProductModal').style.display = 'block';
+
+    db.ref('products').once('value').then(snap => {
+        const allProducts = snap.val() || {};
+        list.innerHTML = '';
+        let count = 0;
+
+        Object.keys(allProducts).reverse().forEach(k => {
+            const p = allProducts[k];
+            if (p.category === catKey) {
+                count++;
+                const firstImage = (p.images && p.images.split(',')[0]) || 'https://via.placeholder.com/100x140?text=No+Image';
+                
+                const stockStatus = p.stock || 'In Stock'; 
+                const statusText = stockStatus === 'Out of Stock' ? 'Out of Stock' : 'In Stock';
+                const statusColor = stockStatus === 'Out of Stock' ? 'red' : 'green';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <img src="${firstImage}" class="thumb" alt="${p.name}">
+                    <div style="margin-top:8px">
+                        <strong>${p.name}</strong>
+                        <div class="meta">Price: ₹${p.price || 0}</div>
+                        <div class="meta" style="color:${statusColor}; font-weight:bold;">Status: ${statusText}</div>
+                        <button onclick="editProduct('${k}')" class="primary" style="width:100%; padding:5px 8px; font-size:12px; margin-top:5px;">Edit</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            }
+        });
+
+        if (count === 0) {
+            list.innerHTML = '<p style="text-align:center; margin-top:20px;">No products found in this category.</p>';
+        }
+    }).catch(e => {
+        console.error('Error loading category products:', e);
+        list.innerHTML = `<p style="color:red;">Error loading products: ${e.message}</p>`;
+    });
+}
+// -------- END CATEGORY IMAGE & LANDING PAGE MANAGEMENT --------
+</script>
+</body>
+</html>
+

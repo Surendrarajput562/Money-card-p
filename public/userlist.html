@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>एडमिन पैनल | यूजर लिस्ट और डिटेल्स</title>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px; display: flex; flex-wrap: wrap; }
+        
+        /* Login Form Styling */
+        #login-form-container { width: 100%; }
+        h2 { text-align: center; color: #1877f2; margin-bottom: 25px; }
+        input[type="email"], input[type="password"], button, #search-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        button { background-color: #1877f2; color: white; border: none; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #166fe5; }
+        #error-message { color: red; text-align: center; margin-bottom: 15px; font-weight: bold; }
+
+        /* Admin Panel Layout */
+        #admin-panel { display: none; width: 100%; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
+        .main-content { display: flex; flex-wrap: nowrap; gap: 20px; }
+        
+        /* Search Section */
+        #search-section { padding-bottom: 15px; border-bottom: 1px solid #ddd; }
+        #search-controls { display: flex; gap: 10px; }
+        #search-input { margin: 0; }
+        #search-button { width: 150px; }
+
+        /* User List Section */
+        #user-list-section { flex: 1; min-width: 250px; background-color: #f7f7f7; padding: 15px; border-radius: 8px; max-height: 70vh; overflow-y: auto; }
+        #user-list h3 { margin-top: 0; color: #444; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .user-item { padding: 10px 15px; margin-bottom: 5px; background-color: #fff; border-radius: 5px; border-left: 5px solid #1877f2; cursor: pointer; transition: background-color 0.2s, transform 0.1s; }
+        .user-item:hover { background-color: #e9ebee; transform: scale(1.02); }
+        .user-item.selected { background-color: #d1e7ff; border-left: 5px solid #166fe5; font-weight: bold; }
+        
+        /* User Details Section */
+        #user-details-section { flex: 2; background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+        #user-details-section h3 { color: #1877f2; }
+        #details-output { background-color: #fff; padding: 5px; border-radius: 6px; font-size: 14px; }
+        .loading-text { text-align: center; color: #888; margin-top: 50px; }
+        
+        #details-output ul { list-style: none; padding: 0; margin: 5px 0 15px 0; }
+        #details-output ul li { padding: 5px 0; border-bottom: 1px dotted #eee; }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="login-form-container">
+            <h2>एडमिन लॉगिन 🔑</h2>
+            <div id="error-message"></div>
+            <input type="email" id="admin-email" placeholder="ईमेल (Admin Email)" required>
+            <input type="password" id="admin-password" placeholder="पासवर्ड (Admin Password)" required>
+            <button onclick="loginAdmin()">लॉगिन करें</button>
+        </div>
+
+        <div id="admin-panel">
+            <div class="panel-header">
+                <h2>एडमिन डैशबोर्ड</h2>
+                <button onclick="logoutAdmin()" style="width: auto; padding: 8px 15px; background-color: #d9534f;">लॉगआउट</button>
+            </div>
+
+            <div class="main-content">
+                <div id="user-list-section">
+                    <h3>यूजर्स की लिस्ट</h3>
+                    
+                    <div id="search-section">
+                        <div id="search-controls">
+                            <input type="text" id="search-input" placeholder="UID या ईमेल दर्ज करें" style="flex: 1;">
+                            <button id="search-button" onclick="searchUsers()">सर्च</button>
+                        </div>
+                        <p id="search-info" style="font-size: 12px; color: #555; margin-top: 5px;">सभी यूजर्स देखने के लिए सर्च फ़ील्ड खाली छोड़ दें और 'सर्च' दबाएँ।</p>
+                    </div>
+
+                    <div id="user-list">
+                        <p class="loading-text">यूजर्स लोड हो रहे हैं...</p>
+                    </div>
+                </div>
+
+                <div id="user-details-section">
+                    <h3>यूजर डिटेल्स</h3>
+                    <div id="details-output">किसी यूजर को चुनने पर डिटेल्स यहाँ दिखेंगी।</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+    <script>
+        // *******************************************************************
+        // !!! STEP 1: FIREBASE CONFIGURATION - इसे अपनी डिटेल्स से बदलें !!!
+        // *******************************************************************
+        const firebaseConfig = {
+            // 🚨 सुनिश्चित करें कि ये वैल्यू सही हैं
+
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55",
+            measurementId: "G-3LS5W6F8QW"
+        };
+
+        // Firebase को इनिशियलाइज़ (Initialize) करें
+        firebase.initializeApp(firebaseConfig);
+
+        // Firebase सेवाओं के इंस्टेंस
+        const auth = firebase.auth();
+        const db = firebase.database(); 
+
+        // UI Elements
+        const loginFormContainer = document.getElementById('login-form-container');
+        const adminPanel = document.getElementById('admin-panel');
+        const errorMessage = document.getElementById('error-message');
+        const userListContainer = document.getElementById('user-list');
+        const detailsOutput = document.getElementById('details-output');
+        const searchInput = document.getElementById('search-input'); // नया इनपुट
+
+        let allUserData = {}; // सभी यूजर्स का डेटा स्टोर करने के लिए ऑब्जेक्ट
+
+        // *******************************************************************
+        // STEP 2: AUTHENTICATION FUNCTIONS 
+        // *******************************************************************
+
+        function loginAdmin() {
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            errorMessage.textContent = ''; 
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    db.ref('ADMIN_CONTROL_LISTS/adminEmail').once('value')
+                        .then((snapshot) => {
+                            const dbAdminEmail = snapshot.val();
+                            
+                            if (dbAdminEmail && dbAdminEmail === email) {
+                                console.log(`SUCCESS: Admin email check passed! Logging in as: ${email}`);
+                                // onAuthStateChanged, searchUsers() को कॉल करेगा
+                            } else {
+                                errorMessage.textContent = `लॉगिन असफल: एडमिन ईमेल मैच नहीं हुआ।`;
+                                console.error(`ERROR: Login Email (${email}) does not match DB Admin Email (${dbAdminEmail}).`);
+                                auth.signOut();
+                            }
+                        })
+                        .catch((dbError) => {
+                             console.error("Database check failed, proceeding with login:", dbError);
+                        });
+                })
+                .catch((authError) => {
+                    errorMessage.textContent = `लॉगिन असफल: ${authError.message}`;
+                    console.error("Auth Login Failed:", authError);
+                });
+        }
+        
+        function logoutAdmin() {
+            auth.signOut();
+        }
+
+        // *******************************************************************
+        // STEP 3: DATA SEARCHING AND FETCHING LOGIC (नया फ़ंक्शन)
+        // *******************************************************************
+        
+        // यह फंक्शन सर्च इनपुट के आधार पर यूजर्स को फ़ेच या फ़िल्टर करता है
+        function searchUsers() {
+            const query = searchInput.value.trim();
+            userListContainer.innerHTML = '<p class="loading-text">सर्च किया जा रहा है...</p>';
+            detailsOutput.innerHTML = 'किसी यूजर को चुनने पर डिटेल्स यहाँ दिखेंगी।'; 
+            allUserData = {}; 
+            
+            let ref = db.ref('users');
+
+            if (query === '') {
+                // 1. यदि सर्च बार खाली है, तो सभी यूजर्स (10000 तक) लोड करें (जैसा पहले था)
+                ref = ref.orderByKey().limitToFirst(10000);
+                console.log("Fetching all users (up to 10000)...");
+            } else if (query.includes('@')) {
+                // 2. यदि इनपुट में '@' है, तो ईमेल द्वारा सर्च करें
+                // नोट: इसके लिए Rules में ".indexOn": ["email"] होना चाहिए
+                ref = ref.orderByChild('email').equalTo(query);
+                console.log(`Searching by email: ${query}`);
+            } else if (query.length > 5 && query.length <= 30) { 
+                // 3. यदि यह एक संभावित UID है, तो UID (की) द्वारा सर्च करें
+                ref = ref.orderByKey().equalTo(query);
+                console.log(`Searching by UID: ${query}`);
+            } else {
+                 // 4. अमान्य क्वेरी
+                userListContainer.innerHTML = `<p class="loading-text" style="color: orange;">अमान्य सर्च इनपुट। कृपया पूरी UID या ईमेल दर्ज करें।</p>`;
+                return;
+            }
+
+            ref.once('value')
+                .then((snapshot) => {
+                    console.log("Total records fetched:", snapshot.numChildren());
+
+                    if (snapshot.exists()) {
+                        allUserData = snapshot.val();
+                        displayUserList(allUserData);
+                    } else {
+                        userListContainer.innerHTML = '<p class="loading-text" style="color: blue;">कोई यूजर नहीं मिला।</p>';
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching users:", error);
+                    userListContainer.innerHTML = `<p class="loading-text" style="color: red;">
+                    डेटा प्राप्त करने में त्रुटि। त्रुटि: ${error.message}</p>`;
+                });
+        }
+
+        // प्राप्त डेटा से लिस्ट डिस्प्ले करें
+        function displayUserList(users) {
+            userListContainer.innerHTML = ''; 
+            
+            if (typeof users !== 'object' || users === null) {
+                userListContainer.innerHTML = '<p class="loading-text" style="color: red;">अमान्य डेटा संरचना।</p>';
+                return;
+            }
+
+            // यदि यह केवल एक परिणाम है (जैसे UID या ईमेल सर्च से), तो इसे ऑब्जेक्ट के रूप में बदलें
+            const userKeys = Object.keys(users);
+            if (userKeys.length === 1 && typeof users[userKeys[0]] !== 'object') {
+                 // यह केवल तब होता है जब ईमेल सर्च एक ही यूज़र देता है, इसे ठीक से ऑब्जेक्ट में डालें
+            }
+
+
+            for (const userId in users) {
+                if (Object.hasOwnProperty.call(users, userId)) {
+                    const userData = users[userId];
+                    
+                    const displayTitle = userData.name || userData.email || userData.mobile || `User ID: ${userId}`;
+                    
+                    const listItem = document.createElement('div');
+                    listItem.classList.add('user-item');
+                    listItem.textContent = displayTitle;
+                    listItem.dataset.userId = userId; 
+                    
+                    listItem.onclick = () => showUserDetails(userId);
+                    
+                    userListContainer.appendChild(listItem);
+                }
+            }
+        }
+        
+        // क्लिक होने पर यूजर की डिटेल्स डिस्प्ले करें (रीडेबल फॉर्मेट)
+        function showUserDetails(userId) {
+            // Selection State Update
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            const currentItem = document.querySelector(`.user-item[data-user-id="${userId}"]`);
+            if (currentItem) {
+                currentItem.classList.add('selected');
+            }
+            
+            const userData = allUserData[userId];
+            
+            if (userData) {
+                // 1. रीडेबल मुख्य डिटेल्स
+                let readableDetails = `
+                    <h4>✅ मुख्य डिटेल्स</h4>
+                    <ul>
+                        <li><strong>यूजर ID (UID):</strong> ${userId}</li>
+                        <li><strong>नाम:</strong> ${userData.name || 'N/A'}</li>
+                        <li><strong>ईमेल:</strong> ${userData.email || 'N/A'}</li>
+                        <li><strong>मोबाइल:</strong> ${userData.mobile || 'N/A'}</li>
+                        <li><strong>एक्टिव स्टेटस:</strong> ${userData.active ? 'Active' : 'Inactive'}</li>
+                    </ul>
+                    <hr>
+                    
+                    <h4>💰 वॉलेट और KYC स्टेटस</h4>
+                    <ul>
+                        <li><strong>वॉलेट बैलेंस:</strong> ${userData.wallet ? (userData.wallet.balance || 0) : '0'}</li>
+                        <li><strong>KYC Step 1 (Basic Info) Completed:</strong> ${userData.step1_completed || 'No'}</li>
+                        <li><strong>KYC Step 2 (Documents) Completed:</strong> ${userData.step2_completed || 'No'}</li>
+                        <li><strong>KYC Step 3 (Bank/Job) Completed:</strong> ${userData.step3_completed || 'No'}</li>
+                    </ul>
+                    <hr>
+                `;
+
+                // 2. सभी RAW डेटा को JSON फॉर्मेट में दिखाएँ
+                const jsonDetails = {
+                    "यूजर_ID": userId,
+                    ...userData
+                };
+                
+                readableDetails += `
+                    <h4>RAW JSON डेटा (पूरी जानकारी, URLs सहित)</h4>
+                    <pre style="background-color: #f0f0f0; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap;">${JSON.stringify(jsonDetails, null, 2)}</pre>
+                `;
+                
+                detailsOutput.innerHTML = readableDetails;
+                
+            } else {
+                detailsOutput.innerHTML = `Error: User ID ${userId} not found in stored data.`;
+            }
+        }
+
+        // *******************************************************************
+        // STEP 4: AUTH STATE LISTENER (UI SWITCH)
+        // *******************************************************************
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // यूजर लॉगिन है
+                loginFormContainer.style.display = 'none';
+                adminPanel.style.display = 'block';
+                errorMessage.textContent = '';
+                searchUsers(); // लॉगिन के बाद अब सर्च फ़ंक्शन को कॉल करें (डिफ़ॉल्ट रूप से सभी यूजर्स लोड करेगा)
+            } else {
+                // यूजर लॉगआउट है
+                loginFormContainer.style.display = 'block';
+                adminPanel.style.display = 'none';
+                userListContainer.innerHTML = '';
+                detailsOutput.innerHTML = 'किसी यूजर को चुनने पर डिटेल्स यहाँ दिखेंगी।';
+            }
+        });
+
+    </script>
+</body>
+</html>
+

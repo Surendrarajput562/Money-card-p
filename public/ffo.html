@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Rupi - Login</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        :root { --gold: #ffd700; --dark: #0a0a0a; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--gold); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        
+        /* Main Login Box */
+        .login-container { 
+            background: #111; 
+            padding: 35px 25px; 
+            border-radius: 24px; 
+            border: 1px solid var(--gold); 
+            width: 90%; 
+            max-width: 380px; 
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.15); 
+            text-align: center; 
+        }
+
+        h2 { margin-bottom: 25px; letter-spacing: 1px; }
+        input { 
+            width: 100%; padding: 15px; margin: 12px 0; 
+            background: #1a1a1a; border: 1px solid #333; 
+            color: white; border-radius: 12px; box-sizing: border-box; 
+            outline: none; font-size: 16px;
+        }
+        input:focus { border-color: var(--gold); }
+
+        .btn { 
+            padding: 16px; background: var(--gold); color: black; 
+            border: none; font-weight: bold; border-radius: 12px; 
+            cursor: pointer; width: 100%; font-size: 17px; 
+            margin-top: 15px; transition: 0.3s; 
+        }
+        .btn:active { transform: scale(0.98); }
+
+        /* Face Verification UI */
+        #face-section { display: none; }
+        #camera-wrapper { margin: 20px auto; position: relative; width: 260px; height: 260px; }
+        .circle-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            border: 4px solid var(--gold); border-radius: 50%; z-index: 25; 
+            pointer-events: none; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        video { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            object-fit: cover; border-radius: 50%; transform: scaleX(-1); 
+        }
+        
+        .step-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+        .dot { height: 8px; background: #333; border-radius: 10px; flex: 1; transition: 0.4s; }
+        .dot.active { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+        
+        #instruction { font-size: 18px; font-weight: bold; margin-top: 20px; color: #fff; min-height: 25px; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body onload="preloadEverything()">
+
+    <div id="login-ui" class="login-container">
+        <h2>Gold Rupi Login</h2>
+        <input type="email" id="log-email" placeholder="Email Address">
+        <input type="password" id="log-pass" placeholder="Password">
+        <button class="btn" onclick="submitLogin()">Login Karein</button>
+    </div>
+
+    <div id="face-section" class="login-container">
+        <h2>Security Check</h2>
+        <div id="camera-wrapper">
+            <div class="circle-overlay"></div>
+            <video id="video" autoplay muted playsinline></video>
+        </div>
+        <div id="steps-ui" class="step-dots">
+            <div id="dot1" class="dot"></div><div id="dot2" class="dot"></div>
+            <div id="dot3" class="dot"></div><div id="dot4" class="dot"></div>
+            <div id="dot5" class="dot"></div>
+        </div>
+        <p id="instruction">AI Load Ho Raha Hai...</p>
+    </div>
+
+<script>
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    appId: "1:720775550032:web:0622548a007597778bad55"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+let currentStep = 1, isClosed = false, savedFaceData = null, modelsReady = false, isSaving = false;
+
+// Preload Face Models
+async function preloadEverything() {
+    try {
+        await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models'),
+            faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models'),
+            faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models')
+        ]);
+        modelsReady = true;
+        console.log("System Ready");
+    } catch(e) { alert("Models load nahi ho paye, internet check karein."); }
+}
+
+// Login Logic
+async function submitLogin() {
+    const email = document.getElementById('log-email').value;
+    const pass = document.getElementById('log-pass').value;
+    if(!email || !pass) return alert("Email aur Password dono bhariye.");
+
+    try {
+        const res = await auth.signInWithEmailAndPassword(email, pass);
+        await res.user.reload();
+        
+        // Check Email Verification
+        if(!auth.currentUser.emailVerified) {
+            return alert("Bhai, pehle Gmail check karo aur account verify karo!");
+        }
+
+        // Check if Face Data exists
+        const snap = await db.ref('face_verification/' + res.user.uid).once('value');
+        const data = snap.val();
+        if(data && data.faceData !== "PENDING") {
+            savedFaceData = new Float32Array(data.faceData);
+        }
+        
+        startFaceSystem();
+    } catch(err) { alert("Login Fail: " + err.message); }
+}
+
+// Face Verification/Registration System
+async function startFaceSystem() {
+    document.getElementById('login-ui').classList.add('hidden');
+    document.getElementById('face-section').style.display = 'block';
+
+    const video = document.getElementById('video');
+    const instr = document.getElementById('instruction');
+
+    if(savedFaceData) {
+        document.getElementById('steps-ui').classList.add('hidden');
+        instr.innerText = "Face Match Kiya Ja Raha Hai...";
+    } else {
+        document.getElementById('dot1').classList.add('active');
+        instr.innerText = "Step 1: Palke Jhapkayein";
+    }
+
+    const faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+    faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.6 });
+
+    faceMesh.onResults(async (results) => {
+        if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0 || isSaving) return;
+        const landmarks = results.multiFaceLandmarks[0];
+
+        // --- LOGIN MATCHING ---
+        if(savedFaceData && modelsReady) {
+            const d = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+            if(d) {
+                const dist = faceapi.euclideanDistance(d.descriptor, savedFaceData);
+                if(dist < 0.45) window.location.href = "dashboard.html";
+                else instr.innerText = "❌ Face Match Nahi Hua!";
+            }
+            return;
+        }
+
+        // --- FIRST TIME REGISTRATION (5 STEPS) ---
+        const eye = Math.abs(landmarks[159].y - landmarks[145].y);
+        const nx = landmarks[1].x, ny = landmarks[1].y;
+
+        if(currentStep === 1) {
+            if(eye < 0.013 && !isClosed) isClosed = true;
+            else if(eye > 0.019 && isClosed) { currentStep = 2; updateUI(1, "➡️ Step 2: RIGHT Dekhein"); }
+        }
+        else if(currentStep === 2 && nx < 0.35) { currentStep = 3; updateUI(2, "⬅️ Step 3: LEFT Dekhein"); }
+        else if(currentStep === 3 && nx > 0.65) { currentStep = 4; updateUI(3, "⬆️ Step 4: UPER Dekhein"); }
+        else if(currentStep === 4 && ny < 0.35) { currentStep = 5; updateUI(4, "⬇️ Step 5: NICHE Dekhein"); }
+        else if(currentStep === 5 && ny > 0.65) {
+            isSaving = true;
+            instr.innerText = "✅ Saving Security Data...";
+            if(modelsReady) {
+                const d = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+                if(d) {
+                    await db.ref('face_verification/' + auth.currentUser.uid).update({ faceData: Array.from(d.descriptor) });
+                    window.location.href = "dashboard.html";
+                } else {
+                    isSaving = false;
+                    instr.innerText = "Face capture fail, ruko...";
+                }
+            }
+        }
+    });
+
+    const camera = new Camera(video, { onFrame: async () => { await faceMesh.send({image: video}); }, width: 280, height: 280 });
+    camera.start();
+}
+
+function updateUI(n, text) {
+    document.getElementById(`dot${n}`).style.background = "lime";
+    let next = document.getElementById(`dot${n+1}`);
+    if(next) next.classList.add('active');
+    document.getElementById('instruction').innerText = text;
+}
+</script>
+</body>
+</html>
+

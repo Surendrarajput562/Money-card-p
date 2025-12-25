@@ -1,23 +1,85 @@
 {
   "hosting": {
+    "target": "moneycard-8f457",
     "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ]
-  },
-  "functions": {
-    "source": "functions",
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase-debug.log",
-      "firebase-debug.*.log",
-      "*.local"
     ],
-    "predeploy": [
-      "npm --prefix \"$RESOURCE_DIR\" run lint"
+    "headers": [
+      {
+        "source": "/**/*.json",
+        "headers": [{ "key": "Content-Type", "value": "application/json" }]
+      },
+      {
+        "source": "/**/*-shard*",
+        "headers": [{ "key": "Content-Type", "value": "application/octet-stream" }]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/tiny_face_detector_model-weights_manifest.json",
+        "destination": "/tiny_face_detector_model-weights_manifest.json"
+      },
+      {
+        "source": "/face_landmark_68_model-weights_manifest.json",
+        "destination": "/face_landmark_68_model-weights_manifest.json"
+      },
+      {
+        "source": "/face_recognition_model-weights_manifest.json",
+        "destination": "/face_recognition_model-weights_manifest.json"
+      },
+      {
+        "source": "/face-api.min.js",
+        "destination": "/face-api.min.js"
+      },
+      {
+        "source": "/MediaPipe_Python_Tasks]_Face_Landmarker.ipynb.txt",
+        "destination": "/MediaPipe_Python_Tasks]_Face_Landmarker.ipynb.txt"
+      },
+      { "source": "/", "destination": "/index.html" },
+      { "source": "/workie.html", "destination": "/workie.html" },
+      { "source": "/work.html", "destination": "/work.html" },
+      { "source": "/changenow.html", "destination": "/changenow.html" },
+      { "source": "/change.html", "destination": "/change.html" },
+      { "source": "/manifest.json", "destination": "/manifest.json" },
+      { "source": "/service-worker.js", "destination": "/service-worker.js" },
+      { "source": "/sw-check-permissions-f24d2.js", "destination": "/sw-check-permissions-f24d2.js" },
+      { "source": "/arupe.html", "destination": "/arupe.html" },
+      { "source": "/urupe.html", "destination": "/urupe.html" },
+      { "source": "/rupi.html", "destination": "/rupi.html" },
+      { "source": "/goldrupi.html", "destination": "/goldrupi.html" },
+      { "source": "/rebook.html", "destination": "/rebook.html" },
+      { "source": "/rubook.html", "destination": "/rubook.html" },
+      { "source": "/loan.html", "destination": "/loan.html" },
+      { "source": "/admincantrol.html", "destination": "/admincantrol.html" },
+      { "source": "/admi.html", "destination": "/admi.html" },
+      { "source": "/link.html", "destination": "/link.html" },
+      { "source": "/bdesk.html", "destination": "/bdesk.html" },
+      { "source": "/a.html", "destination": "/a.html" },
+      { "source": "/aa.html", "destination": "/aa.html" },
+      { "source": "/aaa.html", "destination": "/aaa.html" },
+      { "source": "/aaaa.html", "destination": "/aaaa.html" },
+      { "source": "/aaaaa.html", "destination": "/aaaaa.html" },
+      { "source": "/aaaaaa.html", "destination": "/aaaaaa.html" },
+      { "source": "/aaaaaaa.html", "destination": "/aaaaaaa.html" },
+      { "source": "/aaaaaaaa.html", "destination": "/aaaaaaaa.html" },
+      { "source": "/aaaaaaaaa.html", "destination": "/aaaaaaaaa.html" },
+      { "source": "/b.html", "destination": "/b.html" },
+      { "source": "/bb.html", "destination": "/bb.html" },
+      { "source": "/bbb.html", "destination": "/bbb.html" },
+      { "source": "/bbbbb.html", "destination": "/bbbbb.html" },
+      { "source": "/bbbbbb.html", "destination": "/bbbbbb.html" },
+      { "source": "/bbbbbbb.html", "destination": "/bbbbbbb.html" },
+      { "source": "/bbbb.html", "destination": "/bbbb.html" },
+      { "source": "/aaaaaaaaaa.html", "destination": "/aaaaaaaaaa.html" },
+      { "source": "/curupe.html", "destination": "/curupe.html" }
     ]
   }
 }
+
+
+
+
+

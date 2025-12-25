@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Worker API Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .endpoint-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 Cloudflare Worker KYC API Tester</h1>
+    <p>आपका Backend URLv</strong></p>
+    
+    <div class="endpoint-section">
+        <h2>💳 PAN Verification Test: /verify-pan</h2>
+        
+        <div class="form-group">
+            <label for="panNumber">PAN Number (उदाहरण: ABCDE1234F)</label>
+            <input type="text" id="panNumber" value="ABCDE1234F" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="panName">Applicant Name (उदाहरण: SURENDRA RAJPUT)</label>
+            <input type="text" id="panName" value="SURENDRA RAJPUT" required>
+        </div>
+        
+        <button onclick="testPanVerification()">PAN Verify करें</button>
+    </div>
+
+    <h2>📊 API Response</h2>
+    <pre id="response">Response यहां दिखेगा...</pre>
+</div>
+
+<script>
+    // ⚠️ अपने Worker का URL यहां डालें
+    const BACKEND_URL = 'https://solitary-sea-a425.rajputsurendra562.workers.dev';
+
+    async function testPanVerification() {
+        const panNumber = document.getElementById('panNumber').value.toUpperCase();
+        const name = document.getElementById('panName').value;
+        const responseElement = document.getElementById('response');
+        responseElement.textContent = "Processing... (रिक्वेस्ट भेजी जा रही है)";
+
+        if (!panNumber || !name) {
+            responseElement.textContent = "Error: कृपया PAN नंबर और नाम दोनों भरें।";
+            return;
+        }
+
+        try {
+            const apiResponse = await fetch(`${BACKEND_URL}/verify-pan`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    panNumber: panNumber,
+                    name: name
+                })
+            });
+
+            const data = await apiResponse.json();
+            
+            // Response को फॉर्मेट करके दिखाना
+            responseElement.textContent = JSON.stringify(data, null, 4);
+
+            if (data.ok) {
+                responseElement.style.backgroundColor = '#d4edda'; // Green for success
+                responseElement.style.borderColor = '#c3e6cb';
+            } else {
+                responseElement.style.backgroundColor = '#f8d7da'; // Red for failure
+                responseElement.style.borderColor = '#f5c6cb';
+            }
+
+        } catch (error) {
+            responseElement.textContent = `FATAL ERROR: नेटवर्क या CORS समस्या। \n${error.message}`;
+            responseElement.style.backgroundColor = '#f8d7da';
+        }
+    }
+</script>
+
+</body>
+</html>
+

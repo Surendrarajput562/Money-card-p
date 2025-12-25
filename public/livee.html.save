@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Live Streaming App</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <script src="https://www.paypal.com/sdk/js?client-id=BAADaL9tcLlRLdHvYLi4BBA8PSLVY31pLHE7hyR08DcMzdre2unAWtxgjFemGYqd0gnV5cyCaXmCYK_sU0&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <style>
+      /* (CSS Styles remain the same) */
+      :root { --bg: #0f0f13; --card: #1a1a24; --primary: #ff0055; --text: #ffffff; --sub: #888; }
+      body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; }
+      .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; }
+      .active { display: flex; }
+      .auth-box { margin: auto; padding: 20px; background: var(--card); border-radius: 12px; width: 80%; max-width: 400px; text-align: center; }
+      input { width: 90%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; }
+      .btn { background: var(--primary); color: #fff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; width: 100%; cursor: pointer; }
+      .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 10; }
+      .tabs { display: flex; gap: 15px; font-size: 14px; font-weight: bold; text-transform: lowercase; color: var(--sub); }
+      .tab-active { color: #fff; border-bottom: 2px solid var(--primary); }
+      .feed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; overflow-y: auto; flex: 1; }
+      .room-card { background: var(--card); border-radius: 10px; height: 200px; position: relative; overflow: hidden; background-size: cover; }
+      .live-badge { position: absolute; top: 10px; left: 10px; background: var(--primary); padding: 2px 8px; font-size: 10px; border-radius: 4px; }
+      .player-container { flex: 1; position: relative; background: #000; }
+      video { width: 100%; height: 100%; object-fit: cover; }
+      .overlay-ui { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; box-sizing: border-box; }
+      .chat-area { height: 150px; overflow-y: scroll; pointer-events: auto; margin-bottom: 60px; mask-image: linear-gradient(to bottom, transparent, black 20%); }
+      .chat-msg, .gift-msg { font-size: 13px; margin-bottom: 5px; text-shadow: 1px 1px 2px #000; }
+      .chat-msg b { color: #ffd700; }
+      .controls { position: absolute; bottom: 10px; width: 90%; display: flex; gap: 10px; pointer-events: auto; }
+      .gift-btn { background: linear-gradient(45deg, #ff9900, #ff0055); border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #fff; box-shadow: 0 0 10px var(--primary); }
+      .menu-list { overflow-y: auto; padding: 20px; }
+      .menu-item { padding: 15px 0; border-bottom: 1px solid #333; font-size: 14px; color: #ddd; display: flex; justify-content: space-between; text-transform: lowercase; }
+      .balance-card { background: linear-gradient(135deg, #222, #333); padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+      .nav { height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 100; }
+      .nav-icon { font-size: 24px; color: #555; cursor: pointer; }
+      .nav-icon.active-icon { color: #fff; }
+      .go-live-btn { width: 50px; height: 50px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #000; font-size: 28px; margin-top: -20px; border: 4px solid #000; }
+      #sticker-panel { position: absolute; bottom: 70px; right: 10px; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); padding: 10px; border-radius: 8px; max-height: 150px; overflow-y: auto; display: none; flex-direction: column; gap: 10px; pointer-events: auto; }
+      .sticker-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 5px; border-radius: 5px; border: 1px solid transparent; }
+      .sticker-item:hover { border-color: var(--primary); }
+      .sticker-item img { width: 40px; height: 40px; }
+      .sticker-item span { font-size: 10px; color: #ffd700; margin-top: 2px; }
+      .gift-animation-container { position: absolute; top: 100px; right: 10px; width: 200px; }
+      .gift-pop { background: rgba(255, 255, 255, 0.9); padding: 5px 10px; border-radius: 20px; margin-bottom: 10px; display: flex; align-items: center; animation: slideIn 0.3s ease-out; }
+      .gift-pop img { width: 30px; height: 30px; margin-right: 5px; }
+      .gift-pop .combo { font-size: 20px; font-weight: bold; color: var(--primary); margin-left: 5px; }
+      @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+  <div id="auth-screen" class="screen active">
+    <div class="auth-box">
+      <h2 style="color:var(--primary)">live app</h2>
+      <input type="text" id="username" placeholder="display name">
+      <input type="email" id="email" placeholder="email">
+      <input type="password" id="password" placeholder="password">
+      <button class="btn" onclick="handleAuth()">login / signup</button>
+      <p style="font-size:12px; color:#666; margin-top:10px;">if account not exists, it will be created.</p>
+    </div>
+  </div>
+
+  <div id="home-screen" class="screen">
+    <div class="header">
+      <div class="tabs">
+        <div class="tab-active" onclick="changeTab(this, 'for you')">for you</div>
+        <div onclick="changeTab(this, 'following')">following</div>
+        <div onclick="changeTab(this, 'explore')">explore</div>
+        <div onclick="changeTab(this, 'coins')">coins</div>
+      </div>
+      <div id="my-diamonds" style="font-size:12px; background:#222; padding:5px 10px; border-radius:20px;">💎 0</div>
+    </div>
+    
+    <div class="feed-grid" id="room-list"></div>
+
+    <div class="nav">
+      <div class="nav-icon active-icon" onclick="showScreen('home-screen')">🏠</div>
+      <div class="nav-icon">🔍</div>
+      <div class="go-live-btn" onclick="goLive()">+</div>
+      <div class="nav-icon">💬</div>
+      <div class="nav-icon" onclick="showScreen('profile-screen')">👤</div>
+    </div>
+  </div>
+
+  <div id="room-screen" class="screen" style="background: black;">
+    <div class="player-container">
+      <video id="video-player" autoplay playsinline muted></video>
+      <div class="gift-animation-container" id="gift-animation-area"></div>
+      <div style="position:absolute; top:20px; right:20px; color:white; font-size:20px; z-index:100; pointer-events: auto;" onclick="leaveRoom()">✕</div>
+      
+      <div class="overlay-ui">
+        <div class="chat-area" id="chat-box"></div>
+        <div id="sticker-panel"></div>
+        <div class="controls">
+          <input type="text" id="chat-input" placeholder="say something..." style="background:rgba(255,255,255,0.2); border:none; flex-grow: 1;">
+          <button class="btn" style="width:auto; padding: 10px 15px;" onclick="sendChat()">send</button>
+          <div class="gift-btn" onclick="toggleStickerPanel()">🎁</div>
+        </div>
+      </div>
+      
+      <div id="host-controls" style="position:absolute; top:50%; left:10%; right:10%; background:#222; padding:20px; display:none; border-radius:10px; text-align:center; z-index:101;">
+        <h3>broadcasting live</h3>
+        <p style="font-size:11px; color:#aaa;">Your stream is pushing directly from the browser.</p>
+        <button class="btn" onclick="document.getElementById('host-controls').style.display='none'">close & monitor</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="profile-screen" class="screen">
+    <div class="header"><span>me</span> <span style="cursor:pointer;" onclick="showScreen('home-screen')">✕</span></div>
+    <div style="padding:20px; text-align:center;">
+      <div style="width:80px; height:80px; background:#333; border-radius:50%; margin:0 auto;"></div>
+      <h2 id="profile-name">user</h2>
+      <p id="profile-uid" style="font-size:10px; color:#555;"></p>
+    </div>
+
+    <div class="menu-list">
+      <div class="balance-card">
+        <h3>wallet</h3>
+        <h1 id="wallet-balance">💎 0 | 🪙 0</h1>
+        <div id="paypal-container-LDLU6UV2GPRQE" style="margin-top: 15px;"></div> 
+      </div>
+      <div class="menu-item">agency program <span>></span></div>
+      <div class="menu-item">vip loyalty <span>></span></div>
+      <div class="menu-item">myvip store <span>></span></div>
+      <div class="menu-item">live cards auction <span>></span></div>
+      <div class="menu-item">settings <span>></span></div>
+      <div class="menu-item">account <span>></span></div>
+      <div class="menu-item">payments <span>></span></div>
+      <div class="menu-item">notifications <span>></span></div>
+      <div class="menu-item">privacy & terms <span>></span></div>
+      <div class="menu-item">general <span>></span></div>
+      <div class="menu-item">dark theme <span>●</span></div>
+      <div style="margin-top:20px; color:var(--primary); font-size:12px; font-weight:bold;">creator tools</div>
+      <div class="menu-item">get money <span>></span></div>
+      <div class="menu-item">statistics <span>></span></div>
+      <div class="menu-item">my fans <span>></span></div>
+      <div style="margin-top:20px; color:var(--sub); font-size:12px;">help center</div>
+      <div class="menu-item">legal information <span>></span></div>
+      <div class="menu-item">customer support <span>></span></div>
+      <div class="menu-item" onclick="firebase.auth().signOut()">logout</div>
+    </div>
+  </div>
+
+  <script>
+    // --- CONFIG ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+      authDomain: "smbrand-4543a.firebaseapp.com",
+      databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+      projectId: "smbrand-4543a",
+      storageBucket: "smbrand-4543a.firebasestorage.app",
+      messagingSenderId: "720775550032",
+      appId: "1:720775550032:web:0622548a007597778bad55",
+      measurementId: "G-3LS5W6F8QW"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    
+    // ⚠️ IMPORTANT: Replace with your actual Cloudflare Worker URL
+    const WORKER_URL = "https://dawn-heart-dc55.rajputsurendra562.workers.dev";
+    
+    let currentUser = null;
+    let currentRoomId = null;
+    let hls = null;
+    let localStream = null;
+    let publisherConnection = null; 
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // --- AUTH FLOW --- (Unchanged)
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        db.ref('users/' + user.uid).once('value', snap => {
+            const data = snap.val();
+            if (data && data.isBanned) {
+                auth.signOut();
+                alert("Account is banned. Please contact support.");
+            } else {
+                document.getElementById('auth-screen').classList.remove('active');
+                document.getElementById('home-screen').classList.add('active');
+            }
+        });
+      } else {
+        showScreen('auth-screen');
+      }
+    });
+
+    async function handleAuth() {
+      const email = document.getElementById('email').value;
+      const pass = document.getElementById('password').value;
+      const name = document.getElementById('username').value || 'user_' + Math.random().toString(36).substr(2, 5);
+      
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+      } catch (e) {
+        try {
+          const res = await auth.createUserWithEmailAndPassword(email, pass);
+          await db.ref('users/' + res.user.uid).set({
+            displayName: name,
+            email: email,
+            wallet: { diamonds: 0, coins: 0 },
+            isBanned: false
+          });
+        } catch (err) { alert(err.message); }
+      }
+    }
+    
+    // --- WebRTC Publish Logic --- (Uses plain text SDP answer, as is standard for Cloudflare WebRTC)
+    async function startWebRTCPublishing(stream, publishUrl) {
+        const peerConnection = new RTCPeerConnection({
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+        stream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, stream);
+        });
+        peerConnection.onicecandidate = ({ candidate }) => {
+            if (candidate) { console.log("ICE Candidate found."); }
+        };
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        const raw = await fetch(publishUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sdp: peerConnection.localDescription.sdp, type: 'offer' })
+        });
+        
+        const sdpText = await raw.text(); 
+        
+        if (raw.ok && sdpText) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: sdpText, type: 'answer' }));
+            console.log("WebRTC Publish successful!");
+            return peerConnection;
+        } else {
+            console.error("Cloudflare WebRTC Answer Failed:", sdpText);
+            throw new Error("Failed to get WebRTC Answer from Cloudflare: " + sdpText);
+        }
+    }
+
+
+
+// --- 🚀 STREAMING (GO LIVE) --- (Only the relevant section updated)
+async function goLive() {
+  // ... (Previous code to get title, start spinner, and get camera access) ...
+
+  // 2. Get WebRTC Input URL from Worker
+  // ... (Worker call and JSON parsing remain the same) ...
+
+  if(data.ok) {
+    const roomId = "room-" + currentUser.uid;
+    const roomData = {
+      // ... (roomData definition remains the same) ...
+    };
+    
+    // ⭐️ FIX: Increased Delay to ensure Cloudflare Live Input is ready ⭐️
+    alert("Cloudflare Input URL received. Waiting 2.5 seconds for Cloudflare to warm up...");
+    await delay(2500); // Increased from 1000ms to 2500ms 
+
+    // 3. Start WebRTC Publish Connection
+    try {
+        publisherConnection = await startWebRTCPublishing(localStream, roomData.webRTCPublishUrl);
+        await db.ref('liveRooms/' + roomId).set(roomData);
+        enterRoom(roomId, true, roomData, localStream); 
+        
+    } catch (e) {
+        // ... (Error handling remains the same) ...
+    }
+
+  } else {
+    // ... (Worker error handling remains the same) ...
+  }
+  btn.innerText = "+";
+}
+
+
+
+
+
+
+
+
+
+    // --- 🚀 STREAMING (GO LIVE) - Robust Error Handling and Loopback 🚀 ---
+    async function goLive() {
+      const title = prompt("room title:");
+      if (!title) return;
+
+      const btn = document.querySelector('.go-live-btn');
+      btn.innerText = "↻";
+      
+      // 1. Request Camera and Mic Permission & Local Loopback
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        
+        // IMMEDIATE LOOPBACK ASSIGNMENT (Host sees themselves instantly)
+        const video = document.getElementById('video-player');
+        video.srcObject = localStream; 
+        video.muted = true; // Host must be muted
+        video.play().catch(e => console.warn("Video play error (expected if muted):", e));
+        
+      } catch (err) {
+        alert("Camera/Mic access denied. Cannot go live: " + err.message);
+        btn.innerText = "+";
+        return;
+      }
+
+      showScreen('room-screen');
+      document.getElementById('host-controls').style.display = 'block';
+
+      // 2. Get WebRTC Input URL from Worker
+      const fetchResp = await fetch(WORKER_URL + '/create-live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: currentUser.uid })
+      });
+      
+      const responseText = await fetchResp.text(); 
+      let data;
+      
+      try {
+          data = JSON.parse(responseText);
+      } catch (e) {
+          // If Worker sent raw text (HTML, generic error page) instead of JSON
+          alert("FATAL WORKER ERROR: Invalid response from server. Check Cloudflare Logs. Response: " + responseText.substring(0, 100));
+          leaveRoom();
+          btn.innerText = "+";
+          return;
+      }
+      
+
+      if(data.ok) {
+        const roomId = "room-" + currentUser.uid;
+        const roomData = {
+          uid: currentUser.uid,
+          title: title,
+          status: 'live',
+          webRTCPublishUrl: data.webRTCPublishUrl,
+          playbackUrl: data.playbackUrl, // Use the correct playback URL from worker response
+          startedAt: firebase.database.ServerValue.TIMESTAMP
+        };
+        
+        await delay(1000); 
+
+        // 3. Start WebRTC Publish Connection
+        try {
+            publisherConnection = await startWebRTCPublishing(localStream, roomData.webRTCPublishUrl);
+            await db.ref('liveRooms/' + roomId).set(roomData);
+            enterRoom(roomId, true, roomData, localStream); 
+            
+        } catch (e) {
+            // If WebRTC negotiation fails
+            alert("WebRTC publishing failed: " + e.message + ". Check WebRTC URL in Worker response.");
+            leaveRoom(); 
+        }
+
+      } else {
+        // Worker returned JSON but with ok: false (e.g., failed PayPal or Cloudflare API)
+        alert("Could not start stream: Worker Error! Details: " + (data.msg || data.error || data.detail || "Unknown Worker Error"));
+        leaveRoom(); 
+      }
+      btn.innerText = "+";
+    }
+
+    // --- ROOM ENTRY ---
+    function enterRoom(roomId, isHost, roomData, stream = null) {
+      currentRoomId = roomId;
+      showScreen('room-screen');
+      document.getElementById('chat-box').innerHTML = "";
+      
+      const video = document.getElementById('video-player');
+
+      if(!isHost) {
+        // VIEWER LOGIC (HLS Playback)
+        document.getElementById('host-controls').style.display = 'none';
+        video.muted = false; 
+        video.srcObject = null; 
+        
+        if (Hls.isSupported()) {
+          if(hls) hls.destroy();
+          hls = new Hls();
+          hls.loadSource(roomData.playbackUrl);
+          hls.attachMedia(video);
+          video.play().catch(e => console.error("Play failed:", e));
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = roomData.playbackUrl;
+          video.play().catch(e => console.error("Play failed:", e));
+        }
+      } else {
+        // HOST LOGIC (Local Loopback)
+        // Video is already assigned in goLive(), but re-assigning ensures robustness.
+        if(stream) {
+            video.srcObject = stream;
+            video.muted = true;
+            video.play().catch(e => console.warn("Host play error:", e));
+        }
+        document.getElementById('host-controls').style.display = 'block';
+      }
+      
+      // ... (Load Chats and Gifts) ...
+    }
+
+    // --- ROOM LEAVE ---
+    function leaveRoom() {
+      if(hls) hls.destroy();
+      
+      if(publisherConnection) publisherConnection.close();
+      if(localStream) localStream.getTracks().forEach(track => track.stop());
+      
+      if(currentRoomId && document.getElementById('host-controls').style.display === 'block') {
+         db.ref(`liveRooms/${currentRoomId}`).update({ status: 'offline' });
+         fetch(WORKER_URL + '/end-live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ roomId: currentRoomId }) });
+      }
+      
+      currentRoomId = null;
+      document.getElementById('host-controls').style.display = 'none';
+      document.getElementById('video-player').srcObject = null; 
+      
+      // Stop listening to Firebase references if implemented
+      // db.ref(`chats`).off(); 
+      // db.ref(`gifts`).off(); 
+      
+      showScreen('home-screen');
+    }
+    
+    // ... (Other functions, e.g., sendChat, toggleStickerPanel, loadRooms etc.) ...
+  </script>
+</body>
+</html>
+

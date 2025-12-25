@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Products Panel</title>
+<style>
+body { font-family: Arial; margin:0; padding:0; background:#f4f4f4; }
+header { background:#333; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; }
+#admin-panel { padding:20px; display:none; }
+.card { border:1px solid #ccc; padding:10px; margin-bottom:10px; display:flex; align-items:center; background:white; }
+.card img { width:80px; height:80px; object-fit:cover; margin-right:10px; }
+button { padding:5px 10px; margin-left:5px; cursor:pointer; border:none; border-radius:3px; }
+.stock-on { background:#4CAF50; color:white; }
+.stock-off { background:#f44336; color:white; }
+input.edit-field { width:120px; padding:3px; margin-right:5px; margin-bottom:3px; }
+.category-name { font-weight:bold; font-size:14px; color:#555; }
+</style>
+</head>
+<body>
+
+<header>
+<h2>Admin Panel - Products</h2>
+<div>
+Logged in as: <span id="admin-email"></span>
+<button onclick="logout()">Logout</button>
+</div>
+</header>
+
+<div id="admin-panel">
+<div id="products-list"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script>
+// ---------- CONFIG ----------
+const firebaseConfig = {
+apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+authDomain: "smbrand-4543a.firebaseapp.com",
+databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+projectId: "smbrand-4543a",
+storageBucket: "smbrand-4543a.appspot.com",
+messagingSenderId: "720775550032",
+appId: "1:720775550032:web:0622548a007597778bad55"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const adminEmail = 'rajputsurendra562@gmail.com';
+
+let productsData = {};
+let categoriesData = {};
+let currentUser = null;
+
+// ---------- AUTH ----------
+auth.onAuthStateChanged(user=>{
+  if(!user) return window.location.href='rupe.html';
+  if(user.email !== adminEmail) return window.location.href='rupe.html';
+
+  currentUser = user;
+  document.getElementById('admin-email').innerText = user.email;
+  document.getElementById('admin-panel').style.display = 'block';
+
+  loadCategories();
+  loadProducts();
+});
+
+// ---------- LOGOUT ----------
+function logout(){ auth.signOut().then(()=>window.location.href='rupe.html'); }
+
+// ---------- LOAD CATEGORIES ----------
+function loadCategories(){
+  db.ref('categories').on('value', snap=>{
+    categoriesData = snap.val() || {};
+  });
+}
+
+// ---------- LOAD PRODUCTS ----------
+function loadProducts(){
+  db.ref('products').on('value', snap=>{
+    productsData = snap.val() || {};
+    
+    // convert string images → array
+    Object.keys(productsData).forEach(pid=>{
+      const p = productsData[pid];
+      if(typeof p.images === 'string') p.images = p.images.split(',').map(x=>x.trim());
+      if(p.stock === undefined) p.stock = true;
+    });
+
+    displayProducts();
+  });
+}
+
+// ---------- DISPLAY PRODUCTS ----------
+function displayProducts(){
+  const list = document.getElementById('products-list');
+  list.innerHTML = '';
+
+  Object.keys(productsData).reverse().forEach(pid=>{
+    const p = productsData[pid];
+    const imgSrc = (p.images && p.images[0]) || 'https://via.placeholder.com/80';
+    const catName = categoriesData[p.category]?.name || 'N/A';
+
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML=`
+      <img src="${imgSrc}" alt="${p.name}">
+      <div style="flex:1;">
+        <input class="edit-field" value="${p.name}" onchange="updateField('${pid}','name',this.value)" placeholder="Name"><br>
+        <input class="edit-field" value="${p.brand||''}" onchange="updateField('${pid}','brand',this.value)" placeholder="Brand"><br>
+        Price: ₹<input class="edit-field" value="${p.price}" onchange="updateField('${pid}','price',parseFloat(this.value))" placeholder="Price">
+        Discount: <input class="edit-field" value="${p.discount||0}" onchange="updateField('${pid}','discount',parseFloat(this.value))" placeholder="Discount %"><br>
+        Color: <input class="edit-field" value="${p.color||''}" onchange="updateField('${pid}','color',this.value)" placeholder="Color">
+        Size: <input class="edit-field" value="${p.size||''}" onchange="updateField('${pid}','size',this.value)" placeholder="Size"><br>
+        Description: <input class="edit-field" value="${p.description||''}" onchange="updateField('${pid}','description',this.value)" placeholder="Description"><br>
+        Category: <span class="category-name">${catName}</span><br>
+        Stock: <span id="stock-${pid}">${p.stock?'Available':'Out of Stock'}</span>
+      </div>
+      <div>
+        <button onclick="toggleStock('${pid}')" class="${p.stock?'stock-on':'stock-off'}">${p.stock?'Available':'Out of Stock'}</button>
+        <button onclick="deleteProduct('${pid}')">Delete</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+// ---------- UPDATE FIELD ----------
+function updateField(pid, field, value){
+  db.ref('products/'+pid+'/'+field).set(value);
+}
+
+// ---------- TOGGLE STOCK ----------
+function toggleStock(pid){
+  const ref = db.ref('products/'+pid+'/stock');
+  ref.once('value').then(snap=>{
+    const current = snap.val();
+    ref.set(!current);
+  });
+}
+
+// ---------- DELETE PRODUCT ----------
+function deleteProduct(pid){
+  if(!confirm('Are you sure you want to delete this product?')) return;
+  db.ref('products/'+pid).remove();
+}
+</script>
+
+</body>
+</html>

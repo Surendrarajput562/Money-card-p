@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>कस्टम Google खोज और परिणाम (सभी लिंक्स Iframe के अंदर)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+        .search-container {
+            margin: 5px auto;
+            width: 100%;
+        }
+        .results-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Google खोज (सब कुछ यहीं खुलेगा)</h2>
+
+    <div class="search-container">
+        <div class="gcse-searchbox-only" data-resultsUrl="#results"></div>
+    </div>
+    
+    <hr>
+    
+    <div class="results-container">
+        <div class="gcse-searchresults-only" data-linktarget="_self"></div>
+    </div>
+
+    <script async src="https://cse.google.com/cse.js?cx=e73e3a9497c0c4e7b"></script>
+
+    <script>
+        // यह फ़ंक्शन Iframe के अंदर मौजूद सभी लिंक के target को बदल देगा
+        function fixAllLinks() {
+            // हम पेज के अंदर सभी <a> (Anchor/लिंक) टैग्स को पकड़ रहे हैं
+            const allLinks = document.querySelectorAll('a');
+            
+            allLinks.forEach(link => {
+                // प्रत्येक लिंक के target एट्रीब्यूट को "_self" पर सेट कर दें
+                // यह किसी भी _top, _parent, या खाली target को ओवरराइट कर देगा
+                link.target = '_self';
+            });
+        }
+        
+        // 1. जब पेज लोड हो जाए, तो एक बार चलाओ
+        document.addEventListener('DOMContentLoaded', fixAllLinks);
+        
+        // 2. Iframe के अंदर, हर 500 मिलीसेकंड में फिक्स चलाओ
+        //    यह ज़रूरी है क्योंकि सर्च रिजल्ट या अगली वेबसाइट लोड होने के बाद
+        //    नए लिंक डायनेमिक रूप से आ सकते हैं।
+        setInterval(fixAllLinks, 500);
+
+    </script>
+    
+    </body>
+</html>

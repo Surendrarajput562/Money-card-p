@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gold Rupi - User/Loan Lookup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        /* PASTE THE ENTIRE <style> BLOCK FROM THE ORIGINAL CODE HERE (Starting from :root{} to .document-image{}) */
+        :root{
+            --gold:#d4af37;
+            --card-bg: #ffffff;
+            --bg-color:#f8f9fa;
+            --text-color:#1f2937;
+            --success:#10b981;
+            --danger:#ef4444;
+            --warning:#f59e0b;
+            --info: #3b82f6;
+            --secondary: #6b7280;
+        }
+        *{box-sizing:border-box}
+        body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg-color);color:var(--text-color);padding:20px;}
+        
+        .header{display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid #ddd; padding-bottom:15px;}
+        .logo{font-weight:800;font-size:24px;color:var(--gold);letter-spacing:-1px;}
+        
+        .card{background:var(--card-bg);border-radius:12px;padding:15px;box-shadow:0 4px 10px rgba(0,0,0,0.05);margin-bottom:15px;}
+        .btn{background:var(--gold);color:#000;border:none;padding:8px 15px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer; transition: background-color 0.3s;}
+        .btn:hover { background: #c5a034; }
+        .btn.secondary{background:#e5e7eb; color:var(--text-color); border:1px solid #ddd;}
+        .btn.danger{background:var(--danger); color:#fff;}
+        .btn.danger:hover { background: #d93030; }
+        
+        .tab-nav{display:flex; margin-bottom:20px; border-bottom:1px solid #ddd; overflow-x: auto;}
+        .tab-item{padding:10px 15px; cursor:pointer; font-weight:600; opacity:0.6; white-space: nowrap; transition: opacity 0.3s;}
+        .tab-item.active{opacity:1; color:var(--gold); border-bottom:2px solid var(--gold);}
+
+        .request-item { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #eee; }
+        .request-item:last-child { border-bottom:none; }
+        .req-id { font-weight:600; font-size:14px; color:var(--text-color); }
+        .req-status-badge { padding:4px 8px; border-radius:10px; font-size:10px; font-weight:600; color:#fff;}
+        .bg-pending { background:var(--warning); }
+        .bg-active { background:var(--success); }
+        .bg-reviewed { background:var(--info); }
+        .bg-rejected { background:var(--danger); }
+        .bg-paid { background:var(--success); }
+        .bg-submitted { background:var(--warning); }
+        .bg-overdue { background:var(--danger); animation: pulse-red 1s infinite alternate; }
+        .bg-closed { background:var(--secondary); }
+        
+        @keyframes pulse-red {
+            from { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            to { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+        }
+
+        /* Modal Styles */
+        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter: blur(5px);}
+        .modal{background:var(--card-bg);width:90%;max-width:900px;border-radius:12px;padding:20px;max-height:95vh;overflow-y:auto;position: relative;}
+        .close-modal{position:absolute;top:15px;right:15px;background:none;border:none;font-size:24px;color:var(--text-color);cursor:pointer;}
+        
+        .detail-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #eee; font-size:14px; }
+        .detail-row strong { font-weight:600; }
+        
+        .action-btns { margin-top:20px; display:flex; gap:10px; }
+        .document-link { color:var(--gold); text-decoration:none; font-size:12px; margin-top:5px; display:block; }
+
+        .verification-status { padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; font-weight: 600; }
+        .verification-pending { background:#fef3c7; color:var(--warning); }
+        .verification-success { background:#d1fae5; color:var(--success); }
+
+        /* Input styling for modals */
+        .modal input[type="number"], .modal input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        /* EMI History Table Styling */
+        .emi-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .emi-table th, .emi-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        .emi-table th { background: #f4f4f4; font-weight: 600; color: #666; }
+        .emi-table tr:last-child td { border-bottom: none; }
+        .emi-table .btn-mini { padding: 4px 8px; font-size: 11px; margin-left: 5px; background: var(--success); color: #fff; border-radius: 4px; transition: background-color 0.3s;}
+        .emi-table .btn-mini:hover { background: #0c9c69; }
+
+        /* Document Image Style - FIX */
+        .document-image { 
+            max-width: 100%; 
+            height: auto; 
+            max-height: 400px; 
+            border-radius: 8px; 
+            margin-top: 10px; 
+            border: 1px solid #ddd;
+            display: block;
+            cursor: zoom-in;
+            object-fit: contain; 
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><i class="ri-money-rupee-circle-fill"></i> Gold Rupi: Lookup</div>
+        <button class="btn secondary" onclick="window.location.href='admin.html'"><i class="ri-arrow-left-line"></i> Back to Admin</button>
+    </div>
+
+    <div class="card" style="display:flex; gap:10px;">
+        <input type="text" id="search-input" placeholder="Enter User ID, Loan ID, Email, or Mobile" style="flex-grow:1; margin:0;">
+        <button class="btn" onclick="performSearch()"><i class="ri-search-line"></i> Search</button>
+    </div>
+    
+    <div id="search-results" style="margin-top:20px;">
+        <div class="card text-center" id="initial-message">Enter a search term and click 'Search' to begin lookup.</div>
+        <div class="card" id="error-message" style="display:none; border-left:4px solid var(--danger); color:var(--danger);"></div>
+    </div>
+    
+    <div id="lookup-panel" class="card" style="display:none;">
+            <h3 style="margin-top:0;"><i class="ri-user-line"></i> User and Verification Details for: <span id="lookup-identifier"></span></h3>
+            
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:15px;">
+                <div class="card" id="user-info-full">
+                    <h4>Applicant Details (Step 1 & 5)</h4>
+                    <div class="detail-row"><span>Name:</span> <strong id="lookup-name"></strong></div>
+                    <div class="detail-row"><span>Email:</span> <strong id="lookup-email"></strong></div>
+                    <div class="detail-row"><span>Mobile:</span> <strong id="lookup-mobile"></strong></div>
+                    <div class="detail-row"><span>DOB:</span> <strong id="lookup-dob"></strong></div>
+                    <div class="detail-row"><span>**Permanent Address:**</span> <strong id="lookup-perm-addr"></strong></div>
+                    <div class="detail-row"><span>**Current Address:**</span> <strong id="lookup-curr-addr"></strong></div>
+                    <div class="detail-row"><span>User ID:</span> <strong id="lookup-uid"></strong></div>
+                    
+                    <hr style="margin: 8px 0; border: none; border-top: 1px dashed #ddd;">
+                    
+                    <h4>Financial/KYC Details (Step 2, 3, 4)</h4>
+                    <div class="detail-row"><span>**PAN Number:**</span> <strong id="lookup-pan" style="color:var(--danger);"></strong></div>
+                    <div class="detail-row"><span>**Occupation:**</span> <strong id="lookup-occupation"></strong></div>
+                    <div class="detail-row"><span>Monthly Income:</span> <strong id="lookup-income" style="color:var(--success);"></strong></div>
+                    <div class="detail-row"><span>**Bank Name:**</span> <strong id="lookup-bank-name"></strong></div>
+                    <div class="detail-row"><span>**A/C Number:**</span> <strong id="lookup-acc-num"></strong></div>
+                    <div class="detail-row"><span>**IFSC Code:**</span> <strong id="lookup-ifsc"></strong></div>
+                </div>
+                
+                <div class="card" style="border-left:4px solid var(--gold);">
+                    <h4>Active Loan Summary: <span id="lookup-lid-summary">N/A</span></h4>
+                    <div class="detail-row"><span>Loan Status:</span> <strong id="lookup-status">N/A</strong></div>
+                    <div class="detail-row"><span>Total Repayment:</span> <strong id="lookup-total-repay">N/A</strong></div>
+                    <div class="detail-row"><span>Monthly EMI:</span> <strong id="lookup-emi-amt">N/A</strong></div>
+                    <div class="detail-row"><span>Total EMIs Paid:</span> <strong id="lookup-paid-count">N/A</strong></div>
+                    <div class="detail-row"><span>**Outstanding Balance:**</span> <strong id="lookup-outstanding" style="color:var(--danger); font-size:1.1em;">N/A</strong></div>
+                    
+                    <hr style="margin: 8px 0; border: none; border-top: 1px dashed #ddd;">
+                    <div class="action-btns">
+                        <button class="btn secondary" style="flex:1; display:none;" id="btn-view-history" onclick="viewLoanHistoryFromLookup()"><i class="ri-booklet-line"></i> View Full EMI History</button>
+                    </div>
+                </div>
+            </div>
+            
+            <h4 style="margin-top:20px;"><i class="ri-folder-open-line"></i> Verification Documents (Steps 2, 3, 4)</h4>
+            <div id="lookup-documents-container" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                </div>
+    </div>
+    
+    <div id="history-modal" class="overlay">
+        <div class="modal">
+            <button class="close-modal" onclick="closeModal('history-modal')">&times;</button>
+            <h3 style="margin-top:0;"><i class="ri-booklet-line"></i> Loan History: <span id="history-lid"></span></h3>
+            <div id="history-modal-summary" style="padding:10px; background:#f4f4f4; border-radius:8px; margin-bottom:15px;"></div>
+            
+            <h4 style="margin-top:20px;"><i class="ri-list-check"></i> EMI Payment History</h4>
+            <div id="emi-history-table-container">
+                </div>
+        </div>
+    </div>
+
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // CONFIG (Use the same config as the user app)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        
+        // Global variables to hold the current lookup data
+        let currentLookupUid = null;
+        let currentLookupLid = null;
+
+        // --- AUTH & INITIALIZATION ---
+        
+        auth.onAuthStateChanged(user => {
+            if(!user) {
+                // If you have an admin login page, redirect here
+                // return window.location.href = 'admin_login.html'; 
+            }
+            // User is logged in, ready to search
+        });
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+        
+        function showMessage(type, message) {
+            document.getElementById('lookup-panel').style.display = 'none';
+            document.getElementById('initial-message').style.display = 'none';
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = `<i class="ri-alert-line"></i> ${message}`;
+            errorDiv.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--info)';
+            errorDiv.style.color = type === 'error' ? 'var(--danger)' : 'var(--text-color)';
+        }
+        
+        function hideMessages() {
+            document.getElementById('initial-message').style.display = 'none';
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        // --- CORE SEARCH LOGIC ---
+        
+        async function performSearch() {
+            const searchTerm = document.getElementById('search-input').value.trim();
+            hideMessages();
+
+            if (!searchTerm) {
+                return showMessage('info', 'Please enter a User ID, Loan ID, Email, or Mobile number to search.');
+            }
+            
+            document.getElementById('search-input').disabled = true;
+            document.querySelector('.btn').disabled = true;
+            document.querySelector('.btn').innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Searching...';
+            
+            try {
+                let uid = null;
+                let lid = null;
+
+                // 1. Try to find UID/LID directly
+                if (searchTerm.startsWith('LOAN_')) {
+                    lid = searchTerm;
+                    const loanSnap = await db.ref(`loan_requests/${lid}`).once('value');
+                    uid = loanSnap.val()?.user_id;
+                } else if (searchTerm.length === 20 || searchTerm.length === 28) { // Assuming typical Firebase UID length
+                    uid = searchTerm;
+                }
+                
+                // 2. Try to find UID by Email or Mobile
+                if (!uid) {
+                    const usersSnap = await db.ref('users').once('value');
+                    const usersData = usersSnap.val() || {};
+                    
+                    // Search by email (primary method)
+                    let foundUser = Object.keys(usersData).find(key => 
+                        usersData[key].email?.toLowerCase() === searchTerm.toLowerCase()
+                    );
+
+                    // Search by mobile (secondary method)
+                    if (!foundUser) {
+                        foundUser = Object.keys(usersData).find(key => 
+                            usersData[key].mobile === searchTerm
+                        );
+                    }
+                    
+                    if (foundUser) {
+                        uid = foundUser;
+                    }
+                }
+
+                if (!uid) {
+                    return showMessage('error', `No user or loan found for '${searchTerm}'. Please check the ID/Email/Mobile.`);
+                }
+                
+                // 3. Fetch all details and display
+                await displayUserDetails(uid, lid);
+
+            } catch (e) {
+                console.error("Search Error:", e);
+                showMessage('error', `An error occurred during search: ${e.message}`);
+            } finally {
+                document.getElementById('search-input').disabled = false;
+                document.querySelector('.btn').disabled = false;
+                document.querySelector('.btn').innerHTML = '<i class="ri-search-line"></i> Search';
+            }
+        }
+        
+        // --- DATA DISPLAY LOGIC ---
+        
+        /** * Fetches and populates all user verification and loan details.
+         * (Reused logic from the original admin panel)
+         */
+        async function fetchUserDetails(uid) {
+            const userSnap = await db.ref('users/' + uid).once('value');
+            const userData = userSnap.val() || {};
+            
+            const verificationData = userData.loan_verification || {};
+
+            // Step 1: Personal Info
+            const step1 = verificationData.step1_data || {};
+            const name = userData.name || step1.fname || 'N/A';
+            const email = userData.email || step1.email || 'N/A';
+            const mobile = userData.mobile || 'N/A';
+            const dob = step1.dob || 'N/A';
+
+            // Step 2: KYC/Identity
+            const step2 = verificationData.step2_data || {};
+            const pan = step2.pan || 'N/A';
+            
+            // Step 3: Bank Details
+            const step3 = verificationData.step3_data || {};
+            const bankName = step3.bank_name || 'N/A';
+            const accNum = step3.account_number || 'N/A';
+            const ifscCode = step3.ifsc_code || 'N/A';
+
+            // Step 4: Income/Work
+            const step4 = verificationData.step4_data || {};
+            const income = step4.monthly_income || 'N/A';
+            const occupation = step4.occupation || 'N/A';
+            
+            // Step 5: Address
+            const step5 = verificationData.step5_data || {};
+            const permAddr = step5.permanent_address || 'N/A';
+            const currAddr = step5.current_address || 'N/A';
+
+            return { 
+                uid, name, email, mobile, dob, 
+                pan, bankName, accNum, ifscCode, 
+                income, occupation, permAddr, currAddr,
+                verificationData // Return full object for document URLs
+            };
+        }
+        
+        /**
+         * Renders Document Section with visible image if a valid URL exists.
+         */
+        function renderDocSection(title, textValue, url) {
+            const isValidUrl = url && (url.toLowerCase().startsWith('http://') || url.toLowerCase().startsWith('https://'));
+            const status = isValidUrl ? 'verification-success' : 'verification-pending';
+            const statusText = isValidUrl ? 'Verified' : 'Missing/Failed';
+            
+            const imageHtml = isValidUrl ? 
+                `<img src="${url}" class="document-image" onclick="window.open('${url}', '_blank')" alt="${title} Document" title="Click to view full image">` 
+                : '';
+
+            return `
+                <div class="card" style="padding:10px; border-left:4px solid ${status === 'verification-success' ? 'var(--success)' : 'var(--danger)'}">
+                    <div class="detail-row">
+                        <span>${title}:</span>
+                        <span class="${status}">${statusText}</span>
+                    </div>
+                    <div style="font-size:12px; margin-top:5px; word-break: break-all;">Details: ${textValue}</div>
+                    ${imageHtml}
+                    ${isValidUrl ? `<a href="${url}" target="_blank" class="document-link">View Original <i class="ri-external-link-line"></i></a>` : ''}
+                </div>
+            `;
+        }
+
+        async function displayUserDetails(uid, initialLid = null) {
+            const userData = await fetchUserDetails(uid);
+            const verificationData = userData.verificationData;
+            
+            currentLookupUid = uid;
+            
+            // 1. Populate User/KYC/Bank Details (Step 1-5)
+            document.getElementById('lookup-identifier').innerText = userData.name || userData.mobile || userData.uid;
+
+            document.getElementById('lookup-name').innerText = userData.name;
+            document.getElementById('lookup-email').innerText = userData.email;
+            document.getElementById('lookup-mobile').innerText = userData.mobile;
+            document.getElementById('lookup-dob').innerText = userData.dob; 
+            document.getElementById('lookup-perm-addr').innerText = userData.permAddr; 
+            document.getElementById('lookup-curr-addr').innerText = userData.currAddr; 
+            document.getElementById('lookup-uid').innerText = userData.uid;
+
+            document.getElementById('lookup-pan').innerText = userData.pan; 
+            document.getElementById('lookup-occupation').innerText = userData.occupation; 
+            document.getElementById('lookup-income').innerText = typeof userData.income === 'number' ? '₹' + userData.income.toLocaleString() : userData.income;
+            document.getElementById('lookup-bank-name').innerText = userData.bankName; 
+            document.getElementById('lookup-acc-num').innerText = userData.accNum; 
+            document.getElementById('lookup-ifsc').innerText = userData.ifscCode; 
+
+            // 2. Populate Documents (Step 2, 3, 4)
+            const docContainer = document.getElementById('lookup-documents-container');
+            docContainer.innerHTML = '';
+            
+            const step2Data = verificationData.step2_data || {};
+            const step3Data = verificationData.step3_data || {};
+            const step4Data = verificationData.step4_data || {};
+            
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('PAN Card', step2Data?.pan, step2Data?.pan_img_url));
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('Aadhaar Front', 'Aadhaar Front', step2Data?.aadhaar_front_url));
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('Aadhaar Back', 'Aadhaar Back', step2Data?.aadhaar_back_url));
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('Passbook/Cheque', step3Data?.account_number, step3Data?.passbook_url));
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('Salary Slip', step4Data?.monthly_income ? `Income: ${step4Data.monthly_income}` : 'N/A', step4Data?.salary_slip_url));
+            
+            // 3. Find and Populate Loan Summary
+            let loanIdToDisplay = initialLid;
+            
+            // If no LID provided, check user's main loan status
+            if (!loanIdToDisplay && userData.loan_app?.loan_id) {
+                loanIdToDisplay = userData.loan_app.loan_id;
+            }
+            
+            await displayLoanSummary(loanIdToDisplay, uid);
+
+            document.getElementById('lookup-panel').style.display = 'block';
+        }
+        
+        async function displayLoanSummary(lid, uid) {
+            currentLookupLid = null; // Reset
+            
+            // Reset loan summary fields
+            const resetSummary = (text) => {
+                document.getElementById('lookup-lid-summary').innerText = text;
+                document.getElementById('lookup-status').innerText = 'N/A';
+                document.getElementById('lookup-total-repay').innerText = 'N/A';
+                document.getElementById('lookup-emi-amt').innerText = 'N/A';
+                document.getElementById('lookup-paid-count').innerText = 'N/A';
+                document.getElementById('lookup-outstanding').innerText = 'N/A';
+                document.getElementById('btn-view-history').style.display = 'none';
+                document.getElementById('lookup-status').className = 'req-status-badge bg-secondary';
+            };
+            
+            if (!lid) {
+                return resetSummary('No Loan ID Found');
+            }
+
+            const loanSnap = await db.ref(`loan_requests/${lid}`).once('value');
+            const data = loanSnap.val();
+
+            if (!data) {
+                return resetSummary(`Loan ${lid} Not Found`);
+            }
+            
+            currentLookupLid = lid; // Set global LID
+            
+            const paidCount = data.total_emis_paid || 0; 
+            const outstanding = data.outstanding_balance || 0;
+            const totalRepayment = data.total_repayment || 0;
+            const totalEmis = Object.keys(data.emis || {}).length;
+            
+            let statusClass = 'bg-closed'; 
+            let statusText = data.status.toUpperCase();
+            
+            if (data.status === 'active') {
+                statusClass = 'bg-active';
+            } else if (data.status === 'rejected') {
+                statusClass = 'bg-rejected';
+            } else if (data.status === 'reviewed' || data.status === 'pending' || data.status === 'accepted') {
+                statusClass = 'bg-reviewed';
+            }
+            
+            document.getElementById('lookup-lid-summary').innerText = lid;
+            document.getElementById('lookup-status').innerText = statusText;
+            document.getElementById('lookup-status').className = `req-status-badge ${statusClass}`;
+            document.getElementById('lookup-total-repay').innerText = '₹' + totalRepayment.toLocaleString();
+            document.getElementById('lookup-emi-amt').innerText = '₹' + (data.emi_amount || 0).toLocaleString();
+            document.getElementById('lookup-paid-count').innerText = `${paidCount} / ${totalEmis}`;
+            document.getElementById('lookup-outstanding').innerText = '₹' + outstanding.toLocaleString();
+            document.getElementById('btn-view-history').style.display = 'block';
+        }
+        
+        /**
+         * Opens the full EMI history modal using the currentLookupLid.
+         */
+        function viewLoanHistoryFromLookup() {
+            if (currentLookupLid) {
+                // Call the original viewLoanHistory function (needs to be present in the final script)
+                viewLoanHistory(currentLookupLid, currentLookupUid); 
+            } else {
+                alert("No active loan ID available for history lookup.");
+            }
+        }
+        
+        // **IMPORTANT:** Since the viewLoanHistory and markEmiAsPaid functions were in the original code, 
+        // they must be included here for the "View Full EMI History" button to work.
+        // The following functions are copied directly from your original code:
+        
+        // --- COPIED FUNCTIONS FROM ORIGINAL CODE (FOR HISTORY MODAL) ---
+
+        /**
+         * NEW FUNCTION: Manually Mark EMI as Paid (Direct Entry)
+         */
+        async function markEmiAsPaid(lid, eid, emiAmount) {
+             if(!confirm(`Confirm Manual Payment: Are you sure you want to mark EMI ${eid} (₹${emiAmount.toLocaleString()}) for Loan ${lid} as PAID?`)) return;
+
+             try {
+                // 1. Mark EMI Status as Paid
+                await db.ref(`loan_requests/${lid}/emis/${eid}`).update({
+                    status: 'paid',
+                    paid_at: Date.now(),
+                    verified_by: auth.currentUser?.uid || 'Admin',
+                    payment_method: 'Manual Admin Entry' 
+                });
+
+                // 2. Recalculate Loan Summary (FIXED LOGIC)
+                await updateLoanSummary(lid);
+
+                // 3. Refresh UI
+                alert(`EMI ${eid} manually marked as PAID. Loan Summary Updated.`);
+                
+                // Re-fetch data for the currently open history modal 
+                viewLoanHistory(lid, currentLookupUid); // Re-render the history modal with updated data
+                displayLoanSummary(lid, currentLookupUid); // Re-render the lookup summary
+             } catch (e) {
+                alert("Error marking EMI as paid: " + e.message);
+             }
+        }
+        
+        /**
+         * Calculates Outstanding Balance correctly by summing the amount of all PAID EMIs.
+         */
+        async function updateLoanSummary(lid) {
+            const loanSnap = await db.ref(`loan_requests/${lid}`).once('value');
+            const loanData = loanSnap.val();
+            
+            if (!loanData || !loanData.emis) return;
+
+            const allEmis = Object.values(loanData.emis);
+
+            const paidCount = allEmis.filter(e => e.status === 'paid').length;
+            const totalEmis = allEmis.length;
+            
+            const totalRepayment = parseFloat(loanData.total_repayment || 0); 
+            
+            // FIX: Calculate total paid by summing up the *amount* of all paid EMIs
+            const totalPaid = allEmis
+                .filter(e => e.status === 'paid')
+                .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+            
+            let outstanding = totalRepayment - totalPaid;
+            
+            // Ensure outstanding balance is not negative and round to nearest whole number
+            outstanding = Math.max(0, Math.round(outstanding)); 
+            
+            let newStatus = loanData.status;
+            
+            // Logic to mark loan as CLOSED
+            if (outstanding === 0 && totalEmis > 0) {
+                 newStatus = 'closed';
+            } 
+            // If loan was marked closed but outstanding is > 0 (e.g., error correction), revert to active
+            if (newStatus === 'closed' && outstanding > 0) {
+                 newStatus = 'active'; 
+            }
+
+
+            // Update the loan summary fields
+            await db.ref(`loan_requests/${lid}`).update({
+                total_emis_paid: paidCount,
+                outstanding_balance: outstanding,
+                last_payment_date: Date.now(),
+                status: newStatus
+            });
+        }
+        
+        /**
+         * * **UPDATED viewLoanHistory** * Includes Overdue logic and manual pay button.
+         */
+        async function viewLoanHistory(lid, uid) {
+            const snap = await db.ref('loan_requests/' + lid).once('value');
+            let data = snap.val();
+
+            if (!data) {
+                return alert("Loan data not found.");
+            }
+            
+            if (!data.emis) {
+                 await updateLoanSummary(lid); 
+                 const reSnap = await db.ref('loan_requests/' + lid).once('value');
+                 data = reSnap.val(); 
+                 if (!data || !data.emis) return alert("EMI history is missing or corrupted.");
+            }
+            
+            const emis = Object.values(data.emis)
+                         .filter(e => e.num && parseFloat(e.amount) > 0) 
+                         .sort((a, b) => (a.num || 0) - (b.num || 0)); 
+            
+            const totalRepayment = data.total_repayment || 0;
+            const paidCount = data.total_emis_paid || 0; 
+            const outstanding = data.outstanding_balance || 0;
+            const totalEmis = emis.length;
+            
+            // Populate Modal Summary
+            document.getElementById('history-lid').innerText = lid;
+            document.getElementById('history-modal-summary').innerHTML = `
+                <div class="detail-row"><span>Status:</span> <strong class="req-status-badge ${data.status === 'active' ? 'bg-active' : data.status === 'closed' ? 'bg-closed' : 'bg-secondary'}">${data.status.toUpperCase()}</strong></div>
+                <div class="detail-row"><span>Total Repayment:</span> <strong>₹${totalRepayment.toLocaleString()}</strong></div>
+                <div class="detail-row"><span>Monthly EMI:</span> <strong>₹${(data.emi_amount || 0).toLocaleString()}</strong></div>
+                <div class="detail-row"><span>EMIs Paid:</span> <strong>${paidCount} / ${totalEmis}</strong></div>
+                <div class="detail-row"><span>**Outstanding Balance:**</span> <strong style="color:var(--danger); font-size:1.1em;">₹${outstanding.toLocaleString()}</strong></div>
+            `;
+            
+            const today = new Date();
+            const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime(); 
+            
+            // Populate EMI Table
+            let tableHTML = `
+                <table class="emi-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Paid At</th>
+                            <th>Action</th> </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            emis.forEach(e => {
+                let statusClass = '';
+                let statusText = (e.status || 'pending').toUpperCase().replace('_', ' ');
+                let paidAt = e.paid_at ? new Date(e.paid_at).toLocaleDateString() : 'N/A';
+                let actionButton = '';
+                
+                const emiAmount = parseFloat(e.amount || 0);
+
+                if (e.status === 'paid') {
+                    statusClass = 'bg-paid';
+                } else if (e.status === 'payment_submitted') {
+                    statusClass = 'bg-submitted';
+                    statusText = 'SUBMITTED (Pending Verify)';
+                } else if (e.status === 'pending' && e.due_date && e.due_date < startOfToday) {
+                    statusClass = 'bg-overdue';
+                    statusText = 'OVERDUE';
+                } else {
+                    statusClass = 'bg-pending';
+                    statusText = 'PENDING';
+                }
+                
+                const dueDate = e.due_date ? new Date(e.due_date).toLocaleDateString() : 'N/A';
+                
+                if (e.status !== 'paid' && emiAmount > 0) {
+                     actionButton = `<button class="btn btn-mini" onclick="markEmiAsPaid('${lid}', '${e.id}', ${emiAmount})">Mark Paid</button>`;
+                }
+
+
+                tableHTML += `
+                    <tr>
+                        <td>${e.num || 'N/A'}</td>
+                        <td>₹${emiAmount.toLocaleString()}</td>
+                        <td>${dueDate}</td>
+                        <td><span class="req-status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${paidAt}</td>
+                        <td>${actionButton}</td> </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('emi-history-table-container').innerHTML = tableHTML;
+            document.getElementById('history-modal').style.display = 'flex';
+        }
+
+
+    </script>
+</body>
+</html>
+

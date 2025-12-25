@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Gold App Config Viewer - Login Form</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #0d1117; color: #c9d1d9; }
+        .container { max-width: 500px; margin: auto; background: #161b22; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); border: 1px solid #30363d; }
+        h1 { color: #ffd33d; border-bottom: 3px solid #ffd33d; padding-bottom: 10px; margin-bottom: 30px; text-align: center; }
+        h2 { color: #58a6ff; margin-top: 25px; border-bottom: 1px solid #30363d; padding-bottom: 5px; }
+        pre { background-color: #0d1117; padding: 15px; border-radius: 8px; overflow-x: auto; color: #3fb950; border: 1px solid #30363d; white-space: pre-wrap; word-wrap: break-word;}
+        .message { padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; }
+        .error { background-color: #581515; color: #f85149; }
+        .success { background-color: #173b1d; color: #3fb950; }
+        
+        /* Form Styling */
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px 0;
+            display: inline-block;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        button {
+            background-color: #ffd33d;
+            color: #161b22;
+            padding: 12px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        button:hover { background-color: #e6b800; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-container">
+        <h1>🥇 Firebase Config Login</h1>
+        
+        <div id="login-form-div">
+            <div id="status-message" class="message success" style="display: none;"></div>
+            
+            <label for="email"><b>Email:</b></label>
+            <input type="email" placeholder="Enter Admin Email" id="email" required>
+
+            <label for="password"><b>Password:</b></label>
+            <input type="password" placeholder="Enter Password" id="password" required>
+
+            <button onclick="signInAndFetch()">Login & Fetch Config</button>
+        </div>
+
+        <div id="config-output" style="display: none;">
+            <h2>✅ Config for `gold_app`</h2>
+            <p>Data fetched directly from Firebase Realtime Database:</p>
+            <pre id="json-display"></pre>
+        </div>
+    </div>
+
+    <script>
+        // *******************************************************************
+        // 🚨 Firebase कॉन्फ़िगरेशन (आपके द्वारा प्रदान की गई)
+        // *******************************************************************
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55",
+            measurementId: "G-3LS5W6F8QW"
+        };
+        
+        // Firebase को Initialize करें
+        firebase.initializeApp(firebaseConfig);
+        
+        // Database Reference सेट करें
+        const DB_PATH = 'GLOBAL_CONFIG/gold_app';
+        const dbRef = firebase.database().ref(DB_PATH);
+        
+        // UI Elements
+        const formDiv = document.getElementById('login-form-div');
+        const outputDiv = document.getElementById('config-output');
+        const jsonDisplay = document.getElementById('json-display');
+        const statusMessage = document.getElementById('status-message');
+        const loginButton = document.querySelector('button');
+
+        // मैसेज दिखाने का फंक्शन
+        function displayMessage(type, msg) {
+            statusMessage.style.display = 'block';
+            statusMessage.className = `message ${type}`;
+            statusMessage.innerHTML = msg;
+            loginButton.disabled = false;
+        }
+        
+        // 2. डेटा Fetch करने का फंक्शन
+        function fetchGoldAppConfig() {
+            displayMessage('success', 'Authentication Successful! Fetching data...');
+            
+            dbRef.once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const configData = snapshot.val();
+                    const jsonString = JSON.stringify(configData, null, 2); 
+                    
+                    // फ़ॉर्म छुपाएँ और डेटा दिखाएँ
+                    formDiv.style.display = 'none';
+                    outputDiv.style.display = 'block';
+                    jsonDisplay.textContent = jsonString;
+                } else {
+                    displayMessage('error', '❌ Error: Data Not Found! Path: ' + DB_PATH + ' does not exist or is empty.');
+                }
+            }).catch((error) => {
+                displayMessage('error', `❌ Database Read Failed! Error: ${error.message}. Check Security Rules.`);
+            });
+        }
+
+        // 3. लॉगिन और Fetch फंक्शन
+        window.signInAndFetch = function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                displayMessage('error', 'Please enter both email and password.');
+                return;
+            }
+
+            loginButton.disabled = true;
+            displayMessage('success', 'Attempting to log in...');
+
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    // लॉगिन सफल!
+                    console.log("User logged in successfully.");
+                    fetchGoldAppConfig(); // डेटा Fetch करने के लिए कॉल करें
+                })
+                .catch((error) => {
+                    // लॉगिन विफल
+                    displayMessage('error', `❌ Login Failed! Error: ${error.message}. Check your credentials.`);
+                });
+        }
+
+        // शुरुआत में कोई मैसेज नहीं
+        statusMessage.style.display = 'none';
+    </script>
+
+</body>
+</html>
+

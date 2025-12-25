@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Rupi - Face Secure</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        body { font-family: sans-serif; background: #000; color: gold; text-align: center; padding: 20px; }
+        .auth-container { border: 2px solid gold; padding: 20px; border-radius: 15px; max-width: 350px; margin: auto; background: #111; }
+        video { width: 100%; border-radius: 10px; border: 1px solid gold; transform: scaleX(-1); }
+        .btn { padding: 15px; background: gold; color: #000; border: none; font-weight: bold; width: 100%; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+        .btn:disabled { background: #444; color: #888; }
+        #log { margin-top: 10px; font-size: 13px; color: #00ff00; }
+        input { width: 90%; padding: 10px; margin-bottom: 10px; background: #222; border: 1px solid gold; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <h2>Secure Auth</h2>
+    
+    <div id="login-form">
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="password" placeholder="Password">
+        <button class="btn" onclick="startFaceAuth()">Login / Sign Up</button>
+    </div>
+
+    <div id="face-ui" style="display:none;">
+        <video id="video" autoplay muted></video>
+        <p id="log">AI Loading...</p>
+        <button class="btn" id="scanBtn" disabled onclick="verifyFace()">Scan Face</button>
+    </div>
+</div>
+
+<script>
+// --- FIREBASE CONFIG ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    appId: "1:720775550032:web:0622548a007597778bad55"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+const video = document.getElementById('video');
+const log = document.getElementById('log');
+const scanBtn = document.getElementById('scanBtn');
+
+// 1. FILE NAMES SE SEEDHA LOAD KARNA
+async function initAI() {
+    try {
+        // Bhai, yahan koi path nahi hai, seedha file ke naam se mang raha hai
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/'); 
+        await faceapi.nets.faceLandmark68Net.loadFromUri('/');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('/');
+        
+        log.innerText = "✅ AI ready hai!";
+        scanBtn.disabled = false;
+    } catch (err) {
+        log.innerText = "❌ File Error: " + err.message;
+        console.error(err);
+    }
+}
+
+async function startFaceAuth() {
+    const e = document.getElementById('email').value;
+    const p = document.getElementById('password').value;
+    if(!e || !p) return alert("Pehle Email/Password bharo!");
+
+    try {
+        await auth.signInWithEmailAndPassword(e, p);
+    } catch (err) {
+        if (err.code === 'auth/user-not-found') {
+            await auth.createUserWithEmailAndPassword(e, p);
+        } else { return alert(err.message); }
+    }
+
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('face-ui').style.display = 'block';
+    
+    navigator.mediaDevices.getUserMedia({ video: {} }).then(s => {
+        video.srcObject = s;
+        initAI(); // Models tabhi load honge jab camera khulega
+    });
+}
+
+async function verifyFace() {
+    log.innerText = "Scanning... Hilo mat!";
+    const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks().withFaceDescriptor();
+
+    if (!result) return log.innerText = "Chehra nahi mila!";
+
+    const uid = auth.currentUser.uid;
+    const ref = db.ref('face_auth/' + uid);
+    const snap = await ref.once('value');
+
+    if (snap.exists()) {
+        const saved = new Float32Array(Object.values(snap.val()));
+        const dist = faceapi.euclideanDistance(result.descriptor, saved);
+        if (dist < 0.5) {
+            log.innerText = "✅ Match! Redirecting...";
+            setTimeout(() => location.href = "urupe.html", 1000);
+        } else {
+            log.innerText = "❌ Match Failed!";
+        }
+    } else {
+        await ref.set(Array.from(result.descriptor));
+        log.innerText = "✅ Face Registered!";
+        setTimeout(() => location.href = "urupe.html", 1000);
+    }
+}
+</script>
+</body>
+</html>
+
+
+

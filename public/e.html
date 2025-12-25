@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 User App Store</title>
+    <style>
+        /* --- UPDATED UI/UX STYLES --- */
+        body { font-family: 'Roboto', sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; color: #1c1e21; }
+        .header { background-color: #007bff; color: white; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .search-bar { width: 90%; padding: 12px 20px; margin: 20px auto; display: block; border: none; border-radius: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); transition: box-shadow 0.3s; }
+        .search-bar:focus { outline: none; box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23); }
+        
+        /* Category Navigation */
+        .category-nav { display: flex; overflow-x: auto; padding: 10px 15px; background: #fff; border-bottom: 1px solid #ddd; white-space: nowrap; }
+        .category-nav button { flex-shrink: 0; margin: 0 8px; padding: 8px 15px; border: 1px solid #007bff; border-radius: 20px; background-color: white; color: #007bff; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+        .category-nav button.active { background-color: #007bff; color: white; box-shadow: 0 2px 5px rgba(0, 123, 255, 0.4); }
+        
+        /* App Cards */
+        #apps-container { display: flex; flex-wrap: wrap; justify-content: start; gap: 15px; padding: 20px 15px; }
+        .app-card { background: white; border-radius: 12px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); margin: 0; padding: 15px; width: 150px; text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .app-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .app-icon { width: 80px; height: 80px; border-radius: 18px; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .app-title { font-size: 1em; margin: 10px 0 5px 0; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-price { color: #15934e; font-weight: bold; font-size: 0.9em; }
+        
+        /* Modal General */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .close-btn { color: #aaa; float: right; font-size: 36px; font-weight: lighter; }
+        .close-btn:hover, .close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
+        
+        /* Modal Specific */
+        #modal-header { display: flex; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        #modal-header h2 { margin: 0; font-size: 1.8em; color: #333; }
+        .review-rating { color: gold; font-size: 1.2em; }
+        .review-item { border-bottom: 1px dashed #eee; padding: 10px 0; }
+        .more-reviews-btn { background: #f1f1f1; border: 1px solid #ddd; padding: 8px 15px; border-radius: 5px; width: 100%; margin-top: 10px; cursor: pointer; }
+        #reviews-display { max-height: 300px; overflow-y: auto; padding-right: 10px; margin-bottom: 15px; }
+
+        /* Action Section (Download/Pay) */
+        #action-section button { padding: 12px 25px; font-size: 1.1em; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; transition: background-color 0.3s; margin-top: 15px; width: 100%; max-width: 300px; }
+        
+        /* Download Progress Bar */
+        .download-progress-container { margin-top: 20px; width: 100%; max-width: 300px; background-color: #eee; border-radius: 15px; overflow: hidden; }
+        #download-bar { height: 30px; background-color: #007bff; width: 0%; text-align: center; line-height: 30px; color: white; font-weight: bold; transition: width 0.3s; }
+        
+        /* Screenshots display */
+        .screenshot-gallery { display: flex; overflow-x: auto; padding-bottom: 10px; gap: 10px; }
+        .screenshot-gallery img { width: 250px; height: 150px; object-fit: cover; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Welcome to App Store!</h1>
+    </div>
+
+    <input type="text" id="search-input" class="search-bar" placeholder="ऐप्स खोजें..." onkeyup="filterApps()">
+
+    <div id="category-nav" class="category-nav">
+        <button class="active" onclick="filterApps('All')">सभी ऐप्स</button>
+    </div>
+
+    <div id="apps-container">
+        <p id="loading-message">ऐप्स लोड हो रहे हैं...</p>
+    </div>
+    
+    <div id="app-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modal-content-area">
+                </div>
+            
+            <hr>
+            <h3>रिव्यूज और रेटिंग्स</h3>
+            <div id="reviews-display"></div>
+            <button id="show-all-reviews-btn" class="more-reviews-btn" style="display:none;" onclick="loadAppReviews(currentApp.id, true)">सारे रिव्यूज देखें</button>
+
+            <hr>
+            <h3>अपना रिव्यू दें</h3>
+            <input type="number" id="review-rating" placeholder="रेटिंग (1-5)" min="1" max="5" style="width: 100px;">
+            <textarea id="review-text" placeholder="अपना रिव्यू लिखें..." rows="3" style="width: 98%; margin-top: 5px;"></textarea>
+            <button onclick="submitReview()" style="background-color: #007bff; color: white; padding: 10px 15px; border-radius: 5px;">रिव्यू सबमिट करें</button>
+        </div>
+    </div>
+    
+    <div id="utr-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeUtrModal()">&times;</span>
+            <h3>✅ UTR सबमिट करें</h3>
+            <p>कृपया ₹<span id="utr-modal-price"></span> का भुगतान **UPI ID:** <span id="utr-modal-vpaid"></span> पर करें।</p>
+            <p>भुगतान के बाद, 12-अंकों वाला UTR/Reference ID नीचे दर्ज करें।</p>
+            <img id="utr-modal-qr" alt="QR Code" style="width: 200px; margin: 10px 0; display: block; border: 1px solid #ddd; padding: 5px;">
+            <input type="text" id="utr-input" placeholder="12-अंकों वाला UTR/Reference ID" maxlength="12" style="width: 95%; margin: 10px 0;">
+            <button onclick="submitUTR()" style="background-color: #28a745; color: white;">UTR जमा करें</button>
+            <p id="utr-message" style="color: red; margin-top: 15px; font-weight: bold;"></p>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <script>
+        // --- CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55",
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let allApps = []; 
+        let currentApp = null; 
+        let userPurchasedApps = {}; 
+        let currentPendingPayment = null; 
+        let isSimulatingDownload = false; // New flag for download simulation
+
+        // --- AUTH/LOGIN SIMULATION (UNCHANGED) ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loadUserPurchasedApps(user.uid);
+                loadAllApps();
+            } else {
+                auth.signInAnonymously().catch(error => {
+                    console.error("Anonymous Sign-in failed:", error);
+                    document.getElementById('loading-message').textContent = "Login failed. Please check network.";
+                });
+            }
+        });
+
+        async function loadUserPurchasedApps(userId) {
+             try {
+                const snapshot = await db.ref(`users/${userId}/purchased_apps`).once('value');
+                userPurchasedApps = snapshot.val() || {};
+            } catch (error) {
+                console.error("Error loading purchased apps:", error);
+            }
+        }
+        
+        // --- DATA FETCHING (UNCHANGED) ---
+        async function loadAllApps() {
+             try {
+                const snapshot = await db.ref('APPS').once('value');
+                const apps = snapshot.val();
+                
+                if (apps) {
+                    allApps = Object.keys(apps).map(key => ({ ...apps[key], id: key }));
+                    loadCategoriesNav();
+                    filterApps('All'); 
+                } else {
+                    document.getElementById('loading-message').textContent = "अभी कोई ऐप मौजूद नहीं है।";
+                }
+            } catch (error) {
+                console.error("Error loading apps:", error);
+                document.getElementById('loading-message').textContent = "ऐप्स लोड करने में एरर।";
+            }
+        }
+        
+        async function loadCategoriesNav() {
+            const nav = document.getElementById('category-nav');
+            const snapshot = await db.ref('APP_STORE_CATEGORIES').once('value');
+            const majorCategories = snapshot.val();
+            
+            nav.querySelectorAll('button:not(:first-child)').forEach(btn => btn.remove());
+
+            if (majorCategories) {
+                Object.keys(majorCategories).forEach(majorCatKey => {
+                    const subCategories = majorCategories[majorCatKey];
+                    if (typeof subCategories === 'object' && subCategories !== null) {
+                        Object.keys(subCategories).forEach(subCatKey => {
+                            const button = document.createElement('button');
+                            button.textContent = subCatKey;
+                            button.onclick = () => filterApps(subCatKey);
+                            nav.appendChild(button);
+                        });
+                    }
+                });
+            }
+        }
+
+        // --- FILTERING AND DISPLAY (UNCHANGED) ---
+        function filterApps(category = null) {
+            const container = document.getElementById('apps-container');
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            container.innerHTML = '';
+            
+            document.querySelectorAll('.category-nav button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === category || (category === 'All' && btn.textContent === 'सभी ऐप्स')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            const filteredApps = allApps.filter(app => {
+                const matchesCategory = category === 'All' || !category || app.category === category;
+                const matchesSearch = app.name.toLowerCase().includes(searchInput) || app.shortDesc.toLowerCase().includes(searchInput);
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filteredApps.length === 0) {
+                container.innerHTML = '<p>इस फ़िल्टर के लिए कोई ऐप नहीं मिला।</p>';
+                return;
+            }
+
+            filteredApps.forEach(app => {
+                const card = document.createElement('div');
+                card.className = 'app-card';
+                card.onclick = () => openAppDetail(app.id);
+                
+                let priceText = 'FREE';
+                if (app.type === 'Paid') {
+                    priceText = `₹${app.price || 'N/A'}`;
+                } else if (app.type === 'Subscription') {
+                    priceText = `₹${app.subMonthly || 'N/A'}/माह`;
+                }
+
+                card.innerHTML = `
+                    <img src="${app.iconUrl}" alt="${app.name} Icon" class="app-icon">
+                    <p class="app-title">${app.name}</p>
+                    <p class="app-price">${priceText}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        // --- APP DETAIL MODAL (MODIFIED FOR NEW UI/UX AND COUNTS) ---
+        async function openAppDetail(appId) {
+            if (isSimulatingDownload) {
+                alert("एक डाउनलोड पहले से प्रगति पर है। कृपया प्रतीक्षा करें।");
+                return;
+            }
+            
+            const app = allApps.find(a => a.id === appId);
+            if (!app) return;
+            currentApp = app;
+            currentPendingPayment = null; 
+
+            // Check for Pending Payment first
+            if (auth.currentUser && !auth.currentUser.isAnonymous) {
+                const pendingSnapshot = await db.ref('PENDING_PAYMENTS')
+                    .orderByChild('userId')
+                    .equalTo(auth.currentUser.uid)
+                    .once('value');
+                
+                pendingSnapshot.forEach(childSnapshot => {
+                    const payment = childSnapshot.val();
+                    if (payment.appId === appId && payment.status === 'pending') {
+                        currentPendingPayment = payment;
+                        return true; 
+                    }
+                });
+            }
+            
+            const modalContent = document.getElementById('modal-content-area');
+            const screenshotHTML = (app.screenshotUrls || []).map(url => `<img src="${url}" alt="Screenshot" class="screenshot-gallery-img">`).join('');
+
+            modalContent.innerHTML = `
+                <div id="modal-header">
+                    <img src="${app.iconUrl}" alt="${app.name} Icon" class="app-icon" style="width: 100px; height: 100px; margin-right: 15px; border-radius: 25px;">
+                    <div>
+                        <h2>${app.name}</h2>
+                        <p style="color: #6c757d;">${app.developer || 'N/A'}</p>
+                        <p>
+                            <span class="review-rating">${'★'.repeat(Math.round(app.rating || 0))}</span> 
+                            ${(app.rating || 0).toFixed(1)} (${app.reviewCount || 0} रिव्यूज)
+                        </p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px;">
+                    <div><strong>${(app.downloadCount || 0).toLocaleString()}</strong><br><small>Downloads</small></div>
+                    <div><strong>${app.category || 'N/A'}</strong><br><small>Category</small></div>
+                    <div><strong>${app.type === 'Free' ? 'Free' : 'Paid'}</strong><br><small>Type</small></div>
+                </div>
+
+                <div id="action-section" style="margin-bottom: 20px;">
+                    ${getDownloadButtonHTML(app)}
+                </div>
+
+                <h3>विवरण</h3>
+                <p>${app.fullDesc}</p>
+
+                <h3>स्क्रीनशॉट्स</h3>
+                <div class="screenshot-gallery">${screenshotHTML}</div>
+            `;
+            
+            await loadAppReviews(appId, false); // Load only few reviews initially
+            document.getElementById('app-detail-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('app-detail-modal').style.display = 'none';
+            currentApp = null;
+            currentPendingPayment = null;
+        }
+
+        function closeUtrModal() {
+            document.getElementById('utr-modal').style.display = 'none';
+        }
+
+        // --- PAYMENT & DOWNLOAD LOGIC (UPDATED) ---
+        function getDownloadButtonHTML(app) {
+            const isPurchased = userPurchasedApps[app.id] && userPurchasedApps[app.id].accessType === 'full';
+            let buttonHTML = '';
+
+            if (app.type === 'Free' || isPurchased) {
+                // Case 1: Free or Already Purchased - Ready to download
+                const btnText = isPurchased ? 'पुनः डाउनलोड/इंस्टॉल करें' : 'इंस्टॉल करें (FREE)';
+                buttonHTML = `<button id="main-action-btn" onclick="startDownloadSimulation('${app.apkUrl}', '${app.id}')" style="background-color: #28a745; color: white;">${btnText}</button>`;
+            } else if (currentPendingPayment) {
+                // Case 2: Pending Payment Found (UTR Submitted)
+                buttonHTML = `
+                    <p style="font-size: 1.2em; font-weight: bold; color: orange;">⌛ सत्यापन की प्रतीक्षा है</p>
+                    <p style="color: #6c757d;">आपका UTR **${currentPendingPayment.utr}** एडमिन को भेज दिया गया है।</p>
+                    <button disabled style="background-color: #6c757d; color: white; cursor: not-allowed;">सत्यापन की प्रतीक्षा करें</button>
+                `;
+            } else if (app.type === 'Paid') {
+                // Case 3: Paid app, not purchased, no pending request - Start Payment (Requires app.upiVpaId to be set in Firebase)
+                const priceText = `Buy for ₹${app.price}`;
+                buttonHTML = `
+                    <button id="main-action-btn" onclick="openUtrModalForPayment('${app.id}', ${app.price}, '${app.upiVpaId || ''}', '${app.upiQrUrl || ''}')" style="background-color: #007bff; color: white;">${priceText}</button>
+                `;
+            } else if (app.type === 'Subscription') {
+                 buttonHTML = `
+                    <button id="main-action-btn" onclick="alert('Subscription flow not implemented here.')" style="background-color: #007bff; color: white;">Subscribe ₹${app.subMonthly}/माह</button>
+                `;
+            }
+            
+            // Add download progress UI container below the button
+            buttonHTML += `<div id="download-ui-${app.id}" style="display:none; margin-top: 15px;">
+                            <div class="download-progress-container">
+                                <div id="download-bar-${app.id}">0%</div>
+                            </div>
+                            <p id="download-status-text-${app.id}" style="color: #6c757d; font-size: 0.9em; margin-top: 5px;"></p>
+                           </div>`;
+            return buttonHTML;
+        }
+
+        function openUtrModalForPayment(appId, price, vpaId, qrUrl) {
+            if (!vpaId || !qrUrl) {
+                alert("माफ़ करना, इस ऐप के लिए एडमिन द्वारा UPI पेमेंट विवरण सेट नहीं किया गया है।");
+                return;
+            }
+
+            // Store payment data temporarily
+            currentApp.tempPrice = price;
+            currentApp.tempVpaId = vpaId;
+            currentApp.tempQrUrl = qrUrl;
+
+            // Update UTR Modal content
+            document.getElementById('utr-modal-price').textContent = price;
+            document.getElementById('utr-modal-vpaid').textContent = vpaId;
+            document.getElementById('utr-modal-qr').src = qrUrl;
+            document.getElementById('utr-input').value = '';
+            document.getElementById('utr-message').textContent = '';
+            
+            // 1. UPI Deep Link Generation & Opening
+            const appName = encodeURIComponent(currentApp.name);
+            const transactionRefId = `APPSTORE-${Date.now()}`;
+            // Note: The UPI deep link amount must be a string like "100.00"
+            const upiUri = `upi://pay?pa=${vpaId}&pn=${appName}&am=${price}.00&cu=INR&tn=BuyApp-${appId}-${transactionRefId}`;
+            
+            // Attempt to open UPI app (Quick Pay)
+            window.location.href = upiUri;
+            alert("✅ UPI पेमेंट ऐप खुल गया है। पेमेंट करें और UTR वापस आकर सबमिट करें।");
+
+            // 2. Show UTR modal for manual submission
+            document.getElementById('utr-modal').style.display = 'block';
+        }
+
+        async function submitUTR() {
+            if (!currentApp || !currentApp.tempVpaId) return alert('त्रुटि: ऐप डेटा या पेमेंट विवरण गायब है।');
+
+            const utrInput = document.getElementById('utr-input');
+            const statusP = document.getElementById('utr-message');
+            const utr = utrInput.value.trim();
+            const userId = auth.currentUser ? auth.currentUser.uid : null;
+            
+            if (utr.length !== 12 || isNaN(utr)) {
+                statusP.textContent = 'Error: कृपया 12-अंकों का सही UTR दर्ज करें।';
+                return;
+            }
+            if (!userId || auth.currentUser.isAnonymous) {
+                statusP.textContent = 'Error: कृपया भुगतान से पहले लॉग इन करें या एक अकाउंट बनाएं।';
+                return;
+            }
+
+            statusP.textContent = 'सत्यापन के लिए UTR सबमिट किया जा रहा है...';
+            
+            try {
+                const paymentId = `${userId}_${currentApp.id}_${Date.now()}`; 
+                
+                await db.ref('PENDING_PAYMENTS/' + paymentId).set({
+                    utr: utr,
+                    appId: currentApp.id,
+                    appName: currentApp.name,
+                    amount: currentApp.tempPrice,
+                    userId: userId,
+                    status: 'pending',
+                    submittedAt: Date.now()
+                });
+
+                statusP.textContent = '✅ UTR सबमिट हो गया है। अब आपको एडमिन सत्यापन की प्रतीक्षा करनी होगी। यह विंडो बंद करें।';
+                utrInput.disabled = true;
+                
+                // Close UTR modal and refresh main modal to show pending status
+                setTimeout(() => {
+                    closeUtrModal();
+                    openAppDetail(currentApp.id); // Reload the modal state
+                }, 2000);
+
+            } catch (error) {
+                console.error("UTR Save Error:", error);
+                statusP.textContent = 'Error: UTR सेव करने में समस्या आई।';
+            }
+        }
+        
+        // --- DOWNLOAD/INSTALL SIMULATION LOGIC (NEW) ---
+        async function startDownloadSimulation(apkUrl, appId) {
+            if (isSimulatingDownload) return;
+            isSimulatingDownload = true;
+            
+            const btn = document.getElementById('main-action-btn');
+            const downloadUI = document.getElementById(`download-ui-${appId}`);
+            const progressBar = document.getElementById(`download-bar-${appId}`);
+            const statusText = document.getElementById(`download-status-text-${appId}`);
+
+            // 1. Initial State Setup
+            btn.style.display = 'none';
+            downloadUI.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressBar.textContent = '0%';
+            statusText.textContent = 'डाउनलोड शुरू हो रहा है...';
+
+            // 2. Increment download count in Firebase
+            await db.ref(`APPS/${appId}/downloadCount`).transaction(current => (current || 0) + 1);
+
+            // 3. Simulated Download Progress
+            let progress = 0;
+            const downloadInterval = setInterval(() => {
+                progress += 5; // Adjust step for speed
+                if (progress <= 100) {
+                    progressBar.style.width = progress + '%';
+                    progressBar.textContent = progress + '% Downloaded';
+                    if (progress < 100) {
+                        statusText.textContent = `Downloading APK... ${progress}%`;
+                    } else {
+                        statusText.textContent = 'डाउनलोड पूरा हुआ। इंस्टॉलेशन शुरू हो रहा है...';
+                    }
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(downloadInterval);
+                    
+                    // 4. Simulated Installation
+                    simulateInstallation(apkUrl, appId, btn, downloadUI, statusText);
+                }
+            }, 150); // Fast simulation (3 seconds total)
+        }
+
+        function simulateInstallation(apkUrl, appId, btn, downloadUI, statusText) {
+            statusText.textContent = 'इंस्टॉलिंग... (Play Store जैसा)';
+            
+            // Simulating installation time
+            setTimeout(() => {
+                // 5. Trigger Actual File Download and Installation Prompt
+                const link = document.createElement('a');
+                link.href = apkUrl;
+                link.download = `${appId}.apk`; 
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link); // Clean up the element
+
+                statusText.textContent = '✅ इंस्टॉल प्रॉम्प्ट आ गया होगा।';
+
+                // 6. Reset UI to 'Open'
+                isSimulatingDownload = false;
+                btn.style.display = 'block';
+                downloadUI.style.display = 'none';
+                btn.textContent = 'ओपन करें';
+                btn.onclick = () => alert(`Opening ${currentApp.name}...`); 
+
+            }, 2000); // 2 seconds for installation simulation
+        }
+        
+        // --- REVIEW SUBMISSION LOGIC (UNCHANGED) ---
+        async function submitReview() {
+            if (!currentApp || !auth.currentUser || auth.currentUser.isAnonymous) return alert('रिव्यू देने के लिए कृपया लॉग इन करें।');
+
+            const rating = Number(document.getElementById('review-rating').value);
+            const text = document.getElementById('review-text').value.trim();
+
+            if (rating < 1 || rating > 5 || !text) {
+                return alert('कृपया 1-5 के बीच रेटिंग दें और रिव्यू लिखें।');
+            }
+            
+            try {
+                const reviewId = 'r' + Date.now();
+                const userId = auth.currentUser.uid;
+                const itemId = currentApp.id;
+
+                await db.ref(`RATINGS_REVIEWS/${itemId}/${reviewId}`).set({
+                    user_id: userId,
+                    rating: rating,
+                    review_text: text,
+                    item_type: 'app',
+                    createdAt: Date.now(),
+                    hidden: false 
+                });
+
+                alert('आपका रिव्यू सफलतापूर्वक सबमिट हो गया है!');
+                document.getElementById('review-rating').value = '';
+                document.getElementById('review-text').value = '';
+                
+                loadAppReviews(currentApp.id, false); // Reload limited reviews 
+
+            } catch(error) {
+                console.error("Review submit error:", error);
+                alert('रिव्यू सबमिट करने में एरर।');
+            }
+        }
+
+        // --- REVIEW DISPLAY LOGIC (MODIFIED - Limited Display) ---
+        async function loadAppReviews(appId, showAll = false) {
+            const displayDiv = document.getElementById('reviews-display');
+            const moreBtn = document.getElementById('show-all-reviews-btn');
+            displayDiv.innerHTML = '<p>रिव्यूज लोड हो रहे हैं...</p>';
+            moreBtn.style.display = 'none';
+
+            try {
+                const snapshot = await db.ref(`RATINGS_REVIEWS/${appId}`).once('value');
+                const itemReviews = snapshot.val();
+                displayDiv.innerHTML = '';
+                
+                if (itemReviews) {
+                    let filteredReviews = Object.keys(itemReviews)
+                        .map(key => itemReviews[key])
+                        .filter(r => !r.hidden)
+                        .sort((a, b) => b.createdAt - a.createdAt); // Newest first
+                    
+                    const totalReviews = filteredReviews.length;
+                    
+                    if (totalReviews === 0) {
+                        displayDiv.innerHTML = '<p>इस ऐप के लिए कोई रिव्यू नहीं है।</p>';
+                        return;
+                    }
+
+                    // Limit display to 3 if not showing all
+                    if (!showAll && totalReviews > 3) {
+                        filteredReviews = filteredReviews.slice(0, 3);
+                        moreBtn.style.display = 'block';
+                    } else if (showAll) {
+                         moreBtn.style.display = 'none';
+                    }
+
+                    filteredReviews.forEach(review => {
+                        displayDiv.innerHTML += `
+                            <div class="review-item">
+                                <span class="review-rating">${'★'.repeat(review.rating)}</span> 
+                                <p style="margin: 5px 0 0 0;">${review.review_text}</p>
+                                <em style="font-size: 0.8em; color: #6c757d;">- User ${review.user_id ? review.user_id.substring(0, 5) : 'N/A'}...</em>
+                            </div>
+                        `;
+                    });
+                } else {
+                    displayDiv.innerHTML = '<p>इस ऐप के लिए कोई रिव्यू नहीं है।</p>';
+                }
+
+            } catch(error) {
+                console.error("Error loading app reviews:", error);
+            }
+        }
+
+        // --- DUMMY HISTORY LOADERS (Keeping them for completeness, though not visible on this screen) ---
+        function loadQuickHistory() { /* Dummy */ }
+        function loadReferHistory() { /* Dummy */ }
+        function loadWalletHistory() { /* Dummy */ }
+        function loadGoldHistory() { /* Dummy */ }
+        function listenPaymentRequests() { /* Dummy */ }
+    </script>
+</body>
+</html>
+

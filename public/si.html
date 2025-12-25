@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Rupi - Sign Up</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        :root { --gold: #ffd700; --dark: #0a0a0a; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--gold); margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        
+        .signup-container { 
+            background: #111; padding: 35px 25px; border-radius: 24px; 
+            border: 1px solid var(--gold); width: 90%; max-width: 380px; 
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1); text-align: center; 
+        }
+
+        h2 { margin-bottom: 25px; color: var(--gold); }
+        input { 
+            width: 100%; padding: 15px; margin: 10px 0; background: #1a1a1a; 
+            border: 1px solid #333; color: white; border-radius: 12px; 
+            box-sizing: border-box; outline: none; font-size: 16px;
+        }
+        input:focus { border-color: var(--gold); }
+
+        .btn { 
+            padding: 16px; background: var(--gold); color: black; border: none; 
+            font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; 
+            font-size: 17px; margin-top: 15px; transition: 0.3s;
+        }
+        .btn:hover { opacity: 0.9; }
+
+        .outer-login-link { 
+            margin-top: 25px; background: rgba(255, 215, 0, 0.05); border: 1px solid #333; 
+            color: var(--gold); padding: 12px 25px; border-radius: 30px; cursor: pointer; 
+            font-size: 14px; text-decoration: none; display: inline-block; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="signup-container">
+        <h2>Create Account</h2>
+        <input type="text" id="name" placeholder="Pura Naam">
+        <input type="number" id="mobile" placeholder="Mobile Number">
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="pass" placeholder="Password Banayein">
+        <button class="btn" onclick="handleSignUp()">Register Karein</button>
+    </div>
+
+    <a href="login.html" class="outer-login-link">Already Account? Login Here</a>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    appId: "1:720775550032:web:0622548a007597778bad55"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+async function handleSignUp() {
+    const name = document.getElementById('name').value;
+    const mob = document.getElementById('mobile').value;
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('pass').value;
+
+    if(!name || !mob || !email || !pass) return alert("Poori detail bharo!");
+
+    try {
+        // 1. User Create Karo
+        const res = await auth.createUserWithEmailAndPassword(email, pass);
+        
+        // 2. Sirf basic data save karo
+        await db.ref('users/' + res.user.uid).set({
+            name: name,
+            mobile: mob,
+            email: email,
+            verified: false
+        });
+
+        // 3. Email Verification Link bhejo
+        await res.user.sendEmailVerification();
+
+        alert("Sign-up Successful! Apni email verify karein, phir login karein.");
+        window.location.href = "ffo.html";
+
+    } catch(err) {
+        alert("Error: " + err.message);
+    }
+}
+</script>
+</body>
+</html>
+

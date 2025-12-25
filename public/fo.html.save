@@ -1,0 +1,321 @@
+
+         apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+x
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Face Auth Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase 8.10.0 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Face API -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    
+    <style>
+        body { background: #030712; color: #f3f4f6; font-family: 'Segoe UI', sans-serif; }
+        .auth-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .glass { background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; }
+        
+        /* Gool Camera Design */
+        #camera-wrapper {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            border: 5px solid #3b82f6;
+            overflow: hidden;
+            background: #111827;
+            margin: 20px auto;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
+        }
+        #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
+        /* Guide Animations */
+        .guide-box { font-size: 3rem; margin-bottom: 10px; transition: transform 0.3s ease; }
+        .move-left { transform: translateX(-30px); }
+        .move-right { transform: translateX(30px); }
+        .move-up { transform: translateY(-30px); }
+        .move-down { transform: translateY(30px); }
+        
+        .step-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; background: #374151; color: #9ca3af; transition: 0.2s; }
+        .pill-active { background: #3b82f6; color: white; transform: scale(1.1); font-weight: bold; }
+        
+        input { background: #1f2937; border: 1px solid #374151; padding: 12px 16px; border-radius: 12px; color: white; width: 100%; }
+        input:focus { outline: none; border-color: #3b82f6; }
+        .btn-primary { background: #2563eb; color: white; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; transition: 0.2s; }
+        .btn-primary:active { scale: 0.95; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        
+        <!-- SIGNUP FORM -->
+        <div id="signup-box" class="glass p-8 w-full max-w-md shadow-2xl">
+            <h2 class="text-3xl font-bold mb-2 text-center text-blue-400">Signup</h2>
+            <p class="text-gray-400 text-center mb-6 text-sm">Create account to continue</p>
+            <div class="space-y-4">
+                <input type="text" id="reg-name" placeholder="Full Name">
+                <input type="text" id="reg-mobile" placeholder="Mobile Number">
+                <input type="email" id="reg-email" placeholder="Email Address">
+                <input type="password" id="reg-pass" placeholder="Password">
+                <button onclick="handleSignup()" class="btn-primary">Verify & Signup</button>
+            </div>
+            <div class="text-center mt-6">
+                <span class="text-gray-400 text-sm">Already account?</span>
+                <button onclick="toggleAuth('login')" class="text-blue-400 font-bold ml-1 text-sm">Login here</button>
+            </div>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div id="login-box" class="glass p-8 w-full max-w-md shadow-2xl hidden">
+            <h2 class="text-3xl font-bold mb-2 text-center text-blue-400">Login</h2>
+            <p class="text-gray-400 text-center mb-6 text-sm">Enter details for face verify</p>
+            <div class="space-y-4">
+                <input type="email" id="log-email" placeholder="Email Address">
+                <input type="password" id="log-pass" placeholder="Password">
+                <button onclick="handleLogin()" class="btn-primary">Proceed to Face Auth</button>
+            </div>
+            <div class="text-center mt-6">
+                <span class="text-gray-400 text-sm">Don't have account?</span>
+                <button onclick="toggleAuth('signup')" class="text-blue-400 font-bold ml-1 text-sm">Signup here</button>
+            </div>
+        </div>
+
+        <!-- FACE VERIFICATION MODAL -->
+        <div id="face-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 hidden">
+            <div class="glass p-8 w-full max-w-lg text-center shadow-2xl">
+                <div id="guide-emoji" class="guide-box">🙋‍♂️</div>
+                <h3 id="step-msg" class="text-xl font-bold text-blue-400 mb-4">Face ko frame me layein</h3>
+                
+                <div id="camera-wrapper">
+                    <video id="video" autoplay muted playsinline></video>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-2 mt-6">
+                    <span id="p1" class="step-pill">Blink</span>
+                    <span id="p2" class="step-pill">Left</span>
+                    <span id="p3" class="step-pill">Right</span>
+                    <span id="p4" class="step-pill">Up</span>
+                    <span id="p5" class="step-pill">Down</span>
+                </div>
+
+                <div id="err-text" class="text-red-400 text-sm mt-4 font-bold h-4"></div>
+                <button onclick="location.reload()" class="text-gray-500 text-xs mt-6 underline">Back to Home</button>
+            </div>
+        </div>
+
+        <!-- SUCCESS SCREEN -->
+        <div id="success-screen" class="glass p-10 w-full max-w-md text-center hidden">
+            <div class="text-green-500 text-6xl mb-4">✅</div>
+            <h1 class="text-3xl font-bold">Login Done!</h1>
+            <p class="text-gray-400 mt-2">Aapka face verify ho gaya hai.</p>
+            <button onclick="location.reload()" class="btn-primary mt-8">Log Out</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Firebase 8.10.0 Config ---
+        const firebaseConfig = {
+
+         apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+
+
+
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentStep = 1;
+        let isLocked = false;
+        let faceMatcher = null;
+        let isNewFace = true;
+        let blinkActive = false;
+
+        function toggleAuth(type) {
+            document.getElementById('signup-box').classList.toggle('hidden', type === 'login');
+            document.getElementById('login-box').classList.toggle('hidden', type === 'signup');
+        }
+
+        async function handleSignup() {
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+            const name = document.getElementById('reg-name').value;
+            const mobile = document.getElementById('reg-mobile').value;
+            if(!email || !pass) return alert("Sari details bharein");
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                await cred.user.sendEmailVerification();
+                await db.ref('users/' + cred.user.uid).set({ name, mobile, email });
+                alert("Verification link sent! Please check your email.");
+                toggleAuth('login');
+            } catch(e) { alert(e.message); }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('log-email').value;
+            const pass = document.getElementById('log-pass').value;
+            try {
+                const cred = await auth.signInWithEmailAndPassword(email, pass);
+                if(!cred.user.emailVerified) return alert("Email verify karein pehle!");
+                
+                // Realtime check for existing face
+                const snap = await db.ref('face_verification/' + cred.user.uid).once('value');
+                isNewFace = !snap.exists();
+                if(!isNewFace) {
+                    const desc = new Float32Array(Object.values(snap.val().descriptor));
+                    faceMatcher = new faceapi.FaceMatcher(new faceapi.LabeledFaceDescriptors(cred.user.uid, [desc]), 0.5);
+                }
+                startFaceProcess();
+            } catch(e) { alert(e.message); }
+        }
+
+        async function startFaceProcess() {
+            document.getElementById('login-box').classList.add('hidden');
+            document.getElementById('face-modal').classList.remove('hidden');
+            document.getElementById('step-msg').innerText = "Models load ho rahe hain...";
+            
+            try {
+                // Direct path loading
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri('/'),
+                    faceapi.nets.faceLandmark68TinyNet.loadFromUri('/'),
+                    faceapi.nets.faceRecognitionNet.loadFromUri('/')
+                ]);
+                launchCamera();
+            } catch(e) {
+                // CDN Fallback if local files fail
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
+                    faceapi.nets.faceLandmark68TinyNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
+                    faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models')
+                ]);
+                launchCamera();
+            }
+        }
+
+        function launchCamera() {
+            const video = document.getElementById('video');
+            navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 400, frameRate: { ideal: 30 } } })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.onplay = () => beginAnalysis();
+                });
+        }
+
+        async function beginAnalysis() {
+            const video = document.getElementById('video');
+            const guide = document.getElementById('guide-emoji');
+            
+            setInterval(async () => {
+                if(isLocked) return;
+
+                const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks(true)
+                    .withFaceDescriptor();
+
+                if(!det) {
+                    updateStatus("Face nahi dikh raha!", "🚫");
+                    return;
+                }
+
+                if(!isNewFace) {
+                    // Quick Login Match
+                    const match = faceMatcher.findBestMatch(det.descriptor);
+                    if(match.label !== 'unknown') {
+                        isLocked = true;
+                        updateStatus("Verified!", "✅");
+                        setTimeout(showFinal, 800);
+                    } else {
+                        updateStatus("Face Match nahi hua!", "❌");
+                    }
+                } else {
+                    // Fast 5 Step Registration
+                    processLiveness(det, guide);
+                }
+            }, 100);
+        }
+
+        function processLiveness(det, guide) {
+            const landmarks = det.landmarks;
+            const nose = landmarks.getNose();
+            const jaw = landmarks.getJawOutline();
+            const leftEye = landmarks.getLeftEye();
+
+            // Pills highlighting
+            for(let i=1; i<=5; i++) document.getElementById('p'+i).className = `step-pill ${i <= currentStep ? 'pill-active' : ''}`;
+
+            switch(currentStep) {
+                case 1: // Blink
+                    updateStatus("Palkein Jhapkayein (Blink)", "👁️");
+                    guide.className = "guide-box";
+                    const eyeOpen = Math.abs(leftEye[1].y - leftEye[5].y);
+                    if(eyeOpen < 2.5) blinkActive = true;
+                    if(blinkActive && eyeOpen > 4.5) { currentStep = 2; blinkActive = false; }
+                    break;
+                case 2: // Left
+                    updateStatus("Dheere se Left dekhein", "🙋‍♂️");
+                    guide.className = "guide-box move-left";
+                    if(nose[0].x < jaw[2].x + 15) currentStep = 3;
+                    break;
+                case 3: // Right
+                    updateStatus("Ab Right dekhein", "🙋‍♂️");
+                    guide.className = "guide-box move-right";
+                    if(nose[0].x > jaw[14].x - 15) currentStep = 4;
+                    break;
+                case 4: // Up
+                    updateStatus("Uper dekhein", "🙋‍♂️");
+                    guide.className = "guide-box move-up";
+                    if(nose[0].y < jaw[8].y - 95) currentStep = 5;
+                    break;
+                case 5: // Down
+                    updateStatus("Niche dekhein", "🙋‍♂️");
+                    guide.className = "guide-box move-down";
+                    if(nose[0].y > jaw[8].y - 40) registerFace(det.descriptor);
+                    break;
+            }
+        }
+
+        function updateStatus(txt, emoji) {
+            document.getElementById('step-msg').innerText = txt;
+            if(emoji !== "🙋‍♂️") document.getElementById('guide-emoji').innerText = emoji;
+            else document.getElementById('guide-emoji').innerText = "🙋‍♂️";
+        }
+
+        async function registerFace(descriptor) {
+            isLocked = true;
+            updateStatus("Saving Data...", "💾");
+            const user = auth.currentUser;
+            await db.ref('face_verification/' + user.uid).set({
+                descriptor: Array.from(descriptor),
+                timestamp: Date.now()
+            });
+            setTimeout(showFinal, 1000);
+        }
+
+        function showFinal() {
+            document.getElementById('face-modal').classList.add('hidden');
+            document.getElementById('success-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
+

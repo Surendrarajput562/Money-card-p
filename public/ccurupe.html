@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>gold rupi - </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root{
+            --gold:#d4af37;
+            --gold-strong:#c59b2d;
+            --glass: rgba(255,255,255,0.8);
+            --card-bg: rgba(255,255,255,0.95);
+            --bg-grad: linear-gradient(135deg,#fff7e1,#ffe9a6);
+            --accent:#1f2937;
+            --text-color:#1f2937;
+            --bg-color:#fffaf0;
+            --card-shadow:0 6px 24px rgba(0,0,0,0.06);
+            --history-border: var(--gold-strong);
+        }
+        [data-theme="dark"] {
+            --gold:#ffd76b;
+            --gold-strong:#ffc44a;
+            --glass: rgba(31, 41, 55, 0.7);
+            --card-bg: rgba(31, 41, 55, 0.9);
+            --bg-grad: linear-gradient(135deg,#2e3a47,#4f5f70);
+            --accent:#f3f4f6;
+            --text-color:#f3f4f6;
+            --bg-color:#111827;
+            --card-shadow:0 6px 24px rgba(0,0,0,0.4);
+            --history-border: var(--gold);
+        }
+
+        *{box-sizing:border-box}
+        body{
+            margin:0;
+            font-family:'Poppins',sans-serif;
+            background: var(--bg-color);
+            color:var(--text-color);
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:14px 16px;
+            background:var(--glass);
+            backdrop-filter:blur(8px);
+            position:sticky;
+            top:0;
+            z-index:1000;
+        }
+        .brand{ display:flex;align-items:center;gap:10px; }
+        .logo{
+            width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold-strong));
+            display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);
+            box-shadow:0 6px 20px rgba(197,155,45,0.18);
+        }
+        .h1{font-weight:700;font-size:18px;color:var(--text-color)}
+        .top-right{display:flex;gap:10px;align-items:center}
+        .search-bar{padding:10px;border-radius:12px;border:none;width:100%;background:var(--card-bg);margin:12px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.05)}
+        [data-theme="dark"] .search-bar{background:rgba(255,255,255,0.1); box-shadow:none;}
+        .search-bar input, .search-bar select{border:none;background:transparent;outline:none;width:100%;font-size:15px;color:var(--text-color)}
+        .container{padding:12px 16px 100px}
+        .section{display:none}
+        .section.active{display:block}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:12px}
+        .card{
+            background:var(--card-bg);
+            border-radius:14px;padding:12px;box-shadow:var(--card-shadow);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .product-img{width:100%;height:140px;object-fit:cover;border-radius:10px;margin-bottom:8px}
+        /* Updated Product Card Look */
+        .product-card-inner { position: relative; }
+        .product-card-inner .product-img { height: 120px; margin-bottom: 6px; }
+        .product-card-inner .pmeta { display: block; margin-bottom: 4px; }
+        .product-card-inner .pname { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .product-card-inner .pprice { font-weight: 800; color:var(--gold-strong); font-size: 14px; }
+        .small{font-size:12px;color:var(--text-color);opacity:0.8;}
+        .small-muted{font-size:11px;color:var(--text-color);opacity:0.6;}
+        .field-hidden{display:none;}
+        
+        /* cart list */
+        .cart-list .card{display:flex;gap:10px;align-items:center;padding:10px;margin-bottom:10px;border-left:4px solid var(--gold);}
+        .cart-list img{width:72px;height:72px;object-fit:cover;border-radius:8px}
+
+        /* profile */
+        .profile-top{display:flex;gap:12px;align-items:center}
+        .profile-photo{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid var(--card-bg);box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+        .field{margin-top:8px}
+        input:not([type="file"]), select, textarea{
+            width:100%;
+            padding:10px;
+            border-radius:8px;
+            border:1px solid rgba(0,0,0,0.1);
+            margin-top:4px;
+            margin-bottom:8px;
+            background:var(--card-bg);
+            color:var(--text-color);
+            transition: border-color 0.3s;
+        }
+        [data-theme="dark"] input:not([type="file"]), [data-theme="dark"] select, [data-theme="dark"] textarea {
+            border:1px solid rgba(255,255,255,0.2);
+            background:rgba(255,255,255,0.05);
+        }
+
+        /* buttons */
+        .btn{background:var(--gold);border:none;padding:10px 14px;border-radius:10px;color:var(--accent);font-weight:600;cursor:pointer;transition:background-color 0.3s, opacity 0.3s;}
+        .btn:hover{opacity:0.9;}
+        .btn.secondary{background:transparent;border:1px solid rgba(0,0,0,0.1);color:var(--text-color)}
+        [data-theme="dark"] .btn.secondary{border:1px solid rgba(255,255,255,0.2);color:var(--text-color)}
+        .row{display:flex;gap:10px;flex-wrap:wrap}
+
+        /* bottom nav */
+        .bottom-nav{position:fixed;left:0;right:0;bottom:0;height:66px;background:var(--glass);backdrop-filter:blur(8px);display:flex;justify-content:space-around;z-index:9999;box-shadow:0 -2px 10px rgba(0,0,0,0.05)}
+        .navbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--text-color);opacity:0.7;cursor:pointer;flex:1}
+        .navbtn i{font-size:22px;margin-bottom:2px;color:var(--text-color)}
+        .navbtn.active{opacity:1;color:var(--gold-strong);font-weight:600}
+        .navbtn.active i{color:var(--gold-strong)}
+
+        /* gold/wallet section */
+        .gold-box{background:linear-gradient(90deg, rgba(212,175,55,0.15), rgba(212,175,55,0.08));padding:16px;border-radius:12px;margin:8px 0;border-left:5px solid var(--gold-strong);}
+        [data-theme="dark"] .gold-box{background:rgba(212,175,55,0.08);}
+        .note{font-size:13px;color:var(--text-color);opacity:0.7;}
+        .balance-display{font-weight:800;font-size:24px;color:var(--gold-strong);margin-top:4px;}
+        .balance-label{font-weight:700;font-size:14px;opacity:0.8;}
+
+        /* history styling */
+        .history .card{background:var(--card-bg);border-left:4px solid var(--history-border);margin-bottom:8px;padding:10px;font-size:13px;}
+
+        /* detail overlay & modals */
+        .overlay{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:10000}
+        .overlay .modal{width:92%;max-width:760px;background:var(--bg-color);padding:20px;border-radius:16px;max-height:90vh;overflow:auto;color:var(--text-color);box-shadow:var(--card-shadow);}
+        .overlay .images{display:flex;gap:8px;overflow-x:auto;margin-bottom:8px}
+        .overlay img{height:220px;object-fit:cover;border-radius:8px}
+        .modal-row{display:flex;gap:8px;align-items:center}
+        
+        .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+
+        /* Order Status Badge */
+        .badge{padding:4px 8px;border-radius:6px;font-weight:600;font-size:12px;display:inline-block;text-transform:capitalize;color:#fff;}
+        .badge-pending{background-color:#f59e0b;}
+        .badge-paid{background-color:#06b6d4;}
+        .badge-processing{background-color:#6366f1;}
+        .badge-delivered, .badge-completed{background-color:#10b981;}
+        .badge-rejected{background-color:#ef4444;}
+        .badge-withdraw{background-color:#f97316;}
+        .badge-add{background-color:#059669;}
+        .badge-loan{background-color:#3b82f6;}
+        .badge-eligible{background-color: #6d28d9;}
+        /* Home Latest Product Look */
+        #latest-products img {
+            width: 100% !important;
+            height: 120px !important;
+            object-fit: cover !important;
+            border-radius: 10px;
+            display: block !important;
+        }
+        .quick-actions{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .product-actions{ display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+        .product-actions .btn, .product-actions .btn.secondary { padding: 6px 10px; font-size: 12px; }
+        .rating { font-size: 14px; color: gold; }
+
+        /* New crypto exchange styles */
+        .crypto-widget-container {
+            margin-top: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            max-width: 100%;
+            height: 0; /* start collapsed */
+            transition: height 0.5s ease-out;
+        }
+        .crypto-widget-container.expanded {
+            height: 400px; /* Adjust as needed for the largest widget */
+        }
+        .crypto-widget-container iframe {
+            display: block;
+            width: 100%;
+            border: none;
+            min-height: 350px;
+        }
+        .exchange-widget-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        /* Loan Dashboard Styles */
+        .loan-step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .loan-step {
+            flex: 1;
+            text-align: center;
+            font-size: 10px;
+            color: #ccc;
+            position: relative;
+            padding-top: 25px;
+        }
+        .loan-step::before {
+            content: attr(data-step);
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            border-radius: 50%;
+            background: #ccc;
+            color: white;
+            font-weight: 700;
+        }
+        .loan-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #ccc;
+            z-index: -1;
+            transform: translateX(10px);
+        }
+        .loan-step.active::before,
+        .loan-step.completed::before {
+            background: var(--gold-strong);
+        }
+        .loan-step.completed ~ .loan-step::after {
+            background: var(--gold-strong);
+        }
+        .loan-step-content {
+            padding: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .loan-step-content h4 { margin-top: 0; }
+
+        .loan-offer-details div {
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .loan-offer-details div:last-child { border-bottom: none; }
+
+
+/* --- START OF REQUESTED CSS --- */
+/* Inter Font and basic styling */
+body { font-family: 'Inter', Arial, sans-serif; background-color: #f7f7f9; padding: 20px; }
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+.btn.secondary {
+    padding: 12px;
+    border: 1px solid #d1d5db; /* Gray 300 */
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    background-color: #f9fafb; /* Gray 50 */
+    color: #1f2937; /* Gray 800 */
+    transition: background-color 0.15s, transform 0.1s;
+    height: 50px;
+}
+.btn.secondary:hover {
+    background-color: #f3f4f6;
+}
+.btn.secondary:active {
+    transform: scale(0.98);
+}
+
+#servicesBox {
+    margin-top: 12px;
+}
+
+/* Grid for service buttons */
+.grid-services {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Mobile default */
+    gap: 10px;
+}
+@media (min-width: 640px) {
+    .grid-services {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+.service-button {
+    display: none; /* Initially hidden, JavaScript will show them */
+}
+
+#loader {
+    text-align: center;
+    padding: 20px;
+    color: #6b7280;
+}
+</style>
+</head>
+<body data-theme="light">
+    <div class="header">
+        <div class="brand">
+            <div class="logo">gr</div>
+            <div>
+                <div class="h1">gold rupi</div>
+                <div class="small">buy gold • shop • wallet</div>
+            </div>
+        </div>
+
+        <div class="top-right" style="display:flex;align-items:center;gap:12px">
+            <div class="small" id="goldrate-display">rate: ₹6500 / g</div>
+            <div class="small" id="wallet-mini">wallet: ₹0</div>
+            <button class="btn secondary" onclick="toggleTheme()" style="padding: 6px 8px;"><i id="theme-icon" class="ri-moon-line"></i></button>
+            
+            <div class="cart-icon" onclick="openCartModal()" title="Cart" style="position:relative; cursor:pointer;">
+                <i class="ri-shopping-cart-line" style="font-size:24px;"></i>
+                <div id="cart-count" class="cart-count" 
+                     style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; border-radius:50%; padding: 2px 5px; font-size:12px;">
+                </div>
+            </div>
+
+            <div class="cart-icon" onclick="showNotificationCenter()" title="Notifications" style="position:relative;">
+                <i class="ri-notification-line" style="font-size:24px;"></i>
+                <div id="notification-count" class="cart-count" 
+                     style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; border-radius:50%; padding: 2px 5px; font-size:12px;">
+                </div>
+            </div>
+
+            <button class="btn secondary" onclick="logout()" style="padding: 6px 8px;" title="Logout"><i class="ri-logout-box-r-line"></i></button>
+        </div>
+    </div>
+
+
+<div class="search-bar">
+    <input id="search-input" placeholder="search products, brand, color, category..." />
+
+    <select id="category-filter">
+        <option value="">all categories</option>
+    </select>
+</div>
+
+    <div class="container">
+        <div id="home" class="section active">
+            <div class="section-title">
+                <h2>welcome back <span id="welcome-name">👋</span></h2>
+                <div class="small-muted" id="signup-bonus-note"></div>
+            </div>
+            <div class="card gold-box">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <div class="balance-label">current gold rate</div>
+                        <div class="balance-display">₹ <span id="gold-rate">6500</span> / g</div>
+                        <div class="note" style="margin-top:8px;">your gold balance: <strong id="gold-balance-display">0.0000</strong> g</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="balance-label">fast actions</div>
+                        <div class="row" style="margin-top:10px">
+                            <button class="btn" onclick="showTab('shop')"><i class="ri-store-line"></i> Shop</button>
+                            <button class="btn" onclick="showTab('gold')"><i class="ri-coin-line"></i> Buy Gold</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="quick-actions" id="quick-category-buttons">
+                </div>
+            <h3 style="margin-top:16px">latest products</h3>
+            <div id="latest-products" class="grid"></div>
+        </div>
+
+        <div id="shop" class="section">
+            <div class="section-title">
+                <h2>shop</h2>
+                <button class="btn secondary" onclick="showTab('wishlist')"><i class="ri-heart-line"></i> Wishlist</button>
+            </div>
+            <div class="card">
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input id="search-shop" placeholder="search in shop..." style="flex:1">
+                    <select id="cat-shop" style="min-width:140px"><option value="">all categories</option></select>
+                    <select id="sort-shop" style="min-width:120px; padding:8px;">
+                        <option value="newest">Newest</option>
+                        <option value="price_asc">Price Low to High</option>
+                        <option value="price_desc">Price High to Low</option>
+                    </select>
+                    <button class="btn" onclick="searchShop()">search</button>
+                </div>
+            </div>
+            <div id="product-list" class="grid" style="margin-top:12px"></div>
+        </div>
+
+        <div id="cart" class="section">
+            <h2>cart</h2>
+            <div id="cart-list" class="cart-list"></div>
+            <div style="margin-top:12px">
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div><strong>subtotal:</strong> ₹ <span id="cart-subtotal">0</span></div>
+                        <div style="display:flex;gap:8px">
+                            <button class="btn secondary" onclick="clearCart()">clear</button>
+                            <button class="btn" onclick="openCheckoutModal()">buy / checkout</button>
+                        </div>
+                    </div>
+                    <div style="margin-top:8px" class="small-muted">Delivery address and UTR will be confirmed at checkout.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="gold" class="section">
+            <h2>buy gold</h2>
+            <div class="card gold-box">
+                <div class="balance-label">Your Current Gold Balance</div>
+                <div class="balance-display"><span id="gold-balance-main">0.0000</span> g</div>
+                <div class="note" style="margin-top:4px;">(equivalent to: ₹<span id="gold-value-main">0</span>)</div>
+            </div>
+            <div class="card" style="margin-top:12px;">
+                <h4 style="margin-top:0;">purchase gold</h4>
+                <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div style="flex:1">
+                        <label class="small">enter amount (₹, min 50)</label>
+                        <input id="gold-amount" type="number" placeholder="amount in ₹" oninput="calculateGoldGrams()">
+                        <div class="note small" style="margin-bottom:8px;">will get: <strong id="gold-grams-calc">0.0000 g</strong></div>
+                        <label class="small">enter utr (12 digits)</label>
+                        <input id="gold-utr" type="text" placeholder="12 digit utr">
+                        <div style="margin-top:8px" class="small-muted">scan the upi qr and paste utr then submit.</div>
+                    </div>
+                    <div style="width:160px;text-align:center;flex-shrink:0;">
+                        <img id="gold-qr-img" src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" style="width:140px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);">
+                        <div class="small" style="margin-top:6px">scan & pay</div>
+                        <button class="btn secondary" onclick="launchUPIPayment('gold')" style="margin-top:8px;"><i class="ri-bank-card-line"></i> Quick Pay</button>
+                    </div>
+                </div>
+                <div style="margin-top:12px;display:flex;gap:8px">
+                    <button class="btn" onclick="buyGold()">submit request</button>
+                    <button class="btn secondary" onclick="showHistory('gold')">my gold history</button>
+                </div>
+            </div>
+            <div class="card" style="margin-top:16px;">
+                <h4 style="margin-top:0;">Gold Price Trend (Last 30 Days)</h4>
+                <div id="gold-chart-placeholder" style="height:150px; background:#f0f0f0; border-radius:8px; display:flex; justify-content:center; align-items:center;">
+                    <span class="small-muted">📈 Placeholder for Price Chart Integration</span>
+                </div>
+            </div>
+            <h4 style="margin-top:16px;">my gold history</h4>
+            <div id="gold-status-list" class="history"></div>
+        </div>
+
+        <div id="wallet" class="section">
+            <h2>wallet</h2>
+            <div class="card gold-box">
+                <div class="balance-label">current balance</div>
+                <div class="balance-display">₹ <span id="wallet-balance-main">0</span></div>
+            </div>
+            <div class="card" style="margin-top:12px">
+                <h4 style="margin-top:0;">add money</h4>
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                    <div style="flex:1">
+                        <label class="small">add amount</label>
+                        <input id="wallet-add-amount" type="number" placeholder="amount">
+                        <label class="small">enter utr (12 digits)</label>
+                        <input id="wallet-utr" type="text" placeholder="12 digit utr">
+                        <div style="display:flex;gap:8px;margin-top:8px">
+                            <button class="btn" onclick="addWallet()">request add</button>
+                            <button class="btn secondary" onclick="openWithdrawModal()"><i class="ri-bank-card-line"></i> withdraw</button>
+                        </div>
+                    </div>
+                    <div style="min-width:140px;text-align:center;">
+                        <img id="wallet-qr" src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" style="width:100px;border-radius:8px;border:1px solid rgba(0,0,0,0.1);">
+                        <div class="small-muted" style="margin-top:4px;">scan to pay</div>
+                        <button class="btn secondary" onclick="launchUPIPayment('wallet')" style="margin-top:8px;"><i class="ri-bank-card-line"></i> Quick Pay</button>
+                    </div>
+                </div>
+            </div>
+            <h4 style="margin-top:16px;">wallet history</h4>
+            <div id="wallet-history-list" class="history"></div>
+        </div>
+        
+        <div id="wishlist" class="section">
+            <h2>my wishlist ❤️</h2>
+            <div id="wishlist-list" class="grid" style="margin-top:12px;">
+                <div class="card" style="grid-column: 1 / -1; text-align:center;">Your wishlist is empty.</div>
+            </div>
+        </div>
+
+        <div id="profile" class="section">
+            <div class="section-title">
+                <h2>profile 👤</h2>
+                <div>
+                    <button class="btn secondary" onclick="showHistory('orders')">my orders</button>
+                </div>
+            </div>
+
+
+
+<h1 class="text-3xl font-extrabold text-center mb-8 text-gray-800">उपलब्ध सेवाएँ (Available Services)</h1>
+
+<div class="card">
+
+    <button
+        onclick="toggleServices()"
+        id="toggleButton"
+        style="
+            width:100%;
+            padding:12px;
+            font-size:16px;
+            font-weight:600;
+            border:none;
+            background:#e5e7eb; /* Gray 200 */
+            border-radius:6px;
+            cursor:pointer;
+        ">
+        सभी सेवाएँ ▼
+    </button>
+
+    <div id="servicesBox" style="display:none; margin-top:12px;">
+        <div id="loader"></div>
+        <div id="serviceGrid" class="grid-services">
+            <button id="service1" class="btn secondary service-button" data-href="loan.html">My loan</button>
+            <button id="service2" class="btn secondary service-button" data-href="ebook.html">E Books </button>
+            <button id="service3" class="btn secondary service-button" data-href="uapp.html">Gold app Store</button>
+            <button id="service4" class="btn secondary service-button" data-href="example.html">4</button>
+
+            <button id="service5" class="btn secondary service-button" data-href="example.html">5</button>
+            <button id="service6" class="btn secondary service-button" data-href="example.html">6</button>
+            <button id="service7" class="btn secondary service-button" data-href="example.html">7</button>
+            <button id="service8" class="btn secondary service-button" data-href="example.html">8</button>
+
+            <button id="service9" class="btn secondary service-button" data-href="example.html">9</button>
+            <button id="service10" class="btn secondary service-button" data-href="example.html">10</button>
+            <button id="service11" class="btn secondary service-button" data-href="example.html">11</button>
+            <button id="service12" class="btn secondary service-button" data-href="example.html">12</button>
+
+            <button id="service13" class="btn secondary service-button" data-href="example.html">13</button>
+            <button id="service14" class="btn secondary service-button" data-href="example.html">14</button>
+            <button id="service15" class="btn secondary service-button" data-href="example.html">15</button>
+            <button id="service16" class="btn secondary service-button" data-href="example.html">16</button>
+
+            <button id="service17" class="btn secondary service-button" data-href="example.html">17</button>
+            <button id="service18" class="btn secondary service-button" data-href="example.html">18</button>
+            <button id="service19" class="btn secondary service-button" data-href="example.html">19</button>
+            <button id="service20" class="btn secondary service-button" data-href="example.html">20</button>
+        </div>
+    </div>
+
+</div>
+<div class="card profile-top">
+    <img id="profile-photo" class="profile-photo" src="https://via.placeholder.com/84" alt="profile">
+    <div style="flex:1">
+        <div id="profile-view">
+            <div style="display:flex;gap:8px;align-items:center">
+                <div style="flex:1">
+                    <div id="profile-name-display" style="font-weight:700">Name</div>
+                    <div id="profile-mobile-display" class="small-muted">Mobile</div>
+                </div>
+                <div>
+                    <button class="btn secondary" onclick="toggleProfileEdit()">edit</button>
+                </div>
+            </div>
+        </div>
+        <div id="profile-edit" class="field-hidden" style="margin-top:8px">
+            <input id="profile-name" placeholder="name">
+            <input id="profile-mobile" placeholder="mobile">
+            <div style="margin-top:6px;display:flex;gap:8px;align-items:center;">
+                <input type="file" id="profile-upload" style="flex:1">
+                <button class="btn secondary" onclick="uploadProfile()" style="min-width:100px;">upload</button>
+            </div>
+            <div style="margin-top:8px">
+                <button class="btn" onclick="saveProfile()">save profile</button>
+                <button class="btn secondary" onclick="toggleProfileEdit(true)">cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card" style="margin-top:12px">
+    <h3 style="margin-top:0;">delivery address</h3>
+    <div id="address-view">
+        <div class="small-muted" id="address-display">No saved address</div>
+        <div style="margin-top:8px"><button class="btn secondary" onclick="toggleAddressEdit()"><i class="ri-home-4-line"></i> edit address</button></div>
+    </div>
+    <div id="address-edit" class="field-hidden" style="margin-top:8px">
+        <input id="addr-house" placeholder="house / street">
+        <input id="addr-city" placeholder="city">
+        <input id="addr-district" placeholder="district">
+        <input id="addr-country" placeholder="country">
+        <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" onclick="saveAddress()"><i class="ri-save-line"></i> save address</button>
+            <button class="btn secondary" onclick="toggleAddressEdit(true)">cancel</button>
+        </div>
+    </div>
+    <div class="small-muted" style="margin-top:8px">This address will be used for product delivery.</div>
+</div>
+
+<div class="card" style="margin-top:12px">
+    <h3 style="margin-top:0;">refer and earn</h3>
+    <div style="display:flex;gap:12px;align-items:center">
+        <div style="flex:1">
+            <div class="small-muted">share this code:</div>
+            <div style="font-weight:700;font-size:18px" id="refer-code">LOADING...</div>
+            <div class="small-muted" style="margin-top:4px;">get bonus when your friend deposits gold.</div>
+        </div>
+        <div>
+            <button class="btn" onclick="copyReferCode()"><i class="ri-share-forward-line"></i> share</button>
+        </div>
+    </div>
+    <h4 style="margin-top:16px;">referral history</h4>
+    <div id="refer-history-list" class="history"></div>
+</div>
+
+<div class="card" style="margin-top:12px">
+    <h3 style="margin-top:0;">settings</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+        <div style="font-weight:600;">Theme</div>
+        <button class="btn secondary" onclick="toggleTheme()" style="padding: 6px 8px;min-width:100px;"><i class="ri-moon-line"></i> Toggle</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px dashed rgba(0,0,0,0.1)">
+        <div style="font-weight:600;">Logout</div>
+        <button class="btn secondary" onclick="logout()" style="min-width:100px;"><i class="ri-logout-box-r-line"></i> Logout</button>
+    </div>
+    <div style="font-size:10px;text-align:center;margin-top:16px;opacity:0.6">App Version 1.0.0 | <span id="user-uid-display"></span></div>
+</div>
+
+</div>
+</div>
+
+<div id="detail-overlay" class="overlay" onclick="closeOverlay()">
+    <div id="detail-modal-content" class="modal" onclick="event.stopPropagation()">
+        </div>
+</div>
+
+<div id="cart-overlay" class="overlay" onclick="closeCartModal()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:400px;padding:16px;">
+        <h2>your cart</h2>
+        <div id="cart-list" class="cart-list" style="margin-top:12px;max-height:60vh;overflow-y:auto;padding-right:8px;">
+            </div>
+        <div style="margin-top:20px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.1);">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-weight:600;">
+                <div>subtotal:</div>
+                <div>₹ <span id="cart-subtotal">0</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn secondary" onclick="closeCartModal()" style="flex:1;">continue shopping</button>
+                <button class="btn" onclick="openCheckoutModal()" style="flex:1;"><i class="ri-shopping-bag-line"></i> checkout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="checkout-overlay" class="overlay" onclick="closeCheckoutModal()">
+    <div id="checkout-modal-content" class="modal" onclick="event.stopPropagation()">
+        <h2>checkout / payment</h2>
+        <div class="card" style="margin-bottom: 12px; padding:10px;">
+            <div style="font-weight:600; margin-bottom: 8px;">order summary</div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;">
+                <div>total items:</div>
+                <div><span id="checkout-total-items">0</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-top:1px solid #eee;margin-top:4px;padding-top:4px;font-size:16px;font-weight:700;">
+                <div>grand total:</div>
+                <div>₹ <span id="checkout-grand-total">0</span></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="font-weight:600; margin-bottom: 8px;">delivery address</div>
+            <div id="address-status-message" class="small-muted" style="margin-bottom: 8px;">Loading saved address...</div>
+
+            <input type="text" id="checkout-name" placeholder="Full Name" required>
+            <input type="text" id="checkout-mobile" placeholder="Mobile Number (10 digits)" maxlength="10" required>
+            <input type="text" id="checkout-house" placeholder="House No, Building, Street" required>
+            <input type="text" id="checkout-city" placeholder="City" required>
+            <input type="text" id="checkout-district" placeholder="District/State" required>
+            <input type="text" id="checkout-country" placeholder="Country" value="India" required>
+            
+            <div style="margin-top: 18px; font-weight:600;">payment via upi / utr <span class="badge badge-paid">Quick Pay</span></div>
+            <p class="small-muted" style="margin-bottom: 8px;">
+                Please pay ₹<span id="checkout-utr-amount">0</span> to UPI ID: **your\_upi\_id@bank** first, and then enter the UTR/Reference ID below.
+                <button class="btn secondary" onclick="launchUPIPayment('checkout')" style="margin-left:8px;padding:4px 8px;font-size:11px;">
+                    <i class="ri-bank-card-line"></i> Quick Pay
+                </button>
+            </p>
+            
+            <input type="text" id="checkout-utr" placeholder="UTR / Transaction ID (Zaroori hai)" required>
+            
+            <div style="display:flex; gap:8px; margin-top:16px;">
+                <button class="btn secondary" onclick="closeCheckoutModal()" style="flex:1;">cancel</button>
+                <button class="btn" onclick="processCheckout()" style="flex:2;"><i class="ri-send-plane-line"></i> place order & send request</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div id="withdraw-overlay" class="overlay" onclick="closeWithdrawModal()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:400px;padding:16px;">
+        <h2>withdraw money</h2>
+        <div class="small-muted" style="margin-bottom:12px;">withdrawals are processed manually. minimum withdrawal: ₹100.</div>
+        <input id="withdraw-amount" type="number" placeholder="amount to withdraw">
+        <input id="withdraw-bank-name" placeholder="bank name (e.g. sbi)">
+        <input id="withdraw-ac-num" placeholder="account number">
+        <input id="withdraw-ifsc" placeholder="ifsc code">
+        <div style="display:flex;gap:8px;margin-top:16px">
+            <button class="btn secondary" onclick="closeWithdrawModal()" style="flex:1">cancel</button>
+            <button class="btn" onclick="requestWithdrawal()" style="flex:1">request withdrawal</button>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <div class="navbtn active" onclick="showTab('home')"><i class="ri-home-4-line"></i> Home</div>
+    <div class="navbtn" onclick="showTab('shop')"><i class="ri-store-line"></i> Shop</div>
+    <div class="navbtn" onclick="showTab('gold')"><i class="ri-coin-line"></i> Gold</div>
+    <div class="navbtn" onclick="showTab('wallet')"><i class="ri-wallet-3-line"></i> Wallet</div>
+    <div class="navbtn" onclick="showTab('profile')"><i class="ri-user-line"></i> Profile</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+<script>
+    // Initialize Firebase (Replace with your actual config)
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const storage = firebase.storage();
+
+    // ---------- state ----------
+    let currentUser = null;
+    let productsData = {}; // Stores all products loaded from Firebase
+    let categories = []; // Stores all categories
+    let goldRate = 6500; // Default rate
+    let goldBalance = 0;
+    let walletBalance = 0;
+    let referCode = '';
+    let isEditingProfile = false;
+    let isEditingAddress = false;
+    let modalProductId = null;
+    let cart = {}; // ⭐ THIS IS THE LOCAL CART OBJECT
+
+    // utility functions (calcDiscountPrice, showTab, etc.) - keeping existing logic
+    function calcDiscountPrice(price, discount) {
+        if (!discount || discount === 0) return price;
+        return price - (price * discount / 100);
+    }
+    function showTab(tabId) {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelectorAll('.navbtn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.navbtn[onclick="showTab('${tabId}')"]`).classList.add('active');
+        if (tabId === 'cart') renderCart(); // Render cart when cart tab is clicked
+        if (tabId === 'profile') showHistory('orders'); // Show orders when profile is clicked (for history check)
+    }
+    function toggleTheme() {
+        const currentTheme = document.body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', newTheme);
+        document.getElementById('theme-icon').className = newTheme === 'dark' ? 'ri-sun-line' : 'ri-moon-line';
+    }
+    function logout() {
+        auth.signOut().then(() => {
+            alert('Logged out.');
+            window.location.reload(); 
+        });
+    }
+
+    // placeholder functions (must exist for the demo to work)
+    function closeOverlay() {
+        document.getElementById('detail-overlay').style.display = 'none';
+        modalProductId = null;
+    }
+    function renderProductDetails(pid) {
+        // Placeholder, but required by some buttons
+        if (!productsData[pid]) return;
+        modalProductId = pid;
+        const p = productsData[pid];
+        const price = calcDiscountPrice(p.price, p.discount);
+        const modalContent = document.getElementById('detail-modal-content');
+        modalContent.innerHTML = `
+            <button class="btn secondary" onclick="closeOverlay()" style="position:absolute;top:10px;right:10px;padding:8px 12px;z-index:10;"><i class="ri-close-line"></i></button>
+            <div class="images">${(p.images || []).map(img => `<img src="${img}" style="width:auto;" />`).join('')}</div>
+            <h3 style="margin-top:0;">${p.name}</h3>
+            <div style="font-size:20px;font-weight:700;color:var(--gold-strong);">₹${price.toFixed(2)} 
+                ${p.discount > 0 ? `<span class="small-muted" style="text-decoration:line-through;margin-left:8px;">₹${p.price.toFixed(2)}</span><span style="font-size:14px;color:red;margin-left:8px;">${p.discount}% OFF</span>` : ''}
+            </div>
+            <p class="small-muted">${p.description || 'No description available.'}</p>
+            <div style="margin-top:20px;">
+                <button class="btn" onclick="addToCart('${pid}')" style="width:100%;padding:12px;"><i class="ri-shopping-cart-line"></i> Add to Cart</button>
+            </div>
+        `;
+        document.getElementById('detail-overlay').style.display = 'flex';
+    }
+    function renderProducts(keys) {
+        const cont = document.getElementById('product-list'); cont.innerHTML = '';
+        const homeCont = document.getElementById('latest-products'); homeCont.innerHTML = '';
+        const limit = 6; // Limit for home screen
+        keys.forEach((pid, index) => {
+            const p = productsData[pid];
+            if (!p) return;
+            const price = calcDiscountPrice(p.price, p.discount);
+            const html = `
+                <div class="card product-card-inner" onclick="renderProductDetails('${pid}')">
+                    <img class="product-img" src="${(p.images && p.images[0]) || 'https://via.placeholder.com/100'}" alt="${p.name}" />
+                    <div class="pmeta">
+                        <div class="pname">${p.name}</div>
+                        <div class="pprice">₹${price.toFixed(2)}</div>
+                        ${p.discount > 0 ? `<div class="small-muted" style="text-decoration:line-through;font-size:10px;">₹${p.price.toFixed(2)}</div>` : ''}
+                    </div>
+                    <div class="product-actions">
+                        <div class="small-muted" style="flex:1;">⭐ ${p.rating || '4.5'}</div>
+                        <button class="btn" onclick="event.stopPropagation(); addToCart('${pid}')"><i class="ri-shopping-cart-line"></i></button>
+                    </div>
+                </div>
+            `;
+            if (index < limit) homeCont.innerHTML += html;
+            cont.innerHTML += html;
+        });
+    }
+
+    // --- NEW: Firebase Cart Persistence Logic & Checkout Functions ---
+
+    // 1. Firebase Cart Persistence Functions (Zaroori Hain)
+    function saveCartToDb() {
+        if (currentUser && currentUser.uid) {
+            db.ref(`users/${currentUser.uid}/cart`).set(cart)
+                .then(() => {
+                    console.log("Cart saved successfully.");
+                    updateCartCount(); 
+                })
+                .catch(error => {
+                    console.error("Failed to save cart:", error);
+                    updateCartCount(); 
+                });
+        } else {
+            updateCartCount(); 
+        }
+    }
+
+    function loadCartFromDb(uid) {
+        // Realtime listener for cart changes
+        db.ref(`users/${uid}/cart`).on('value', snapshot => {
+            const loadedCart = snapshot.val();
+            cart = loadedCart || {}; 
+            updateCartCount(); 
+            console.log("Cart loaded successfully. Items:", Object.keys(cart).length);
+        }, error => {
+            console.error("Failed to load cart:", error);
+        });
+    }
+    
+    // 2. Checkout Modal Controls
+    
+    function openCheckoutModal() {
+        if(Object.keys(cart).length === 0) {
+            alert('Your cart is empty. Please add items first.');
+            return;
+        }
+
+        // 1. Grand Total Calculate
+        let grandTotal = 0;
+        Object.keys(cart).forEach(pid => {
+            const p = productsData[pid] || { price: 0, discount: 0 };
+            const price = calcDiscountPrice(p.price, p.discount);
+            grandTotal += price * cart[pid];
+        });
+
+        const totalItems = Object.keys(cart).reduce((total, pid) => total + cart[pid], 0);
+
+        // 2. Update Checkout Modal Display
+        document.getElementById('checkout-total-items').innerText = totalItems;
+        document.getElementById('checkout-grand-total').innerText = grandTotal.toFixed(2);
+        document.getElementById('checkout-utr-amount').innerText = grandTotal.toFixed(2);
+
+        // 3. Pre-fill Address if available
+        if (currentUser && currentUser.uid) {
+             db.ref(`users/${currentUser.uid}/address`).once('value', snap => {
+                const userAddress = snap.val();
+                
+                // Clear and set defaults
+                document.getElementById('checkout-name').value = '';
+                document.getElementById('checkout-mobile').value = '';
+                document.getElementById('checkout-house').value = '';
+                document.getElementById('checkout-city').value = '';
+                document.getElementById('checkout-district').value = '';
+                document.getElementById('checkout-country').value = 'India';
+
+                if (userAddress) {
+                    document.getElementById('address-status-message').innerText = 'Saved address found. Fields are pre-filled.';
+                    document.getElementById('checkout-name').value = userAddress.name || '';
+                    document.getElementById('checkout-mobile').value = userAddress.mobile || '';
+                    document.getElementById('checkout-house').value = userAddress.house || '';
+                    document.getElementById('checkout-city').value = userAddress.city || '';
+                    document.getElementById('checkout-district').value = userAddress.district || '';
+                    document.getElementById('checkout-country').value = userAddress.country || 'India';
+                } else {
+                    document.getElementById('address-status-message').innerText = 'Address not saved. Please fill in the details.';
+                }
+            });
+        } else {
+            document.getElementById('address-status-message').innerText = 'Please sign in to proceed with checkout.';
+        }
+
+
+        // 4. Open Modal
+        document.getElementById('checkout-overlay').style.display = 'flex';
+        closeCartModal(); 
+    }
+
+    function closeCheckoutModal() {
+        document.getElementById('checkout-overlay').style.display = 'none';
+    }
+
+    // 3. Core Checkout Process (Buy Logic)
+    function processCheckout() {
+        if (!currentUser) return alert('Please sign in to place an order.');
+        if (Object.keys(cart).length === 0) return alert('Cart is empty!');
+
+        const name = document.getElementById('checkout-name').value.trim();
+        const mobile = document.getElementById('checkout-mobile').value.trim();
+        const house = document.getElementById('checkout-house').value.trim();
+        const city = document.getElementById('checkout-city').value.trim();
+        const district = document.getElementById('checkout-district').value.trim();
+        const country = document.getElementById('checkout-country').value.trim();
+        const utr = document.getElementById('checkout-utr').value.trim();
+        const grandTotal = Number(document.getElementById('checkout-grand-total').innerText);
+
+        if (!name || !mobile || !house || !city || !district) {
+            return alert('Please fill in all delivery address details.');
+        }
+        if (mobile.length !== 10 || isNaN(mobile)) return alert('Please enter a valid 10-digit mobile number.');
+        if (!utr || utr.length < 10) return alert('Please enter the UTR / Transaction ID for payment verification.');
+
+
+        // 1. Address Save (for next time)
+        const addressData = { name, mobile, house, city, district, country };
+        db.ref(`users/${currentUser.uid}/address`).set(addressData);
+        
+        // 2. Create Order Request (saves to the common 'transactions' node for admin)
+        const orderId = 'ORD-' + Date.now();
+        const transactionRef = db.ref('transactions').child(orderId);
+        const orderData = {
+            id: orderId,
+            userId: currentUser.uid,
+            userEmail: currentUser.email || 'anonymous',
+            userName: name,
+            mobile: mobile,
+            address: addressData,
+            // Prepare item list for admin view
+            items: Object.keys(cart).map(pid => ({ 
+                pid, 
+                qty: cart[pid], 
+                name: productsData[pid] ? productsData[pid].name : 'Unknown Product',
+                price: productsData[pid] ? calcDiscountPrice(productsData[pid].price, productsData[pid].discount) : 0
+            })),
+            amount: grandTotal,
+            utr: utr,
+            type: 'Order Purchase',
+            status: 'pending', // Admin will verify UTR
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        transactionRef.set(orderData)
+            .then(() => {
+                alert('Order Placed Successfully! Your request is pending UTR verification by Admin. Check "My Orders" in profile.');
+                
+                // 3. Clear Cart and sync with DB
+                cart = {};
+                saveCartToDb(); 
+
+                // 4. Close Modal
+                closeCheckoutModal();
+                showTab('profile'); // Show orders history
+            })
+            .catch(error => {
+                alert('Error placing order: ' + error.message);
+            });
+    }
+
+
+    // New function to calculate total items and update the counter in the HTML
+    function updateCartCount() {
+        const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+        const countElement = document.getElementById('cart-count');
+
+        if (countElement) {
+            countElement.innerText = totalItems;
+            countElement.style.display = totalItems > 0 ? 'inline-block' : 'none';
+        }
+    }
+
+
+    // --- Existing Cart Functions (Corrected and Unified) ---
+
+    function openCartModal() {
+        if (typeof renderCart === 'function') {
+            renderCart();
+        }
+        const cartOverlay = document.getElementById('cart-overlay');
+        if (cartOverlay) {
+            cartOverlay.style.display = 'flex';
+        }
+    }
+
+    function closeCartModal() {
+        const cartOverlay = document.getElementById('cart-overlay');
+        if (cartOverlay) {
+            cartOverlay.style.display = 'none';
+        }
+    }
+
+    // ---------- cart (Fixed) ----------
+    function addToCart(pid){
+        cart[pid] = (cart[pid]||0)+1;
+        saveCartToDb();
+        renderCart();
+        alert('item added to cart');
+    }
+    function modalAddToCart(){
+        if(modalProductId) addToCart(modalProductId);
+        closeOverlay();
+    }
+    function increment(pid){
+        if(cart[pid]){
+            cart[pid] += 1;
+            saveCartToDb();
+            renderCart();
+        }
+    }
+    function decrement(pid){
+        if(cart[pid]){
+            cart[pid] -= 1;
+            if(cart[pid] <= 0){
+                delete cart[pid];
+            }
+            saveCartToDb();
+            renderCart();
+        }
+    }
+    function removeFromCart(pid) {
+        if (cart[pid]) {
+            delete cart[pid];
+            saveCartToDb();
+            renderCart();
+            alert('Item removed from cart.');
+        }
+    }
+    function clearCart(){
+        cart = {};
+        saveCartToDb();
+        renderCart();
+    }
+    
+    // CORRECTION: renderCart function fixed - Icon error removed and prices formatted.
+    function renderCart(){
+        const cont = document.getElementById('cart-list'); cont.innerHTML='';
+        let subtotal = 0;
+        const cartKeys = Object.keys(cart);
+        if(cartKeys.length === 0) {
+            cont.innerHTML = '<div class="card" style="text-align:center;padding:20px;">Your cart is empty. Start shopping!</div>';
+            document.getElementById('cart-subtotal').innerText = 0;
+            return;
+        }
+
+        cartKeys.forEach(pid=>{
+            const p = productsData[pid];
+            if(!p) return;
+            const qty = cart[pid];
+            const price = calcDiscountPrice(p.price,p.discount);
+            subtotal += Number(price || 0) * qty;
+            const div = document.createElement('div'); div.className='card';
+            div.innerHTML = `
+                <img src="${(p.images && p.images[0])||'https://via.placeholder.com/100'}" style="width:72px;height:72px;object-fit:cover;border-radius:8px" />
+                <div style="flex:1;padding:0 12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center"><strong>${p.name}</strong><div>₹${(price * qty).toFixed(2)}</div></div>
+                    <div class="small-muted">unit: ₹${price.toFixed(2)}</div>
+                    <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+                        <div class="small">qty: <strong>${qty}</strong></div>
+                        <button class="btn secondary" onclick="decrement('${pid}')" style="padding:6px 10px;">-</button>
+                        <button class="btn" onclick="increment('${pid}')" style="padding:6px 10px;">+</button>
+                        <button class="btn secondary" onclick="removeFromCart('${pid}')" style="padding:6px 10px;margin-left:auto;"><i class="ri-delete-bin-line"></i> Remove</button>
+                    </div>
+                </div>
+            `;
+            cont.appendChild(div);
+        });
+        document.getElementById('cart-subtotal').innerText = subtotal.toFixed(2);
+        updateCartCount();
+    }
+
+
+    // --- Other existing functions (Kept for compatibility) ---
+    function searchShop() {
+        const query = document.getElementById('search-shop').value.toLowerCase();
+        const category = document.getElementById('cat-shop').value;
+        const sort = document.getElementById('sort-shop').value;
+        let keys = Object.keys(productsData);
+
+        if (query || category) {
+            keys = keys.filter(key => {
+                const p = productsData[key];
+                const matchesQuery = !query || p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query));
+                const matchesCategory = !category || p.category === category;
+                return matchesQuery && matchesCategory;
+            });
+        }
+
+        // Apply sorting (New Feature)
+        keys.sort((a, b) => {
+            const pA = productsData[a];
+            const pB = productsData[b];
+            const priceA = calcDiscountPrice(pA.price, pA.discount);
+            const priceB = calcDiscountPrice(pB.price, pB.discount);
+
+            if (sort === 'price_asc') return priceA - priceB;
+            if (sort === 'price_desc') return priceB - priceA;
+            return pB.created_at - pA.created_at; // Newest (default)
+        });
+
+        renderProducts(keys);
+    }
+
+    // placeholder functions
+    function calculateGoldGrams() {}
+    function launchUPIPayment(type) {
+        if (type === 'checkout') {
+            const amount = document.getElementById('checkout-grand-total').innerText;
+            alert(`Opening UPI App for payment of ₹${amount}. After payment, please enter the UTR/Ref ID.`);
+        } else if (type === 'gold') {
+            const amount = document.getElementById('gold-amount').value;
+            alert(`Opening UPI App for Gold purchase of ₹${amount}. After payment, please enter the UTR/Ref ID.`);
+        } else if (type === 'wallet') {
+            const amount = document.getElementById('wallet-add-amount').value;
+            alert(`Opening UPI App to add ₹${amount} to wallet. After payment, please enter the UTR/Ref ID.`);
+        } else {
+            alert('Opening UPI App...');
+        }
+    }
+    function buyGold() {}
+    function showHistory(type) {
+        // Mock function to show history for Order Check
+        if (type === 'orders') {
+            // Check if there are any transactions that are 'Order Purchase' for the current user
+            db.ref('transactions').orderByChild('userId').equalTo(currentUser.uid).once('value', snapshot => {
+                const historyCont = document.getElementById('gold-status-list') || document.getElementById('wallet-history-list') || document.getElementById('refer-history-list');
+                if (historyCont) historyCont.innerHTML = '<h4>My Order History</h4>';
+                
+                let orderFound = false;
+                snapshot.forEach(childSnapshot => {
+                    const order = childSnapshot.val();
+                    if (order.type === 'Order Purchase') {
+                        orderFound = true;
+                        const statusClass = 'badge-' + order.status.toLowerCase();
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.style.borderLeft = `4px solid ${order.status === 'pending' ? '#f59e0b' : '#10b981'}`;
+                        card.innerHTML = `
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div style="font-weight:600;">Order: ${order.id}</div>
+                                <span class="badge ${statusClass}">${order.status}</span>
+                            </div>
+                            <div class="small-muted">Amount: ₹${order.amount.toFixed(2)} | Items: ${order.items.length}</div>
+                            <div class="small-muted">UTR: ${order.utr} | Date: ${new Date(order.timestamp).toLocaleDateString()}</div>
+                        `;
+                        if (historyCont) historyCont.appendChild(card);
+                    }
+                });
+                if (!orderFound && historyCont) {
+                    historyCont.innerHTML += '<div class="card" style="text-align:center;">No orders found.</div>';
+                }
+            });
+        }
+    }
+    function openWithdrawModal() {
+        document.getElementById('withdraw-overlay').style.display = 'flex';
+    }
+    function closeWithdrawModal() {
+         document.getElementById('withdraw-overlay').style.display = 'none';
+    }
+    function addWallet() {}
+    function requestWithdrawal() {}
+    function toggleServices() {}
+    function loadServiceVisibilityListeners() {}
+    function uploadProfile() {}
+    function saveProfile() {}
+    function toggleProfileEdit(cancel) {}
+    function saveAddress() {}
+    function toggleAddressEdit(cancel) {}
+    function copyReferCode() {}
+    function showNotificationCenter() {}
+
+    // Load All Products Data from Firebase
+    function loadProducts() {
+        db.ref('products').once('value', snapshot => {
+            productsData = snapshot.val() || {};
+            if (Object.keys(productsData).length > 0) {
+                renderProducts(Object.keys(productsData));
+                console.log("Products loaded.");
+            }
+        });
+    }
+
+    // --- CORE AUTHENTICATION FLOW (FIXED) ---
+    auth.onAuthStateChanged(user => {
+        const loader = document.getElementById('loader');
+        if (loader) loader.textContent = 'loading...';
+
+        if (user) {
+            currentUser = user; 
+            
+            // ⭐ ZAROORI FIX: Cart load karein jab user authenticate ho
+            loadCartFromDb(user.uid); 
+            
+            // Load necessary data
+            if (typeof loadProducts === 'function') {
+                loadProducts();
+            }
+            if (typeof loadServiceVisibilityListeners === 'function') {
+                loadServiceVisibilityListeners(user.uid);
+            }
+            if (typeof showHistory === 'function') {
+                // Ensure the 'my orders' is loaded if user is on profile tab
+                showHistory('orders');
+            }
+
+            const welcomeName = user.displayName || user.email || 'user';
+            document.getElementById('welcome-name').textContent = welcomeName.split(' ')[0];
+            document.getElementById('user-uid-display').textContent = 'UID: ' + user.uid;
+
+        } else {
+            // Sign in anonymously if not already authenticated
+            auth.signInAnonymously()
+                .then((result) => {
+                    if (result && result.user) {
+                        currentUser = result.user; 
+                        loadCartFromDb(result.user.uid); // ⭐ ZAROORI FIX: Cart load karein
+                        
+                        if (typeof loadServiceVisibilityListeners === 'function') {
+                             loadServiceVisibilityListeners(result.user.uid);
+                        }
+                        if (typeof loadProducts === 'function') {
+                            loadProducts();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("ERROR: Could not sign in anonymously:", error);
+                    if (loader) loader.textContent = 'सेवाएं लोड नहीं हो सकीं। कृपया नेटवर्क जांचें।';
+                });
+        }
+    });
+</script>
+</body>
+</html>
+

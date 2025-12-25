@@ -1,0 +1,105 @@
+{
+  "hosting": {
+    "target": "moneycard-8f457",
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/workie.html",
+        "destination": "/workie.html"
+      },
+      {
+        "source": "/work.html",
+        "destination": "/work.html"
+      },
+      {
+        "source": "/changenow.html",
+        "destination": "/changenow.html"
+      },
+      {
+        "source": "/change.html",
+        "destination": "/change.html"
+      },
+      {
+        "source": "/manifest.json",
+        "destination": "/manifest.json"
+      },
+      {
+        "source": "/service-worker.js",
+        "destination": "/service-worker.js"
+      },
+      {
+        "source": "/sw-check-permissions-f24d2.js",
+        "destination": "/sw-check-permissions-f24d2.js"
+      },
+      {
+        "source": "/goldrupi.html",
+        "destination": "/goldrupi.html"
+      },
+      {
+        "source": "/rebook.html",
+        "destination": "/rebook.html"
+      },
+      {
+        "source": "/rubook.html",
+        "destination": "/rubook.html"
+      },
+      {
+        "source": "/a.html",
+        "destination": "/a.html"
+      },
+      {
+        "source": "/aa.html",
+        "destination": "/aa.html"
+      },
+      {
+        "source": "/aaa.html",
+        "destination": "/aaa.html"
+      },
+      {
+        "source": "/aaaa.html",
+        "destination": "/aaaa.html"
+      },
+      {
+        "source": "/aaaaa.html",
+        "destination": "/aaaaa.html"
+      },
+      {
+        "source": "/aaaaaa.html",
+        "destination": "/aaaaaa.html"
+      },
+      {
+        "source": "/aaaaaaa.html",
+        "destination": "/aaaaaaa.html"
+      },
+      {
+        "source": "/aaaaaaaa.html",
+        "destination": "/aaaaaaaa.html"
+      },
+      {
+        "source": "/aaaaaaaaa.html",
+        "destination": "/aaaaaaaaa.html"
+      },
+      {
+        "source": "/aaaaaaaaaa.html",
+        "destination": "/aaaaaaaaaa.html"
+      },
+      {
+        "source": "/rupi.html",
+        "destination": "/rupi.html"
+      }
+    ]
+  }
+}
+
+
+
+
+
+
+
+

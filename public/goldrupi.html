@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>gold rupi - single file app</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--accent:#0b71ff;--muted:#666}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,'helvetica neue',arial;background:var(--bg);color:#111}
+    header{background:#071b2a;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px}
+    header h1{font-size:18px;margin:0}
+    .container{max-width:1000px;margin:20px auto;padding:12px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:12px}
+    .card{background:var(--card);border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    .small{font-size:13px;color:var(--muted)}
+    input,select,textarea,button{font:inherit}
+    input,select,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e6e6;margin-top:6px}
+    button{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    nav button{background:#e9eef9;color:#06366b;padding:6px 10px;border-radius:8px;border:1px solid #d6e7ff}
+    .list{max-height:480px;overflow:auto}
+    .row{display:flex;gap:8px;align-items:center}
+    .cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .qr{max-width:280px;width:100%;border-radius:8px}
+    .note{font-size:12px;color:#888;margin-top:8px}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#f1f6ff;color:#064; font-weight:600}
+    footer{padding:12px;text-align:center;color:#777}
+    .hidden{display:none}
+    hr{border:0;border-top:1px solid #eee;margin:12px 0}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f2f2f2;text-align:left;font-size:13px}
+    .actions{display:flex;gap:6px}
+    .btn-ghost{background:#f2f2f2;color:#111}
+    .danger{background:#ff4d4d}
+    .success{background:#28a745}
+    .input-inline{display:flex;gap:8px}
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="https://i.ibb.co/xtdrb0cG/IMG-20251122-104623-512-x-512-pixel.jpg" alt="logo" width="36" height="36" style="border-radius:8px;object-fit:cover">
+  <h1>gold rupi</h1>
+  <div style="margin-left:auto;font-size:13px" id="current-user-display">not signed in</div>
+</header>
+
+<div class="container">
+  <div class="grid">
+    <div>
+      <!-- auth card -->
+      <div class="card" id="auth-card">
+        <h3>login / signup</h3>
+        <div id="auth-forms">
+          <div id="login-form">
+            <label>email <input id="login-email" placeholder="email"></label>
+            <label>password <input id="login-password" type="password" placeholder="password"></label>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="btn-login">login</button>
+              <button id="show-signup" class="btn-ghost">signup</button>
+            </div>
+            <div class="note">admin: rajputsurendra562@gmail.com / Banna@1712 (hardcoded check for admin panel)</div>
+          </div>
+
+          <div id="signup-form" class="hidden">
+            <label>name <input id="signup-name" placeholder="full name"></label>
+            <label>mobile <input id="signup-mobile" placeholder="mobile"></label>
+            <label>email <input id="signup-email" placeholder="email"></label>
+            <label>password <input id="signup-password" type="password" placeholder="password"></label>
+            <label>referral code (optional) <input id="signup-referral" placeholder="referral code"></label>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="btn-signup">create account</button>
+              <button id="show-login" class="btn-ghost">back to login</button>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <h4>payment qr</h4>
+        <img id="main-qr" class="qr" src="https://i.ibb.co/TMyZrvJw/Screenshot-20251115-135633-GPay-Business.jpg" alt="gpay qr">
+        <div class="row" style="margin-top:8px;">
+          <div class="muted" id="qr-url">https://i.ibb.co/TMyZrvJw/Screenshot-20251115-135633-GPay-Business.jpg</div>
+          <div style="margin-left:auto">
+            <button id="open-qr">open</button>
+            <button id="copy-qr" class="btn-ghost">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- main user area -->
+      <div class="card" id="app-area" style="margin-top:12px;display:none">
+        <nav id="user-nav">
+          <button data-tab="home">home</button>
+          <button data-tab="gold">gold</button>
+          <button data-tab="shop">shop</button>
+          <button data-tab="wallet">wallet</button>
+          <button data-tab="profile">profile</button>
+          <button data-tab="cart">cart</button>
+        </nav>
+
+        <div id="tab-home" class="tab-content">
+          <h3>home</h3>
+          <div class="cols">
+            <div class="card">
+              <div class="small">current gold rate (₹ / gram)</div>
+              <div style="font-size:20px;margin-top:6px" id="gold-rate">loading...</div>
+              <div class="note">rate managed by admin</div>
+            </div>
+            <div class="card">
+              <div class="small">wallet balance</div>
+              <div style="font-size:20px;margin-top:6px" id="wallet-balance">₹ 0</div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="btn-add-money">add money</button>
+                <button id="btn-withdraw">withdraw</button>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <button id="btn-buy-gold">buy gold</button>
+            <button id="btn-refer">refer & earn</button>
+            <button id="btn-shop-now">shop now</button>
+          </div>
+        </div>
+
+        <div id="tab-gold" class="tab-content hidden">
+          <h3>buy gold</h3>
+          <div class="cols">
+            <div>
+              <label>amount in ₹ <input id="gold-amount" type="number" min="50" placeholder="min 50"></label>
+              <div class="note">minimum purchase ₹50</div>
+              <div style="margin-top:8px" class="row">
+                <button id="calc-grams">calculate grams</button>
+                <button id="gold-pay" class="btn-ghost">pay (enter utr)</button>
+              </div>
+            </div>
+            <div>
+              <div class="small">estimated grams</div>
+              <div id="estimated-grams" style="font-size:18px;margin-top:6px">0 g</div>
+              <img class="qr" src="https://i.ibb.co/TMyZrvJw/Screenshot-20251115-135633-GPay-Business.jpg" alt="qr">
+              <div class="note">pay using this qr and then enter 12-digit utr to create order</div>
+            </div>
+          </div>
+
+          <hr>
+          <h4>your gold orders</h4>
+          <div id="gold-orders-list" class="list"></div>
+        </div>
+
+        <div id="tab-shop" class="tab-content hidden">
+          <h3>shop</h3>
+          <div style="margin-bottom:8px">
+            <input id="search-product" placeholder="search products by name">
+          </div>
+          <div id="product-list" class="list"></div>
+        </div>
+
+        <div id="tab-wallet" class="tab-content hidden">
+          <h3>wallet</h3>
+          <div class="cols">
+            <div>
+              <label>add amount <input id="add-amount" type="number" min="10"></label>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="btn-create-wallet-request">create add request (enter utr)</button>
+              </div>
+            </div>
+            <div>
+              <label>withdraw amount <input id="withdraw-amount" type="number" min="10"></label>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="btn-create-withdraw-request" class="btn-ghost">request withdraw</button>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+          <h4>wallet transactions</h4>
+          <div id="wallet-transactions" class="list"></div>
+        </div>
+
+        <div id="tab-profile" class="tab-content hidden">
+          <h3>profile</h3>
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:start">
+            <div>
+              <img id="profile-photo" src="" style="width:100%;border-radius:8px;background:#f2f2f2" alt="profile photo">
+              <div style="margin-top:8px">
+                <input id="upload-profile-file" type="file" accept="image/*">
+                <button id="btn-upload-profile" class="btn-ghost">upload</button>
+              </div>
+            </div>
+            <div>
+              <label>name <input id="profile-name"></label>
+              <label>mobile <input id="profile-mobile"></label>
+              <label>email <input id="profile-email" disabled></label>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="btn-save-profile">save</button>
+                <button id="btn-logout" class="btn-ghost">logout</button>
+              </div>
+              <hr>
+              <h4>kyc</h4>
+              <label>aadhar name <input id="kyc-name"></label>
+              <label>aadhar number <input id="kyc-number"></label>
+              <label>aadhar front <input id="kyc-front-file" type="file" accept="image/*"></label>
+              <label>aadhar back <input id="kyc-back-file" type="file" accept="image/*"></label>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="btn-submit-kyc">submit kyc</button>
+              </div>
+              <div id="kyc-status" class="note" style="margin-top:8px">kyc: not submitted</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-cart" class="tab-content hidden">
+          <h3>cart</h3>
+          <div id="cart-items" class="list"></div>
+          <div style="margin-top:8px">
+            <label>select address <select id="checkout-address"></select></label>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="btn-checkout">checkout (pay using qr)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- admin panel column -->
+    <div>
+      <div class="card" id="admin-card">
+        <h3>admin panel</h3>
+        <div id="admin-controls" class="hidden">
+          <div class="small">dashboard</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+            <div class="card small">users: <span id="admin-total-users">0</span></div>
+            <div class="card small">gold orders: <span id="admin-total-gold">0</span></div>
+            <div class="card small">product orders: <span id="admin-total-product">0</span></div>
+            <div class="card small">wallet reqs: <span id="admin-total-wallet">0</span></div>
+          </div>
+
+          <hr>
+          <h4>manage gold rate</h4>
+          <label>gold rate (₹/gram) <input id="admin-gold-rate" type="number"></label>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="btn-save-gold-rate">save rate</button>
+          </div>
+
+          <hr>
+          <h4>pending wallet requests</h4>
+          <div id="admin-wallet-requests" class="list"></div>
+
+          <hr>
+          <h4>pending gold orders</h4>
+          <div id="admin-gold-orders" class="list"></div>
+
+          <hr>
+          <h4>pending product orders</h4>
+          <div id="admin-product-orders" class="list"></div>
+
+          <hr>
+          <h4>pending kyc</h4>
+          <div id="admin-kyc-list" class="list"></div>
+
+          <hr>
+          <h4>products (admin)</h4>
+          <div>
+            <label>product name <input id="admin-prod-name"></label>
+            <label>category <input id="admin-prod-cat"></label>
+            <label>price <input id="admin-prod-price" type="number"></label>
+            <label>discount <input id="admin-prod-discount" type="number" value="0"></label>
+            <label>stock <input id="admin-prod-stock" type="number" value="1"></label>
+            <label>images <input id="admin-prod-files" type="file" multiple accept="image/*"></label>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="btn-add-product">add product</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="admin-login-area">
+          <div class="muted">admin quick access (use rajputsurendra562@gmail.com / Banna@1712)</div>
+          <label>email <input id="admin-login-email" value="admin@gmail.com"></label>
+          <label>password <input id="admin-login-password" value="Banna@1712" type="password"></label>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="btn-admin-login">go to admin panel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h4>notes & setup</h4>
+        <div class="small">
+          1) open the javascript section and paste your firebase config where indicated.<br>
+          2) paste your imgbb api key where indicated (imgbb_api_key).<br>
+          3) firebase sdk used: 8.10.0 (app, auth, database).<br>
+          4) after first run, set firebase realtime-database rules (suggested rules included at bottom of file).<br>
+          5) this single-file app stores many admin checks on client-side (not fully secure). for production use server/cloud functions and secure rules.<br>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>single-file gold rupi • client-side + firebase realtime demo (see notes)</footer>
+
+<!-- firebase sdk v8.10.0 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+/*
+  ---------- IMPORTANT SETUP ----------
+  1) replace the firebaseConfig object with your project's config from firebase console
+  2) set imgbb_api_key variable with your imgbb key
+  3) deploy rules in firebase console as suggested in the comment at bottom of this file
+*/
+
+const imgbb_api_key = '021a2437b889915669b66554687bf17f'; // <-- replace
+const firebaseConfig = {
+  apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+  authDomain: "smbrand-4543a.firebaseapp.com",
+  databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+  projectId: "smbrand-4543a",
+  storageBucket: "smbrand-4543a.firebasestorage.app",
+  messagingSenderId: "720775550032",
+  appId: "1:720775550032:web:0622548a007597778bad55",
+  measurementId: "G-3LS5W6F8QW"
+};
+
+// init firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+// helper: element refs
+const el = id => document.getElementById(id);
+
+// simple util
+const uid = () => auth.currentUser ? auth.currentUser.uid : null;
+const emailOf = () => auth.currentUser ? auth.currentUser.email : null;
+
+// UI helpers
+function show(selector){ document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById(selector).classList.remove('hidden') }
+function toast(msg){ alert(msg) }
+
+// ----- auth UI handlers -----
+el('show-signup').addEventListener('click', ()=>{ el('login-form').classList.add('hidden'); el('signup-form').classList.remove('hidden') });
+el('show-login').addEventListener('click', ()=>{ el('signup-form').classList.add('hidden'); el('login-form').classList.remove('hidden') });
+
+el('btn-signup').addEventListener('click', async ()=>{
+  const name = el('signup-name').value.trim();
+  const email = el('signup-email').value.trim();
+  const pass = el('signup-password').value;
+  const mobile = el('signup-mobile').value.trim();
+  const ref = el('signup-referral').value.trim();
+
+  if(!name||!email||!pass||!mobile) return toast('fill all fields');
+  try{
+    // create account with firebase auth
+    const userCred = await auth.createUserWithEmailAndPassword(email, pass);
+    const uidv = userCred.user.uid;
+    // generate referral code
+    const referral_code = generateReferral(uidv, name);
+    // create user node
+    await db.ref('users/' + uidv).set({
+      name, email, mobile, referral_code, created_at: Date.now(), gold: 0, is_locked: false
+    });
+    // create wallet with signup bonus ₹100 (immediately)
+    await db.ref('wallets/' + uidv).set({ balance: 100, transactions: { signup_bonus: { amount:100, type:'credit', note:'signup bonus', at:Date.now() } }});
+    // store referral record if provided
+    if(ref){
+      const refNode = db.ref('referrals').push();
+      await refNode.set({referral_code: ref, referred_uid: uidv, referred_email: email, status:'pending', created_at: Date.now()});
+      // try to credit referrer instantly if code valid
+      const snap = await db.ref('users').orderByChild('referral_code').equalTo(ref).once('value');
+      if(snap.exists()){
+        const obj = snap.val(); const refUid = Object.keys(obj)[0];
+        // add ₹50 to referrer wallet (instant)
+        const wref = db.ref('wallets/' + refUid);
+        const wsnap = await wref.once('value');
+        const prev = wsnap.exists() && wsnap.val().balance ? wsnap.val().balance : 0;
+        await wref.child('balance').set(prev + 50);
+        const txId = 'ref-'+Date.now();
+        await wref.child('transactions').child(txId).set({ amount:50, type:'credit', note:'referral instant 50', at:Date.now()});
+        // update referral record to approved_by_system
+        await refNode.update({ status:'validated_by_system', referrer_uid: refUid, validated_at: Date.now()});
+      } else {
+        // leave pending for admin approval
+        await refNode.update({ status:'pending_admin' });
+      }
+    }
+    toast('signup complete. ₹100 added to wallet.');
+    // switch to app view
+  }catch(err){ toast('signup error: '+err.message) }
+});
+
+el('btn-login').addEventListener('click', async ()=>{
+  const email = el('login-email').value.trim();
+  const pass = el('login-password').value;
+  if(!email||!pass) return toast('enter credentials');
+
+  // admin quick open: this is a client-side check to jump to admin panel (insecure)
+  if(email === 'admin@gmail.com' && pass === 'admin@123'){
+    // don't sign in with firebase, show admin panel UI and set admin mode
+    setupAdminUi();
+    return;
+  }
+
+  try{
+    const cred = await auth.signInWithEmailAndPassword(email, pass);
+    toast('signed in');
+  }catch(err){ toast('login error: '+err.message) }
+});
+
+el('btn-logout').addEventListener('click', async ()=> {
+  await auth.signOut();
+  location.reload();
+});
+
+// auth state observer
+auth.onAuthStateChanged(async user => {
+  if(user){
+    el('auth-card').classList.add('hidden');
+    el('app-area').style.display = 'block';
+    el('current-user-display').textContent = user.email;
+    // load profile into profile tab
+    loadProfile();
+    setupRealtimeListeners();
+    show('tab-home');
+  } else {
+    el('auth-card').classList.remove('hidden');
+    el('app-area').style.display = 'none';
+    el('current-user-display').textContent = 'not signed in';
+  }
+});
+
+// ----- small utilities -----
+function generateReferral(uidv, name){
+  // simple referral code: first3name + last4uid + random
+  const s = (name.replace(/\s+/g,'').slice(0,3) + uidv.slice(-4) + Math.floor(Math.random()*900+100)).toLowerCase();
+  return s;
+}
+
+// ----- gold flow -----
+el('calc-grams').addEventListener('click', async ()=>{
+  const amt = parseFloat(el('gold-amount').value);
+  if(!amt || amt < 50) return toast('enter min ₹50');
+  const rateSnap = await db.ref('admin_settings/gold_rate').once('value');
+  const rate = rateSnap.exists() ? Number(rateSnap.val()) : 5000;
+  const grams = (amt / rate).toFixed(4);
+  el('estimated-grams').textContent = grams + ' g';
+});
+
+el('gold-pay').addEventListener('click', async ()=>{
+  const amt = parseFloat(el('gold-amount').value);
+  if(!amt || amt < 50) return toast('enter min ₹50');
+  const utr = prompt('enter 12-digit utr after paying via qr:');
+  if(!utr || utr.length < 10) return toast('enter valid utr');
+  const orderRef = db.ref('gold_orders').push();
+  await orderRef.set({
+    user: uid(),
+    amount: amt,
+    utr, status:'pending_admin_verification', created_at: Date.now()
+  });
+  toast('gold order created, pending admin verification');
+});
+
+// ----- wallet add/withdraw -----
+el('btn-create-wallet-request').addEventListener('click', async ()=>{
+  const amt = Number(el('add-amount').value);
+  if(!amt || amt <= 0) return toast('enter amount');
+  const utr = prompt('enter utr (12-digit) after paying via qr:');
+  if(!utr) return toast('utr required');
+  const r = db.ref('wallet_requests').push();
+  await r.set({ uid: uid(), type:'add', amount:amt, utr, status:'pending', created_at: Date.now() });
+  toast('wallet add request created');
+});
+
+el('btn-create-withdraw-request').addEventListener('click', async ()=>{
+  const amt = Number(el('withdraw-amount').value);
+  if(!amt || amt <= 0) return toast('enter amount');
+  const r = db.ref('wallet_requests').push();
+  await r.set({ uid: uid(), type:'withdraw', amount:amt, status:'pending', created_at: Date.now() });
+  toast('withdraw request created');
+});
+
+// ----- product list, cart, checkout -----
+async function loadProducts(){
+  const snap = await db.ref('products').once('value');
+  const list = el('product-list'); list.innerHTML = '';
+  if(!snap.exists()) { list.innerHTML = '<div class="muted">no products</div>'; return; }
+  const obj = snap.val();
+  Object.keys(obj).reverse().forEach(pid => {
+    const p = obj[pid];
+    const div = document.createElement('div'); div.style.padding='8px'; div.style.borderBottom='1px solid #f2f2f2';
+    div.innerHTML = `<div style="display:flex;gap:8px;align-items:center">
+      <img src="${(p.images&&p.images[0])||''}" width="64" height="64" style="object-fit:cover;border-radius:6px">
+      <div style="flex:1">
+        <div style="font-weight:600">${p.name}</div>
+        <div class="small">₹${p.price} • ${p.category} • stock:${p.stock}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn-add-to-cart" data-id="${pid}">add to cart</button>
+      </div>
+    </div>`;
+    list.appendChild(div);
+  });
+  document.querySelectorAll('.btn-add-to-cart').forEach(b => b.addEventListener('click', async (ev)=>{
+    const pid = ev.currentTarget.dataset.id;
+    await db.ref(`cart/${uid()}/${pid}`).set({ product_id: pid, qty:1, added_at: Date.now()});
+    toast('added to cart');
+    loadCartItems();
+  }));
+}
+
+async function loadCartItems(){
+  const snap = await db.ref('cart/' + uid()).once('value');
+  const elc = el('cart-items'); elc.innerHTML = '';
+  if(!snap.exists()) { elc.innerHTML = '<div class="muted">cart empty</div>'; return; }
+  const items = Object.keys(snap.val());
+  for(const pid of items){
+    const node = snap.val()[pid];
+    const pSnap = await db.ref('products/' + pid).once('value');
+    const p = pSnap.val();
+    const row = document.createElement('div'); row.style.padding='8px'; row.style.borderBottom='1px solid #f2f2f2';
+    row.innerHTML = `<div style="display:flex;align-items:center;gap:8px">
+      <img src="${(p.images&&p.images[0])||''}" width="56" height="56" style="border-radius:6px;object-fit:cover">
+      <div style="flex:1">
+        <div style="font-weight:600">${p.name}</div>
+        <div class="small">₹${p.price} x ${node.qty}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn-remove" data-id="${pid}">remove</button>
+      </div>
+    </div>`;
+    elc.appendChild(row);
+  }
+  document.querySelectorAll('.btn-remove').forEach(b => b.addEventListener('click', async (ev)=>{
+    const pid = ev.currentTarget.dataset.id;
+    await db.ref(`cart/${uid()}/${pid}`).remove();
+    loadCartItems();
+  }));
+}
+
+el('btn-checkout').addEventListener('click', async ()=>{
+  const addr = el('checkout-address').value;
+  if(!addr) return toast('select address');
+  // create order with items
+  const cartSnap = await db.ref('cart/' + uid()).once('value');
+  if(!cartSnap.exists()) return toast('cart empty');
+  const orderRef = db.ref('product_orders').push();
+  const items = cartSnap.val();
+  await orderRef.set({ user: uid(), address_id: addr, items, status:'pending', created_at: Date.now() });
+  // clear cart
+  await db.ref('cart/' + uid()).remove();
+  toast('order placed. enter utr to admin after paying via qr');
+});
+
+// ----- profile & kyc -----
+async function loadProfile(){
+  const u = uid();
+  if(!u) return;
+  const snap = await db.ref('users/' + u).once('value');
+  const data = snap.exists() ? snap.val() : null;
+  if(data){
+    el('profile-name').value = data.name || '';
+    el('profile-mobile').value = data.mobile || '';
+    el('profile-email').value = data.email || (auth.currentUser && auth.currentUser.email) || '';
+    el('profile-photo').src = data.photo || '';
+  }
+  // wallet balance
+  const wSnap = await db.ref('wallets/' + u + '/balance').once('value');
+  el('wallet-balance').textContent = '₹ ' + (wSnap.exists() ? wSnap.val() : 0);
+  // addresses
+  const addrSnap = await db.ref('addresses/' + u).once('value');
+  el('checkout-address').innerHTML = '<option value="">select address</option>';
+  if(addrSnap.exists()){ Object.keys(addrSnap.val()).forEach(aid => {
+    const a = addrSnap.val()[aid];
+    const opt = document.createElement('option'); opt.value = aid; opt.textContent = a.name + ' - ' + a.address;
+    el('checkout-address').appendChild(opt);
+  })}
+
+  // kyc status
+  const kSnap = await db.ref('kyc/' + u).once('value');
+  if(kSnap.exists()) el('kyc-status').textContent = 'kyc: ' + (kSnap.val().status || 'pending');
+  else el('kyc-status').textContent = 'kyc: not submitted';
+
+  // wallet transactions list
+  loadWalletTransactions();
+  // gold orders
+  loadGoldOrders();
+  // products
+  loadProducts();
+  // cart
+  loadCartItems();
+  // admin counts if admin
+  refreshAdminCounts();
+}
+
+// upload to imgbb helper
+async function uploadToImgbb(file){
+  if(!imgbb_api_key || imgbb_api_key === '021a2437b889915669b66554687bf17f') throw new Error('set imgbb_api_key');
+  const fd = new FormData();
+  fd.append('image', file);
+  const resp = await fetch('https://api.imgbb.com/1/upload?key=' + imgbb_api_key, { method:'POST', body:fd });
+  const json = await resp.json();
+  if(json && json.success) return json.data.url;
+  throw new Error('imgbb upload failed');
+}
+
+el('btn-upload-profile').addEventListener('click', async ()=>{
+  const f = el('upload-profile-file').files[0];
+  if(!f) return toast('choose file');
+  try{
+    const url = await uploadToImgbb(f);
+    await db.ref('users/' + uid() + '/photo').set(url);
+    el('profile-photo').src = url;
+    toast('profile uploaded');
+  }catch(e){ toast('upload err: '+e.message) }
+});
+
+el('btn-save-profile').addEventListener('click', async ()=>{
+  const name = el('profile-name').value.trim();
+  const mobile = el('profile-mobile').value.trim();
+  if(!name||!mobile) return toast('name & mobile required');
+  await db.ref('users/' + uid()).update({ name, mobile });
+  toast('profile updated');
+});
+
+el('btn-submit-kyc').addEventListener('click', async ()=>{
+  const name = el('kyc-name').value.trim(), num = el('kyc-number').value.trim();
+  const f1 = el('kyc-front-file').files[0]; const f2 = el('kyc-back-file').files[0];
+  if(!name||!num||!f1||!f2) return toast('fill kyc fields & choose files');
+  try{
+    const u1 = await uploadToImgbb(f1);
+    const u2 = await uploadToImgbb(f2);
+    await db.ref('kyc/' + uid()).set({ status:'pending', imgbb_urls:[u1,u2], aadhar_number:num, name, submitted_at: Date.now() });
+    el('kyc-status').textContent = 'kyc: pending';
+    toast('kyc submitted for admin review');
+  }catch(e){ toast('kyc upload err: '+e.message) }
+});
+
+// ----- admin functionality (client-side controlled) -----
+function setupAdminUi(){
+  // show admin controls
+  el('admin-login-area').classList.add('hidden');
+  el('admin-controls').classList.remove('hidden');
+  el('admin-card').scrollIntoView();
+  // load admin data
+  loadAdminCounts();
+  listenAdminNodes();
+  // set gold rate input to current
+  db.ref('admin_settings/gold_rate').once('value').then(s=> el('admin-gold-rate').value = s.exists() ? s.val() : '');
+}
+
+el('btn-admin-login').addEventListener('click', ()=>{
+  const e = el('admin-login-email').value.trim();
+  const p = el('admin-login-password').value;
+  if(e === 'admin@gmail.com' && p === 'admin@123') setupAdminUi();
+  else toast('invalid admin quick login');
+});
+
+el('btn-save-gold-rate').addEventListener('click', async ()=>{
+  const r = Number(el('admin-gold-rate').value);
+  if(!r) return toast('enter rate');
+  await db.ref('admin_settings/gold_rate').set(r);
+  toast('gold rate updated');
+});
+
+// listen admin nodes and show pending lists
+function listenAdminNodes(){
+  db.ref('wallet_requests').on('value', snap => {
+    const cont = el('admin-wallet-requests'); cont.innerHTML = '';
+    if(!snap.exists()) { cont.innerHTML = '<div class="muted">no requests</div>'; return; }
+    const all = snap.val();
+    Object.keys(all).reverse().forEach(k => {
+      const r = all[k];
+      if(r.status === 'pending'){
+        const div = document.createElement('div'); div.style.padding='8px'; div.style.borderBottom='1px solid #f2f2f2';
+        div.innerHTML = `<div><strong>${r.type}</strong> ₹${r.amount||''} by ${r.uid||''} <div class="small">utr:${r.utr||''}</div>
+          <div style="margin-top:6px" class="actions">
+            <button class="approve-wallet" data-id="${k}">approve</button>
+            <button class="reject-wallet btn-ghost" data-id="${k}">reject</button>
+          </div></div>`;
+        cont.appendChild(div);
+      }
+    });
+    document.querySelectorAll('.approve-wallet').forEach(b=> b.addEventListener('click', async (ev)=>{
+      const id = ev.currentTarget.dataset.id;
+      const node = (await db.ref('wallet_requests/' + id).once('value')).val();
+      if(!node) return;
+      if(node.type === 'add'){
+        // credit user's wallet
+        const wRef = db.ref('wallets/' + node.uid);
+        const wsnap = await wRef.once('value');
+        const prev = wsnap.exists() && wsnap.val().balance ? wsnap.val().balance : 0;
+        await wRef.child('balance').set(prev + Number(node.amount));
+        const txId = 'admin-add-'+Date.now();
+        await wRef.child('transactions').child(txId).set({ amount: node.amount, type:'credit', note:'admin approved add', at:Date.now() });
+      } else if(node.type === 'withdraw'){
+        const wRef = db.ref('wallets/' + node.uid);
+        const wsnap = await wRef.once('value');
+        const prev = wsnap.exists() && wsnap.val().balance ? wsnap.val().balance : 0;
+        await wRef.child('balance').set(prev - Number(node.amount));
+        const txId = 'admin-with-'+Date.now();
+        await wRef.child('transactions').child(txId).set({ amount: node.amount, type:'debit', note:'admin approved withdraw', at:Date.now() });
+      }
+      await db.ref('wallet_requests/' + id + '/status').set('approved');
+      toast('wallet request approved');
+      loadAdminCounts();
+    }));
+    document.querySelectorAll('.reject-wallet').forEach(b=> b.addEventListener('click', async (ev)=>{
+      const id = ev.currentTarget.dataset.id;
+      await db.ref('wallet_requests/' + id + '/status').set('rejected');
+      toast('rejected');
+      loadAdminCounts();
+    }));
+  });
+
+  db.ref('gold_orders').on('value', snap => {
+    const cont = el('admin-gold-orders'); cont.innerHTML = '';
+    if(!snap.exists()) { cont.innerHTML = '<div class="muted">no gold orders</div>'; return; }
+    const all = snap.val();
+    Object.keys(all).reverse().forEach(k => {
+      const r = all[k];
+      if(r.status === 'pending_admin_verification'){
+        const div = document.createElement('div'); div.style.padding='8px'; div.style.borderBottom='1px solid #f2f2f2';
+        div.innerHTML = `<div><strong>user:${r.user}</strong> ₹${r.amount} utr:${r.utr}
+          <div class="small">created:${new Date(r.created_at).toLocaleString()}</div>
+          <div style="margin-top:6px" class="actions">
+            <button class="approve-gold" data-id="${k}">approve</button>
+            <button class="reject-gold btn-ghost" data-id="${k}">reject</button>
+          </div></div>`;
+        cont.appendChild(div);
+      }
+    });
+    document.querySelectorAll('.approve-gold').forEach(b=> b.addEventListener('click', async (ev)=>{
+      const id = ev.currentTarget.dataset.id;
+      const node = (await db.ref('gold_orders/' + id).once('value')).val();
+      if(!node) return;
+      // add gold to user (simple numeric)
+      const userRef = db.ref('users/' + node.user + '/gold');
+      const usnap = await userRef.once('value');
+      const prev = usnap.exists() ? Number(usnap.val()) : 0;
+      // compute grams = amount / rate
+      const rateSnap = await db.ref('admin_settings/gold_rate').once('value');
+      const rate = rateSnap.exists() ? Number(rateSnap.val()) : 1;
+      const grams = Number((Number(node.amount)/rate).toFixed(4));
+      await userRef.set(prev + grams);
+      await db.ref('gold_orders/' + id + '/status').set('approved');
+      toast('gold order approved and user gold updated');
+      loadAdminCounts();
+    }));
+    document.querySelectorAll('.reject-gold').forEach(b=> b.addEventListener('click', async (ev)=>{
+      const id = ev.currentTarget.dataset.id;
+      await db.ref('gold_orders/' + id + '/status').set('rejected');
+      toast('gold rejected');
+      loadAdminCounts();
+    }));
+  });
+
+  db.ref('product_orders').on('value', snap => {
+    const cont = el('admin-product-orders'); cont.innerHTML = '';
+    if(!snap.exists()) { cont.innerHTML = '<div class="muted">no orders</div>'; return; }
+    const all = snap.val();
+    Object.keys(all).reverse().forEach(k => {
+      const r = all[k];
+      if(r.status === 'pending'){
+        const div = document.createElement('div'); div.style.padding='8px'; div.style.borderBottom='1px solid #f2f2f2';
+        div.innerHTML = `<div><strong>${r.user}</strong> order:${k}
+          <div class="small">items:${Object.keys(r.items||{}).length}</div>
+          <div style="margin-top:6px" class="actions">
+            <button class="approve-prod" data-id="${k}">mark packing</button>
+            <button class="reject-prod btn-ghost" data-id="${k}">cancel</button>
+          </div></div>`;
+        cont.appendChild(div);
+      }
+    });
+    document.querySelectorAll('.approve-prod').forEach(b=> b.addEventListener('click', async (ev)=>{
+      const id = ev.currentTarget.dataset.id;
+      await db.ref('product_orders/' + id + '/status').set('packing');
+      toast('order updated to packing');
+      loadAdminCounts();
+    }));
+    document.querySelectorAll('.reject-prod').forEach(b=> b.addEventListener('click', async (ev)=>{
+      const id = ev.currentTarget.dataset.id;
+      await db.ref('product_orders/' + id + '/status').set('cancelled');
+      toast('order cancelled');
+      loadAdminCounts();
+    }));
+  });
+
+  db.ref('kyc').on('value', snap => {
+    const cont = el('admin-kyc-list'); cont.innerHTML = '';
+    if(!snap.exists()) { cont.innerHTML = '<div class="muted">no kyc</div>'; return; }
+    const all = snap.val();
+    Object.keys(all).reverse().forEach(uidk => {
+      const r = all[uidk];
+      if(r.status === 'pending'){
+        const div = document.createElement('div'); div.style.padding='8px'; div.style.borderBottom='1px solid #f2f2f2';
+        div.innerHTML = `<div><strong>${r.name}</strong> uid:${uidk}
+          <div class="small">aadhar:${r.aadhar_number||r.aadhar_number}</div>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            ${ (r.imgbb_urls||[]).map(u=> `<a href="${u}" target="_blank" class="small">view</a>`).join(' ') }
+          </div>
+          <div style="margin-top:6px" class="actions">
+            <button class="approve-kyc" data-uid="${uidk}">approve</button>
+            <button class="reject-kyc btn-ghost" data-uid="${uidk}">reject</button>
+          </div></div>`;
+        cont.appendChild(div);
+      }
+    });
+    document.querySelectorAll('.approve-kyc').forEach(b=> b.addEventListener('click', async (ev)=>{
+      const u = ev.currentTarget.dataset.uid;
+      await db.ref('kyc/' + u + '/status').set('approved');
+      await db.ref('users/' + u + '/kyc_verified').set(true);
+      toast('kyc approved');
+      loadAdminCounts();
+    }));
+    document.querySelectorAll('.reject-kyc').forEach(b=> b.addEventListener('click', async (ev)=>{
+      const u = ev.currentTarget.dataset.uid;
+      await db.ref('kyc/' + u + '/status').set('rejected');
+      toast('kyc rejected');
+      loadAdminCounts();
+    }));
+  });
+}
+
+// admin add product
+el('btn-add-product').addEventListener('click', async ()=>{
+  const name = el('admin-prod-name').value.trim();
+  const cat = el('admin-prod-cat').value.trim();
+  const price = Number(el('admin-prod-price').value);
+  const discount = Number(el('admin-prod-discount').value);
+  const stock = Number(el('admin-prod-stock').value);
+  const files = el('admin-prod-files').files;
+  if(!name||!cat||!price) return toast('fill product fields');
+  const images = [];
+  for(const f of files){
+    try{ const url = await uploadToImgbb(f); images.push(url); } catch(e){ console.error(e) }
+  }
+  const pRef = db.ref('products').push();
+  await pRef.set({ name, category:cat, price, discount, stock, images, created_at: Date.now()});
+  toast('product added');
+  loadProducts();
+});
+
+// ----- simple lists / load functions -----
+async function loadGoldOrders(){
+  const snap = await db.ref('gold_orders').orderByChild('user').equalTo(uid()).once('value');
+  const cont = el('gold-orders-list'); cont.innerHTML = '';
+  if(!snap.exists()){ cont.innerHTML='<div class="muted">no orders</div>'; return; }
+  const obj = snap.val();
+  Object.keys(obj).reverse().forEach(k=>{
+    const o = obj[k];
+    const div = document.createElement('div'); div.style.padding='8px'; div.style.borderBottom='1px solid #f2f2f2';
+    div.innerHTML = `<div>₹${o.amount} • status: ${o.status} <div class="small">utr:${o.utr}</div></div>`;
+    cont.appendChild(div);
+  });
+}
+
+async function loadWalletTransactions(){
+  const snap = await db.ref('wallets/' + uid() + '/transactions').once('value');
+  const cont = el('wallet-transactions'); cont.innerHTML = '';
+  if(!snap.exists()){ cont.innerHTML = '<div class="muted">no transactions</div>'; return; }
+  const obj = snap.val();
+  Object.keys(obj).reverse().forEach(k=>{
+    const t = obj[k];
+    const div = document.createElement('div'); div.style.padding='8px'; div.style.borderBottom='1px solid #f2f2f2';
+    div.innerHTML = `<div>${t.type} ₹${t.amount} <div class="small">${t.note || ''} • ${new Date(t.at).toLocaleString()}</div></div>`;
+    cont.appendChild(div);
+  });
+}
+
+// admin counts
+async function loadAdminCounts(){
+  const u = await db.ref('users').once('value'); el('admin-total-users').textContent = u.exists() ? Object.keys(u.val()).length : 0;
+  const g = await db.ref('gold_orders').once('value'); el('admin-total-gold').textContent = g.exists() ? Object.keys(g.val()).length : 0;
+  const p = await db.ref('product_orders').once('value'); el('admin-total-product').textContent = p.exists() ? Object.keys(p.val()).length : 0;
+  const w = await db.ref('wallet_requests').once('value'); el('admin-total-wallet').textContent = w.exists() ? Object.keys(w.val()).length : 0;
+}
+
+async function refreshAdminCounts(){ loadAdminCounts(); }
+
+// realtime listeners for dynamic parts (gold rate etc.)
+function setupRealtimeListeners(){
+  db.ref('admin_settings/gold_rate').on('value', s => el('gold-rate').textContent = s.exists() ? s.val() : 'not set');
+  db.ref('wallets/' + uid() + '/balance').on('value', s => el('wallet-balance').textContent = '₹ ' + (s.exists() ? s.val() : 0));
+  db.

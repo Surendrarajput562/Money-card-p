@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Services</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* Inter Font and basic styling */
+    body { font-family: 'Inter', Arial, sans-serif; background-color: #f7f7f9; padding: 20px; }
+    .card { 
+        background: white; 
+        padding: 20px; 
+        border-radius: 12px; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        margin-bottom: 20px;
+    }
+    .btn.secondary {
+        padding: 12px;
+        border: 1px solid #d1d5db; /* Gray 300 */
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        text-align: center;
+        background-color: #f9fafb; /* Gray 50 */
+        color: #1f2937; /* Gray 800 */
+        transition: background-color 0.15s, transform 0.1s;
+        height: 50px;
+    }
+    .btn.secondary:hover {
+        background-color: #f3f4f6;
+    }
+    .btn.secondary:active {
+        transform: scale(0.98);
+    }
+
+    #servicesBox {
+        margin-top: 12px;
+    }
+
+    /* Grid for service buttons */
+    .grid-services {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Mobile default */
+        gap: 10px;
+    }
+    @media (min-width: 640px) {
+        .grid-services {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+    .service-button {
+        display: none; /* Initially hidden, JavaScript will show them */
+    }
+
+    #loader {
+        text-align: center;
+        padding: 20px;
+        color: #6b7280;
+    }
+</style>
+</head>
+<body>
+
+<h1 class="text-3xl font-extrabold text-center mb-8 text-gray-800">उपलब्ध सेवाएँ (Available Services)</h1>
+
+<!-- ALL SERVICES START -->
+<div class="card">
+
+    <button
+        onclick="toggleServices()"
+        id="toggleButton"
+        style="
+            width:100%;
+            padding:12px;
+            font-size:16px;
+            font-weight:600;
+            border:none;
+            background:#e5e7eb; /* Gray 200 */
+            border-radius:6px;
+            cursor:pointer;
+        ">
+        सभी सेवाएँ ▼
+    </button>
+
+    <div id="servicesBox" style="display:none; margin-top:12px;">
+        <div id="loader">सेवाएं लोड हो रही हैं...</div>
+        <div id="serviceGrid" class="grid-services">
+            <!-- Buttons now use data-href instead of inline onclick -->
+            <button id="service1" class="btn secondary service-button" data-href="aaaaaaaaaa.html">My loan</button>
+            <button id="service2" class="btn secondary service-button" data-href="example.html">2</button>
+            <button id="service3" class="btn secondary service-button" data-href="example.html">3</button>
+            <button id="service4" class="btn secondary service-button" data-href="example.html">4</button>
+
+            <button id="service5" class="btn secondary service-button" data-href="example.html">5</button>
+            <button id="service6" class="btn secondary service-button" data-href="example.html">6</button>
+            <button id="service7" class="btn secondary service-button" data-href="example.html">7</button>
+            <button id="service8" class="btn secondary service-button" data-href="example.html">8</button>
+
+            <button id="service9" class="btn secondary service-button" data-href="example.html">9</button>
+            <button id="service10" class="btn secondary service-button" data-href="example.html">10</button>
+            <button id="service11" class="btn secondary service-button" data-href="example.html">11</button>
+            <button id="service12" class="btn secondary service-button" data-href="example.html">12</button>
+
+            <button id="service13" class="btn secondary service-button" data-href="example.html">13</button>
+            <button id="service14" class="btn secondary service-button" data-href="example.html">14</button>
+            <button id="service15" class="btn secondary service-button" data-href="example.html">15</button>
+            <button id="service16" class="btn secondary service-button" data-href="example.html">16</button>
+
+            <button id="service17" class="btn secondary service-button" data-href="example.html">17</button>
+            <button id="service18" class="btn secondary service-button" data-href="example.html">18</button>
+            <button id="service19" class="btn secondary service-button" data-href="example.html">19</button>
+            <button id="service20" class="btn secondary service-button" data-href="example.html">20</button>
+        </div>
+
+    </div>
+</div>
+<!-- ALL SERVICES END -->
+
+
+<!-- Firebase v8.10.1 CDN -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  // 🔥 Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.appspot.com",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597778bad55",
+    measurementId: "G-3LS5W6F8QW"
+  };
+
+  // Initialize Firebase and Services
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+  
+  // Toggles the visibility of the services box
+  function toggleServices() {
+    let box = document.getElementById("servicesBox");
+    box.style.display = box.style.display === "none" || box.style.display === "" ? "block" : "none";
+  }
+
+  /**
+   * Handles the navigation when a service button is clicked.
+   * @param {string} href - The URL to navigate to.
+   */
+  function handleServiceClick(href) {
+    if (href && href !== '#') {
+        console.log(`Navigating to: ${href}`);
+        // This is the core navigation fix
+        window.location.href = href;
+    }
+  }
+
+  /**
+   * sets up a realtime listener for a single service button (User UI)
+   * This shows the button ONLY if the admin set it to "on".
+   */
+  function setupServiceVisibility(i) {
+    const sid = "service" + i;
+    const btn = document.getElementById(sid);
+    if (!btn) return;
+
+    // Realtime Listener
+    db.ref("services/" + sid).on('value', (snapshot) => {
+        const status = snapshot.val(); 
+        
+        // Visibility Check: Only show if status is explicitly "on"
+        if (status === "on") {
+            btn.style.display = 'inline-block'; // Show the button
+        } else {
+            btn.style.display = 'none'; // Hide the button
+        }
+    }, (error) => {
+        console.error("Firebase Listener Error for " + sid + ":", error);
+    });
+  }
+  
+  /**
+   * Attaches the click listener and starts visibility monitoring after auth.
+   */
+  function loadServiceVisibilityListeners() {
+      document.getElementById('loader').style.display = 'none';
+      for (let i = 1; i <= 20; i++) {
+          const sid = "service" + i;
+          const btn = document.getElementById(sid);
+          
+          if (btn) {
+              const href = btn.getAttribute('data-href');
+              // 1. Attach the click handler (This is the fix for click not working)
+              btn.addEventListener('click', () => handleServiceClick(href));
+              
+              // 2. Start the visibility listener
+              setupServiceVisibility(i);
+          }
+      }
+  }
+
+  // --- Core Authentication Flow ---
+  auth.onAuthStateChanged(user => {
+      if (user) {
+          console.log(`Authenticated as: ${user.isAnonymous ? 'Anonymous' : user.uid}`);
+          loadServiceVisibilityListeners();
+      } else {
+          // Sign in anonymously to satisfy the read rule "auth != null"
+          auth.signInAnonymously()
+              .then(() => {
+                  console.log("Anonymous user signed in.");
+              })
+              .catch(error => {
+                  console.error("ERROR: Could not sign in anonymously:", error);
+                  document.getElementById('loader').textContent = 'सेवाएं लोड नहीं हो सकीं। कृपया नेटवर्क जांचें।';
+              });
+      }
+  });
+
+</script>
+
+</body>
+</html>
+
+

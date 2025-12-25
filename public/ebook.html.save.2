@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 Premium- Your Digital Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+<style>
+/* Variables and Base */
+:root{
+    --gold:#d4af37;
+    --dark-gold: #c59b2d;
+    --accent:#1f2937;
+    --bg:#f8f9fa; /* Light Background */
+    --card:#fff;
+    --text:#1f2937;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+body.dark-mode {
+    --bg:#121212;
+    --card:#1e1e1e;
+    --text:#e0e0e0;
+    --shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text); transition:background 0.3s, color 0.3s;}
+
+/* Header - Modern Look */
+header{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 15px; /* बदला हुआ: 15px 30px से छोटा कर दिया */
+    background:var(--accent); color:#fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    position: sticky; top: 0; z-index: 500; /* Sticky Header */
+}
+header h2{margin:0;font-size:20px; font-weight:700;} /* बदला हुआ: फ़ॉन्ट साइज़ 24px से 20px किया */
+header .user-info{display:flex;align-items:center;gap:10px;} /* gap कम किया */
+/* Adjusted buttons to be gold only when necessary */
+.user-info button { background: none; color: #fff; border: 1px solid #fff; padding: 5px 10px; } /* padding कम किया */
+.user-info button:hover { background: rgba(255, 255, 255, 0.1); }
+
+
+/* User Profile Placeholder & Menu Setup */
+.profile-menu-container {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* gap कम किया */
+}
+.profile-placeholder {
+    width: 30px; height: 30px; /* साइज़ 35px से कम किया */
+    border-radius: 50%; background: var(--gold);
+    color: var(--accent); font-weight: 700; display: flex;
+    align-items: center; justify-content: center; font-size: 14px;
+    border: 2px solid #fff;
+    transition: transform 0.2s;
+}
+.profile-menu-container:hover .profile-placeholder {
+    transform: scale(1.05);
+}
+
+#profile-dropdown {
+    position: absolute;
+    top: 40px; /* Header छोटा होने के कारण top एडजस्ट किया */
+    right: 0;
+    background: var(--card);
+    color: var(--text);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    min-width: 200px; /* width कम किया */
+    padding: 8px 0;
+    z-index: 600;
+    display: none;
+    border: 1px solid #ddd;
+}
+#profile-dropdown.open {
+    display: block;
+}
+#profile-dropdown a, #profile-dropdown button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: var(--text);
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+}
+#profile-dropdown a:hover, #profile-dropdown button:hover {
+    background: var(--bg);
+}
+#profile-dropdown i {
+    color: var(--gold);
+    font-size: 18px;
+}
+
+
+header .notif{position:relative;cursor:pointer;}
+header .notif img{width:20px;height:20px; filter: invert(1);} /* साइज़ 25px से कम किया */
+header .notif .count{position:absolute;top:-8px;right:-8px;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;text-align:center;line-height:18px;}
+
+/* --- NEW: Category Navigation Bar --- */
+#category-nav {
+    background: var(--card);
+    padding: 5px 15px; /* बदला हुआ: 10px 30px से छोटा कर दिया */
+    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+    white-space: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    gap: 8px; /* gap कम किया */
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 45px; /* Header की नई height के हिसाब से एडजस्ट किया */
+    z-index: 400;
+}
+.cat-button {
+    padding: 6px 12px; /* padding कम किया */
+    border: 1px solid #ddd;
+    border-radius: 16px; /* border-radius कम किया */
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px; /* फ़ॉन्ट साइज़ 14px से कम किया */
+    cursor: pointer;
+    transition: 0.3s;
+    flex-shrink: 0;
+}
+.cat-button:hover {
+    background: #f0f0f0;
+    color: var(--accent);
+}
+.cat-button.active {
+    background: var(--gold);
+    color: #fff;
+    border-color: var(--gold);
+    font-weight: 600;
+}
+body.dark-mode .cat-button { border: 1px solid #333; background: #222; color: #e0e0e0; }
+body.dark-mode .cat-button:hover { background: #333; }
+body.dark-mode .cat-button.active { background: var(--dark-gold); color: #fff; border-color: var(--dark-gold); }
+/* --- End Category Nav --- */
+
+/* Main Container and Typography */
+.container{padding:15px; max-width: 1300px; margin: auto;} /* बदला हुआ: 30px से 15px किया */
+h3{
+    margin-top: 15px; /* नया: ऊपर का margin जोड़ा */
+    margin-bottom:10px; /* बदला हुआ: 20px से 10px किया */
+    color:var(--text);
+    border-left: 5px solid var(--gold); padding-left: 10px; /* padding कम किया */
+    font-size: 20px; /* फ़ॉन्ट साइज़ 24px से कम किया */
+    font-weight: 700;
+}
+
+/* Controls and Grid */
+.controls{
+    display:flex;gap:10px; /* gap कम किया */
+    margin-bottom:15px; /* बदला हुआ: 30px से 15px किया */
+    flex-wrap:wrap;
+    background:var(--card); 
+    padding:10px; /* बदला हुआ: 20px से 10px किया */
+    border-radius:8px; /* border-radius कम किया */
+    box-shadow: var(--shadow);
+}
+.controls input, .controls select{
+    padding:5px 10px; /* बदला हुआ: 10px से 5px किया */
+    height: 35px; /* एक निश्चित कम ऊँचाई सेट की */
+    border:1px solid #ddd;border-radius:4px; /* border-radius कम किया */
+    background:var(--bg); color:var(--text); flex-grow: 1;
+    min-width: 120px; /* min-width कम किया */
+    font-size: 14px;
+}
+/* Updated Grid for 3x6 Look */
+.book-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+    gap:20px; /* gap कम किया */
+}
+.book-card{
+    background:var(--card);padding:10px; /* padding कम किया */
+    border-radius:8px;text-align:center;
+    cursor:pointer;transition:0.3s;
+    box-shadow: var(--shadow);
+    border: 1px solid #eee;
+    height: 350px; /* Fixed height for uniformity */
+    display: flex; flex-direction: column; justify-content: space-between;
+}
+.book-card:hover{
+    transform:translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.book-card img{
+    width:100%;
+    height: 230px; /* Aspect ratio friendly height */
+    object-fit:cover;border-radius:6px; border: 1px solid #ccc;
+    flex-shrink: 0;
+}
+.book-card strong{display:block; margin-top:5px; font-size:15px; color:var(--text); font-weight: 600;} /* margin कम किया */
+.book-card p { margin: 1px 0; font-size: 13px; color: #6c757d;} /* margin/size कम किया */
+.book-card .price { font-weight: 700; color: var(--gold); }
+
+/* Buttons */
+button{
+    padding:8px 15px; /* padding कम किया */
+    background:var(--gold);border:none;color:#fff;
+    border-radius:4px;cursor:pointer;font-weight:600;transition:background 0.3s, transform 0.2s;
+}
+button:hover{background:var(--dark-gold); transform: translateY(-1px);}
+
+/* Modals (Preview/Reader) */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:none;justify-content:center;align-items:center;overflow:auto;}
+.modal-content{
+    background:var(--card);color:var(--text);padding:20px;border-radius:8px; /* padding कम किया */
+    max-width:90%;width:600px; max-height:90vh; overflow-y:auto; position:relative; /* width कम किया */
+    box-shadow:0 5px 25px rgba(0,0,0,0.7);
+}
+.reader-modal-content {
+    max-width: 95%; width: 800px; /* width कम किया */
+    background: var(--bg);
+    padding: 0;
+    max-height: 95vh;
+}
+input, select, textarea {background:var(--card); color:var(--text); border: 1px solid #ddd;}
+.close-btn { position: absolute; top: 10px; right: 15px; font-size: 25px; cursor: pointer; color: var(--text); z-index: 1010; } /* position और size एडजस्ट किया */
+.close-btn:hover { color: #e74c3c; }
+
+/* Reader specific */
+.reader-controls {
+    display: flex; justify-content: space-between; padding: 10px 15px; /* padding कम किया */
+    background: var(--card); border-radius: 8px 8px 0 0; align-items: center;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.reader-controls select { padding: 5px; } /* padding कम किया */
+
+/* Single and Scroll View Styles */
+.reader-page-content img {
+    max-height: 70vh;
+    object-fit: contain;
+    display: block; margin: 10px auto; /* margin कम किया */
+    border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    width: auto;
+}
+
+/* AI Text Page Styles */
+.text-page-container {
+    padding: 15px 20px; /* padding कम किया */
+    background: var(--card);
+    max-width: 700px; /* max-width कम किया */
+    margin: 15px auto; /* margin कम किया */
+    border-radius: 8px;
+    min-height: 60vh;
+    box-shadow: var(--shadow);
+    line-height: 1.5;
+    font-size: 15px; /* फ़ॉन्ट साइज़ 16px से कम किया */
+    text-align: justify;
+    color: var(--text);
+}
+
+
+
+
+
+
+
+.text-page-container p {
+    margin-bottom: 0.8em; /* margin कम किया */
+}
+.text-page-container h4 {
+    color: var(--gold);
+    margin-top: 20px; /* margin कम किया */
+    margin-bottom: 8px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 4px;
+    font-size: 1.3em;
+    font-weight: 700;
+}
+@media (max-width: 768px) {
+    .text-page-container {
+        padding: 10px;
+        /* यह मोबाइल पर फ़ॉन्ट साइज़ को छोटा करेगा */
+        font-size: 13px;
+    }
+}
+
+
+
+
+/* Page View Layouts */
+.single-page-view { text-align: center; padding: 10px 0; }
+.single-page-view .page-container { display: none; }
+.single-page-view .page-container.active { display: block; }
+.dual-page-view {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 10px 0;
+    gap: 10px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.dual-page-view .page-container {
+    display: none;
+    width: 48%;
+    text-align: center;
+}
+.dual-page-view .page-container.active {
+    display: block;
+}
+.dual-page-view .page-container img, .dual-page-view .page-container .text-page-container {
+    max-height: 65vh;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin: 0;
+}
+
+
+/* Scroll View */
+.scroll-view .page-container { display: block !important; text-align: center; }
+
+/* Dark Mode Reader Adjustments */
+body.dark-mode .book-card { border: 1px solid #333; }
+body.dark-mode .controls input, body.dark-mode .controls select { border: 1px solid #444; }
+body.dark-mode .text-page-container { border: 1px solid #333; }
+
+/* Subscription Gate */
+#subscription-gate {
+    z-index: 100;
+    position: sticky;
+    bottom: 0;
+
+}
+
+/* New Subscription Modal Styles */
+.plan-card {
+    border: 2px solid var(--gold);
+    padding: 15px; /* padding कम किया */
+    border-radius: 8px;
+    flex: 1;
+    min-width: 200px;
+    max-width: 48%;
+    text-align: center;
+    margin: 8px; /* margin कम किया */
+    background: var(--bg);
+}
+.plan-card h3 {
+    color: var(--gold);
+    margin-top:0;
+    border:none;
+    padding:0;
+    font-size: 20px;
+}
+.plan-card .price-display {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: var(--accent);
+}
+.plan-card .upi-info {
+    margin-top: 10px;
+    padding: 10px;
+    border-top: 1px dashed #ccc;
+}
+
+/* Support Ticket Modal Styles */
+#support-modal-content {
+    background: var(--card);
+    color: var(--text);
+    padding: 20px; /* padding कम किया */
+    border-radius: 8px;
+    max-width: 90%;
+    width: 450px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.7);
+}
+#support-modal-content input, #support-modal-content textarea {
+    width: 100%;
+    padding: 8px; /* padding कम किया */
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* UTR Submission Modal Styles */
+#utr-submission-modal-content {
+    background: var(--card);
+    color: var(--text);
+    padding: 20px; /* padding कम किया */
+    border-radius: 8px;
+    max-width: 90%;
+    width: 350px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.7);
+}
+#utr-submission-modal-content input {
+    width: 100%;
+    padding: 8px; /* padding कम किया */
+    margin-bottom: 12px;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    box-sizing: border-box;
+    background: var(--bg);
+    color: var(--text);
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+
+
+
+
+
+
+
+</style>
+</head>
+<body id="app-body">
+<header>
+
+
+
+
+
+<h2>Library 📚</h2>
+
+    <div class="user-info">
+        
+        <div class="notif" onclick="openNotifications()">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/appointment-reminders.png" alt="Notifications"/>
+            <div class="count" id="notif-count">0</div>
+        </div>
+        
+        <div class="profile-menu-container" onclick="toggleProfileMenu()">
+            <div class="profile-placeholder" id="user-initial">G</div>
+            <span id="user-display" style="font-weight:600;">Guest</span>
+            
+            <div id="profile-dropdown" class="profile-dropdown">
+                </div>
+        </div>
+        </div>
+</header>
+
+<nav id="category-nav">
+    </nav>
+
+<div class="container">
+
+<section>
+<h3>🌟 Featured & New Releases</h3>
+<div class="controls">
+    <input type="text" id="search-input" placeholder="Search by Title, Author..." onkeyup="filterBooks()">
+    <select id="category-filter" onchange="filterBooks()">
+        <option value="">All Categories</option>
+    </select>
+    <select id="sort-by" onchange="filterBooks()">
+        <option value="createdAt">🚀 Newest First</option>
+        <option value="title">Title (A-Z)</option>
+        <option value="priceMonthly">Price (Low to High)</option>
+    </select>
+    <button onclick="toggleDarkMode()">☀️/🌙 Mode</button>
+</div>
+<div id="new-books" class="book-grid"></div>
+</section>
+
+<section id="history-section">
+<h3>My Premium Library 📚 (Active Subscriptions)</h3>
+<div id="history-books" class="book-grid"></div>
+</section>
+
+</div>
+
+<div class="modal" id="book-modal">
+    <div class="modal-content" id="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+    </div>
+</div>
+
+<div class="modal" id="support-modal">
+    <div id="support-modal-content">
+        <span class="close-btn" onclick="closeSupportModal()">&times;</span>
+        <h2 style="color:var(--gold); text-align:center; font-size:24px;">Customer Support 💬</h2>
+        <p style="text-align:center; margin-bottom: 20px;">Submit your issue below. We aim to respond within 24 hours.</p>
+        
+        <label for="ticket-subject" style="font-weight:600;">Subject (e.g., UTR not approved, Login Issue)</label>
+        <input type="text" id="ticket-subject" placeholder="Short description of the issue" required>
+
+        <label for="ticket-body" style="font-weight:600;">Details (Include UTR or Book ID if relevant)</label>
+        <textarea id="ticket-body" rows="6" placeholder="Provide full details of your problem or request..." required></textarea>
+
+        <button onclick="submitSupportTicket()" style="width:100%; background:#1abc9c;">Submit Ticket</button>
+    </div>
+</div>
+
+<div class="modal" id="utr-submission-modal">
+    <div id="utr-submission-modal-content">
+        <span class="close-btn" onclick="closeUtrModal()">&times;</span>
+        <h2 style="color:#3498db; text-align:center; font-size:24px;">Confirm Your Payment 💰</h2>
+        <p style="text-align:center; margin-bottom: 15px;">Please enter the **12-digit UTR / Reference Number** from your UPI app.</p>
+        
+        <p id="utr-plan-display" style="font-weight:600; text-align:center; margin-bottom: 5px;"></p>
+
+        <label for="utr-input" style="font-weight:600;">UTR / Reference Number (12 Digits)</label>
+        <input type="number" id="utr-input" placeholder="e.g., 532187654321" pattern="\d{12}" maxlength="12" required>
+
+        <button id="utr-submit-btn" onclick="submitUtr()" style="width:100%; background:#28a745;">Submit for Verification</button>
+        <p style="font-size:12px; color:#e74c3c; margin-top:10px; text-align:center;">*Your subscription will be activated after admin verification (up to 1 hour).</p>
+    </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script>
+// --- GLOBAL CONFIG (Now loaded from Firebase) ---
+// Default fallback config in case Firebase load fails or is empty
+let GLOBAL_CONFIG = {
+    "profileMenu": [
+        {"id": "my_library", "title": "My Library", "icon": "ri-book-3-line", "action": "DEEPLINK:library"},
+        {"id": "upgrade_sub", "title": "Upgrade to Standard Access", "icon": "ri-trophy-line", "action": "SHOW_MODAL:subscriptionModal"},
+        {"id": "help_and_support", "title": "Help & Support", "icon": "ri-question-answer-line", "action": "DEEPLINK:support_home"}, 
+        {"id": "refer_friend", "title": "Refer a Friend", "icon": "ri-share-forward-line", "action": "SHOW_MODAL:referralModal"},
+        {"id": "reading_settings", "title": "Reading Settings", "icon": "ri-font-sans-serif", "action": "SHOW_MODAL:readerSettings"}
+    ],
+    "settings": {
+        "nightModeEnabled": true,
+        "defaultFontSize": 14
+    },
+    // FALLBACK UPI/MODAL CONFIG FOR SAFETY
+    "monetization": {
+        "upiId": "fallback@upi", 
+        "qrCodeImageUrl": "",
+        "monthlySubscriptionPrice": 149,
+        "paypalVerificationUrl": ""
+    },
+    "referral": {
+        "heading": "Refer and Earn!",
+        "referralLink": "https://fallback.com/refer"
+    },
+    "modals": {
+        "subscriptionModal": {
+            "title": "Upgrade Access",
+            "description": "Unlock books.",
+            "plans": []
+        }
+    }
+}; 
+
+// --- Configuration ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a-default-rtdb.appspot.com",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597778bad55",
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const auth = firebase.auth();
+
+let currentUser = "guest_user"; 
+const maxFreePages = 10;
+const wordsPerPage = 200; 
+
+let allBooksCache = []; 
+let currentBookPages = []; 
+let isAIBook = false; 
+let currentPageIndex = 0; 
+let isDarkMode = false;
+let currentBookId = null;
+let isFullAccess = false; 
+let activeCategory = ''; 
+let pendingPlanDetails = {}; // Stores plan info for UTR submission
+
+// --- Initialization Function ---
+function initializeApp() {
+    db.ref('GLOBAL_CONFIG/ebooks_app').once('value').then(snap => {
+        const loadedConfig = snap.val();
+        
+        // --- IMPORTANT: Load the provided JSON as the definitive config ---
+        const providedConfig = {
+          "appId": "ebooks_app",
+          "appName": "Gold Rupi E-Library",
+          "modals": {
+            "subscriptionModal": {
+              "description": "Get access to read 5 books of your choice every month, plus offline reading! Choose between UPI (Manual Activation) and PayPal (Instant Activation).",
+              "plans": [
+                {
+                  "currency": "₹",
+                  "name": "Standard Monthly (UPI)",
+                  "planId": "standard_sub_149_5_books",
+                  "price": "149",
+                  "type": "upi",
+                  "upiId": "7649070168@okbizaxis",
+                  "upiLink": "upi://pay?pa=7649070168@okbizaxis&pn=Gold%20Rupi%20Library&am=149&cu=INR"
+                },
+                {
+                  "currency": "₹",
+                  "name": "Standard Yearly (UPI)",
+                  "planId": "standard_sub_1499_60_books",
+                  "price": "1499",
+                  "type": "upi",
+                  "upiId": "7649070168@okbizaxis",
+                  "upiLink": "upi://pay?pa=7649070168@okbizaxis&pn=Gold%20Rupi%20Library&am=1499&cu=INR"
+                },
+                {
+                  "currency": "$",
+                  "name": "Standard Monthly (PayPal)",
+                  "paypalClient": "BAADaL9tcLlRLdHvYLi4BBA8PSLVY31pLHE7hyR08DcMzdre2unAWtxgjFemGYqd0gnV5cyCaXmCYK_sU0",
+                  "paypalHostedButtonId": "7CUN8VB2M4V88",
+                  "planId": "standard_sub_4_usd_monthly",
+                  "price": "4",
+                  "type": "paypal"
+                },
+                {
+                  "currency": "$",
+                  "name": "Standard Yearly (PayPal)",
+                  "paypalClient": "BAADaL9tcLlRLdHvYLi4BBA8PSLVY31pLHE7hyR08DcMzdre2unAWtxgjFemGYqd0gnV5cyCaXmCYK_sU0",
+                  "paypalHostedButtonId": "Q6QPFCS9M6DFS",
+                  "planId": "standard_sub_40_usd_yearly",
+                  "price": "40",
+                  "type": "paypal"
+                }
+              ],
+              "title": "Upgrade to Standard Access"
+            }
+          },
+          "monetization": {
+            "monthlySubscriptionPrice": 149,
+            "paypalVerificationUrl": "https://paypal.rajputsurendra562.workers.dev/",
+            "qrCodeImageUrl": "https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg",
+            "upiId": "7649070168@okbizaxis"
+          },
+          "profileMenu": [
+            {
+              "action": "DEEPLINK:library",
+              "icon": "ri-book-read-line",
+              "id": "my_library",
+              "title": "My Library"
+            },
+            {
+              "action": "SHOW_MODAL:subscriptionModal",
+              "icon": "ri-trophy-line",
+              "id": "upgrade_sub",
+              "title": "Upgrade to Standard Access"
+            },
+            {
+              "action": "DEEPLINK:support_home",
+              "icon": "ri-question-answer-line",
+              "id": "help_and_support",
+              "title": "Help & Support"
+            },
+            {
+              "action": "SHOW_MODAL:referralModal",
+              "icon": "ri-share-forward-line",
+              "id": "refer_friend",
+              "title": "Refer a Friend"
+            },
+            {
+              "action": "SHOW_MODAL:readerSettings",
+              "icon": "ri-font-sans-serif",
+              "id": "reading_settings",
+              "title": "Reading Settings"
+            }
+          ],
+          "referral": {
+            "heading": "Read Free, Share Books!",
+            "referralLink": "https://goldrupi.com/refer/ebooks"
+          },
+          "settings": {
+            "defaultFontSize": 14,
+            "nightModeEnabled": true,
+            "offlineReadingEnabled": true
+          },
+          "version": "2.5.1"
+        };
+
+        GLOBAL_CONFIG = { ...GLOBAL_CONFIG, ...loadedConfig, ...providedConfig }; 
+        console.log('✅ Success! Loaded config from Firebase and provided JSON.');
+        
+        isDarkMode = GLOBAL_CONFIG.settings.nightModeEnabled || false;
+        document.getElementById('app-body').classList.toggle('dark-mode', isDarkMode);
+        
+        renderProfileMenu();
+        loadData();
+    }).catch(error => {
+        console.error("❌ Failed to load GLOBAL_CONFIG from Firebase:", error);
+        
+        // Fallback to the provided JSON if Firebase fails
+        const providedConfig = {
+          "appId": "ebooks_app",
+          "appName": "Gold Rupi E-Library",
+          "modals": {
+            "subscriptionModal": {
+              "description": "Get access to read 5 books of your choice every month, plus offline reading! Choose between UPI (Manual Activation) and PayPal (Instant Activation).",
+              "plans": [
+                {
+                  "currency": "₹",
+                  "name": "Standard Monthly (UPI)",
+                  "planId": "standard_sub_149_5_books",
+                  "price": "149",
+                  "type": "upi",
+                  "upiId": "7649070168@okbizaxis",
+                  "upiLink": "upi://pay?pa=7649070168@okbizaxis&pn=Gold%20Rupi%20Library&am=149&cu=INR"
+                },
+                {
+                  "currency": "₹",
+                  "name": "Standard Yearly (UPI)",
+                  "planId": "standard_sub_1499_60_books",
+                  "price": "1499",
+                  "type": "upi",
+                  "upiId": "7649070168@okbizaxis",
+                  "upiLink": "upi://pay?pa=7649070168@okbizaxis&pn=Gold%20Rupi%20Library&am=1499&cu=INR"
+                }
+              ],
+              "title": "Upgrade to Standard Access"
+            }
+          },
+          "monetization": {
+            "monthlySubscriptionPrice": 149,
+            "paypalVerificationUrl": "https://paypal.rajputsurendra562.workers.dev/",
+            "qrCodeImageUrl": "https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg",
+            "upiId": "7649070168@okbizaxis"
+          },
+          "profileMenu": [
+            {
+              "action": "DEEPLINK:library",
+              "icon": "ri-book-read-line",
+              "id": "my_library",
+              "title": "My Library"
+            },
+            {
+              "action": "SHOW_MODAL:subscriptionModal",
+              "icon": "ri-trophy-line",
+              "id": "upgrade_sub",
+              "title": "Upgrade to Standard Access"
+            },
+            {
+              "action": "DEEPLINK:support_home",
+              "icon": "ri-question-answer-line",
+              "id": "help_and_support",
+              "title": "Help & Support"
+            },
+            {
+              "action": "SHOW_MODAL:referralModal",
+              "icon": "ri-share-forward-line",
+              "id": "refer_friend",
+              "title": "Refer a Friend"
+            },
+            {
+              "action": "SHOW_MODAL:readerSettings",
+              "icon": "ri-font-sans-serif",
+              "id": "reading_settings",
+              "title": "Reading Settings"
+            }
+          ],
+          "referral": {
+            "heading": "Read Free, Share Books!",
+            "referralLink": "https://goldrupi.com/refer/ebooks"
+          },
+          "settings": {
+            "defaultFontSize": 14,
+            "nightModeEnabled": true,
+            "offlineReadingEnabled": true
+          },
+          "version": "2.5.1"
+        };
+        GLOBAL_CONFIG = { ...GLOBAL_CONFIG, ...providedConfig }; 
+        
+        isDarkMode = GLOBAL_CONFIG.settings.nightModeEnabled || false;
+        document.getElementById('app-body').classList.toggle('dark-mode', isDarkMode);
+        
+        renderProfileMenu();
+        loadData();
+    });
+}
+// ----------------------------------------------------------------------------------------------------------------------
+// ---------------------------- UPI & PAYPAL SUBSCRIPTION LOGIC --------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Loads the PayPal SDK dynamically if needed and renders the button.
+ */
+function loadPayPalSDK(clientId, callback) {
+    if (typeof paypal !== 'undefined' && paypal.HostedButtons) {
+        return callback();
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&components=hosted-buttons&disable-funding=venmo&currency=USD`;
+    script.onload = callback;
+    script.onerror = () => console.error("Failed to load PayPal SDK.");
+    document.head.appendChild(script);
+}
+
+
+/**
+ * Renders the hosted PayPal button for a specific plan.
+ */
+function renderPayPalButton(plan) {
+    const containerId = `paypal-button-container-${plan.paypalHostedButtonId}`;
+    const userId = auth.currentUser ? auth.currentUser.email.replace(/[.#$[\]]/g, '_') : 'guest_user';
+    const verificationUrl = GLOBAL_CONFIG.monetization.paypalVerificationUrl;
+
+    if (!verificationUrl) {
+        return document.getElementById(containerId).innerHTML = '<p style="color:red;">Verification URL is missing in config.</p>';
+    }
+
+    try {
+        paypal.HostedButtons({
+            hostedButtonId: plan.paypalHostedButtonId,
+            // Custom logic for success/failure
+            onApprove: function(data, actions) {
+                // Send transaction details to your Worker for verification and fulfillment
+                fetch(verificationUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resource_type: 'hosted_button_approval', // Worker should handle this
+                        order_id: data.orderID,
+                        user_id: userId,
+                        plan_id: plan.planId
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'SUCCESS') {
+                        alert('✅ Success! Your subscription is active instantly.');
+                        closeModal();
+                        loadHistory(); // Refresh user's library
+                    } else {
+                        alert('⚠️ Payment received, but activation failed. Contact support with Order ID: ' + data.orderID);
+                    }
+                })
+                .catch(error => {
+                    console.error('PayPal Verification Error:', error);
+                    alert('❌ Server verification failed. Contact support with Order ID: ' + data.orderID);
+                });
+            }
+        }).render(`#${containerId}`);
+    } catch (e) {
+        console.error("Error rendering PayPal button:", e);
+        document.getElementById(containerId).innerHTML = '<p style="color:red;">Error loading button. Check console.</p>';
+    }
+}
+
+
+/**
+ * Renders the subscription modal based on Firebase config.
+ */
+function showSubscriptionModal() {
+    if (currentUser === 'guest_user') {
+        alert('Please log in to manage or purchase a subscription.');
+        return;
+    }
+
+    const modal = document.getElementById('book-modal');
+    const content = document.getElementById('modal-content');
+    const modalData = GLOBAL_CONFIG.modals && GLOBAL_CONFIG.modals.subscriptionModal;
+    const monetizationData = GLOBAL_CONFIG.monetization;
+
+    if (!modalData || !monetizationData || !modalData.plans) {
+        return alert("Subscription data is missing in Firebase config! Cannot proceed.");
+    }
+    
+    content.className = 'modal-content'; 
+    content.style.maxWidth = '1000px'; 
+    content.innerHTML = ''; // Clear previous content
+
+    const upiPlans = modalData.plans.filter(p => p.type === 'upi');
+    const paypalPlans = modalData.plans.filter(p => p.type === 'paypal');
+
+    let allPlansHtml = '';
+    
+    // --- Render UPI Plans ---
+    if (upiPlans.length > 0) {
+        allPlansHtml += `
+            <div style="margin-top:20px; text-align:center; padding:15px; background:#e6f7ff; border-radius:10px;">
+                <h3 style="color:#3498db; margin:0;">🇮🇳 Indian Users: UPI (Manual Activation)</h3>
+                <p style="font-size:14px; color:#555;">Activation requires **UTR submission** and approval (up to 1 hour).</p>
+                <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:15px;">
+        `;
+        upiPlans.forEach(plan => {
+            allPlansHtml += `
+                <div class="plan-card" style="border-color:#3498db;">
+                    <h3 style="color:#3498db;">${plan.name.replace(' (UPI)', '')}</h3>
+                    <p class="price-display" style="color:var(--accent);">${plan.currency}${plan.price}</p>
+                    <button class="subscribe-button" 
+                            onclick="handleUPIAction('${plan.upiLink}', '${plan.name}', ${plan.price})"
+                            style="background:#28a745; width:100%; margin-top:15px;">
+                        Pay via UPI
+                    </button>
+                </div>
+            `;
+        });
+        allPlansHtml += '</div>'; // close flex container
+
+        const qrCodeUrl = monetizationData.qrCodeImageUrl;
+        const upiId = monetizationData.upiId;
+
+        allPlansHtml += `
+            <hr style="margin:25px 0; border-color:#d0eaff;">
+            <div style="text-align:center;">
+                <h3 style="border:none; color:var(--text); font-size:20px;">Scan & Pay (Manual Activation):</h3>
+                <p style="font-size:18px; font-weight:700; color:#3498db;">UPI ID: ${upiId}</p>
+                ${qrCodeUrl ? `
+                    <img src="${qrCodeUrl}" alt="UPI QR Code" style="max-width:200px; height:auto; margin:10px auto; display:block; border: 5px solid #28a745; border-radius: 8px;">
+                    [attachment_0](attachment)
+                    <p style="font-size:12px; color:#e74c3c; margin-top:10px;">*Scan and pay the **exact** amount. Then, you **must** enter the UTR/Ref No. after paying.</p>
+                ` : '<p style="color:red;">QR Code image link is missing in config.</p>'}
+            </div>
+            </div>
+        `; // close upi section
+    }
+
+    // --- Render PayPal Plans ---
+    if (paypalPlans.length > 0) {
+         // Determine a single client ID to load the SDK (they should all be the same)
+        const clientId = paypalPlans[0].paypalClient;
+
+        allPlansHtml += `
+            <div style="margin-top:30px; text-align:center; padding:15px; background:#ecf9ff; border-radius:10px;">
+                <h3 style="color:#007bff; margin:0;">🌎 International Users: PayPal (Instant Activation)</h3>
+                <p style="font-size:14px; color:#555;">Activation is **automatic** and instant via API.</p>
+                <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:15px;" id="paypal-buttons-container">
+        `;
+        paypalPlans.forEach(plan => {
+            allPlansHtml += `
+                <div class="plan-card" style="border-color:#007bff;">
+                    <h3 style="color:#007bff;">${plan.name.replace(' (PayPal)', '')}</h3>
+                    <p class="price-display" style="color:var(--accent);">${plan.currency}${plan.price}</p>
+                    <div id="paypal-button-container-${plan.paypalHostedButtonId}" style="margin-top:15px;">Loading PayPal...</div>
+                </div>
+            `;
+        });
+        allPlansHtml += '</div></div>'; // close flex container and paypal section
+    }
+
+    content.innerHTML = `
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 style="color:var(--gold); text-align:center; font-size:28px;">${modalData.title}</h2>
+        <p style="text-align:center; font-size:16px; font-weight:600; margin-bottom: 25px;">${modalData.description}</p>
+        
+        <div class="subscription-plans">
+            ${allPlansHtml}
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+    
+    // --- Load/Render PayPal Buttons after modal HTML is added ---
+    if (paypalPlans.length > 0) {
+        const clientId = paypalPlans[0].paypalClient;
+        loadPayPalSDK(clientId, () => {
+            paypalPlans.forEach(plan => {
+                renderPayPalButton(plan);
+            });
+        });
+    }
+}
+
+/**
+ * Handles the UPI Deep Link action.
+ * Redirects to the UPI app and then OPENS THE UTR SUBMISSION MODAL.
+ */
+function handleUPIAction(upiLink, planName, planPrice) {
+    if (currentUser === 'guest_user') {
+        alert('Please log in before initiating a payment.');
+        return;
+    }
+    if (!upiLink || !upiLink.startsWith('upi://')) {
+        return alert("Error: Invalid UPI Deep Link configuration.");
+    }
+    
+    closeModal(); // Close the subscription modal
+    
+    // Store plan details for the submission modal
+    pendingPlanDetails = { upiLink, planName, planPrice };
+
+    // 1. Redirect to the UPI App
+    window.location.href = upiLink; 
+
+    // 2. Open the UTR submission modal after a short delay (for app switch/return)
+    setTimeout(() => {
+        showUtrSubmissionModal(planName, planPrice);
+    }, 3000); 
+}
+
+/**
+ * Opens the dedicated modal for UTR submission.
+ */
+function showUtrSubmissionModal(planName, planPrice) {
+    document.getElementById('utr-plan-display').innerText = `Plan: ${planName} for ₹${planPrice}`;
+    document.getElementById('utr-input').value = ''; // Clear previous value
+    
+    // Update the button's action to include the plan details
+    const submitBtn = document.getElementById('utr-submit-btn');
+    submitBtn.setAttribute('onclick', `submitUtr('${planName}', ${planPrice})`);
+
+    document.getElementById('utr-submission-modal').style.display = 'flex';
+}
+
+function closeUtrModal() {
+    document.getElementById('utr-submission-modal').style.display = 'none';
+}
+
+
+/**
+ * Submits the UTR/Ref No. to Firebase for admin verification.
+ */
+function submitUtr(planName, planPrice) {
+    // UTR input value प्राप्त करें
+    const utrInput = document.getElementById('utr-input');
+    const utr = utrInput ? utrInput.value.trim() : '';
+
+    // --- 1. Validation Checks ---
+    if (!auth.currentUser) {
+        alert('Please log in again before submitting the UTR.');
+        closeUtrModal();
+        return;
+    }
+
+    if (!utr) {
+        return alert('Please enter your UTR / Reference Number.');
+    }
+
+    // UTR Length Check (assuming 12 digits standard)
+    if (utr.length < 10 || utr.length > 18) { // UPI UTR is usually 12, but expanding range for safety
+        return alert('UTR / Reference Number must be between 10 and 18 characters long.');
+    }
+    
+    // Check if UTR contains only digits (optional but recommended)
+    if (!/^\d+$/.test(utr)) {
+        return alert('UTR / Reference Number should contain only numbers (digits).');
+    }
+
+    closeUtrModal(); // UTR submission modal को बंद करें
+
+    // --- 2. FIREBASE WRITE: Pending Payment (Saves to Realtime DB) ---
+    const paymentId = 'EBPAY_' + Date.now() + Math.floor(Math.random() * 100);
+    
+    // Loading State दिखाएं
+    // Note: आपको अपनी HTML में एक छोटा लोडिंग इंडिकेटर दिखाना होगा
+    // showLoadingIndicator('Submitting UTR...'); 
+
+    db.ref('ebook_payments/' + paymentId).set({
+        id: paymentId,
+        userId: auth.currentUser.uid,
+        userEmail: auth.currentUser.email,
+        utr: utr,
+        planName: planName,
+        amount: planPrice,
+        timestamp: Date.now(),
+        status: 'pending', // डिफ़ॉल्ट स्थिति 'pending' है
+        // Note: यहाँ और डिटेल्स (जैसे Plan ID, UPI ID जिस पर पेमेंट हुई) भी जोड़ सकते हैं
+    }).then(() => {
+        // hideLoadingIndicator(); // लोडिंग छुपाएं
+        alert('✅ UTR Submitted Successfully! Your payment status will be updated soon after verification by the admin.');
+        
+        // फॉर्म साफ़ करें
+        utrInput.value = '';
+
+    }).catch(error => {
+        // hideLoadingIndicator(); // लोडिंग छुपाएं
+        console.error("Firebase UTR Submission Error:", error);
+        alert('❌ Error submitting UTR. Please contact support.');
+    });
+}
+
+
+
+
+
+
+
+
+
+
+// ----------------------------------------------------------------------------------------------------------------------
+// ---------------------------- END: UPI & PAYPAL SUBSCRIPTION LOGIC --------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
+
+
+// --- Authentication & User Setup ---
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user.email.replace(/[.#$[\]]/g, '_'); 
+        const userAlias = user.email.split('@')[0];
+        document.getElementById('user-display').innerText = userAlias;
+
+
+
+
+
+
+        document.getElementById('user-initial').innerText = userAlias.charAt(0).toUpperCase();
+        document.getElementById('user-initial').style.display = 'flex';
+    } else {
+        currentUser = "guest_user";
+        document.getElementById('user-display').innerText = 'Guest';
+
+
+
+
+
+
+        document.getElementById('user-initial').innerText = 'G';
+    }
+    initializeApp();
+});
+
+/**
+ * Handles both Login and Registration.
+ */
+function userLogin() {
+    const email = prompt('Enter your email:');
+    if (!email) return;
+    const password = prompt('Enter your password:');
+    if (!password) return;
+
+    auth.signInWithEmailAndPassword(email, password)
+        .catch(error => {
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                if (confirm('Account not found. Would you like to register with this email?')) {
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .then(() => {
+                            alert('Registration successful! Logging in...');
+                            // Initial Firebase user data creation (optional)
+                            const userKey = email.replace(/[.#$[\]]/g, '_');
+                            db.ref('users/' + userKey).set({
+                                email: email,
+                                createdAt: Date.now()
+                            });
+                        })
+                        .catch(e => alert('Registration failed: ' + e.message));
+                }
+            } else {
+                alert('Login Failed: ' + error.message);
+            }
+        });
+}
+
+function userLogout() {
+    auth.signOut();
+}
+
+// --- Profile Menu Handling ---
+
+function toggleProfileMenu() {
+    const dropdown = document.getElementById('profile-dropdown');
+    dropdown.classList.toggle('open');
+    // Close if clicking outside
+    if(dropdown.classList.contains('open')) {
+        document.addEventListener('click', closeProfileMenuIfClickedOutside);
+    } else {
+        document.removeEventListener('click', closeProfileMenuIfClickedOutside);
+    }
+}
+
+function closeProfileMenuIfClickedOutside(event) {
+    const dropdown = document.getElementById('profile-dropdown');
+    const container = document.querySelector('.profile-menu-container');
+    if (!container.contains(event.target)) {
+        dropdown.classList.remove('open');
+        document.removeEventListener('click', closeProfileMenuIfClickedOutside);
+    }
+}
+
+/**
+ * Renders the profile menu based on GLOBAL_CONFIG
+ */
+function renderProfileMenu() {
+    const dropdown = document.getElementById('profile-dropdown');
+    dropdown.innerHTML = ''; // Clear existing items
+
+    const profileMenuItems = GLOBAL_CONFIG.profileMenu || [];
+    
+    // --- Render Configured Menu Items ---
+    profileMenuItems.forEach(item => {
+        const menuItem = document.createElement('button');
+        menuItem.innerHTML = `<i class="${item.icon}"></i> ${item.title}`;
+        menuItem.onclick = () => handleProfileMenuAction(item.action, item.id);
+        dropdown.appendChild(menuItem);
+    });
+
+    // --- Add Login/Logout button dynamically ---
+    const authButton = document.createElement('button');
+    if (auth.currentUser) {
+        authButton.innerHTML = `<i class="ri-logout-box-r-line"></i> Logout`;
+        // Logout and close menu
+        authButton.onclick = () => { userLogout(); toggleProfileMenu(); }; 
+    } else {
+        authButton.innerHTML = `<i class="ri-login-box-line"></i> Login / Register`;
+        // Login and close menu
+        authButton.onclick = () => { userLogin(); toggleProfileMenu(); }; 
+    }
+    dropdown.appendChild(authButton);
+}
+
+/**
+ * Executes the deep link or modal action based on the config.
+ */
+function handleProfileMenuAction(action, id) {
+    toggleProfileMenu(); // Close menu first
+    const [type, target] = action.split(':');
+
+    switch(type) {
+        case 'DEEPLINK':
+            if (target === 'library') {
+                document.getElementById('history-section').scrollIntoView({behavior: 'smooth'});
+            } else if (target === 'support_home') { 
+                 showSupportModal(); // <<< FIX: Call showSupportModal for Help & Support
+            }
+            break;
+        case 'SHOW_MODAL':
+            if (target === 'readerSettings') {
+                const fontSize = GLOBAL_CONFIG.settings.defaultFontSize || 14;
+                const nightModeStatus = GLOBAL_CONFIG.settings.nightModeEnabled ? 'On' : 'Off';
+                alert(`Reading Settings Modal: \nFont Size: ${fontSize} \nDefault Night Mode: ${nightModeStatus} \n(The actual reader settings UI would open here.)`);
+            } else if (target === 'subscriptionModal') {
+                 showSubscriptionModal(); 
+            } else if (target === 'referralModal') {
+                 showReferralModal(); 
+            } else if (target === 'supportModal') { 
+                 showSupportModal(); // Support Modal is linked via DEEPLINK:support_home in JSON, but kept this for safety
+            }
+            break;
+        default:
+             alert(`Unhandled action type: ${type}`);
+    }
+}
+
+// --- Data Loading & Filtering ---
+function loadData() {
+    loadCategories(); 
+    loadNewBooks();
+    loadHistory();
+    updateNotifications();
+}
+
+/**
+ * Loads categories and renders them in both the nav bar and the dropdown select.
+ */
+function loadCategories() {
+    db.ref('EBOOK_CATEGORIES').once('value').then(snap => {
+        const nestedCategories = snap.val() || {};
+        const nav = document.getElementById('category-nav');
+        const select = document.getElementById('category-filter');
+
+        // Clear previous content
+        nav.innerHTML = '';
+        while (select.options.length > 1) {
+            select.remove(1);
+        }
+        
+        const allCategoryItems = []; 
+        
+        // --- 1. Populate the list of all categories ---
+        Object.keys(nestedCategories).forEach(mainCatKey => {
+            const mainCatDisplay = mainCatKey.replace(/_/g, ' '); 
+            
+            // Add Main Category (e.g., 'Fiction')
+            allCategoryItems.push({ key: mainCatKey, text: mainCatDisplay, isMain: true });
+
+            const subCategories = nestedCategories[mainCatKey] || {};
+            Object.keys(subCategories).forEach(subCatKey => {
+                const subCatDisplay = subCatKey.replace(/_/g, ' '); 
+                const fullKey = `${mainCatKey}/${subCatKey}`; 
+                // Add Sub Category (e.g., 'Fiction/Thriller')
+                allCategoryItems.push({ key: fullKey, text: `${mainCatDisplay} / ${subCatDisplay}`, isMain: false });
+            });
+        });
+
+        // Sort all entries alphabetically
+        allCategoryItems.sort((a, b) => a.text.localeCompare(b.text));
+
+
+        // --- 2. Render NAV BAR (Line by Line Buttons) ---
+        
+        // Always add "All" button first in NAV
+        const allBtn = document.createElement('button');
+        allBtn.className = 'cat-button active';
+        allBtn.innerText = 'All Books';
+        allBtn.setAttribute('data-category', ''); // Key for All
+        allBtn.onclick = () => setActiveCategory('');
+        nav.appendChild(allBtn);
+        
+        allCategoryItems.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'cat-button';
+            btn.innerText = cat.text;
+            btn.setAttribute('data-category', cat.key);
+            btn.onclick = () => setActiveCategory(cat.key, btn);
+            if (cat.isMain) {
+                btn.style.fontWeight = 'bold';
+            }
+            nav.appendChild(btn);
+        });
+
+        // --- 3. Render SELECT DROPDOWN (Search Bar Filter) ---
+        allCategoryItems.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.key;
+            option.text = cat.text;
+            if (cat.isMain) {
+                option.style.fontWeight = 'bold';
+            }
+            select.appendChild(option);
+        });
+        
+        filterBooks(); 
+    });
+}
+
+/**
+ * Sets the active category filter based on the button click OR the select change.
+ */
+function setActiveCategory(categoryKey, clickedButton = null) {
+    activeCategory = categoryKey;
+    
+    // --- 1. Update NAV bar active class ---
+    document.querySelectorAll('#category-nav .cat-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    if (clickedButton) {
+        clickedButton.classList.add('active');
+    } else {
+        // If coming from select or reset, find the corresponding NAV button and activate it
+        document.querySelector(`#category-nav .cat-button[data-category="${categoryKey}"]`)?.classList.add('active');
+    }
+    
+    // --- 2. Update SELECT dropdown value ---
+    const select = document.getElementById('category-filter');
+    if (select.value !== categoryKey) {
+        select.value = categoryKey;
+    }
+    
+    filterBooks();
+}
+
+function loadNewBooks(){
+    db.ref('books').once('value').then(snap=>{
+        const data = snap.val()||{};
+        allBooksCache = Object.values(data).filter(b => !b.hidden); 
+        filterBooks();
+    });
+}
+
+function filterBooks() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    
+    // Determine active category from the select/dropdown, as it's the official control for filtering
+    const select = document.getElementById('category-filter');
+    const filterCategory = select ? select.value : activeCategory; 
+
+    const sortKey = document.getElementById('sort-by').value;
+
+    let filteredBooks = allBooksCache.filter(book => {
+        const matchesSearch = book.title.toLowerCase().includes(search) || book.author.toLowerCase().includes(search);
+        
+        // Filter logic: Check if the book's category starts with the selected filter category
+        let matchesCategory = true;
+        if (filterCategory !== "") {
+            matchesCategory = book.category && book.category.startsWith(filterCategory);
+        }
+
+        return matchesSearch && matchesCategory;
+    });
+
+    filteredBooks.sort((a, b) => {
+        if (sortKey === 'createdAt') return b.createdAt - a.createdAt; 
+        if (sortKey === 'title') return a.title.localeCompare(b.title);
+        if (sortKey === 'priceMonthly') return a.priceMonthly - b.priceMonthly;
+        return 0;
+    });
+
+    renderBooks(filteredBooks, 'new-books');
+}
+
+function renderBooks(books, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    books.forEach(book => {
+        const finalMonthlyPrice = book.priceMonthly * (1 - (book.discount || 0) / 100);
+        
+        let priceHtml;
+        if (book.discount > 0 && book.discount < 100) {
+            priceHtml = `
+                <span style="text-decoration:line-through; color:#999; font-size:12px;">₹${book.priceMonthly}</span> 
+                <span class="price">₹${finalMonthlyPrice.toFixed(0)}/mo</span>
+                <span style="color:#e74c3c; font-size:12px; font-weight:700;">(${book.discount}% OFF)</span>
+            `;
+        } else {
+            priceHtml = `<span class="price">₹${book.priceMonthly}/mo</span>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        card.innerHTML = `
+            <div>
+                <img src="${book.coverUrl}" alt="${book.title} Cover">
+                <strong>${book.title}</strong>
+                <p style="color:#6c757d;">By ${book.author}</p>
+            </div>
+            <p>${priceHtml}</p>
+        `;
+        card.onclick = () => openBook(book.id);
+        container.appendChild(card);
+    });
+    if (books.length === 0) container.innerHTML = '<p style="padding:10px;">No books match your criteria. Try adjusting filters.</p>';
+}
+
+function loadHistory(){
+    const container = document.getElementById('history-books');
+    if (currentUser === 'guest_user') {
+        container.innerHTML = '<p style="padding:10px; color:#e74c3c; font-weight:600;">🔒 Please Login to view your Premium Library.</p>';
+        return;
+    }
+    
+    // IMPORTANT: Check for general subscription status, which is key for book access
+    db.ref('users/'+currentUser+'/subscriptions').once('value').then(snap=>{
+        const data = snap.val()||{};
+        container.innerHTML='';
+        
+        // Find all active subscriptions (either general or per-book, assuming a flat structure under 'subscriptions')
+        const validSubscriptions = Object.keys(data).filter(subKey => {
+            const sub = data[subKey];
+            // Check for general subscription, and that it is approved and not expired
+            return sub.status === 'approved' && sub.expiresAt > Date.now();
+        });
+
+        if (validSubscriptions.length === 0) {
+            container.innerHTML = '<p style="padding:10px; color:#28a745; font-weight:600;">Your library is empty. Go ahead and purchase a subscription!</p>';
+            return;
+        }
+
+        let booksLoadedCount = 0;
+        
+        // This logic is a simplification. Assuming a 'general' subscription grants all access, 
+        // we'll check for a general sub and then load ALL books.
+        const generalSub = Object.values(data).find(s => s.isGeneral && s.status === 'approved' && s.expiresAt > Date.now());
+
+        if (generalSub) {
+            // If a general subscription is active, load all available books from the cache.
+            const allAvailableBooks = allBooksCache.filter(b => !b.hidden);
+            
+            if (allAvailableBooks.length > 0) {
+                allAvailableBooks.forEach(book => {
+                    const expiryDate = new Date(generalSub.expiresAt).toLocaleDateString();
+                    const card = document.createElement('div');
+                    card.className='book-card';
+                    card.innerHTML=`
+                        <div>
+                            <img src="${book.coverUrl}" alt="${book.title} Cover">
+                            <strong>${book.title}</strong>
+                            <p style="color:#6c757d;">General Premium Access</p>
+                        </div>
+                        <div style="text-align:center;">
+                            <p style="color:green; font-weight:bold; font-size:14px;">✅ Active</p>
+                            <p style="font-size:10px; color:#999;">Expires: ${expiryDate}</p>
+                        </div>
+                    `;
+                    card.onclick=()=>openBook(book.id, true);
+                    container.appendChild(card);
+                });
+            } else {
+                 container.innerHTML = '<p style="padding:10px; color:#28a745; font-weight:600;">No books available yet. Check back soon!</p>';
+            }
+        } else {
+             container.innerHTML = '<p style="padding:10px; color:#28a745; font-weight:600;">Your general subscription has expired. Please renew!</p>';
+        }
+    });
+}
+
+
+// --- Open Book / Reader ---
+function openBook(bookId){
+    currentBookId = bookId; // Store current book ID
+    db.ref('books/' + bookId).once('value').then(snap => {
+        const book = snap.val();
+        if (!book) return alert('Book not found.');
+
+        isFullAccess = false; // Reset access status
+        if (currentUser !== 'guest_user') {
+            db.ref('users/' + currentUser + '/subscriptions').once('value').then(subSnap => {
+                const subData = subSnap.val();
+                if (subData) {
+                    // Check for a general, approved, non-expired subscription
+                    const generalSub = Object.values(subData).find(s => s.isGeneral && s.status === 'approved' && s.expiresAt > Date.now());
+
+                    if (generalSub) {
+                        isFullAccess = true; // General app-wide subscription is active
+                    }
+                }
+
+                showReader(book); 
+            });
+        } else {
+            showReader(book); 
+        }
+    });
+}
+
+function toggleDarkMode() {
+    isDarkMode = !isDarkMode;
+    document.getElementById('app-body').classList.toggle('dark-mode', isDarkMode);
+    
+    const modeButton = document.querySelector('.reader-controls button[onclick="toggleDarkMode()"]');
+    if (modeButton) {
+        modeButton.innerHTML = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+    }
+
+    if (document.getElementById('book-modal').style.display !== 'none') {
+        renderCurrentPage(); 
+    }
+}
+
+/**
+ * Splits text into "virtual pages" based on a word limit.
+ */
+function paginateText(fullText, limit) {
+    const pages = [];
+    let currentText = fullText.trim();
+    
+    while (currentText.length > 0) {
+        let breakIndex = -1;
+        
+        const words = currentText.split(/\s+/).filter(w => w.length > 0);
+        
+        if (words.length <= limit) {
+            pages.push(currentText);
+            break;
+        }
+
+        let sliceWords = words.slice(0, limit);
+        let lastWord = sliceWords[sliceWords.length - 1];
+        let approxBreakIndex = currentText.indexOf(lastWord) + lastWord.length;
+
+        let bestBreak = approxBreakIndex;
+        let searchStart = Math.max(0, approxBreakIndex - 200); 
+        let searchEnd = Math.min(currentText.length, approxBreakIndex + 50); 
+        
+        let foundParagraphBreak = false;
+        
+        for (let i = searchEnd; i >= searchStart; i--) {
+            if (currentText.substring(i, i + 2) === '\n\n') {
+                bestBreak = i + 2; 
+                foundParagraphBreak = true;
+                break;
+            }
+        }
+        
+        if (!foundParagraphBreak) {
+             bestBreak = approxBreakIndex;
+        }
+
+        const pageContent = currentText.substring(0, bestBreak).trim();
+        pages.push(pageContent);
+        currentText = currentText.substring(bestBreak).trim();
+    }
+    
+    return pages;
+}
+
+async function showReader(book) {
+    const modal = document.getElementById('book-modal');
+    const content = document.getElementById('modal-content');
+
+    content.className = 'modal-content reader-modal-content';
+    currentBookId = book.id; 
+    currentPageIndex = 0; 
+
+    isAIBook = !!book.contentUrl; 
+    currentBookPages = [];
+    let totalBookPages = 0; 
+
+    if (isAIBook) {
+        try {
+            const response = await fetch(book.contentUrl);
+            if (!response.ok) throw new Error('Failed to fetch AI book content.');
+            const fullContent = await response.text();
+            const allVirtualPages = paginateText(fullContent, wordsPerPage);
+            totalBookPages = allVirtualPages.length;
+            currentBookPages = isFullAccess ? allVirtualPages : allVirtualPages.slice(0, maxFreePages);
+        } catch (error) {
+            console.error(error);
+            return closeModal();
+        }
+    } else if (book.pages && Array.isArray(book.pages)) {
+        totalBookPages = book.pages.length;
+        currentBookPages = isFullAccess ? book.pages : book.pages.slice(0, maxFreePages);
+    }
+
+    // --- Common Buttons HTML Helper ---
+    const getControlButtons = (isSide) => `
+        <button onclick="closeModal()" style="background:#e74c3c; width:${isSide?'45px':'auto'}; height:${isSide?'45px':'auto'}; border-radius:${isSide?'50%':'4px'}; border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center;">${isSide ? '&times;' : '&times; Close'}</button>
+        
+        <select id="reader-view-${isSide?'side':'top'}" onchange="syncView(this)" style="width:${isSide?'55px':'auto'}; font-size:10px; padding:5px; background:var(--card); color:var(--text); border:1px solid var(--gold); border-radius:4px;">
+            <option value="single">Single</option>
+            <option value="dual">Dual</option>
+            <option value="scroll">Scroll</option>
+        </select>
+
+        <div style="display:flex; flex-direction:${isSide?'column':'row'}; gap:8px; align-items:center;">
+            <button class="nav-btn-prev" onclick="navigatePage(-1)" style="width:40px; height:40px; border-radius:8px; background:var(--gold); border:none; color:white; cursor:pointer;">◀</button>
+            <span class="pg-status" style="font-weight:600; font-size:11px; min-width:30px; text-align:center;">Pg</span>
+            <button class="nav-btn-next" onclick="navigatePage(1)" style="width:40px; height:40px; border-radius:8px; background:var(--gold); border:none; color:white; cursor:pointer;">▶</button>
+        </div>
+        
+        <button onclick="toggleDarkMode()" style="background:#3498db; width:40px; height:40px; border-radius:50%; border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+            ${isDarkMode ? '☀️' : '🌙'}
+        </button>
+    `;
+
+    // 1. Sidebar (Side View)
+    const sideBarHtml = `
+        <div id="reader-side-bar" style="position:fixed; left:0; top:0; width:65px; height:100%; background:var(--card); border-right:2px solid var(--gold); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:25px; z-index:2000; box-shadow:2px 0 10px rgba(0,0,0,0.1);">
+            ${getControlButtons(true)}
+        </div>
+    `;
+
+    // 2. Top Bar (Existing Top View)
+    const topBarHtml = `
+        <div class="reader-controls" style="display:flex; justify-content:space-between; align-items:center; padding:10px 15px; background:var(--card); border-bottom:1px solid #eee;">
+            ${getControlButtons(false)}
+        </div>
+    `;
+
+    let readerHtml = `
+        ${sideBarHtml}
+        ${topBarHtml}
+        <div id="reader-page-content" style="margin-left:65px; height:calc(100vh - 60px); overflow-y:auto; padding:20px; box-sizing:border-box;">
+            <div class="page-container active" id="page-0">
+                <h3 style="text-align:center; color:var(--gold); border:none;">${book.title}</h3>
+                <div style="text-align:center;">
+                    <img src="${book.coverUrl}" style="max-width:280px; width:100%; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+                    <p style="font-size:18px; margin-top:15px;"><strong>Author:</strong> ${book.author}</p>
+                    <p style="max-width:500px; margin:10px auto; opacity:0.8;">${book.desc}</p>
+                </div>
+            </div>
+    `;
+
+    currentBookPages.forEach((content, index) => {
+        readerHtml += `<div class="page-container" id="page-${index + 1}" style="display:none;">
+            ${isAIBook ? renderTextPage(content, book) : `<img src="${content}" style="max-width:100%; height:auto;">`}
+        </div>`;
+    });
+
+    readerHtml += `</div>`;
+
+    if (!isFullAccess && currentBookPages.length < totalBookPages) {
+        readerHtml += getSubscriptionGateHtml(book);
+    }
+
+    content.innerHTML = readerHtml;
+    modal.style.display = 'flex';
+    renderCurrentPage();
+}
+
+// Helper to sync Top and Side Dropdowns
+function syncView(el) {
+    const val = el.value;
+    document.getElementById('reader-view-top').value = val;
+    document.getElementById('reader-view-side').value = val;
+    renderCurrentPage();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function showReader(book) {
+    const modal = document.getElementById('book-modal');
+    const content = document.getElementById('modal-content');
+
+    content.className = 'modal-content reader-modal-content';
+    currentBookId = book.id; 
+    currentPageIndex = 0; // 0 = Cover/Intro
+
+    // --- Determine Book Type and Content ---
+    isAIBook = !!book.contentUrl; 
+    currentBookPages = [];
+    let totalBookPages = 0; 
+    
+    const pageStatus = document.getElementById('page-status');
+    if (pageStatus) pageStatus.innerText = 'Loading...';
+
+    if (isAIBook) {
+        // AI/Text-based book
+        try {
+            const response = await fetch(book.contentUrl);
+            if (!response.ok) throw new Error('Failed to fetch AI book content.');
+            const fullContent = await response.text();
+            
+            const allVirtualPages = paginateText(fullContent, wordsPerPage);
+            totalBookPages = allVirtualPages.length;
+            
+            if (isFullAccess) {
+                currentBookPages = allVirtualPages;
+            } else {
+                currentBookPages = allVirtualPages.slice(0, maxFreePages);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert('Could not load AI book content: ' + error.message);
+            return closeModal();
+        }
+
+    } else if (book.pages && Array.isArray(book.pages)) {
+        // Image-based book
+        totalBookPages = book.pages.length;
+        if (isFullAccess) {
+            currentBookPages = book.pages;
+        } else {
+            currentBookPages = book.pages.slice(0, maxFreePages);
+        }
+    } else {
+         totalBookPages = book.pageCount || 0;
+         if (totalBookPages === 0) {
+             alert('Book content is currently unavailable.');
+             return closeModal();
+         }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+// --- Build Reader Controls ---
+    const controlsHtml = `
+    <button onclick="closeModal()" style="background:#e74c3c;">&times; Close</button>
+    <select id="reader-view" onchange="renderCurrentPage()">
+        <option value="single">Single Page View</option>
+        <option value="dual">Dual Page View (📖)</option>
+        <option value="scroll">Continuous Scroll</option>
+    </select>
+    <div style="display:flex; gap:10px; align-items:center;">
+        <button id="prev-btn" onclick="navigatePage(-1)">&#9664; Prev</button>
+        <span id="page-status" style="font-weight:600;">Cover & Details</span>
+        <button id="next-btn" onclick="navigatePage(1)">Next &#9654;</button>
+    </div>
+    <button onclick="toggleDarkMode()" style="background:#3498db;">${isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}</button>
+    `;
+
+
+
+
+
+
+
+
+
+
+
+
+    let readerHtml = `<div class="reader-controls">${controlsHtml}</div><div id="reader-page-content">`;
+
+    // --- Initial Content: Cover/Description (Page Index 0) ---
+    readerHtml += `
+        <div class="page-container active" id="page-0" style="padding: 20px;">
+            <h3 style="text-align:center; color:var(--gold); border:none; padding:10px;">${book.title}</h3>
+            <div style="text-align:center; padding:20px;">
+                <img src="${book.coverUrl}" alt="${book.title} Cover" style="max-width:300px; height:auto; margin:15px auto; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.2);">
+               
+                <p style="font-size:18px; margin-top:15px;">**Author:** ${book.author}</p>
+                <p style="color:var(--text); max-width: 600px; margin: 15px auto; line-height: 1.6;">${book.desc}</p>
+            </div>
+        </div>
+    `;
+
+    // --- Add Actual Content Pages (Image URL or Text String) ---
+    currentBookPages.forEach((content, index) => {
+        // index is 0-based, but page number is 1-based (index + 1)
+        readerHtml += `<div class="page-container" id="page-${index + 1}">${
+            isAIBook ? renderTextPage(content, book) : `<img src="${content}" alt="Page ${index + 1}">`
+        }</div>`;
+    });
+
+    readerHtml += `</div>`;
+
+    // Subscription gate only if content was actually limited
+    const isLimited = !isFullAccess && (currentBookPages.length > 0) && (currentBookPages.length < totalBookPages);
+        
+    if(isLimited){
+        readerHtml+=getSubscriptionGateHtml(book);
+    }
+
+    content.innerHTML = readerHtml;
+    modal.style.display='flex';
+    
+    renderCurrentPage(); 
+}
+
+/**
+ * Helper to render the HTML for a virtual text page
+ */
+function renderTextPage(text, book) {
+    const contentHTML = text.split('\n\n').map(p => {
+        if (p.trim().startsWith('## ') || p.trim().startsWith('### ') || p.trim().startsWith('#### ')) {
+            return `<h4>${p.trim().replace(/^#+/, '').trim()}</h4>`;
+        }
+        return `<p>${p.trim()}</p>`;
+    }).join('');
+
+    // Use defaultFontSize from GLOBAL_CONFIG if book.textSize is not present
+    const fontSize = (GLOBAL_CONFIG.settings && GLOBAL_CONFIG.settings.defaultFontSize) || 14;
+
+    const style = `
+        ${book.textColor ? `color: ${book.textColor};` : ''}
+        font-size: ${fontSize}px !important;
+    `;
+
+    return `<div class="text-page-container" style="${style}">${contentHTML}</div>`;
+}
+
+
+function renderCurrentPage() {
+    const viewSelect = document.getElementById('reader-view');
+    const view = viewSelect ? viewSelect.value : 'single'; // Default to single view
+    
+    const contentDiv = document.getElementById('reader-page-content');
+    const allPages = contentDiv.querySelectorAll('.page-container');
+    const pageStatus = document.getElementById('page-status');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const gateDiv = document.getElementById('subscription-gate');
+    
+    const totalRenderablePages = currentBookPages.length; 
+    
+    contentDiv.className = '';
+    allPages.forEach(p => p.classList.remove('active'));
+
+    if (view === 'single') { 
+        contentDiv.classList.add('single-page-view');
+        
+        const elementToShow = document.getElementById(`page-${currentPageIndex}`);
+        if(elementToShow) elementToShow.classList.add('active');
+
+        prevBtn.disabled = currentPageIndex === 0;
+        nextBtn.disabled = currentPageIndex >= totalRenderablePages;
+        
+        pageStatus.innerText = currentPageIndex === 0 ? 'Cover & Details' : `Page ${currentPageIndex} of ${totalRenderablePages}`;
+
+    } else if (view === 'dual') {
+        contentDiv.classList.add('dual-page-view');
+        
+        if (currentPageIndex === 0) {
+            document.getElementById('page-0').classList.add('active');
+        } else {
+            let leftPageIndex = currentPageIndex % 2 === 0 ? currentPageIndex - 1 : currentPageIndex;
+            
+            if (leftPageIndex < 1) leftPageIndex = 1; 
+
+            const leftPage = document.getElementById(`page-${leftPageIndex}`);
+            if (leftPage) leftPage.classList.add('active');
+
+            const rightPageIndex = leftPage.id.split('-')[1] * 1 + 1; // Ensure we only try to display sequential pages
+            
+            if (rightPageIndex <= totalRenderablePages) {
+                const rightPage = document.getElementById(`page-${rightPageIndex}`);
+                if (rightPage) rightPage.classList.add('active');
+                pageStatus.innerText = `Pages ${leftPageIndex}-${rightPageIndex} of ${totalRenderablePages}`;
+            } else {
+                pageStatus.innerText = `Page ${leftPageIndex} of ${totalRenderablePages}`;
+            }
+        }
+        
+        prevBtn.disabled = currentPageIndex === 0;
+        nextBtn.disabled = currentPageIndex >= totalRenderablePages; 
+        
+        if (currentPageIndex === 0) {
+            pageStatus.innerText = 'Cover & Details';
+        }
+
+
+    } else { // Scroll View (Image Book or AI Book)
+        contentDiv.classList.add('scroll-view');
+        allPages.forEach(p => p.classList.add('active')); 
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        pageStatus.innerText = 'Continuous Scroll View';
+    }
+    
+    // --- Subscription Gate Visibility ---
+    if (gateDiv) {
+        const isLimitedPreview = !isFullAccess && totalRenderablePages > 0;
+
+        if (!isLimitedPreview) {
+            gateDiv.style.display = 'none'; 
+        } else if (view === 'scroll') {
+            gateDiv.style.display = 'block'; 
+        } else if (currentPageIndex === totalRenderablePages) {
+            gateDiv.style.display = 'block'; 
+        } else {
+            gateDiv.style.display = 'none';
+        }
+    }
+
+
+    // --- Dark Mode Filter ---
+    const images = contentDiv.querySelectorAll('.page-container img');
+    
+    if (isDarkMode) {
+        images.forEach(img => {
+            if (view !== 'scroll') {
+                 img.style.filter = 'invert(0.9) hue-rotate(180deg)';
+            }
+        });
+    } else {
+        images.forEach(img => img.style.filter = 'none');
+    }
+    
+    if (view === 'single' || view === 'dual') {
+        document.getElementById('modal-content').scrollTop = 0; 
+    }
+}
+
+function navigatePage(direction) {
+    const viewSelect = document.getElementById('reader-view');
+    const view = viewSelect ? viewSelect.value : 'single'; 
+
+    let step = 1;
+
+    if (view === 'dual' && currentPageIndex !== 0) { 
+        step = 1;
+        // Determine the number of pages to skip to land on the next left page
+        if (direction > 0) {
+            step = currentPageIndex % 2 === 0 ? 1 : 2; 
+        } else if (direction < 0) {
+            step = currentPageIndex % 2 === 0 ? 2 : 1;
+        }
+    }
+
+    let newIndex = currentPageIndex + (direction * step);
+    const totalPages = currentBookPages.length; 
+
+    if (direction > 0) { 
+        if (newIndex > totalPages) {
+            newIndex = totalPages; 
+        }
+    } else { 
+        if (newIndex < 0) {
+            newIndex = 0; 
+        }
+    }
+
+    if (newIndex !== currentPageIndex) {
+        currentPageIndex = newIndex;
+        renderCurrentPage();
+    } else if (direction > 0 && currentPageIndex === totalPages && !isFullAccess) {
+        const gateDiv = document.getElementById('subscription-gate');
+        if(gateDiv && gateDiv.style.display === 'none') {
+             gateDiv.style.display = 'block';
+             document.getElementById('modal-content').scrollTop = gateDiv.offsetTop;
+        }
+    }
+}
+
+function getSubscriptionGateHtml(book) {
+    // NOTE: This gate only shows UPI info since the main purchase is handled in a separate modal.
+    const monthlyPrice = book.priceMonthly * (1 - (book.discount || 0) / 100);
+    const yearlyPrice = book.priceYearly * (1 - (book.discount || 0) / 100);
+    const upiId = GLOBAL_CONFIG.monetization.upiId || "7649070168@okbizaxis"; 
+    const qrCodeUrl = GLOBAL_CONFIG.monetization.qrCodeImageUrl;
+
+    const previewMessage = isAIBook 
+        ? `You have viewed the free sample (first ${maxFreePages} virtual pages).` 
+        : `You have viewed the free sample of **${maxFreePages} pages**.`;
+
+    return `
+    <div id="subscription-gate" style="text-align:center; padding:30px; border:4px dashed #e74c3c; margin:25px auto; background:var(--card); border-radius:10px; max-width: 600px;">
+        <h4 style="color:#e74c3c; font-size:24px; margin-bottom:15px;">🔒 Full Access Required!</h4>
+        <p style="font-size:16px;">${previewMessage} Unlock the complete eBook with a premium subscription!</p>
+        
+        <div style="display:flex; justify-content:center; gap:20px; margin:20px 0; flex-wrap: wrap;">
+             <div style="background:var(--bg); padding:15px; border-radius:8px; border: 1px solid var(--gold); min-width:150px;">
+                 <h5 style="margin:5px 0; color:var(--gold);">Monthly Plan</h5>
+                 <p style="font-size:24px; font-weight:700; color:var(--accent);">₹${monthlyPrice.toFixed(0)}</p>
+             </div>
+             <div style="background:var(--bg); padding:15px; border-radius:8px; border: 1px solid var(--gold); min-width:150px;">
+                 <h5 style="margin:5px 0; color:var(--gold);">Yearly Plan (Best Value!)</h5>
+                 <p style="font-size:24px; font-weight:700; color:var(--accent);">₹${yearlyPrice.toFixed(0)}</p>
+             </div>
+        </div>
+
+        <p style="font-weight:600; color:var(--accent);">Choose your plan and pay via UPI:</p>
+        <p style="font-weight:700; color:#3498db; font-size:18px;">UPI ID: **${upiId}**</p>
+        
+        ${qrCodeUrl ? `
+            <img src="${qrCodeUrl}" alt="UPI QR Code" style="max-width:150px; height:auto; margin:15px auto; display:block; border: 3px solid #28a745; border-radius: 6px;">
+            [attachment_0](attachment)
+        ` : ''}
+
+        <hr style="margin:20px 0; border-color:#eee;">
+        
+        <button onclick="showSubscriptionModal()" style="background:#007bff; margin-top:5px;">Upgrade Now (View all Plans)</button>
+        <p style="font-size:12px; color:#e74c3c; margin-top:10px;">*You will be redirected to the main plan selection to choose UPI or PayPal.</p>
+    </div>
+    `;
+}
+
+// --- Customer Support System ---
+
+function showSupportModal() {
+    if (currentUser === 'guest_user') {
+        alert('Please log in to submit a support ticket.');
+        return;
+    }
+    closeModal(); // Close any other open modal
+    document.getElementById('support-modal').style.display = 'flex';
+}
+
+function closeSupportModal() {
+    document.getElementById('support-modal').style.display = 'none';
+    // Clear fields
+    document.getElementById('ticket-subject').value = '';
+    document.getElementById('ticket-body').value = '';
+}
+
+/**
+ * Submits a new support ticket to the 'supportTickets' node.
+ */
+function submitSupportTicket() {
+    const subject = document.getElementById('ticket-subject').value.trim();
+    const body = document.getElementById('ticket-body').value.trim();
+
+    if (!subject || !body) {
+        return alert('Please fill out both the subject and the details of your issue.');
+    }
+    
+    const ticketId = 'TICKET'+Date.now();
+    db.ref('supportTickets/' + ticketId).set({ 
+        id: ticketId,
+        userEmail: auth.currentUser.email,
+        userId: currentUser,
+        subject: subject,
+        body: body,
+        status: 'pending', // Admin will change this to 'in_progress', 'resolved', or 'closed'
+        timestamp: Date.now(),
+        adminResponse: '' // Admin will populate this
+    }).then(() => {
+        alert('✅ Support Ticket Submitted! Your ticket ID is: ' + ticketId + '. Check your Notifications section for updates.');
+        closeSupportModal();
+        updateNotifications();
+    }).catch(err => {
+        alert('❌ Error submitting ticket: ' + err.message);
+    });
+}
+
+
+// --- Notification Count & Display (UPDATED to show payment and support status) ---
+function updateNotifications(){
+    if (currentUser === 'guest_user' || !auth.currentUser) {
+        document.getElementById('notif-count').innerText=0;
+        return;
+    }
+    
+    const userKey = auth.currentUser.email.replace(/[.#$[\]]/g, '_'); 
+    let globalNotifRef = db.ref('notifications').orderByChild('recipient').equalTo('global');
+    let userNotifRef = db.ref('notifications').orderByChild('recipient').equalTo(userKey);
+    
+    // Check for pending/resolved tickets and payments as "unread" notifications
+    let paymentsRef = db.ref('payments').orderByChild('userId').equalTo(userKey);
+    let supportRef = db.ref('supportTickets').orderByChild('userId').equalTo(userKey);
+
+    Promise.all([
+        globalNotifRef.once('value'), 
+        userNotifRef.once('value'),
+        paymentsRef.once('value'),
+        supportRef.once('value')
+    ]).then(([globalSnap, userSnap, paymentSnap, supportSnap]) => {
+        const globalData = globalSnap.val() || {};
+        const userData = userSnap.val() || {};
+        const paymentsData = paymentSnap.val() || {};
+        const supportData = supportSnap.val() || {};
+        
+        let unreadCount = 0;
+        
+        // Count unread system notifications
+        Object.values(globalData).forEach(n => { if (!n.read || !n.read[userKey]) unreadCount++; });
+        Object.values(userData).forEach(n => { if (!n.read) unreadCount++; });
+        
+        // Count pending payments as a notification
+        Object.values(paymentsData).forEach(p => { 
+            // Count any payment that is not 'approved' and doesn't have a user-read flag (for rejected payments)
+            if (p.status === 'pending' || (p.status === 'rejected' && !p.userRead)) { 
+                unreadCount++; 
+            }
+        });
+        
+        // Count pending support tickets as a notification
+        Object.values(supportData).forEach(t => { 
+            // Count any ticket that is 'pending' or 'in_progress' or 'resolved' but not user-read
+            if (t.status !== 'closed' && !t.userRead) { 
+                unreadCount++; 
+            }
+        });
+
+        document.getElementById('notif-count').innerText = unreadCount;
+    });
+}
+
+function openNotifications() {
+    if (currentUser === 'guest_user') return alert('Please login to view notifications.');
+
+    const userKey = auth.currentUser.email.replace(/[.#$[\]]/g, '_'); 
+    const notifModal = document.getElementById('book-modal');
+    const content = document.getElementById('modal-content');
+    content.className = 'modal-content'; 
+    content.style.maxWidth = '800px'; 
+    
+    let globalNotifRef = db.ref('notifications').orderByChild('recipient').equalTo('global');
+    let userNotifRef = db.ref('notifications').orderByChild('recipient').equalTo(userKey);
+    let paymentRef = db.ref('payments').orderByChild('userId').equalTo(userKey); 
+    let supportRef = db.ref('supportTickets').orderByChild('userId').equalTo(userKey); 
+
+    Promise.all([globalNotifRef.once('value'), userNotifRef.once('value'), paymentRef.once('value'), supportRef.once('value')]).then(([globalSnap, userSnap, paymentSnap, supportSnap]) => {
+        const globalNotifications = Object.values(globalSnap.val() || {});
+        const userNotifications = Object.values(userSnap.val() || {});
+        const pendingPayments = Object.values(paymentSnap.val() || {});
+        const supportTickets = Object.values(supportSnap.val() || {});
+
+        let html = '<span class="close-btn" onclick="closeModal()">&times;</span>';
+        html += '<h3 style="border-left-color:#3498db;">🔔 My Notifications & Status</h3>';
+        
+        // --- Render Payment Status (UPI) ---
+        html += '<h4 style="margin-top:20px; color:#28a745; border-bottom: 1px solid #28a745;">Payment Verification Status (My Submissions)</h4>';
+        if (pendingPayments.length === 0) {
+            html += '<p style="color:#999;">No UPI payment submissions found.</p>';
+        } else {
+            pendingPayments.sort((a,b)=>b.timestamp - a.timestamp).forEach(p => {
+                const statusColor = p.status === 'approved' ? 'green' : (p.status === 'rejected' ? 'red' : '#f39c12');
+                const statusBg = p.status === 'approved' ? '#e6ffe6' : (p.status === 'rejected' ? '#ffebeb' : '#fff3cd');
+                const statusText = p.status.toUpperCase();
+                const expiry = p.status === 'approved' && p.expiresAt ? ` (Expires: ${new Date(p.expiresAt).toLocaleDateString()})` : '';
+                
+                // Mark as read if the user opens the notification (applies to rejected/approved status changes)
+                const isRead = p.status === 'pending' ? true : p.userRead;
+                const readStyle = isRead ? '' : `background: #dbe9ff; font-weight: 600; border: 1px solid #3498db;`;
+
+                html += `
+                <div style="border: 1px solid #ccc; padding: 12px; margin-bottom: 10px; border-radius: 6px; background: ${statusBg}; border-left: 3px solid ${statusColor}; ${readStyle}"
+                     onclick="markPaymentRead('${p.id}')">
+                    <p style="margin:0;"><strong>Plan:</strong> ${p.planName} | <strong>Amount:</strong> ₹${p.amount}</p>
+                    <p style="margin:5px 0;"><strong>UTR/Ref No:</strong> ${p.utr}</p>
+                    <p style="margin:0;"><strong>Status:</strong> <span style="color:${statusColor}; font-weight:bold;">${statusText}${expiry}</span></p>
+                </div>
+                `;
+            });
+        }
+
+        // --- Render Support Ticket Status ---
+        html += '<h4 style="margin-top:20px; color:#3498db; border-bottom: 1px solid #3498db;">Support Ticket Status (My Requests)</h4>';
+        if (supportTickets.length === 0) {
+            html += '<p style="color:#999;">No support tickets submitted.</p>';
+        } else {
+            supportTickets.sort((a,b)=>b.timestamp - a.timestamp).forEach(t => {
+                const statusColor = t.status === 'resolved' ? 'green' : (t.status === 'closed' ? 'red' : '#3498db');
+                const statusBg = t.status === 'resolved' ? '#e6ffe6' : (t.status === 'closed' ? '#ffebeb' : '#e6f7ff');
+                const statusText = t.status.toUpperCase().replace('_', ' ');
+                
+                const isRead = t.status === 'pending' || t.userRead; 
+                const readStyle = isRead ? '' : `background: #dbe9ff; font-weight: 600; border: 1px solid #3498db;`;
+
+                html += `
+                <div style="border: 1px solid #ccc; padding: 12px; margin-bottom: 10px; border-radius: 6px; background: ${statusBg}; border-left: 3px solid ${statusColor}; ${readStyle} cursor:pointer;" 
+                     onclick="markSupportTicketRead('${t.id}')">
+                    <p style="margin:0;"><strong>Ticket ID:</strong> ${t.id} | <strong>Subject:</strong> ${t.subject}</p>
+                    <p style="margin:5px 0;"><strong>Status:</strong> <span style="color:${statusColor}; font-weight:bold;">${statusText}</span></p>
+                    ${t.adminResponse ? `<p style="font-size:14px; margin-top:5px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; background: #fff;">**Admin Response:** ${t.adminResponse}</p>` : ''}
+                </div>
+                `;
+            });
+        }
+
+        // --- Render System Notifications ---
+        html += '<h4 style="margin-top:20px; color:var(--text); border-bottom: 1px solid #ccc;">System Messages:</h4>';
+        const allNotifications = [...globalNotifications, ...userNotifications]
+            .sort((a, b) => b.timestamp - a.timestamp);
+            
+        if (allNotifications.length === 0) {
+            html += '<p style="color:#999;">No new system messages.</p>';
+        } else {
+            allNotifications.forEach(n => {
+                const isRead = n.recipient === 'global' ? (n.read && n.read[userKey]) : n.read;
+                const readStyle = isRead ? 'opacity:0.8; background:var(--bg);' : 'background:#dbe9ff; font-weight:600; border-left: 3px solid #3498db;';
+                html += `
+                <div style="border: 1px solid #ccc; padding: 12px; margin-bottom: 10px; border-radius: 6px; ${readStyle} cursor:pointer;" onclick="markNotificationRead('${n.id}', '${n.recipient}')">
+                    <p style="margin:0; font-weight:700;">${n.title} <span style="font-size:11px; font-weight:400; color:#666;">(${new Date(n.timestamp).toLocaleDateString()})</span></p>
+                    <p style="font-size:14px; margin-top:5px;">${n.body}</p>
+                </div>
+                `;
+            });
+        }
+        
+        html += '<button onclick="closeModal()" style="margin-top:20px; background:#1abc9c; width: 100%;">Close Notifications</button>';
+        content.innerHTML = html;
+        notifModal.style.display = 'flex';
+    });
+}
+
+function markNotificationRead(id, recipient) {
+    const userKey = auth.currentUser.email.replace(/[.#$[\]]/g, '_'); 
+
+    if (recipient === 'global') {
+        db.ref('notifications/' + id + '/read/' + userKey).set(true).then(() => {
+            updateNotifications();
+            openNotifications(); // Re-render the notification modal
+        });
+    } else { // Direct user notification
+        db.ref('notifications/' + id).update({ read: true }).then(() => {
+            updateNotifications();
+            openNotifications(); 
+        });
+    }
+}
+
+function markPaymentRead(paymentId) {
+    // Only mark as read if it has been approved/rejected
+    db.ref('payments/' + paymentId).once('value').then(snap => {
+        const payment = snap.val();
+        if (payment && (payment.status === 'approved' || payment.status === 'rejected')) {
+             db.ref('payments/' + paymentId).update({ userRead: true }).then(() => {
+                updateNotifications();
+                openNotifications(); // Re-render the notification modal
+            });
+        }
+    });
+}
+
+function markSupportTicketRead(ticketId) {
+    db.ref('supportTickets/' + ticketId).once('value').then(snap => {
+        const ticket = snap.val();
+        if (ticket && (ticket.status === 'resolved' || ticket.status === 'closed' || ticket.adminResponse)) {
+             db.ref('supportTickets/' + ticketId).update({ userRead: true }).then(() => {
+                updateNotifications();
+                openNotifications(); // Re-render the notification modal
+            });
+        }
+    });
+}
+
+
+function closeModal(){
+    document.getElementById('book-modal').style.display='none';
+    document.getElementById('modal-content').className = 'modal-content';
+}
+
+// Functionality related to referral modal
+function showReferralModal() {
+    const modal = document.getElementById('book-modal');
+    const content = document.getElementById('modal-content');
+    const referralData = GLOBAL_CONFIG.referral;
+
+    if (!referralData) {
+        return alert("Referral data is missing in Firebase config! Cannot proceed.");
+    }
+
+    content.className = 'modal-content'; 
+    content.style.maxWidth = '450px'; 
+    
+    const referralLink = referralData.referralLink || "Link not set";
+
+    content.innerHTML = `
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 style="color:#1abc9c; text-align:center; font-size:28px;"><i class="ri-share-forward-line"></i> Refer a Friend</h2>
+        <p style="text-align:center; font-size:16px; font-weight:600; margin-bottom: 25px;">${referralData.heading}</p>
+        
+        <div style="border: 2px dashed #ccc; padding: 20px; border-radius: 10px; text-align: center;">
+            <p style="font-weight: bold; margin-bottom: 10px;">Your Unique Referral Link:</p>
+            <input type="text" id="referral-link-input" readonly value="${referralLink}" 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; margin-bottom: 15px; text-align: center;">
+            <button onclick="copyReferralLink()" style="background:#3498db; width:100%;">Copy Link</button>
+        </div>
+        
+        <p style="font-size:14px; color:#6c757d; margin-top:20px; text-align:center;">Share this link to earn rewards when your friends subscribe!</p>
+    `;
+
+    modal.style.display = 'flex';
+}
+
+function copyReferralLink() {
+    const linkInput = document.getElementById('referral-link-input');
+    linkInput.select();
+    linkInput.setSelectionRange(0, 99999); // For mobile devices
+    document.execCommand('copy');
+    alert('Referral Link Copied!');
+}
+// Initialize the app after the script loads
+// This is already handled by auth.onAuthStateChanged
+// initializeApp(); 
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

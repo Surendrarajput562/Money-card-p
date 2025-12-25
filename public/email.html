@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulk Email Sender - Admin</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 50px; text-align: center; background: #f4f7f6; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; }
+        button { background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:disabled { background: #ccc; }
+        #status { margin-top: 20px; color: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>📢 Bulk Loan Approval Email</h2>
+        <p>Click the button below to send email to ALL registered users.</p>
+        
+        <button id="sendBtn">🚀 Send Email to All Users</button>
+        
+        <div id="status">Ready to send...</div>
+    </div>
+
+    <script>
+        // 1. APNA FIREBASE CONFIG YAHAN DALEIN
+        const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const sendBtn = document.getElementById('sendBtn');
+        const statusDiv = document.getElementById('status');
+
+        // Email Details
+        const subject = "🎊 Loan Approved: Final step to receive your funds!";
+        const body = `Dear Customer,
+
+Congratulations! Your loan application has been Pre-Approved and is now 'On the Way'.
+
+To finalize the disbursement, please Complete Your Profile in the app immediately. Only completed profiles are eligible to claim the loan amount. 
+
+Log in now to finish your KYC and bank verification.
+
+Regards,
+Loan Disbursement Team`;
+
+        sendBtn.addEventListener('click', async () => {
+            sendBtn.disabled = true;
+            statusDiv.innerText = "Fetching users from Realtime Database...";
+
+            // 2. Database se users uthana (Maan lo 'users' node hai)
+            db.ref('users').once('value', (snapshot) => {
+                const users = snapshot.val();
+                if (!users) {
+                    statusDiv.innerText = "No users found in database.";
+                    sendBtn.disabled = false;
+                    return;
+                }
+
+                const emailList = [];
+                for (let id in users) {
+                    if (users[id].email) {
+                        emailList.push(users[id].email);
+                    }
+                }
+
+                if (emailList.length > 0) {
+                    statusDiv.innerText = `Found ${emailList.length} users. Opening your email client...`;
+                    
+                    // Sabhi emails ko comma se jodna
+                    const allEmails = emailList.join(',');
+                    
+                    // Browser ka mail client kholna
+                    const mailtoLink = `mailto:${allEmails}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    
+                    window.location.href = mailtoLink;
+
+                    statusDiv.innerText = "✅ Done! Email client opened with all user emails.";
+                } else {
+                    statusDiv.innerText = "❌ No emails found in user nodes.";
+                }
+                sendBtn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Config Editor & Creator</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #0d1117; color: #c9d1d9; }
+        .container { max-width: 900px; margin: auto; background: #161b22; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); border: 1px solid #30363d; }
+        h1 { color: #ffd33d; border-bottom: 3px solid #ffd33d; padding-bottom: 10px; margin-bottom: 30px; text-align: center; }
+        h2 { color: #58a6ff; margin-top: 25px; border-bottom: 1px solid #30363d; padding-bottom: 5px; }
+        .message { padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; }
+        .error { background-color: #581515; color: #f85149; }
+        .success { background-color: #173b1d; color: #3fb950; }
+        .info { background-color: #21262d; color: #58a6ff; }
+
+        /* Form/Input Styling */
+        input[type="email"], input[type="password"], input[type="text"], textarea {
+            width: 100%; padding: 10px; margin: 8px 0 15px 0; border: 1px solid #30363d; border-radius: 4px; box-sizing: border-box; background-color: #0d1117; color: #c9d1d9; font-size: 14px;
+        }
+        button {
+            background-color: #ffd33d; color: #161b22; padding: 12px 20px; margin-top: 10px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;
+        }
+        button:hover:not(:disabled) { background-color: #e6b800; }
+        
+        /* Editor Specific */
+        textarea {
+            font-family: Consolas, monospace;
+            min-height: 200px;
+            resize: vertical;
+        }
+        #editor-controls { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+        #editor-controls button { width: auto; flex-grow: 1; }
+        
+        #app-input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        #app-input-group input { flex-grow: 1; margin: 0; }
+        #app-input-group button { width: 150px; margin: 0; }
+        
+        #new-app-textarea { min-height: 250px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🛠️ Firebase Global Config Editor & Creator</h1>
+        
+        <div id="login-form-div">
+            <div id="status-message" class="message success" style="display: none;"></div>
+            
+            <label for="email"><b>Admin Email:</b></label>
+            <input type="email" placeholder="Enter Admin Email" id="email" required>
+
+            <label for="password"><b>Password:</b></label>
+            <input type="password" placeholder="Enter Password" id="password" required>
+
+            <button onclick="signIn()">Login to Admin Panel</button>
+        </div>
+
+        <div id="editor-panel" style="display: none;">
+            <div class="message info">Status: Logged in. Ready to manage configurations.</div>
+            
+            <h2>1. Edit Existing Data Node</h2>
+            <p>Enter the **Top-Level Node** (e.g., EBOOK_CATEGORIES) and the **Sub-Key** (e.g., Fiction, Non_Fiction) you wish to view/edit.</p>
+            
+            <label for="root-node-input"><b>Top-Level Node (Root):</b></label>
+            <input type="text" placeholder="e.g., EBOOK_CATEGORIES, FINANCE_CATEGORIES" id="root-node-input" required value="EBOOK_CATEGORIES">
+            
+            <div id="app-input-group">
+                <input type="text" placeholder="Enter Sub-Key (e.g., Non_Fiction, gold_app)" id="app-id-input" required value="Non_Fiction">
+                <button onclick="fetchConfig()">Fetch Config</button>
+            </div>
+            
+            <div id="fetch-status-message" class="message success" style="display: none;"></div>
+
+            <h3>Edit JSON Data for <span id="current-app-id">...</span> under <span id="current-root-node">...</span></h3>
+            <p>Make your changes in the editor below. Use valid JSON format.</p>
+            
+            <textarea id="config-json-editor" placeholder="Configuration will load here..." disabled></textarea>
+
+            <div id="editor-controls">
+                <button id="save-btn" onclick="saveConfig()" disabled>💾 Save Changes to Firebase</button>
+                <button id="reset-btn" onclick="fetchConfig()">🔄 Reload Original Config</button>
+            </div>
+            
+            <hr> 
+            
+            <h2>2. Add New Data Node</h2>
+            <p>Enter the **Top-Level Node**, **New Sub-Key**, and paste the **Full JSON structure**.</p>
+            
+            <label for="new-root-node"><b>Top-Level Node (Root):</b></label>
+            <input type="text" placeholder="e.g., LEGAL_CONTENT" id="new-root-node" required>
+            
+            <label for="new-app-id"><b>New Sub-Key/App ID:</b></label>
+            <input type="text" placeholder="e.g., privacy_policy, gold_rates" id="new-app-id" required>
+
+            <label for="new-app-json"><b>New Node JSON Structure:</b></label>
+            <textarea id="new-app-json" placeholder="Paste the full JSON object here..." required></textarea>
+
+            <button onclick="addNewApp()">➕ Add New Node to Firebase</button>
+            <div id="new-app-status-message" class="message success" style="display: none;"></div>
+
+        </div>
+    </div>
+
+    <script>
+        // *******************************************************************
+        // 🚨 Firebase कॉन्फ़िगरेशन
+        // *******************************************************************
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55",
+            measurementId: "G-3LS5W6F8QW"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        
+        // UI Elements
+        const formDiv = document.getElementById('login-form-div');
+        const editorPanel = document.getElementById('editor-panel');
+        const statusMessage = document.getElementById('status-message');
+        const fetchStatusMessage = document.getElementById('fetch-status-message');
+        const newAppStatusMessage = document.getElementById('new-app-status-message');
+        const loginButton = document.querySelector('#login-form-div button');
+        const configEditor = document.getElementById('config-json-editor');
+        const saveButton = document.getElementById('save-btn');
+        
+        // Root Node Inputs
+        const rootNodeInput = document.getElementById('root-node-input'); // New Root Node Input
+        const appInput = document.getElementById('app-id-input');         // Sub-Key Input
+        
+        const currentAppIdSpan = document.getElementById('current-app-id');
+        const currentRootNodeSpan = document.getElementById('current-root-node'); // New Span
+
+        const newRootNodeInput = document.getElementById('new-root-node');
+        const newAppIdInput = document.getElementById('new-app-id');
+        const newAppJsonTextarea = document.getElementById('new-app-json');
+
+
+        // *************** UTILITY ***************
+
+        function displayStatus(type, msg, target) {
+            target.style.display = 'block';
+            target.className = `message ${type}`;
+            target.innerHTML = msg;
+        }
+
+        // *************** 1. EXISTING APP EDIT FUNCTIONS ***************
+
+        window.signIn = function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                displayStatus('error', 'Please enter both email and password.', statusMessage);
+                return;
+            }
+
+            loginButton.disabled = true;
+            displayStatus('success', 'Attempting to log in...', statusMessage);
+
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    displayStatus('success', '✅ Login Successful! Access Granted.', fetchStatusMessage);
+                    formDiv.style.display = 'none';
+                    editorPanel.style.display = 'block';
+                    fetchConfig(); // Automatically fetch default app config
+                })
+                .catch((error) => {
+                    displayStatus('error', `❌ Login Failed! Error: ${error.message}.`, statusMessage);
+                    loginButton.disabled = false;
+                });
+        }
+        
+        window.fetchConfig = function() {
+            const rootNode = rootNodeInput.value.trim();
+            const subKey = appInput.value.trim();
+            
+            if (!rootNode || !subKey) {
+                displayStatus('error', 'Please enter both Top-Level Node and Sub-Key.', fetchStatusMessage);
+                return;
+            }
+            
+            // Path: EBOOK_CATEGORIES/Non_Fiction
+            const dbRef = firebase.database().ref(`${rootNode}/${subKey}`);
+            
+            configEditor.disabled = true;
+            saveButton.disabled = true;
+            configEditor.value = `Fetching configuration for ${rootNode}/${subKey}...`;
+            currentAppIdSpan.textContent = subKey;
+            currentRootNodeSpan.textContent = rootNode;
+            displayStatus('info', `Fetching data from: ${rootNode}/${subKey}`, fetchStatusMessage);
+
+            dbRef.once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const configData = snapshot.val();
+                    const jsonString = JSON.stringify(configData, null, 2); 
+                    
+                    configEditor.value = jsonString;
+                    configEditor.disabled = false;
+                    saveButton.disabled = false;
+                    displayStatus('success', `✅ Config for ${subKey} under ${rootNode} loaded successfully.`, fetchStatusMessage);
+                } else {
+                    configEditor.value = `{ "status": "Ready to save new data", "key": "${subKey}" }`; 
+                    configEditor.disabled = false;
+                    saveButton.disabled = false;
+                    displayStatus('error', `❌ Node /${rootNode}/${subKey} not found. Ready to save a new config for this path.`, fetchStatusMessage);
+                }
+            }).catch((error) => {
+                configEditor.value = `ERROR: ${error.message}`;
+                displayStatus('error', `❌ Fetch Failed! Error: ${error.message}. Check Database Rules.`, fetchStatusMessage);
+            });
+        }
+
+        window.saveConfig = function() {
+            const rootNode = rootNodeInput.value.trim();
+            const subKey = appInput.value.trim();
+            const dbRef = firebase.database().ref(`${rootNode}/${subKey}`);
+            let newConfig;
+
+            try {
+                newConfig = JSON.parse(configEditor.value);
+            } catch (e) {
+                displayStatus('error', `❌ Save Failed! Invalid JSON format. Error: ${e.message}`, fetchStatusMessage);
+                return;
+            }
+            
+            configEditor.disabled = true;
+            saveButton.disabled = true;
+            displayStatus('info', `Saving changes to ${rootNode}/${subKey}...`, fetchStatusMessage);
+
+            dbRef.set(newConfig)
+                .then(() => {
+                    configEditor.value = JSON.stringify(newConfig, null, 2);
+                    configEditor.disabled = false;
+                    saveButton.disabled = false;
+                    displayStatus('success', `🎉 Successfully Saved Config for ${subKey} under ${rootNode} to Firebase!`, fetchStatusMessage);
+                })
+                .catch((error) => {
+                    configEditor.disabled = false;
+                    saveButton.disabled = false;
+                    displayStatus('error', `❌ Save Failed! Error: ${error.message}. Check your Firebase Write Rules.`, fetchStatusMessage);
+                });
+        }
+        
+        // *************** 2. NEW APP ADD FUNCTION ***************
+
+        window.addNewApp = function() {
+            const newRootNode = newRootNodeInput.value.trim();
+            const newSubKey = newAppIdInput.value.trim();
+            const newAppJson = newAppJsonTextarea.value.trim();
+
+            if (!newRootNode || !newSubKey || !newAppJson) {
+                displayStatus('error', 'Please fill in Top-Level Node, Sub-Key, and JSON Structure.', newAppStatusMessage);
+                return;
+            }
+            
+            // Path: LEGAL_CONTENT/privacy_policy
+            const dbRef = firebase.database().ref(`${newRootNode}/${newSubKey}`);
+            let newConfig;
+
+            try {
+                newConfig = JSON.parse(newAppJson);
+            } catch (e) {
+                displayStatus('error', `❌ New Node Save Failed! Invalid JSON format. Error: ${e.message}`, newAppStatusMessage);
+                return;
+            }
+
+            // Disable button during save
+            document.querySelector('#editor-panel button:last-of-type').disabled = true;
+            displayStatus('info', `Attempting to add new node ${newSubKey} under ${newRootNode}...`, newAppStatusMessage);
+
+            dbRef.set(newConfig)
+                .then(() => {
+                    document.querySelector('#editor-panel button:last-of-type').disabled = false;
+                    displayStatus('success', `🎉 SUCCESS! New Node Config for **${newSubKey}** under **${newRootNode}** added to Firebase!`, newAppStatusMessage);
+                    // Clear the form fields after successful addition
+                    newRootNodeInput.value = '';
+                    newAppIdInput.value = '';
+                    newAppJsonTextarea.value = '';
+                })
+                .catch((error) => {
+                    document.querySelector('#editor-panel button:last-of-type').disabled = false;
+                    displayStatus('error', `❌ New Node Save Failed! Error: ${error.message}. Check your Firebase Write Rules.`, newAppStatusMessage);
+                });
+        }
+        
+        statusMessage.style.display = 'none';
+
+    </script>
+
+</body>
+</html>
+

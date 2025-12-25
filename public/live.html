@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase WebRTC Live Stream</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background-color: #f4f4f9; }
+        #auth-container, #stream-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-bottom: 20px; width: 350px; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%; }
+        button:hover { background-color: #0056b3; }
+        video { width: 100%; max-width: 600px; height: auto; border: 1px solid #333; margin-top: 15px; }
+        .live-status { font-weight: bold; margin-bottom: 15px; color: #28a745; }
+        .error { color: #dc3545; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-container">
+        <h2>Firebase Login / Sign Up</h2>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="signUp()">Sign Up</button>
+        <button onclick="login()">Login</button>
+        <p id="auth-error" class="error"></p>
+    </div>
+
+    <div id="stream-container" style="display:none;">
+        <p>Logged in as: <span id="user-email"></span></p>
+        <button id="go-live-btn" onclick="startStreamer()">Go Live (Broadcaster)</button>
+        <button id="view-stream-btn" onclick="startViewer()">View Live Stream (Viewer)</button>
+        
+        <div id="video-feeds">
+            <h3>My Local Video</h3>
+            <video id="local-video" autoplay muted></video>
+            <h3>Remote Video</h3>
+            <video id="remote-video" autoplay></video>
+        </div>
+        
+        <div class="live-status" id="stream-status"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // *********************************************************
+        // 🚨 STEP 1: अपना Firebase कॉन्फ़िगरेशन यहाँ डालें 🚨
+        // *********************************************************
+        const firebaseConfig = {
+     apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55",
+            measurementId: "G-3LS5W6F8QW"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        
+        let localStream;
+        let peerConnection;
+        let currentUserId = null;
+        const STREAM_ROOM_ID = 'live_stream_demo'; // Signaling room key
+
+        // *********************************************************
+        // STEP 2: Authentication Logic
+        // *********************************************************
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUserId = user.uid;
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('stream-container').style.display = 'block';
+                document.getElementById('user-email').innerText = user.email;
+            } else {
+                currentUserId = null;
+                document.getElementById('auth-container').style.display = 'block';
+                document.getElementById('stream-container').style.display = 'none';
+            }
+        });
+
+        function displayError(message) {
+            document.getElementById('auth-error').innerText = message;
+        }
+
+        function signUp() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(() => displayError("Sign Up Successful! Logging in..."))
+                .catch(error => displayError("Sign Up Failed: " + error.message));
+        }
+
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => displayError("Login Failed: " + error.message));
+        }
+
+        // *********************************************************
+        // STEP 3: WebRTC Setup (Broadcaster & Viewer)
+        // *********************************************************
+
+        const servers = {
+            iceServers: [
+                // Google's STUN server (for testing/simple use)
+                { urls: 'stun:stun.l.google.com:19302' } 
+            ]
+        };
+
+        async function initWebRTC(isBroadcaster) {
+            peerConnection = new RTCPeerConnection(servers);
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    // Send ICE candidate to the other peer via Firebase RTDB
+                    db.ref(`signaling/${STREAM_ROOM_ID}/ice/${Date.now()}`).set({
+                        sender: currentUserId,
+                        candidate: event.candidate.toJSON()
+                    });
+                }
+            };
+            
+            // Handle remote track received (for Viewer)
+            peerConnection.ontrack = (event) => {
+                document.getElementById('remote-video').srcObject = event.streams[0];
+                document.getElementById('stream-status').innerText = 'Stream connected!';
+            };
+
+            // Listen for ICE candidates from the other peer
+            db.ref(`signaling/${STREAM_ROOM_ID}/ice`).on('child_added', snapshot => {
+                const data = snapshot.val();
+                if (data.sender !== currentUserId && data.candidate) {
+                    peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                }
+            });
+
+            if (isBroadcaster) {
+                // Get local camera/mic stream
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                document.getElementById('local-video').srcObject = localStream;
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            }
+        }
+
+        // *********************************************************
+        // STEP 4: Broadcaster (Go Live) Logic
+        // *********************************************************
+        
+        async function startStreamer() {
+            document.getElementById('stream-status').innerText = 'Starting Stream...';
+            await initWebRTC(true);
+
+            // Create Offer (SDP)
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            // Send Offer to Firebase RTDB
+            db.ref(`signaling/${STREAM_ROOM_ID}/offer`).set({
+                sender: currentUserId,
+                sdp: peerConnection.localDescription.toJSON()
+            }).then(() => {
+                document.getElementById('stream-status').innerText = 'Live, waiting for a viewer...';
+            });
+            
+            // Listen for Viewer's Answer
+            db.ref(`signaling/${STREAM_ROOM_ID}/answer`).on('value', async snapshot => {
+                const data = snapshot.val();
+                if (data && data.sender !== currentUserId && data.sdp) {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                    document.getElementById('stream-status').innerText = 'Viewer connected!';
+                }
+            });
+        }
+
+        // *********************************************************
+        // STEP 5: Viewer Logic
+        // *********************************************************
+
+        async function startViewer() {
+            document.getElementById('stream-status').innerText = 'Searching for live stream...';
+            await initWebRTC(false);
+
+            // Listen for Broadcaster's Offer
+            db.ref(`signaling/${STREAM_ROOM_ID}/offer`).on('value', async snapshot => {
+                const data = snapshot.val();
+                if (data && data.sender !== currentUserId && data.sdp) {
+                    document.getElementById('stream-status').innerText = 'Offer received, connecting...';
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+
+                    // Create Answer (SDP)
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+
+                    // Send Answer back to Firebase RTDB
+                    db.ref(`signaling/${STREAM_ROOM_ID}/answer`).set({
+                        sender: currentUserId,
+                        sdp: peerConnection.localDescription.toJSON()
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

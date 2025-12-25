@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>सर्च किए गए शब्द का करेंट व्यू</title>
+    <style>
+        /* ... (पुराना स्टाइल) ... */
+        .live-query-display {
+            background-color: #ffe0b2; /* हल्का नारंगी */
+            color: #e65100; /* गहरा नारंगी */
+            padding: 15px;
+            margin: 20px auto;
+            width: 90%;
+            border-radius: 8px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🖥️ Iframe का करेंट व्यू</h1>
+    
+    <div class="live-query-display">
+        करेंट सर्च क्वेरी: <span id="currentQuery">कोई खोज नहीं की गई।</span>
+    </div>
+
+    <iframe 
+      id="liveViewerFrame" 
+      src="./x.html" 
+      frameborder="0" 
+      allowfullscreen>
+      <p>आपका ब्राउज़र Iframes को सपोर्ट नहीं करता है।</p>
+    </iframe>
+
+    <script>
+        const iframe = document.getElementById('liveViewerFrame');
+        const queryDisplay = document.getElementById('currentQuery');
+
+        function updateLiveQuery() {
+            try {
+                // Iframe के URL को पकड़ने की कोशिश करें
+                const iframeSrc = iframe.contentWindow.location.href;
+                
+                // अगर Iframe का URL, मास्टर पेज के डोमेन से अलग है (जो कि Google CSE के साथ होगा), 
+                // तो सुरक्षा कारणों से यह फ़ेल हो जाएगा।
+
+                // लेकिन, अगर Iframe में hash (#) बदलता है, तो हम hash से क्वेरी पढ़ सकते हैं।
+                const hash = iframe.contentWindow.location.hash;
+                
+                if (hash.startsWith('#gsc.tab=0&gsc.q=')) {
+                    // hash से सिर्फ़ 'q' (क्वेरी) हिस्सा निकालें
+                    const urlParams = new URLSearchParams(hash.substring(1));
+                    let query = urlParams.get('gsc.q');
+                    
+                    if (query) {
+                        // यहाँ वह बदलाव/फिल्टर कोड लगाएँ जो आप चाहते हैं
+                        // उदाहरण के लिए: 'land' को 'lund' में बदलना
+                        if (query.toLowerCase() === 'land') {
+                            query = 'lund'; // आपका मनचाहा बदलाव
+                        }
+                        
+                        queryDisplay.textContent = decodeURIComponent(query);
+                    }
+                } else {
+                    queryDisplay.textContent = 'कोई खोज नहीं की गई।';
+                }
+
+            } catch (e) {
+                // Same-Origin Policy के कारण यहाँ Error आ सकता है।
+                // हम हर 500ms में URL चेक करते रहेंगे।
+            }
+        }
+
+        // हर 500ms में Iframe की स्थिति चेक करें
+        setInterval(updateLiveQuery, 500);
+    </script>
+</body>
+</html>

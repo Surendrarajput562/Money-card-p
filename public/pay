@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Amazon Home Portal (Backend Controlled)</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; font-family: sans-serif; }
+        .top-bar { position: absolute; top: 0; right: 0; padding: 10px; z-index: 999; }
+        .logout-btn { background: #ff9900; color: #131921; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        iframe { border: none; height: 100%; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <button class="logout-btn" onclick="logout()">Logout & Reset</button>
+    </div>
+
+    <iframe id="amazonFrame" src="http://localhost:3000/proxy?url=https://www.amazon.in/"></iframe>
+
+    <script>
+        function logout() {
+            // Frame reset
+            document.getElementById('amazonFrame').src = "about:blank";
+            
+            // 2025-12-21 Rule: Sab memory clear
+            sessionStorage.clear();
+            localStorage.clear();
+            
+            // Cookies clear for fresh login
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+
+            // Page reload taaki process pehle jaisa fresh ho jaye
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        }
+    </script>
+
+</body>
+</html>
+

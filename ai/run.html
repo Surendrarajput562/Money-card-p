@@ -1,0 +1,91 @@
+create a single-page production-ready html file for a mobile app called "gold rupi". output only one html file containing all html, css (in a <style> tag) and javascript (in a <script> tag). do not create or reference any external frameworks or libraries. design the ui to look like a modern mobile app (mobile-first, responsive) with smooth animations, icons, and glassmorphic/neumorphic touches.
+
+firebase config and backend:
+- use firebase javascript sdk compatible with firebase 8.10.0 and realtime database.
+- realtime database structure must include: users, wallets, gold_orders, products, orders, referrals, kyc_requests, wallet_requests, admin_settings.
+- imgbb must be used for user profile and document uploads (provide placeholder imgbb upload integration).
+- admin credentials: rajputsurendra562@gmail.com / Banna@1712 (admin must open admin panel when these credentials used).
+- all read/write operations must use secure client-side rules simulated for production, and code should clearly mark where to replace with real firebase config.
+
+authentication & signup:
+- single login screen for both admin and users. fields: email, password.
+- signup modal/page with: name, email, mobile number, password, referral code (optional).
+- on signup: create firebase auth user, add entry to realtime database, add ₹100 signup bonus to user's wallet automatically.
+- generate a permanent unique referral code for each user and store in users node.
+- if a valid referral code is used: immediately add ₹50 to referrer's wallet and save referral entry for admin verification (admin must be able to approve to add full referral bonus if required).
+
+user panel (after login):
+- bottom/top app navigation: home, gold, shop, wallet, profile, cart, logout.
+- home: show current gold rate, wallet balance, quick actions, referral code & share, recent activity.
+- gold page: buy gold (minimum rs 50), show qr image (https://i.ibb.co/TMyZrvJw/Screenshot-20251115-135633-GPay-Business.jpg), amount field, 12-digit utr input, buy request saved to realtime db for admin verification, gold lock/unlock state and release logic (admin-controlled).
+- wallet page: show balance, add money flow (qr + 12-digit utr), withdrawal request flow, admin verifies payments and marks wallet update.
+- wallet withdraw: user can request withdraw, admin approves and will mark payment sent.
+- referral & earn: show unique referral code, referral history (name, mobile, email, status), rules: signup bonus ₹100, referral reward ₹100 (or as specified), conditions: minimum rs 50 gold buy to withdraw signup bonus, referral counted only when referred user buys ≥ rs 50 gold.
+- shop: list products from realtime db with image, title, price, discount, add to cart.
+- cart: view items, edit qty, total, place order using qr + 12-digit utr, save order to realtime db with status pending -> verified -> out for delivery -> delivered. include address selection.
+- address page: add/edit addresses with fields: house no, city, area, village, pincode, phone number. default address saved and used for orders.
+- orders/my orders: show order status, tracking (package, out for delivery, date/time, location).
+
+profile & kyc:
+- profile page: name, email (readonly or editable), mobile, profile photo via imgbb, save button.
+- kyc page: aadhar number input, front image and back image upload to imgbb, kyc submission saved to realtime db for admin approval. show verification status.
+
+admin panel (access only when admin credentials used):
+- dashboard with summary: total users, pending kyc, pending payments, pending gold buys, wallet requests, orders.
+- users list: view/edit users, wallet balance, referral code, activity.
+- kyc requests: view images, approve/reject kyc.
+- referrals: view referral entries, approve reward release.
+- payments: verify incoming payments (utr numbers), mark wallet/top-up or order payment as successful or rejected.
+- wallet requests: approve withdrawals and mark payments sent.
+- gold purchases: view buy requests, verify payment, approve gold release and subtract/add gold grams accordingly.
+- products management: add new product with multiple images, category, discount, description, stock in/out toggle, edit/delete product at any time.
+- orders management: view all orders, change status (pending, verified, out for delivery, delivered), update tracking info.
+
+ui & behaviour requirements:
+- hide/show screens within the same html using javascript (no page reloads).
+- clean validation for inputs, user-friendly error messages.
+- all sample interactions should simulate firebase realtime operations (read/write) and include clear comments where to add real firebase config values.
+- include modal confirmations for destructive admin actions.
+- include placeholder sample data population script to seed a few products and a test user for demo.
+- maintain accessibility basics and mobile-friendly tap targets.
+
+security & notes:
+- include clear comments marking where to add real firebase apiKey, authDomain, databaseURL, projectId, storageBucket, messagingSenderId, appId.
+- do not include any sensitive real keys in the output.
+- include brief inline documentation at top of file explaining how to replace firebase config and enable imgbb.
+
+final output:
+- output only the complete single html file content (all lowercase in prompt input is fine, but the html file may contain normal case). do not output any extra explanation or additional files.
+
+
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+
+// ❗ यहाँ अपना Firebase Config डाल देना
+const firebaseConfig = {
+
+  // Your Config Here
+apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+  authDomain: "smbrand-4543a.firebaseapp.com",
+  databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+  projectId: "smbrand-4543a",
+  storageBucket: "smbrand-4543a.firebasestorage.app",
+  messagingSenderId: "720775550032",
+  appId: "1:720775550032:web:0622548a007597778bad55",
+  measurementId: "G-3LS5W6F8QW"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+const imgbb = "021a2437b889915669b66554687bf17f";   // ← अपनी Key डालना
+
+Use this ok 
+Production ready 
+User and admin panel 

@@ -1,5 +1,5 @@
-specVersion: "v1beta"
-serviceId: "Money-card-p"
+specVersion: "v1"
+serviceId: "money-card-p"
 location: "us-central1"
 schema:
   source: "./schema"
@@ -7,6 +7,6 @@ schema:
     postgresql:
       database: "fdcdb"
       cloudSql:
-        instanceId: "Money-card-p-fdc"
+        instanceId: "money-card-p-fdc"
       # schemaValidation: "COMPATIBLE"
 connectorDirs: ["./connector"]

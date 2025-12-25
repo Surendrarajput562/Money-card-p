@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 Premium Reader - Your Digital Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Variables and Base */
+:root{ 
+    --gold:#d4af37; 
+    --dark-gold: #c59b2d;
+    --accent:#1f2937; 
+    --bg:#f8f9fa; /* Light Background */
+    --card:#fff; 
+    --text:#1f2937; 
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+body.dark-mode { 
+    --bg:#121212; 
+    --card:#1e1e1e; 
+    --text:#e0e0e0; 
+    --shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text); transition:background 0.3s, color 0.3s;}
+
+/* Header - Modern Look */
+header{
+    display:flex;justify-content:space-between;align-items:center;padding:15px 30px;
+    background:var(--accent); color:#fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    position: sticky; top: 0; z-index: 500; /* Sticky Header */
+}
+header h2{margin:0;font-size:24px; font-weight:700;}
+header .user-info{display:flex;align-items:center;gap:20px;}
+.user-info button { background: var(--gold); }
+.user-info button:hover { background: var(--dark-gold); }
+
+/* User Profile Placeholder */
+.profile-placeholder {
+    width: 35px; height: 35px; border-radius: 50%; background: var(--gold); 
+    color: var(--accent); font-weight: 700; display: flex; 
+    align-items: center; justify-content: center; font-size: 14px;
+    border: 2px solid #fff;
+}
+
+header .notif{position:relative;cursor:pointer;}
+header .notif img{width:25px;height:25px; filter: invert(1);}
+header .notif .count{position:absolute;top:-8px;right:-8px;background:#e74c3c;color:#fff;border-radius:50%;width:20px;height:20px;font-size:12px;text-align:center;line-height:20px; border: 2px solid var(--accent);}
+
+/* Main Container and Typography */
+.container{padding:30px; max-width: 1300px; margin: auto;}
+h3{
+    margin-bottom:20px; color:var(--text); 
+    border-left: 5px solid var(--gold); padding-left: 15px;
+    font-size: 24px; font-weight: 700;
+}
+
+/* Controls and Grid */
+.controls{
+    display:flex;gap:15px;margin-bottom:30px;flex-wrap:wrap; 
+    background:var(--card); padding:20px; border-radius:10px;
+    box-shadow: var(--shadow);
+}
+.controls input, .controls select{
+    padding:10px;border:1px solid #ddd;border-radius:5px; 
+    background:var(--bg); color:var(--text); flex-grow: 1;
+    min-width: 150px;
+}
+/* Updated Grid for 3x6 Look */
+.book-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+    gap:25px;
+}
+.book-card{
+    background:var(--card);padding:15px;border-radius:10px;text-align:center;
+    cursor:pointer;transition:0.3s;
+    box-shadow: var(--shadow);
+    border: 1px solid #eee;
+    height: 380px; /* Fixed height for uniformity */
+    display: flex; flex-direction: column; justify-content: space-between;
+}
+.book-card:hover{
+    transform:translateY(-5px); 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.book-card img{
+    width:100%;
+    height: 250px; /* Aspect ratio friendly height */
+    object-fit:cover;border-radius:8px; border: 1px solid #ccc;
+    flex-shrink: 0;
+}
+.book-card strong{display:block; margin-top:10px; font-size:16px; color:var(--text); font-weight: 600;}
+.book-card p { margin: 2px 0; font-size: 14px; color: #6c757d;}
+.book-card .price { font-weight: 700; color: var(--gold); }
+
+/* Buttons */
+button{
+    padding:10px 20px;background:var(--gold);border:none;color:#fff;
+    border-radius:6px;cursor:pointer;font-weight:600;transition:background 0.3s, transform 0.2s;
+}
+button:hover{background:var(--dark-gold); transform: translateY(-1px);}
+
+/* Modals (Preview/Reader) */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:none;justify-content:center;align-items:center;overflow:auto;z-index:1000;}
+.modal-content{
+    background:var(--card);color:var(--text);padding:30px;border-radius:10px;
+    max-width:90%;width:700px; max-height:90vh; overflow-y:auto; position:relative; 
+    box-shadow:0 5px 25px rgba(0,0,0,0.7);
+}
+.reader-modal-content { 
+    max-width: 95%; width: 900px; 
+    background: var(--bg); 
+    padding: 0;
+    max-height: 95vh;
+} 
+input, select, textarea {background:var(--card); color:var(--text); border: 1px solid #ddd;}
+.close-btn { position: absolute; top: 15px; right: 25px; font-size: 30px; cursor: pointer; color: var(--text); z-index: 1010; }
+.close-btn:hover { color: #e74c3c; }
+
+/* Reader specific */
+.reader-controls { 
+    display: flex; justify-content: space-between; padding: 15px 20px; 
+    background: var(--card); border-radius: 10px 10px 0 0; align-items: center; 
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.reader-controls select { padding: 8px; }
+
+/* Single and Scroll View Styles */
+.reader-page-content img { 
+    max-height: 80vh; /* Control image height */
+    object-fit: contain;
+    display: block; margin: 15px auto; 
+    border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    width: auto; /* Let content width determine scale */
+}
+
+/* AI Text Page Styles */
+.text-page-container {
+    padding: 30px 50px;
+    background: var(--card);
+    max-width: 750px;
+    margin: 20px auto;
+    border-radius: 10px;
+    min-height: 60vh; /* Ensure some height for page appearance */
+    box-shadow: var(--shadow);
+    line-height: 1.6;
+    font-size: 16px;
+    text-align: justify;
+    color: var(--text);
+    /* Custom Text Styling from DB (if available) */
+    /* font-size: var(--textSize); color: var(--textColor); */ 
+}
+.text-page-container p {
+    margin-bottom: 1em;
+}
+.text-page-container h4 {
+    color: var(--gold);
+    margin-top: 25px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+    font-size: 1.4em;
+    font-weight: 700;
+}
+
+
+/* Page View Layouts */
+.single-page-view { text-align: center; padding: 20px 0; }
+.single-page-view .page-container { display: none; }
+.single-page-view .page-container.active { display: block; }
+.dual-page-view {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px 0;
+    gap: 15px;
+    max-width: 950px; /* Wider for two pages */
+    margin: 0 auto;
+}
+.dual-page-view .page-container {
+    display: none;
+    width: 48%; /* Half width for two pages */
+    text-align: center;
+}
+.dual-page-view .page-container.active {
+    display: block;
+}
+.dual-page-view .page-container img, .dual-page-view .page-container .text-page-container {
+    max-height: 75vh;
+    width: 100%; 
+    height: auto;
+    object-fit: contain;
+    margin: 0;
+}
+
+
+/* Scroll View */
+.scroll-view .page-container { display: block !important; text-align: center; }
+
+/* Dark Mode Reader Adjustments */
+body.dark-mode .book-card { border: 1px solid #333; }
+body.dark-mode .controls input, body.dark-mode .controls select { border: 1px solid #444; }
+body.dark-mode .text-page-container { border: 1px solid #333; }
+
+/* Subscription Gate */
+#subscription-gate {
+    z-index: 100;
+    position: sticky; 
+    bottom: 0;
+    
+}
+</style>
+</head>
+<body id="app-body">
+<header>
+    <h2 id="welcome-message">Welcome to Your Premium Digital Library 📖</h2>
+    <div class="user-info">
+        <button onclick="document.getElementById('history-section').scrollIntoView({behavior: 'smooth'})">My Library 📚</button>
+
+        <div class="profile-placeholder" id="user-initial">G</div>
+        <span id="user-display" style="font-weight:600;">Guest</span>
+        
+        <div class="notif" onclick="openNotifications()">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/appointment-reminders.png" alt="Notifications"/>
+            <div class="count" id="notif-count">0</div>
+        </div>
+        <button onclick="userLogin()">Login</button>
+    </div>
+</header>
+
+<div class="container">
+
+<section>
+<h3>🌟 Featured & New Releases</h3>
+<div class="controls">
+    <input type="text" id="search-input" placeholder="Search by Title, Author..." onkeyup="filterBooks()">
+    <select id="category-filter" onchange="filterBooks()">
+        <option value="">All Categories</option>
+        </select>
+    <select id="sort-by" onchange="filterBooks()">
+        <option value="createdAt">🚀 Newest First</option>
+        <option value="title">Title (A-Z)</option>
+        <option value="priceMonthly">Price (Low to High)</option>
+    </select>
+    <button onclick="toggleDarkMode()">☀️/🌙 Mode</button>
+</div>
+<div id="new-books" class="book-grid"></div>
+</section>
+
+<section id="history-section">
+<h3>My Premium Library 📚 (Active Subscriptions)</h3>
+<div id="history-books" class="book-grid"></div>
+</section>
+
+</div>
+
+<div class="modal" id="book-modal">
+    <div class="modal-content" id="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+// --- Configuration ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.firebasestorage.app",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597778bad55",
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const auth = firebase.auth();
+
+let currentUser = "guest_user"; 
+const maxFreePages = 10;
+const wordsPerPage = 100; // Average number of words per virtual page for AI books
+// ^^^ CHANGED FROM 700 to 100 ^^^
+
+let allBooksCache = []; 
+let currentBookPages = []; // Holds either image URLs or text strings (pages)
+let isAIBook = false; // Flag for text-based content
+let currentPageIndex = 0; // 0 = Intro/Cover, 1 = Page 1, etc.
+let isDarkMode = false;
+let currentBookId = null;
+
+
+// --- Authentication & User Setup ---
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user.email.replace(/[.#$[\]]/g, '_'); 
+        const userAlias = user.email.split('@')[0];
+        document.getElementById('user-display').innerText = userAlias;
+        document.getElementById('welcome-message').innerText = `Welcome Back, ${userAlias}! Explore New Worlds 🚀`;
+        document.querySelector('.user-info button:last-child').innerText = 'Logout'; // Last button is Login/Logout
+        document.querySelector('.user-info button:last-child').onclick = userLogout;
+        document.getElementById('user-initial').innerText = userAlias.charAt(0).toUpperCase();
+        document.getElementById('user-initial').style.display = 'flex';
+    } else {
+        currentUser = "guest_user";
+        document.getElementById('user-display').innerText = 'Guest';
+        document.getElementById('welcome-message').innerText = 'Welcome to Your Premium Digital Library 📖';
+        document.querySelector('.user-info button:last-child').innerText = 'Login';
+        document.querySelector('.user-info button:last-child').onclick = userLogin;
+        document.getElementById('user-initial').innerText = 'G';
+    }
+    loadData();
+});
+
+function userLogin() {
+    const email = prompt('Enter your email:');
+    if (!email) return;
+    const password = prompt('Enter your password:');
+    if (!password) return;
+
+    auth.signInWithEmailAndPassword(email, password)
+        .catch(error => {
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                if (confirm('Account not found. Would you like to register with this email?')) {
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .then(() => alert('Registration successful! Logging in...'))
+                        .catch(e => alert('Registration failed: ' + e.message));
+                }
+            } else {
+                alert('Login Failed: ' + error.message);
+            }
+        });
+}
+
+function userLogout() {
+    auth.signOut();
+}
+
+// --- Data Loading & Filtering ---
+function loadData() {
+    loadNewBooks();
+    loadCategories();
+    loadHistory();
+    updateNotifications();
+}
+
+function loadCategories() {
+    db.ref('categories').once('value').then(snap => {
+        const categories = snap.val() || {};
+        const select = document.getElementById('category-filter');
+        // Clear previous options except the first one
+        while (select.options.length > 1) {
+            select.remove(1);
+        }
+        Object.keys(categories).forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.text = cat;
+            select.appendChild(option);
+        });
+    });
+}
+
+function loadNewBooks(){
+    db.ref('books').once('value').then(snap=>{
+        const data = snap.val()||{};
+        allBooksCache = Object.values(data).filter(b => !b.hidden); 
+        filterBooks();
+    });
+}
+
+function filterBooks() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const category = document.getElementById('category-filter').value;
+    const sortKey = document.getElementById('sort-by').value;
+
+    let filteredBooks = allBooksCache.filter(book => {
+        const matchesSearch = book.title.toLowerCase().includes(search) || book.author.toLowerCase().includes(search);
+        const matchesCategory = category === "" || book.category === category;
+        return matchesSearch && matchesCategory;
+    });
+
+    filteredBooks.sort((a, b) => {
+        if (sortKey === 'createdAt') return b.createdAt - a.createdAt; 
+        if (sortKey === 'title') return a.title.localeCompare(b.title);
+        if (sortKey === 'priceMonthly') return a.priceMonthly - b.priceMonthly;
+        return 0;
+    });
+
+    renderBooks(filteredBooks, 'new-books');
+}
+
+function renderBooks(books, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    books.forEach(book => {
+        const finalMonthlyPrice = book.priceMonthly * (1 - (book.discount || 0) / 100);
+        
+        let priceHtml;
+        if (book.discount > 0 && book.discount < 100) {
+            priceHtml = `
+                <span style="text-decoration:line-through; color:#999; font-size:12px;">₹${book.priceMonthly}</span> 
+                <span class="price">₹${finalMonthlyPrice.toFixed(0)}/mo</span>
+                <span style="color:#e74c3c; font-size:12px; font-weight:700;">(${book.discount}% OFF)</span>
+            `;
+        } else {
+            priceHtml = `<span class="price">₹${book.priceMonthly}/mo</span>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        card.innerHTML = `
+            <div>
+                <img src="${book.coverUrl}" alt="${book.title} Cover">
+                <strong>${book.title}</strong>
+                <p style="color:#6c757d;">By ${book.author}</p>
+            </div>
+            <p>${priceHtml}</p>
+        `;
+        card.onclick = () => openBook(book.id);
+        container.appendChild(card);
+    });
+    if (books.length === 0) container.innerHTML = '<p style="padding:10px;">No books match your criteria. Try adjusting filters.</p>';
+}
+
+function loadHistory(){
+    const container = document.getElementById('history-books');
+    if (currentUser === 'guest_user') {
+        container.innerHTML = '<p style="padding:10px; color:#e74c3c; font-weight:600;">🔒 Please Login to view your Premium Library.</p>';
+        return;
+    }
+    
+    db.ref('users/'+currentUser+'/subscriptions').once('value').then(snap=>{
+        const data = snap.val()||{};
+        container.innerHTML='';
+        
+        const validSubscriptions = Object.keys(data).filter(bookId => {
+            const sub = data[bookId];
+            return sub.status === 'approved' && sub.expiresAt > Date.now();
+        });
+
+        if (validSubscriptions.length === 0) {
+            container.innerHTML = '<p style="padding:10px; color:#28a745; font-weight:600;">Your library is empty. Go ahead and purchase a subscription!</p>';
+            return;
+        }
+
+        let booksLoadedCount = 0;
+        validSubscriptions.forEach(bookId=>{
+            const sub = data[bookId];
+            db.ref('books/'+bookId).once('value').then(bookSnap=>{
+                const book = bookSnap.val();
+                if(!book) return;
+                
+                booksLoadedCount++;
+                const expiryDate = new Date(sub.expiresAt).toLocaleDateString();
+                const card = document.createElement('div');
+                card.className='book-card';
+                card.innerHTML=`
+                    <div>
+                        <img src="${book.coverUrl}" alt="${book.title} Cover">
+                        <strong>${book.title}</strong>
+                        <p style="color:#6c757d;">${sub.plan.toUpperCase()} Access</p>
+                    </div>
+                    <div style="text-align:center;">
+                        <p style="color:green; font-weight:bold; font-size:14px;">✅ Active</p>
+                        <p style="font-size:10px; color:#999;">Expires: ${expiryDate}</p>
+                    </div>
+                `;
+                card.onclick=()=>openBook(book.id, true);
+                container.appendChild(card);
+
+                // If all active subs are loaded and container is still empty (shouldn't happen, but safeguard)
+                if (booksLoadedCount === validSubscriptions.length && container.children.length === 0) {
+                    container.innerHTML = '<p style="padding:10px; color:#28a745; font-weight:600;">Your library is empty. Go ahead and purchase a subscription!</p>';
+                }
+            });
+        });
+    });
+}
+
+
+// --- Open Book / Reader ---
+function openBook(bookId){
+    currentBookId = bookId; // Store current book ID
+    db.ref('books/' + bookId).once('value').then(snap => {
+        const book = snap.val();
+        if (!book) return alert('Book not found.');
+
+        let fullAccess = false;
+        if (currentUser !== 'guest_user') {
+            db.ref('users/' + currentUser + '/subscriptions/' + bookId).once('value').then(subSnap => {
+                const sub = subSnap.val();
+                if (sub && sub.status === 'approved' && sub.expiresAt > Date.now()) {
+                    fullAccess = true;
+                }
+                showReader(book, fullAccess); 
+            });
+        } else {
+            showReader(book, false); 
+        }
+    });
+}
+
+function toggleDarkMode() {
+    isDarkMode = !isDarkMode;
+    document.getElementById('app-body').classList.toggle('dark-mode', isDarkMode);
+    
+    const modeButton = document.querySelector('.reader-controls button[onclick="toggleDarkMode()"]');
+    if (modeButton) {
+        modeButton.innerHTML = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+    }
+
+    if (document.getElementById('book-modal').style.display !== 'none') {
+        renderCurrentPage(); 
+    }
+}
+
+/**
+ * Splits text into "virtual pages" based on a word limit.
+ * Tries to break pages at paragraph boundaries.
+ * @param {string} fullText 
+ * @param {number} limit 
+ * @returns {string[]} Array of text strings, each representing a page.
+ */
+function paginateText(fullText, limit) {
+    const pages = [];
+    let currentText = fullText.trim();
+    
+    while (currentText.length > 0) {
+        // Find the index that corresponds to the word limit
+        let breakIndex = -1;
+        
+        // Use a simple split/join to find the break index at the word limit
+        const words = currentText.split(/\s+/).filter(w => w.length > 0);
+        
+        if (words.length <= limit) {
+            pages.push(currentText);
+            break;
+        }
+
+        let sliceWords = words.slice(0, limit);
+        let sliceText = sliceWords.join(' ');
+        
+        // Find the index of the last character of the slice in the original currentText
+        // This is complex, so let's use the last word's position in the original string
+        let lastWord = sliceWords[sliceWords.length - 1];
+        let approxBreakIndex = currentText.indexOf(lastWord) + lastWord.length;
+
+        // Try to break at a paragraph (two newlines) near the word limit
+        let bestBreak = approxBreakIndex;
+        let searchStart = Math.max(0, approxBreakIndex - 200); // Search back 200 chars
+        let searchEnd = Math.min(currentText.length, approxBreakIndex + 50); // Search forward 50 chars
+        
+        let foundParagraphBreak = false;
+        // Search backwards for a paragraph break near the limit
+        for (let i = searchEnd; i >= searchStart; i--) {
+            if (currentText.substring(i, i + 2) === '\n\n') {
+                bestBreak = i + 2; // Start of the next paragraph
+                foundParagraphBreak = true;
+                break;
+            }
+        }
+        
+        // If no clean paragraph break, just break at the approximate word limit
+        if (!foundParagraphBreak) {
+             bestBreak = approxBreakIndex;
+        }
+
+        const pageContent = currentText.substring(0, bestBreak).trim();
+        pages.push(pageContent);
+        currentText = currentText.substring(bestBreak).trim();
+    }
+    
+    return pages;
+}
+
+async function showReader(book, fullAccess) {
+    const modal = document.getElementById('book-modal');
+    const content = document.getElementById('modal-content');
+
+    content.className = 'modal-content reader-modal-content';
+    currentBookId = book.id; 
+    currentPageIndex = 0; // 0 = Cover/Intro
+
+    // --- Determine Book Type and Content ---
+    isAIBook = !!book.contentUrl; 
+    currentBookPages = [];
+    let totalPages = book.pageCount || 0; 
+    
+    // Clear page index from control section for dynamic view creation
+    const pageStatus = document.getElementById('page-status');
+    if (pageStatus) pageStatus.innerText = 'Loading...';
+
+    if (isAIBook) {
+        // AI/Text-based book
+        try {
+            const response = await fetch(book.contentUrl);
+            if (!response.ok) throw new Error('Failed to fetch AI book content.');
+            const fullContent = await response.text();
+            
+            // Paginate the full content
+            const allVirtualPages = paginateText(fullContent, wordsPerPage);
+            totalPages = allVirtualPages.length;
+            
+            // Limit content for free preview
+            if (fullAccess) {
+                currentBookPages = allVirtualPages;
+            } else {
+                currentBookPages = allVirtualPages.slice(0, maxFreePages);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert('Could not load AI book content: ' + error.message);
+            return closeModal();
+        }
+
+    } else if (book.pages && Array.isArray(book.pages)) {
+        // Image-based book
+        totalPages = book.pages.length;
+        if (fullAccess) {
+            currentBookPages = book.pages;
+        } else {
+            currentBookPages = book.pages.slice(0, maxFreePages);
+        }
+    } else {
+        // Book with no pages/contentUrl
+        alert('Book content is currently unavailable.');
+        return closeModal();
+    }
+
+
+    // --- Build Reader Controls ---
+    const controlsHtml = `
+    <button onclick="closeModal()" style="background:#e74c3c;">&times; Close</button>
+    <select id="reader-view" onchange="renderCurrentPage()">
+        <option value="single">Single Page View</option>
+        <option value="dual">Dual Page View (📖)</option>
+        <option value="scroll">Continuous Scroll</option>
+    </select>
+    <div style="display:flex; gap:10px; align-items:center;">
+        <button id="prev-btn" onclick="navigatePage(-1)">&#9664; Prev</button>
+        <span id="page-status" style="font-weight:600;">Cover & Details</span>
+        <button id="next-btn" onclick="navigatePage(1)">Next &#9654;</button>
+    </div>
+    <button onclick="toggleDarkMode()" style="background:#3498db;">${isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}</button>
+    `;
+
+    let readerHtml = `<div class="reader-controls">${controlsHtml}</div><div id="reader-page-content">`;
+
+    // --- Initial Content: Cover/Description (Page Index 0) ---
+    readerHtml += `
+        <div class="page-container active" id="page-0" style="padding: 20px;">
+            <h3 style="text-align:center; color:var(--gold); border:none; padding:10px;">${book.title}</h3>
+            <div style="text-align:center; padding:20px;">
+                <img src="${book.coverUrl}" style="width:250px; height:350px; object-fit:cover;">
+                <p style="font-size:18px; margin-top:15px;">**Author:** ${book.author}</p>
+                <p style="color:var(--text); max-width: 600px; margin: 15px auto; line-height: 1.6;">${book.desc}</p>
+            </div>
+        </div>
+    `;
+
+    // --- Add Actual Content Pages (Image URL or Text String) ---
+    currentBookPages.forEach((content, index) => {
+        // index is 0-based, but page number is 1-based (index + 1)
+        readerHtml += `<div class="page-container" id="page-${index + 1}">${
+            isAIBook ? renderTextPage(content, book) : `<img src="${content}" alt="Page ${index + 1}">`
+        }</div>`;
+    });
+
+    readerHtml += `</div>`;
+
+    // Subscription gate if content was limited
+    const isLimited = isAIBook 
+        ? (!fullAccess && totalPages > 0) // If AI book and not full access, it's limited
+        : (book.pageCount > maxFreePages && !fullAccess);
+        
+    if(isLimited){
+        readerHtml+=getSubscriptionGateHtml(book);
+    }
+
+    content.innerHTML = readerHtml;
+    modal.style.display='flex';
+    
+    renderCurrentPage(); 
+}
+
+/**
+ * Helper to render the HTML for a virtual text page
+ * @param {string} text 
+ * @param {object} book 
+ * @returns {string} HTML string
+ */
+function renderTextPage(text, book) {
+    const contentHTML = text.split('\n\n').map(p => {
+        // Simple markdown-style heading detection (e.g., # or ##)
+        if (p.trim().startsWith('## ') || p.trim().startsWith('### ') || p.trim().startsWith('#### ')) {
+            return `<h4>${p.trim().replace(/^#+/, '').trim()}</h4>`;
+        }
+        return `<p>${p.trim()}</p>`;
+    }).join('');
+
+    // Apply custom styling if available from book data (optional)
+    const style = `
+        ${book.textColor ? `color: ${book.textColor};` : ''}
+        ${book.textSize ? `font-size: ${book.textSize}px;` : ''}
+    `;
+
+    return `<div class="text-page-container" style="${style}">${contentHTML}</div>`;
+}
+
+
+function renderCurrentPage() {
+    const viewSelect = document.getElementById('reader-view');
+    const view = viewSelect ? viewSelect.value : 'single'; // Default to single view
+    
+    const contentDiv = document.getElementById('reader-page-content');
+    const allPages = contentDiv.querySelectorAll('.page-container');
+    const introPage = document.getElementById('page-0');
+    const pageStatus = document.getElementById('page-status');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const gateDiv = document.getElementById('subscription-gate');
+    
+    // Reset view classes
+    contentDiv.className = '';
+    allPages.forEach(p => p.classList.remove('active'));
+
+    const totalRenderablePages = currentBookPages.length; 
+    const isLimited = (gateDiv && gateDiv.style.display !== 'none'); // Check if gate exists and is potentially visible
+
+    // --- Update UI based on View ---
+    if (view === 'single' || isAIBook) { // Treat AI books as single view always for navigation
+        contentDiv.classList.add('single-page-view');
+        
+        // Activate current page
+        const elementToShow = document.getElementById(`page-${currentPageIndex}`);
+        if(elementToShow) elementToShow.classList.add('active');
+
+        prevBtn.disabled = currentPageIndex === 0;
+        // Next is disabled if we are on the last page of renderable content
+        nextBtn.disabled = currentPageIndex === totalRenderablePages;
+        
+        pageStatus.innerText = currentPageIndex === 0 ? 'Cover & Details' : `Page ${currentPageIndex} of ${totalRenderablePages}`;
+
+    } else if (view === 'dual') {
+        // Image Book Logic (Dual Page View)
+        contentDiv.classList.add('dual-page-view');
+        
+        // Ensure index is odd for the left page start (Page 1 starts at index 1)
+        let leftPageIndex = currentPageIndex % 2 === 0 ? currentPageIndex - 1 : currentPageIndex;
+        if (leftPageIndex < 1) leftPageIndex = 1; 
+
+        if (currentPageIndex === 0) {
+            introPage.classList.add('active');
+            leftPageIndex = 0;
+            
+        } else if (leftPageIndex <= totalRenderablePages) {
+            const leftPage = document.getElementById(`page-${leftPageIndex}`);
+            if (leftPage) leftPage.classList.add('active');
+
+            const rightPage = document.getElementById(`page-${leftPageIndex + 1}`);
+            if (rightPage && leftPageIndex + 1 <= totalRenderablePages) {
+                rightPage.classList.add('active');
+            }
+        }
+        
+        prevBtn.disabled = currentPageIndex === 0;
+        nextBtn.disabled = currentPageIndex >= totalRenderablePages;
+        
+        if (currentPageIndex === 0) {
+            pageStatus.innerText = 'Cover & Details';
+        } else if (leftPageIndex + 1 <= totalRenderablePages) {
+            pageStatus.innerText = `Pages ${leftPageIndex}-${leftPageIndex + 1} of ${totalRenderablePages}`;
+        } else {
+            pageStatus.innerText = `Page ${leftPageIndex} of ${totalRenderablePages}`;
+        }
+
+
+    } else { // Scroll View (Image Book or AI Book)
+        contentDiv.classList.add('scroll-view');
+        allPages.forEach(p => p.classList.add('active')); 
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        pageStatus.innerText = 'Continuous Scroll View';
+    }
+    
+    // --- Subscription Gate Visibility ---
+    const lastFreePageIndex = totalRenderablePages;
+
+    if (gateDiv) {
+        if (!isLimited) {
+            gateDiv.style.display = 'none'; // Full access
+        } else if (view === 'scroll') {
+            gateDiv.style.display = 'block'; // Always visible in scroll view if limited
+        } else if (view === 'single' && currentPageIndex === lastFreePageIndex) {
+            gateDiv.style.display = 'block'; // Visible when navigating to the last page (where the next page would be)
+        } else if (view === 'dual' && (currentPageIndex === lastFreePageIndex || currentPageIndex === lastFreePageIndex - 1) && lastFreePageIndex > 0) {
+             // For dual view, show gate if user is on the last free page or the page before it (depending on even/odd total)
+             gateDiv.style.display = 'block'; 
+        } else {
+             gateDiv.style.display = 'none';
+        }
+    }
+
+
+    // --- Dark Mode Filter ---
+    const images = contentDiv.querySelectorAll('.page-container img');
+    const textContainers = contentDiv.querySelectorAll('.text-page-container');
+    
+    if (isDarkMode) {
+        images.forEach(img => {
+            // Apply filter if we are in Single/Dual view (to invert colors on white paper images)
+            if (view !== 'scroll') {
+                 img.style.filter = 'invert(0.9) hue-rotate(180deg)';
+            }
+        });
+        // No filter needed for text containers, CSS handles text color
+    } else {
+        images.forEach(img => img.style.filter = 'none');
+    }
+    
+    // Smooth scroll to top of reader content when switching single/dual page
+    if (view === 'single' || view === 'dual') {
+        document.getElementById('modal-content').scrollTop = 0; 
+    }
+}
+
+function navigatePage(direction) {
+    const viewSelect = document.getElementById('reader-view');
+    const view = viewSelect ? viewSelect.value : 'single'; // Default to single view for AI
+
+    let step = 1;
+
+    // Dual view logic only applies to non-AI books (AI uses single view logic)
+    if (!isAIBook && view === 'dual' && currentPageIndex !== 0) {
+        step = 2;
+    }
+
+    const newIndex = currentPageIndex + (direction * step);
+    const totalPages = currentBookPages.length; 
+
+    if (newIndex >= 0 && newIndex <= totalPages) {
+        currentPageIndex = newIndex;
+        renderCurrentPage();
+    }
+    
+    // If navigating forward and we hit the limit, set index to the limit and show gate
+    if (direction > 0 && currentPageIndex > totalPages && totalPages === maxFreePages) {
+        currentPageIndex = totalPages;
+        renderCurrentPage();
+    }
+}
+
+function getSubscriptionGateHtml(book) {
+    const monthlyPrice = book.priceMonthly * (1 - (book.discount || 0) / 100);
+    const yearlyPrice = book.priceYearly * (1 - (book.discount || 0) / 100);
+
+    // AI Book specific text for maxFreePages which is approximation (e.g., 20 paragraphs)
+    const previewMessage = isAIBook 
+        ? `You have viewed the free sample (first ${maxFreePages} virtual pages).` 
+        : `You have viewed the free sample of **${maxFreePages} pages**.`;
+
+    return `
+    <div id="subscription-gate" style="text-align:center; padding:30px; border:4px dashed #e74c3c; margin:25px auto; background:var(--card); border-radius:10px; max-width: 600px;">
+        <h4 style="color:#e74c3c; font-size:24px; margin-bottom:15px;">🔒 Full Access Required!</h4>
+        <p style="font-size:16px;">${previewMessage} Unlock the complete eBook with a premium subscription!</p>
+        
+        <div style="display:flex; justify-content:center; gap:20px; margin:20px 0; flex-wrap: wrap;">
+             <div style="background:var(--bg); padding:15px; border-radius:8px; border: 1px solid var(--gold); min-width:150px;">
+                 <h5 style="margin:5px 0; color:var(--gold);">Monthly Plan</h5>
+                 <p style="font-size:24px; font-weight:700; color:var(--accent);">₹${monthlyPrice.toFixed(0)}</p>
+             </div>
+             <div style="background:var(--bg); padding:15px; border-radius:8px; border: 1px solid var(--gold); min-width:150px;">
+                 <h5 style="margin:5px 0; color:var(--gold);">Yearly Plan (Best Value!)</h5>
+                 <p style="font-size:24px; font-weight:700; color:var(--accent);">₹${yearlyPrice.toFixed(0)}</p>
+             </div>
+        </div>
+
+        <p style="font-weight:600; color:var(--accent);">Choose your plan and pay via UPI:</p>
+        <p style="font-weight:700; color:#3498db; font-size:18px;">UPI ID: **7649070168@okbizaxis**</p>
+        
+        <img src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" style="width:200px;display:block;margin:15px auto; border: 5px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
+        
+        <hr style="margin:20px 0; border-color:#eee;">
+
+        <label for="pay-plan" style="display:block; margin-top:10px; font-weight:600;">Subscription Plan:</label>
+        <select id="pay-plan" style="margin-bottom:10px; padding:8px;" onchange="updatePaymentDetails('${book.id}')">
+            <option value="monthly" data-price-full="${book.priceMonthly}">Monthly (₹${monthlyPrice.toFixed(0)})</option>
+            <option value="yearly" data-price-full="${book.priceYearly}">Yearly (₹${yearlyPrice.toFixed(0)})</option>
+        </select>
+        
+        <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+            <input type="text" id="coupon-input" placeholder="Enter Coupon Code (Optional)" style="max-width:200px; flex-grow:1;">
+            <button onclick="applyCoupon('${book.id}', ${monthlyPrice}, ${yearlyPrice})">Apply</button>
+        </div>
+        <div id="coupon-status" style="margin-top:5px; font-weight:600; color:red;"></div>
+
+        <input type="number" id="pay-amount" placeholder="Final Amount (₹)" value="${monthlyPrice.toFixed(0)}" readonly style="font-weight:bold; background:#e9ecef; color:var(--text); text-align:center; margin:10px 0;">
+        <input type="text" id="pay-utr" placeholder="Enter 12-digit UTR/Ref No. after payment" maxlength="12" style="margin-bottom:10px;">
+        <button onclick="sendSubscriptionRequest('${book.id}')" style="background:#28a745; margin-top:5px;">Send Payment Request & Unlock</button>
+        <p style="font-size:12px; color:#e74c3c; margin-top:10px;">*Full access is unlocked ONLY after Admin verifies your UTR/Payment Reference Number.</p>
+    </div>
+    `;
+}
+
+function updatePaymentDetails(bookId) {
+    const planSelect = document.getElementById('pay-plan');
+    const book = allBooksCache.find(b=>b.id===bookId);
+    if (!book) return;
+
+    const originalMonthly = book.priceMonthly;
+    const originalYearly = book.priceYearly;
+
+    const basePrice = planSelect.value === 'monthly' ? originalMonthly : originalYearly;
+    const finalPrice = basePrice * (1 - (book.discount || 0) / 100);
+    
+    document.getElementById('pay-amount').value = finalPrice.toFixed(0);
+    document.getElementById('coupon-status').innerHTML = '';
+    document.getElementById('coupon-input').value = '';
+}
+
+function applyCoupon(bookId, monthlyPrice, yearlyPrice) {
+    const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+    const plan = document.getElementById('pay-plan').value;
+    const amountInput = document.getElementById('pay-amount');
+    const statusDiv = document.getElementById('coupon-status');
+    
+    const book = allBooksCache.find(b=>b.id===bookId);
+    const basePriceAfterBookDiscount = plan === 'monthly' ? 
+        monthlyPrice : yearlyPrice; 
+        
+    if (!code) return statusDiv.style.color='red', statusDiv.innerText = 'Enter a coupon code.';
+
+    db.ref('coupons/' + code).once('value').then(snap => {
+        const coupon = snap.val();
+        if (!coupon || coupon.expiryTimestamp < Date.now()) {
+            amountInput.value = basePriceAfterBookDiscount.toFixed(0);
+            return statusDiv.style.color='red', statusDiv.innerText = 'Invalid or expired coupon.';
+        }
+
+        const discount = coupon.discount / 100;
+        const newAmount = basePriceAfterBookDiscount * (1 - discount);
+        
+        amountInput.value = newAmount.toFixed(0);
+        statusDiv.style.color='green';
+        statusDiv.innerText = `✅ Coupon Applied! ${coupon.discount}% additional off. Final Price: ₹${newAmount.toFixed(0)}`;
+    }).catch(e => {
+        amountInput.value = basePriceAfterBookDiscount.toFixed(0);
+        statusDiv.style.color='red';
+        statusDiv.innerText = 'Error applying coupon.';
+        console.error(e);
+    });
+}
+
+
+// --- Send Subscription Request ---
+function sendSubscriptionRequest(bookId){
+    if (currentUser === 'guest_user') return alert('Please login before sending a subscription request.');
+
+    const plan = document.getElementById('pay-plan').value;
+    const amount = Number(document.getElementById('pay-amount').value);
+    const utr = document.getElementById('pay-utr').value.trim();
+    const couponUsed = document.getElementById('coupon-input').value.trim().toUpperCase();
+
+    if(!amount || amount <= 0 || !utr || utr.length!==12) return alert('🚨 Payment Error: Please enter the correct Final Amount and the 12-digit UTR/Ref No.');
+    
+    const id = 'p'+Date.now();
+    db.ref('payments/'+id).set({
+        id, 
+        userEmail: auth.currentUser.email,
+        bookId, 
+        amount: amount, 
+        utr, 
+        plan,
+        couponUsed: couponUsed || null,
+        status:'pending', 
+        timestamp:Date.now()
+    }).then(() => {
+        alert('🎉 Subscription Request Sent! The Admin is verifying your payment. We will notify you when access is granted.');
+        closeModal();
+        updateNotifications();
+        loadHistory(); 
+    }).catch(err => alert('Error sending request: ' + err.message));
+}
+
+// --- Notification Count & Display ---
+function updateNotifications(){
+    if (currentUser === 'guest_user' || !auth.currentUser) {
+        document.getElementById('notif-count').innerText=0;
+        return;
+    }
+    
+    const userKey = auth.currentUser.email.replace(/[.#$[\]]/g, '_'); 
+    let globalNotifRef = db.ref('notifications').orderByChild('recipient').equalTo('global');
+    let userNotifRef = db.ref('notifications').orderByChild('recipient').equalTo(userKey);
+
+    Promise.all([globalNotifRef.once('value'), userNotifRef.once('value')]).then(([globalSnap, userSnap]) => {
+        const globalData = globalSnap.val() || {};
+        const userData = userSnap.val() || {};
+        
+        let unreadCount = 0;
+        Object.values(globalData).forEach(n => { if (!n.read || !n.read[userKey]) unreadCount++; });
+        Object.values(userData).forEach(n => { if (!n.read) unreadCount++; });
+        
+        document.getElementById('notif-count').innerText = unreadCount;
+    });
+}
+
+function openNotifications() {
+    if (currentUser === 'guest_user') return alert('Please login to view notifications.');
+
+    const userKey = auth.currentUser.email.replace(/[.#$[\]]/g, '_'); 
+    const notifModal = document.getElementById('book-modal');
+    const content = document.getElementById('modal-content');
+    content.className = 'modal-content'; 
+    
+    let globalNotifRef = db.ref('notifications').orderByChild('recipient').equalTo('global');
+    let userNotifRef = db.ref('notifications').orderByChild('recipient').equalTo(userKey);
+    let paymentRef = db.ref('payments').orderByChild('userEmail').equalTo(auth.currentUser.email);
+
+    Promise.all([globalNotifRef.once('value'), userNotifRef.once('value'), paymentRef.once('value')]).then(([globalSnap, userSnap, paymentSnap]) => {
+        const globalNotifications = Object.values(globalSnap.val() || {});
+        const userNotifications = Object.values(userSnap.val() || {});
+        const payments = Object.values(paymentSnap.val() || {});
+
+        let html = '<h3 style="border-left-color:#3498db;">🔔 My Notifications & Payment Status</h3>';
+        const allNotifications = [...globalNotifications, ...userNotifications]
+            .sort((a, b) => b.timestamp - a.timestamp);
+
+        // Render Notifications
+        html += '<h4>System Messages:</h4>';
+        if (allNotifications.length === 0) {
+            html += '<p style="color:#999;">No new system messages.</p>';
+        } else {
+            allNotifications.forEach(n => {
+                const isRead = n.recipient === 'global' ? (n.read && n.read[userKey]) : n.read;
+                const readStyle = isRead ? 'opacity:0.8; background:var(--bg);' : 'background:#dbe9ff; font-weight:600; border-left: 3px solid #3498db;';
+                html += `
+                <div style="border: 1px solid #ccc; padding: 12px; margin-bottom: 10px; border-radius: 6px; ${readStyle} cursor:pointer;" onclick="markNotificationRead('${n.id}', '${n.recipient}')">
+                    <p style="margin:0; font-weight:700;">${n.title} <span style="font-size:11px; font-weight:400; color:#666;">(${new Date(n.timestamp).toLocaleDateString()})</span></p>
+                    <p style="font-size:14px; margin-top:5px;">${n.body}</p>
+                </div>
+                `;
+            });
+        }
+
+        // Render Payment Status
+        html += '<h4 style="margin-top:20px;">Payment Requests:</h4>';
+        if (payments.length === 0) {
+            html += '<p style="color:#999;">No payment requests found.</p>';
+        } else {
+            payments.sort((a,b)=>b.timestamp - a.timestamp).forEach(p => {
+                const statusColor = p.status === 'approved' ? 'green' : (p.status === 'rejected' ? 'red' : '#f39c12');
+                const statusBg = p.status === 'approved' ? '#e6ffe6' : (p.status === 'rejected' ? '#ffebeb' : '#fff3cd');
+                const statusText = p.status.toUpperCase();
+                html += `
+                <div style="border: 1px solid #ccc; padding: 12px; margin-bottom: 10px; border-radius: 6px; background: ${statusBg}; border-left: 3px solid ${statusColor};">
+                    <p style="margin:0;"><strong>Book ID:</strong> ${p.bookId} (${p.plan}) | <strong>Amount:</strong> ₹${p.amount}</p>
+                    <p style="margin:5px 0;"><strong>UTR:</strong> ${p.utr}</p>
+                    <p style="margin:0;"><strong>Status:</strong> <span style="color:${statusColor}; font-weight:bold;">${statusText}</span></p>
+                </div>
+                `;
+            });
+        }
+        
+        html += '<button onclick="closeModal()" style="margin-top:20px; background:#1abc9c;">Close Notifications</button>';
+        content.innerHTML = html;
+        notifModal.style.display = 'flex';
+    });
+}
+
+function markNotificationRead(id, recipient) {
+    const userKey = auth.currentUser.email.replace(/[.#$[\]]/g, '_'); 
+
+    if (recipient === 'global') {
+        db.ref('notifications/' + id + '/read/' + userKey).set(true).then(() => {
+            updateNotifications();
+            openNotifications(); // Re-render the notification modal
+        });
+    } else { // Direct user notification
+        db.ref('notifications/' + id).update({ read: true }).then(() => {
+            updateNotifications();
+            openNotifications(); 
+        });
+    }
+}
+
+function closeModal(){
+    document.getElementById('book-modal').style.display='none';
+    document.getElementById('modal-content').className = 'modal-content';
+}
+
+// Init
+// Auth listener handles loadData()
+</script>
+</body>
+</html>
+

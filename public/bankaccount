@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moneycard | Digital Bank Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root { --primary: #2563eb; --bg: #f1f5f9; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background-color: var(--bg); }
+        .container { max-width: 900px; margin: 20px auto; padding: 20px; }
+        
+        /* Header & Info Cards */
+        .header { text-align: center; margin-bottom: 25px; }
+        .info-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .info-card { background: white; padding: 15px; border-radius: 12px; border-top: 4px solid var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .info-card h3 { margin: 0 0 10px 0; font-size: 16px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .info-card ul { padding-left: 18px; margin: 0; font-size: 13px; color: #475569; list-style: square; }
+
+        /* Bank Buttons */
+        .bank-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .bank-btn {
+            background: white; border: 2px solid transparent; padding: 15px; border-radius: 15px;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px;
+            font-size: 15px; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.08); transition: 0.3s;
+        }
+        .bank-btn:hover { transform: translateY(-3px); border-color: var(--primary); }
+        .bank-btn i { font-size: 30px; }
+        .kotak { color: #d32f2f; } .tide { color: #00a3ad; } .airtel { color: #e53935; } .equitas { color: #8e24aa; }
+
+        /* Status Placeholder */
+        .status-box { 
+            margin-top: 30px; padding: 30px; background: white; border-radius: 15px; 
+            border: 2px dashed #cbd5e1; text-align: center; color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Select Your Digital Bank</h1>
+        <p>Ghar baithe account chalu karein</p>
+    </div>
+
+    <div class="info-section">
+        <div class="info-card">
+            <h3><i class="ri-checkbox-circle-fill"></i> Fayde</h3>
+            <ul>
+                <li>Zero Balance Account</li>
+                <li>Ghar baithe Video KYC</li>
+                <li>Virtual Debit Card</li>
+            </ul>
+        </div>
+        <div class="info-card">
+            <h3><i class="ri-shield-flash-fill"></i> Steps</h3>
+            <ul>
+                <li>Bank select karein</li>
+                <li>Aadhaar/PAN details daalein</li>
+                <li>KYC complete karein</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="bank-grid">
+        <button class="bank-btn equitas" onclick="openSecure('https://leads.banksathi.com/?h=eWhwQUhQbzg3OE82cEJlOUtvOWt0UT09')">
+            <i class="ri-bank-line"></i> Equitas Bank
+        </button>
+
+        <button class="bank-btn kotak" onclick="openSecure('https://www.indiasales.club/PEN90141/PEN90141/KT')">
+            <i class="ri-shield-user-line"></i> Kotak 811
+        </button>
+
+        <button class="bank-btn tide" onclick="openSecure('https://www.indiasales.club/PEN90141/PEN90141/TR')">
+            <i class="ri-briefcase-line"></i> Tide Business
+        </button>
+
+        <button class="bank-btn airtel" onclick="openSecure('https://www.indiasales.club/PEN90141/PEN90141/ZD')">
+            <i class="ri-smartphone-line"></i> Airtel Bank
+        </button>
+    </div>
+
+    <div id="status" class="status-box">
+        <i class="ri-fingerprint-line" style="font-size: 40px; color: var(--primary);"></i>
+        <p>Upar bank par click karein. <br> Security ke liye bank portal ek naye safe window mein khulega.</p>
+    </div>
+</div>
+
+<script>
+    function openSecure(url) {
+        // Window dimensions
+        const width = 450;
+        const height = 700;
+        const left = (window.innerWidth / 2) - (width / 2);
+        const top = (window.innerHeight / 2) - (height / 2);
+
+        // Naya window popup jo bilkul app jaisa dikhega
+        const bankWindow = window.open(url, 'BankWindow', 
+            `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,toolbar=no,menubar=no`
+        );
+
+        if (bankWindow) {
+            document.getElementById('status').innerHTML = `
+                <div style="color: #10b981;">
+                    <i class="ri-lock-check-fill" style="font-size: 40px;"></i>
+                    <p><strong>Bank Portal Khul Gaya Hai!</strong><br>
+                    Apna account process naye window mein poora karein.<br>
+                    Process khatam hone ke baad isse band kar dein.</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; border-radius: 8px; border: none; background: #2563eb; color: white; cursor: pointer; margin-top: 10px;">Select Another Bank</button>
+                </div>
+            `;
+        } else {
+            alert("Kripya Popup Allow karein browser settings se!");
+        }
+    }
+</script>
+
+</body>
+</html>
+

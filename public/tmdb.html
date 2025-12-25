@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Latest Hindi Movies 🇮🇳 | TMDb API</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #0d0d0d;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #ffcc00;
+    }
+    .movie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .movie-card {
+      background-color: #1c1c1c;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      transition: 0.3s;
+    }
+    .movie-card:hover {
+      transform: scale(1.02);
+    }
+    .movie-card img {
+      width: 100%;
+      height: 390px;
+      object-fit: cover;
+    }
+    .movie-info {
+      padding: 15px;
+    }
+    .movie-info h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #ffcc00;
+    }
+    .movie-info p {
+      font-size: 13px;
+      line-height: 1.4;
+      color: #ccc;
+      margin-top: 8px;
+    }
+    .meta {
+      font-size: 12px;
+      color: #999;
+      margin-top: 6px;
+    }
+    .trailer-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 6px 12px;
+      background-color: #e50914;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Latest Hindi Movies 🇮🇳</h1>
+  <div class="movie-grid" id="movies"></div>
+
+  <script>
+    const apiKey = 'cfd05c95185ad8be6c7590622d2c1030'; // 🔁 Replace with your TMDb API key
+    const apiBase = 'https://api.themoviedb.org/3';
+    const imageBase = 'https://image.tmdb.org/t/p/w500';
+
+    async function fetchHindiMovies() {
+      const url = `${apiBase}/discover/movie?api_key=${apiKey}&with_original_language=hi&region=IN&sort_by=release_date.desc`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const movies = data.results;
+      displayMovies(movies);
+    }
+
+    async function fetchTrailer(id) {
+      const url = `${apiBase}/movie/${id}/videos?api_key=${apiKey}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+      return trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null;
+    }
+
+    async function displayMovies(movies) {
+      const container = document.getElementById('movies');
+      container.innerHTML = '';
+
+      for (let movie of movies) {
+        const {
+          id,
+          title,
+          poster_path,
+          release_date,
+          overview,
+          original_language,
+          vote_average,
+          popularity,
+          vote_count
+        } = movie;
+
+        const trailerUrl = await fetchTrailer(id);
+        const poster = poster_path ? `${imageBase}${poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.innerHTML = `
+          <img src="${poster}" alt="${title}">
+          <div class="movie-info">
+            <h3>${title}</h3>
+            <p>${overview ? overview.slice(0, 150) + '...' : 'No description available.'}</p>
+            <div class="meta">
+              📅 <strong>Release:</strong> ${release_date || 'N/A'}<br>
+              🌐 <strong>Language:</strong> ${original_language.toUpperCase()}<br>
+              ⭐ <strong>Rating:</strong> ${vote_average} / 10<br>
+              🔥 <strong>Popularity:</strong> ${Math.floor(popularity)}<br>
+              🗳️ <strong>Votes:</strong> ${vote_count}
+            </div>
+            ${trailerUrl ? `<a class="trailer-btn" href="${trailerUrl}" target="_blank">🎬 Watch Trailer</a>` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      }
+    }
+
+    // Load movies on page load
+    fetchHindiMovies();
+  </script>
+
+</body>
+</html>

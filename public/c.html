@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>gold rupi - user (fixed)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Variables (Day Mode) */
+        :root{
+            --gold:#d4af37;
+            --gold-strong:#c59b2d;
+            --glass: rgba(255,255,255,0.8); /* Changed opacity for better look */
+            --card: rgba(255,255,255,0.95);
+            --bg-grad: linear-gradient(135deg,#fff7e1,#ffe9a6);
+            --accent:#1f2937;
+            --text-color:#222;
+            --subtle-text:#666;
+            --shadow-light: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-strong: 0 8px 30px rgba(0,0,0,0.08);
+            --primary-bg: linear-gradient(180deg,#fffaf0,#fff3d6);
+            --input-bg: rgba(240,240,240,0.8);
+            --success: #10b981;
+            --pending: #f59e0b;
+            --failure: #ef4444;
+        }
+        /* New Style: For better mobile look and feel */
+        *{box-sizing:border-box}
+        body{
+            margin:0;
+            font-family:'Poppins',sans-serif;
+            background: var(--primary-bg);
+            color:var(--text-color);
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            min-height: 100vh;
+        }
+        .header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:14px 16px;
+            background:var(--glass);
+            backdrop-filter:blur(10px);
+            position:sticky;
+            top:0;
+            z-index:100;
+            box-shadow: var(--shadow-light);
+        }
+        .brand{ display:flex;align-items:center;gap:10px; }
+        .logo{
+            width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#ffd76b);
+            display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;
+            box-shadow:0 6px 20px rgba(197,155,45,0.25);
+            font-size: 18px;
+        }
+        .h1{font-weight:700;font-size:20px;line-height:1.2;} /* Increased font size */
+        .top-right{display:flex;gap:10px;align-items:center}
+        .search-bar{padding:10px 16px;border:none;width:100%;background:var(--card);margin:12px 0;display:flex;gap:10px;align-items:center;border-radius:12px;}
+        .search-bar input{border:none;background:transparent;outline:none;width:100%;font-size:15px;padding:8px 0;}
+        .search-bar select{border:none;background:transparent;outline:none;font-size:15px;padding:8px 0;}
+        .container{padding:12px 16px 80px}  /* sections */
+        .section{display:none}
+        .section.active{display:block}
+        /* product card */
+        .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+        .card{
+            background:var(--card); /* Simpler background */
+            border-radius:16px; /* Slightly larger radius */
+            padding:12px;
+            box-shadow:var(--shadow-light);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .product-img{width:100%;height:140px;object-fit:cover;border-radius:12px;margin-bottom:8px} /* Reduced height for 2-column view */
+        .pmeta{display:flex;justify-content:space-between;align-items:center}
+        .pname{font-weight:700;font-size:15px;line-height:1.2;}
+        .pprice{font-weight:800;color:var(--gold-strong);font-size:16px;}
+        .small{font-size:13px;color:var(--subtle-text)}
+        .small-muted{font-size:12px;color:var(--subtle-text)}
+
+        /* cart list */
+        .cart-list .card{display:flex;gap:12px;align-items:center;padding:12px;margin-bottom:10px;}
+        .cart-list img{width:80px;height:80px;object-fit:cover;border-radius:10px}
+
+        /* profile */
+        .profile-top{display:flex;gap:12px;align-items:center}
+        .profile-photo{width:90px;height:90px;border-radius:50%;object-fit:cover;border:4px solid #fff;box-shadow:var(--shadow-strong);}
+        .field{margin-top:10px}
+        input:not([type="file"]), select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 4px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            background: var(--input-bg);
+            font-size: 15px;
+            outline: none;
+        }
+
+        /* buttons */
+        .btn{background:var(--gold);border:none;padding:10px 14px;border-radius:10px;color:var(--accent);font-weight:700;cursor:pointer;transition:background 0.2s, transform 0.1s;}
+        .btn:active{transform:scale(0.98)}
+        .btn.secondary{background:var(--input-bg);border:1px solid rgba(0,0,0,0.1);color:var(--text-color);font-weight:600;}
+        .row{display:flex;gap:10px;flex-wrap:wrap}
+
+        /* bottom nav */
+        .bottom-nav{
+            position:fixed;left:0;right:0;bottom:0;height:66px;
+            background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.95));
+            display:flex;justify-content:space-around;
+            padding: 0 8px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+        .navbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--subtle-text);cursor:pointer;flex:1;}
+        .navbtn img{width:24px;height:24px;margin-bottom:2px;opacity:0.6;transition:all 0.2s}
+        .navbtn.active{color:var(--gold-strong);font-weight:600;}
+        .navbtn.active img{filter:drop-shadow(0 0 4px var(--gold)); opacity:1;}
+
+        /* gold section */
+        .gold-box{background:linear-gradient(135deg, rgba(212,175,55,0.15), rgba(255,245,225,1));padding:16px;border-radius:16px;margin:12px 0;border:none;}
+        .note{font-size:13px;color:#333}
+
+        /* history styling */
+        .history .card{background:linear-gradient(90deg,#fff9ec,#fff4d8);border-left:4px solid var(--gold-strong);margin-bottom:10px;}
+
+        /* product detail overlay & modals */
+        .overlay{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:9999;backdrop-filter: blur(4px);}
+        .overlay .modal{width:96%;max-width:800px;background:#fff;padding:20px;border-radius:16px;max-height:95vh;overflow:auto;box-shadow: var(--shadow-strong);}
+        .overlay .images{display:flex;gap:10px;overflow-x:scroll;margin-bottom:10px;padding-bottom:10px;}
+        .overlay img{height:200px;min-width:200px;object-fit:cover;border-radius:10px}
+        .modal-row{display:flex;gap:8px;align-items:center}
+        .modal-title{font-size:22px;font-weight:700;}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+
+        /* responsive */
+        @media (min-width:900px){
+            .container{max-width:980px;margin:0 auto}
+            .grid{grid-template-columns:repeat(3,1fr)}
+            .cart-list .card{width:60%;max-width:600px;margin:0 auto 10px;}
+        }
+        .cart-icon{position:relative;cursor:pointer}
+        .cart-count{position:absolute;right:-8px;top:-8px;background:#ff3b30;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;}
+        .field-hidden{display:none !important}
+        .section-title{display:flex;justify-content:space-between;align-items:center}
+
+        /* Utility classes for status badges */
+        .status-badge{padding:4px 10px;border-radius:8px;font-weight:600;font-size:12px;text-transform:capitalize;display:inline-block;white-space:nowrap;}
+        .status-pending{background-color:var(--pending);color:#fff;}
+        .status-paid, .status-completed, .status-delivered, .status-verified{background-color:var(--success);color:#fff;}
+        .status-rejected, .status-failed{background-color:var(--failure);color:#fff;}
+        .status-processing, .status-out_for_delivery{background-color:#3b82f6;color:#fff;}
+
+        /* Wallet/Gold display */
+        .balance-display{
+            background: linear-gradient(135deg, var(--gold), #ffd76b);
+            color: #fff;
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(197,155,45,0.3);
+        }
+        .balance-title{font-size:14px;opacity:0.8;}
+        .balance-value{font-size:36px;font-weight:800;margin-top:-5px;line-height:1.2;}
+        .balance-unit{font-size:18px;font-weight:700;opacity:0.9;}
+
+    </style>
+
+</head>
+
+<body>
+    <div class="header">
+        <div class="brand">
+            <div class="logo">gr</div>
+            <div>
+                <div class="h1">gold rupi</div>
+                <div class="small">buy gold • shop • wallet</div>
+            </div>
+        </div>
+        <div class="top-right" style="display:flex;align-items:center;gap:12px">
+            <div class="small" id="goldrate-display">rate: ₹6500 / g</div>
+            <div class="small" id="wallet-mini">wallet: ₹0</div>
+            <div class="cart-icon" onclick="showTab('cart')" title="Cart">
+                <img src="https://img.icons8.com/ios-filled/30/000000/shopping-cart.png" alt="cart" style="width:24px;height:24px;">
+                <div id="cart-count" class="cart-count" style="display:none">0</div>
+            </div>
+            <button class="btn secondary" onclick="logout()" style="padding: 6px 10px; font-size: 13px;">Logout</button>
+        </div>
+    </div>
+    <div class="container" style="padding-bottom: 0;">
+        <div class="search-bar">
+            <input id="search-input" placeholder="search products, brand, color, category..." />
+            <select id="category-filter" style="min-width:140px;padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.05);">
+                <option value="">all categories</option>
+            </select>
+            <button class="btn secondary" onclick="applyFilter()" style="padding: 8px 10px;">filter</button>
+        </div>
+    </div>
+    <div class="container">
+        <div id="home" class="section active">
+            <div class="section-title">
+                <h2>welcome back 👋</h2>
+                <div class="small-muted" id="signup-bonus-note"></div>
+            </div>
+            <div class="card gold-box">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <div style="font-weight:700;font-size:18px">current gold rate</div>
+                        <div style="font-weight:800;font-size:24px;color:var(--gold-strong)">₹ <span id="gold-rate">6500</span> / g</div>
+                        <div class="note" style="margin-top:4px;">your gold balance: <strong id="gold-balance-home">0.0000g</strong></div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="font-weight:700">fast actions</div>
+                        <div class="row" style="margin-top:10px">
+                            <button class="btn secondary" onclick="showTab('shop')">shop</button>
+                            <button class="btn" onclick="showTab('gold')">buy gold</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h3 style="margin-top:20px">latest products</h3>
+            <div id="latest-products" class="grid"></div>
+        </div>
+
+        <div id="shop" class="section">
+            <h2>shop</h2>
+            <div class="card">
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input id="search-shop" placeholder="search in shop..." style="flex:1">
+                    <select id="cat-shop" style="min-width:140px"><option value="">all categories</option></select>
+                    <button class="btn" onclick="searchShop()">search</button>
+                </div>
+            </div>
+            <div id="product-list" class="grid" style="margin-top:10px"></div>
+        </div>
+
+        <div id="cart" class="section">
+            <h2>cart</h2>
+            <div id="cart-list" class="cart-list"></div>
+            <div style="margin-top:12px">
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div><strong>subtotal:</strong> ₹ <span id="cart-subtotal">0</span></div>
+                        <div style="display:flex;gap:8px">
+                            <button class="btn secondary" onclick="clearCart()">clear</button>
+                            <button class="btn" onclick="openCheckoutModal()">checkout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="gold" class="section">
+            <h2>buy gold 💰</h2>
+            <div class="balance-display">
+                <div class="balance-title">your gold balance</div>
+                <div class="balance-value"><span id="gold-balance-main">0.0000</span> <span class="balance-unit">g</span></div>
+            </div>
+            <div class="card">
+                <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div style="flex:1">
+                        <label class="small">enter amount (₹, min 50)</label>
+                        <input id="gold-amount" type="number" placeholder="amount in ₹">
+                        <label class="small">grams you will get:</label>
+                        <div style="font-weight:600;margin-bottom:8px;"><span id="gold-grams-calc">0.0000</span> g</div>
+                        <label class="small">enter utr (12 digits)</label>
+                        <input id="gold-utr" type="text" placeholder="12 digit utr">
+                    </div>
+                    <div style="width:160px;text-align:center;padding:10px;border:1px solid rgba(0,0,0,0.1);border-radius:10px;">
+                        <img id="gold-qr-img" src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" style="width:100%;border-radius:8px">
+                        <div class="small" style="margin-top:6px">scan & pay</div>
+                    </div>
+                </div>
+                <div style="margin-top:12px">
+                    <button class="btn" onclick="buyGold()">submit request</button>
+                </div>
+                <div class="note small" style="margin-top:10px;">scan the upi qr, pay, and paste utr then submit. admin will verify.</div>
+            </div>
+            <h3 style="margin-top:16px;">my gold history <button class="btn secondary" onclick="loadGoldHistory()" style="padding: 6px 10px;">refresh</button></h3>
+            <div id="gold-status-list" style="margin-top:8px"></div>
+        </div>
+
+        <div id="wallet" class="section">
+            <h2>wallet 💳</h2>
+            <div class="balance-display" style="background: linear-gradient(135deg, #06b6d4, #67e8f9);">
+                <div class="balance-title">current balance</div>
+                <div class="balance-value">₹ <span id="wallet-balance-main">0</span></div>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0;">add money</h4>
+                <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div style="flex:1">
+                        <label class="small">amount (₹)</label>
+                        <input id="wallet-add-amount" type="number" placeholder="amount">
+                        <label class="small">enter utr (12 digits)</label>
+                        <input id="wallet-utr" type="text" placeholder="12 digit utr">
+                    </div>
+                    <div style="width:160px;text-align:center;padding:10px;border:1px solid rgba(0,0,0,0.1);border-radius:10px;">
+                        <img id="wallet-qr" src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" style="width:100%;border-radius:8px">
+                        <div class="small" style="margin-top:6px">scan & pay</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                    <button class="btn" onclick="addWallet()">request add</button>
+                    <button class="btn secondary" onclick="openWithdrawModal()">withdraw</button>
+                </div>
+            </div>
+            <h3 style="margin-top:16px;">wallet history <button class="btn secondary" onclick="loadWalletHistory()" style="padding: 6px 10px;">refresh</button></h3>
+            <div id="wallet-history-list" style="margin-top:8px"></div>
+        </div>
+
+        <div id="profile" class="section">
+            <div class="section-title">
+                <h2>profile 👤</h2>
+                <div>
+                    <button class="btn secondary" onclick="showHistory('orders')" style="padding: 8px 12px;">my orders</button>
+                </div>
+            </div>
+            <div class="card profile-top">
+                <img id="profile-photo" class="profile-photo" src="https://via.placeholder.com/90" alt="profile">
+                <div style="flex:1">
+                    <div id="profile-view">
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <div style="flex:1">
+                                <div id="profile-name-display" style="font-weight:700;font-size:18px;">Name</div>
+                                <div id="profile-mobile-display" class="small-muted">Mobile</div>
+                            </div>
+                            <div>
+                                <button class="btn secondary" onclick="toggleProfileEdit()">edit</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="profile-edit" class="field-hidden" style="margin-top:8px">
+                        <input id="profile-name" placeholder="name">
+                        <input id="profile-mobile" placeholder="mobile">
+                        <div style="margin-top:6px">
+                            <input type="file" id="profile-upload">
+                            <button class="btn secondary" onclick="uploadProfile()" style="margin-top:4px;">upload photo</button>
+                        </div>
+                        <div style="margin-top:8px">
+                            <button class="btn" onclick="saveProfile()">save profile</button>
+                            <button class="btn secondary" onclick="toggleProfileEdit(true)">cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:12px">
+                <h3>address</h3>
+                <div id="address-view">
+                    <div class="small-muted" id="address-display" style="min-height:20px;">No saved address</div>
+                    <div style="margin-top:8px"><button class="btn secondary" onclick="toggleAddressEdit()">edit address</button></div>
+                </div>
+                <div id="address-edit" class="field-hidden" style="margin-top:8px">
+                    <input id="addr-house" placeholder="house / street">
+                    <input id="addr-city" placeholder="city">
+                    <input id="addr-district" placeholder="district">
+                    <input id="addr-country" placeholder="country">
+                    <div style="display:flex;gap:8px;margin-top:8px">
+                        <button class="btn" onclick="saveAddress()">save address</button>
+                        <button class="btn secondary" onclick="toggleAddressEdit(true)">cancel</button>
+                    </div>
+                </div>
+                <div class="small" style="margin-top:8px">Saved address will autofill at checkout.</div>
+            </div>
+
+            <div class="card" style="margin-top:12px">
+                <h3>kyc (aadhaar)</h3>
+                <div id="kyc-block">
+                    <input id="kyc-name" placeholder="aadhaar name">
+                    <input id="kyc-number" placeholder="aadhaar number">
+                    <label class="small">Aadhaar Front</label>
+                    <input type="file" id="kyc-front" style="margin-bottom:0;">
+                    <label class="small">Aadhaar Back</label>
+                    <input type="file" id="kyc-back" style="margin-bottom:0;">
+                    <div style="display:flex;gap:8px;margin-top:12px">
+                        <button class="btn" onclick="uploadKYC()">submit kyc</button>
+                        <button class="btn secondary" onclick="showKYCStatus()">view status</button>
+                    </div>
+                    <div id="kyc-status" class="small" style="margin-top:10px;"></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:12px">
+                <h3>refer & earn 🚀</h3>
+                <div class="small">your refer code: <strong id="my-refer" style="color:var(--gold-strong);font-size:14px;">N/A</strong></div>
+                <p class="small" style="color:red;font-weight:600;margin-top:8px;">
+                    Terms: Friend must buy gold ≥ ₹50. ₹50 bonus added to your wallet only for the first referred friend who meets the criteria.
+                </p>
+                <input id="refer-friend-name" placeholder="friend name">
+                <input id="refer-friend-email" placeholder="friend email">
+                <input id="refer-friend-mobile" placeholder="friend mobile">
+                <div style="display:flex;gap:8px;margin-top:8px">
+                    <button class="btn" onclick="submitRefer()">submit refer</button>
+                </div>
+                <h4 style="margin-top:16px;">referral history</h4>
+                <div id="refer-history-list" style="margin-top:8px"></div>
+            </div>
+
+            <div class="card" style="margin-top:12px">
+                <h3>quick loan 🏦</h3>
+                <div id="loan-block">
+                    </div>
+                <div id="loan-form" class="field-hidden">
+                    <h4 style="margin-top:0;">loan application</h4>
+                    <label class="small">amount needed (₹, min 5000)</label>
+                    <input id="loan-amount-req" type="number" placeholder="example: 5000">
+                    <label class="small">full name</label>
+                    <input id="loan-name" placeholder="full name">
+                    <label class="small">pan number</label>
+                    <input id="loan-pan" placeholder="pan number">
+                    <label class="small">profession</label>
+                    <input id="loan-profession" placeholder="e.g. software engineer, student">
+                    <label class="small">reference 1 (name/mobile)</label>
+                    <input id="loan-ref1" placeholder="reference 1 name/mobile">
+                    <label class="small">reference 2 (name/mobile)</label>
+                    <input id="loan-ref2" placeholder="reference 2 name/mobile">
+                    <label class="small">pan card photo</label>
+                    <input type="file" id="loan-pan-photo" style="margin-bottom:8px;">
+                    <div style="display:flex;gap:8px;margin-top:8px">
+                        <button class="btn" onclick="submitLoanApplication()">apply for loan</button>
+                        <button class="btn secondary" onclick="toggleLoanForm(true)">cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card history" style="margin-top:12px">
+                <h3>quick history</h3>
+                <div id="quick-history"></div>
+            </div>
+            <div id="orders-full-list" style="margin-top:12px"></div>
+        </div>
+    </div>
+
+    <div id="overlay" class="overlay" onclick="overlayClicked(event)">
+        <div class="modal" id="overlay-modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Product</div>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <div id="modal-price" style="font-weight:800;color:var(--gold-strong);font-size:18px;"></div>
+                    <button class="btn" onclick="modalAddToCart()">add to cart</button>
+                    <button class="btn secondary" onclick="closeOverlay()">close</button>
+                </div>
+            </div>
+            <div class="images" id="modal-images"></div>
+            <div id="modal-desc" style="margin-top:8px;color:#333"></div>
+            <div class="small" id="modal-meta" style="margin-top:8px;color:#555"></div>
+        </div>
+    </div>
+
+    <div id="checkout-overlay" class="overlay" style="display:none">
+        <div class="modal">
+            <h3>Checkout</h3>
+            <div id="checkout-items" style="max-height:250px;overflow-y:auto;margin-bottom:8px;padding-right:10px;"></div>
+            <div style="margin-top:12px;">
+                <h4 style="margin-bottom:4px;">Delivery address</h4>
+                <div id="checkout-address-display" class="small-muted" style="margin-bottom:8px;"></div>
+                <button class="btn secondary" onclick="toggleAddressEdit(false, true)">edit / save address</button>
+                <div id="checkout-address-edit" class="field-hidden" style="margin-top:8px;padding:10px;border:1px dashed rgba(0,0,0,0.1);border-radius:8px;">
+                    <input id="check-addr-house" placeholder="house / street">
+                    <input id="check-addr-city" placeholder="city">
+                    <input id="check-addr-district" placeholder="district">
+                    <input id="check-addr-country" placeholder="country">
+                    <button class="btn secondary" onclick="saveAddressFromCheckout()">save address</button>
+                </div>
+            </div>
+            <div style="margin-top:12px">
+                <label class="small">Enter UTR (12 digits) for payment</label>
+                <input id="checkout-utr" placeholder="UTR">
+            </div>
+            <div style="display:flex;gap:8px;margin-top:16px">
+                <button class="btn" onclick="confirmCheckout()">Submit order</button>
+                <button class="btn secondary" onclick="closeCheckoutModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdraw-overlay" class="overlay" style="display:none">
+        <div class="modal">
+            <h3>Withdraw from Wallet 💸</h3>
+            <div>
+                <label class="small">Amount to withdraw</label>
+                <input id="withdraw-amount" type="number" placeholder="amount">
+                <label class="small" style="margin-top:8px">UPI / Bank Account Note</label>
+                <input id="withdraw-note" placeholder="upi id or bank account details">
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn" onclick="submitWithdraw()">Submit withdraw request</button>
+                <button class="btn secondary" onclick="closeWithdrawModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loan-payment-overlay" class="overlay" style="display:none">
+        <div class="modal">
+            <h3>Pay Loan EMI 🏦</h3>
+            <div id="loan-payment-details"></div>
+            <div style="margin-top:12px">
+                <label class="small">Enter UTR (12 digits) for payment</label>
+                <input id="loan-payment-utr" placeholder="UTR">
+            </div>
+            <div style="display:flex;gap:8px;margin-top:16px">
+                <button class="btn" onclick="submitLoanPayment()">Submit Payment</button>
+                <button class="btn secondary" onclick="closeLoanPaymentModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="navbtn active" data-target="home" onclick="navClick(event)">
+            <img src="https://img.icons8.com/ios-filled/50/000000/home.png" alt="home" />
+            <div>home</div>
+        </div>
+        <div class="navbtn" data-target="shop" onclick="navClick(event)">
+            <img src="https://img.icons8.com/ios-filled/50/000000/shop.png" alt="shop" />
+            <div>shop</div>
+        </div>
+        <div class="navbtn" data-target="gold" onclick="navClick(event)">
+            <img src="https://img.icons8.com/ios-filled/50/000000/gold-bar.png" alt="gold" />
+            <div>gold</div>
+        </div>
+        <div class="navbtn" data-target="wallet" onclick="navClick(event)">
+            <img src="https://img.icons8.com/ios-filled/50/000000/wallet.png" alt="wallet" />
+            <div>wallet</div>
+        </div>
+        <div class="navbtn" data-target="profile" onclick="navClick(event)">
+            <img src="https://img.icons8.com/ios-filled/50/000000/user-male-circle.png" alt="profile" />
+            <div>profile</div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // ---------- config ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55",
+            measurementId: "G-3LS5W6F8QW"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        const imgbbKey = '021a2437b889915669b66554687bf17f';
+        const DB_ROOT = db.ref('/');
+
+        // ---------- state ----------
+        let currentUser = null;
+        let productsData = {};
+        let cart = {};
+        let modalProductId = null;
+        let userProfile = {}; // Store user data
+        const GOLD_RATE = 6500;
+        let activeLoanId = null;
+        let emiToPayId = null;
+
+        // ---------- helpers ----------
+        function navClick(e) {
+            document.querySelectorAll('.navbtn').forEach(n => n.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            showTab(e.currentTarget.dataset.target);
+        }
+        function showTab(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            const el = document.getElementById(id);
+            if (el) el.classList.add('active');
+            // close overlays on navigation
+            closeOverlay();
+            closeCheckoutModal();
+            closeWithdrawModal();
+            closeLoanPaymentModal();
+            // Specific load functions
+            if(id === 'gold') loadGoldHistory();
+            if(id === 'wallet') loadWalletHistory();
+            if(id === 'profile') { loadOrderHistory(); loadReferHistory(); loadLoanStatus(); }
+        }
+
+        // overlay
+        function openOverlay() { document.getElementById('overlay').style.display = 'flex'; }
+        function closeOverlay() { document.getElementById('overlay').style.display = 'none'; modalProductId = null; }
+        function overlayClicked(e) {
+            if (e.target === document.getElementById('overlay')) closeOverlay();
+        }
+
+        // status badge
+        function renderStatusBadge(status) {
+            status = status ? status.toLowerCase().replace(/ /g, '_') : 'pending';
+            let statusText = status.replace(/_/g, ' ');
+            return `<div class="status-badge status-${status}">${statusText}</div>`;
+        }
+        
+        // ---------- auth check ----------
+        auth.onAuthStateChanged(async user => {
+            if (!user) return window.location.href = 'rupe.html';
+            currentUser = user;
+
+            document.getElementById('gold-rate').innerText = GOLD_RATE;
+            document.getElementById('goldrate-display').innerText = `rate: ₹${GOLD_RATE} / g`;
+
+            // give signup bonus once if not set and ensure refer code exists
+            try {
+                const uRef = DB_ROOT.child('users/' + currentUser.uid);
+                const uSnap = await uRef.once('value');
+                const userData = uSnap.val() || {};
+                
+                // 1. Assign Refer Code if missing
+                if(!userData.refer){
+                    const referCode = currentUser.uid.substring(0, 6).toUpperCase();
+                    await uRef.child('refer').set(referCode);
+                }
+
+                // 2. Add Signup Bonus logic (₹100)
+                if (!userData.signup_bonus_given) {
+                    const bonus = 100;
+                    await uRef.child('wallet').transaction(curr => (Number(curr || 0) + bonus));
+                    await uRef.child('wallet_history/bonus_' + Date.now()).set({ id: 'bonus_' + Date.now(), amount: bonus, type: 'bonus', status: 'completed', created_at: Date.now() });
+                    await uRef.child('signup_bonus_given').set(true);
+                    document.getElementById('signup-bonus-note').innerText = `₹${bonus} signup bonus added!`;
+                    setTimeout(() => document.getElementById('signup-bonus-note').innerText = '', 5000);
+                }
+            } catch (e) { console.warn('startup process failed', e); }
+
+            loadUserProfile();
+            loadProducts();
+            loadCartFromDb();
+            listenPaymentRequests(); // listen admin verifications
+            
+            // Initial load of history lists
+            loadQuickHistory();
+            loadLoanStatus();
+            // loadGoldHistory(); // load upon tab click
+            // loadWalletHistory(); // load upon tab click
+            // loadOrderHistory(); // load upon tab click
+            // loadReferHistory(); // load upon tab click
+            
+        });
+
+        // ---------- user profile (Realtime Listener) ----------
+        function loadUserProfile() {
+            DB_ROOT.child('users/' + currentUser.uid).on('value', snap => {
+                const d = snap.val() || {};
+                userProfile = d;
+
+                // View
+                document.getElementById('profile-name-display').innerText = d.name || 'Unnamed';
+                document.getElementById('profile-mobile-display').innerText = d.mobile || '';
+                // Edit inputs
+                document.getElementById('profile-name').value = d.name || '';
+                document.getElementById('profile-mobile').value = d.mobile || '';
+                document.getElementById('profile-photo').src = d.photo || 'https://via.placeholder.com/90';
+                document.getElementById('my-refer').innerText = d.refer || 'N/A';
+                
+                // Wallet & Gold Balance
+                const walletBalance = Number(d.wallet || 0).toFixed(2);
+                const goldBalance = Number(d.gold_balance || 0).toFixed(4);
+                
+                document.getElementById('wallet-balance-main').innerText = walletBalance;
+                document.getElementById('wallet-mini').innerText = `wallet: ₹${walletBalance}`;
+                document.getElementById('gold-balance-home').innerText = `${goldBalance}g`;
+                document.getElementById('gold-balance-main').innerText = goldBalance;
+                
+                // Address
+                renderAddressDisplay(d.address);
+                fillAddressEditFields(d.address);
+                
+                // KYC Block
+                renderKYCBlock(d.kyc);
+            });
+        }
+        
+        function renderAddressDisplay(a) {
+            const addrDisplay = document.getElementById('address-display');
+            const checkoutAddrDisplay = document.getElementById('checkout-address-display');
+            
+            if (a && a.house && a.city) {
+                const ad = `${a.house}, ${a.city}, ${a.district}, ${a.country}`;
+                addrDisplay.innerText = ad;
+                checkoutAddrDisplay.innerText = `Saved: ${ad}`;
+            } else {
+                addrDisplay.innerText = 'No saved address';
+                checkoutAddrDisplay.innerText = 'No saved address — please save one below.';
+            }
+        }
+        
+        function fillAddressEditFields(a) {
+            a = a || {};
+            document.getElementById('addr-house').value = a.house || '';
+            document.getElementById('addr-city').value = a.city || '';
+            document.getElementById('addr-district').value = a.district || '';
+            document.getElementById('addr-country').value = a.country || '';
+            // For checkout modal
+            document.getElementById('check-addr-house').value = a.house || '';
+            document.getElementById('check-addr-city').value = a.city || '';
+            document.getElementById('check-addr-district').value = a.district || '';
+            document.getElementById('check-addr-country').value = a.country || '';
+        }
+
+        function renderKYCBlock(kyc) {
+            const block = document.getElementById('kyc-block');
+            block.innerHTML = '';
+            
+            if (kyc && kyc.status === 'verified') {
+                block.innerHTML = `
+                    <div class="card" style="border-left: 4px solid var(--success); padding:10px;">
+                        <div class="small">KYC **Verified** ${renderStatusBadge('verified')} — Aadhaar: ${kyc.number || 'N/A'}</div>
+                    </div>
+                `;
+            } else if (kyc && kyc.status === 'pending') {
+                 block.innerHTML = `
+                    <div class="card" style="border-left: 4px solid var(--pending); padding:10px;">
+                        <div class="small">KYC **Submitted** ${renderStatusBadge('pending')} — Awaiting admin verification.</div>
+                        <button class="btn secondary" onclick="showKYCStatus()" style="margin-top:8px;padding:6px 10px;">view status</button>
+                    </div>
+                 `;
+            } else {
+                block.innerHTML = `
+                    <h4 style="margin-top:0;">submit kyc (one-time)</h4>
+                    <input id="kyc-name" placeholder="aadhaar name" value="${userProfile.name||''}">    
+                    <input id="kyc-number" placeholder="aadhaar number" maxlength="12">    
+                    <label class="small">Aadhaar Front</label>
+                    <input type="file" id="kyc-front" style="margin-bottom:0;">    
+                    <label class="small">Aadhaar Back</label>
+                    <input type="file" id="kyc-back" style="margin-bottom:0;">    
+                    <div style="display:flex;gap:8px;margin-top:12px">    
+                        <button class="btn" onclick="uploadKYC()">submit kyc</button>    
+                        <button class="btn secondary" onclick="showKYCStatus()">view status</button>    
+                    </div>
+                    <div id="kyc-status" class="small" style="margin-top:10px;"></div>
+                `;
+            }
+        }
+
+        // Profile, Address, KYC functions (mostly kept as is, but improved address save logic)
+        function toggleProfileEdit(forceHide) {
+            const edit = document.getElementById('profile-edit');
+            const view = document.getElementById('profile-view');
+            if (forceHide) { edit.classList.add('field-hidden'); view.classList.remove('field-hidden'); return; }
+            edit.classList.toggle('field-hidden');
+            view.classList.toggle('field-hidden');
+        }
+        function saveProfile() {
+            const name = document.getElementById('profile-name').value.trim();
+            const mobile = document.getElementById('profile-mobile').value.trim();
+            DB_ROOT.child('users/' + currentUser.uid).update({ name, mobile }).then(() => {
+                alert('profile saved');
+                toggleProfileEdit(true);
+            }).catch(e => alert('save failed'));
+        }
+        function uploadProfile() {
+            const file = document.getElementById('profile-upload').files[0];
+            if (!file) { alert('select photo'); return; }
+            const form = new FormData(); form.append('image', file);
+            axios.post('https://api.imgbb.com/1/upload?key=' + imgbbKey, form)
+                .then(res => {
+                    const url = res.data.data.url;
+                    DB_ROOT.child('users/' + currentUser.uid + '/photo').set(url);
+                    alert('photo uploaded');
+                }).catch(e => alert('upload failed'));
+        }
+        
+        // ---------- address ----------
+        function toggleAddressEdit(forceHide, isCheckout = false) {
+            const edit = document.getElementById('address-edit');
+            const view = document.getElementById('address-view');
+            
+            if(isCheckout){
+                document.getElementById('checkout-address-edit').classList.toggle('field-hidden');
+                return;
+            }
+            
+            if (forceHide) { edit.classList.add('field-hidden'); view.classList.remove('field-hidden'); return; }
+            edit.classList.toggle('field-hidden');
+            view.classList.toggle('field-hidden');
+        }
+        
+        async function saveAddress(isCheckout = false) {
+            const prefix = isCheckout ? 'check-addr-' : 'addr-';
+            const house = document.getElementById(prefix + 'house').value.trim();
+            const city = document.getElementById(prefix + 'city').value.trim();
+            const district = document.getElementById(prefix + 'district').value.trim();
+            const country = document.getElementById(prefix + 'country').value.trim();
+            
+            if (!house || !city || !district || !country) return alert('fill all address fields');
+            
+            const addr = { house, city, district, country };
+            
+            try {
+                await DB_ROOT.child('users/' + currentUser.uid + '/address').set(addr);
+                alert('address saved');
+                if(!isCheckout) toggleAddressEdit(true); // Close only if not in checkout
+                else document.getElementById('checkout-address-edit').classList.add('field-hidden');
+                // The loadUserProfile listener will update all displays
+            } catch (e) {
+                alert('save failed');
+            }
+        }
+        
+        function saveAddressFromCheckout(){
+            saveAddress(true);
+        }
+
+        // ---------- products (kept as is) ----------
+        function loadProducts() {
+            DB_ROOT.child('products').on('value', snap => {
+                productsData = snap.val() || {};
+                const keys = Object.keys(productsData || {});
+                renderProducts(keys.reverse());
+                populateCategories();
+                updateLatestPreview();
+            });
+        }
+        function updateLatestPreview() {
+            DB_ROOT.child('products').limitToLast(6).once('value').then(snap => {
+                const data = snap.val() || {};
+                const keys = Object.keys(data || {}).reverse();
+                const cont = document.getElementById('latest-products'); cont.innerHTML = '';
+                keys.forEach(k => {
+                    const p = data[k];
+                    const div = document.createElement('div'); div.className = 'card';
+                    div.innerHTML = `
+                        <img class="product-img" src="${(p.images && p.images[0]) || 'https://via.placeholder.com/300'}">
+                        <div class="pmeta"><div class="pname">${p.name}</div><div class="pprice">₹${calcDiscountPrice(p.price, p.discount)}</div></div>
+                        <div class="small">${p.brand || ''} • ${p.color || ''}</div>
+                    `;
+                    div.addEventListener('click', () => openProductModal(k));
+                    cont.appendChild(div);
+                });
+            });
+        }
+        function renderProducts(keys) {
+            const cont = document.getElementById('product-list'); cont.innerHTML = '';
+            if (!keys || keys.length === 0) { cont.innerHTML = '<div class="card">no products found</div>'; return; }
+            keys.forEach(k => {
+                const p = productsData[k];
+                const card = document.createElement('div'); card.className = 'card';
+                const priceHtml = `<div style="display:flex;align-items:center;gap:8px">
+                    <div class="pprice">₹${calcDiscountPrice(p.price, p.discount)}</div>
+                    ${p.discount ? `<div class="small" style="text-decoration:line-through;color:#888">₹${p.price}</div><div class="small" style="color:var(--success)">${p.discount}% OFF</div>` : ''}
+                </div>`;
+                card.innerHTML = `
+                    <img class="product-img" src="${(p.images && p.images[0]) || 'https://via.placeholder.com/300'}" />
+                    <div class="pmeta"><div class="pname">${p.name}</div>${priceHtml}</div>
+                    <div class="small">${p.brand ? p.brand + ' •' : ''} ${p.color ? p.color + ' •' : ''} ${p.size ? 'size ' + p.size : ''}</div>
+                    <p class="small" style="margin:8px 0;color:#444;min-height:36px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${p.description || ''}</p>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <button class="btn" onclick="addToCart('${k}')">add to cart</button>
+                        <button class="btn secondary" onclick="openProductModal('${k}')">view</button>
+                    </div>
+                `;
+                cont.appendChild(card);
+            });
+        }
+        function calcDiscountPrice(price, discount) {
+            if (!price) return 0;
+            if (!discount) return Number(price);
+            const p = Number(price);
+            return Math.round((p * (100 - Number(discount))) / 100);
+        }
+        function openProductModal(id) {
+            const p = productsData[id];
+            if (!p) return alert('product not found');
+            modalProductId = id;
+            document.getElementById('modal-title').innerText = p.name;
+            document.getElementById('modal-price').innerText = `₹${calcDiscountPrice(p.price, p.discount)} ${p.discount ? ' (was ₹' + p.price + ')' : ''}`;
+            const imgs = document.getElementById('modal-images'); imgs.innerHTML = '';
+            (p.images || []).forEach(url => {
+                const img = document.createElement('img'); img.src = url; imgs.appendChild(img);
+            });
+            document.getElementById('modal-desc').innerText = p.description || '';
+            document.getElementById('modal-meta').innerText = `category: ${p.category || 'N/A'} • brand: ${p.brand || 'N/A'} • color: ${p.color || 'N/A'} • size: ${p.size || 'N/A'}`;
+            openOverlay();
+        }
+        function modalAddToCart() {
+            if (!modalProductId) return;
+            addToCart(modalProductId);
+            alert('added to cart');
+            closeOverlay();
+        }
+        function populateCategories() {
+            const cats = new Set(); Object.values(productsData || {}).forEach(p => { if (p && p.category) cats.add(p.category); });
+            const sel = document.getElementById('category-filter'); const sel2 = document.getElementById('cat-shop');
+            [sel, sel2].forEach(s => {
+                if (!s) return;
+                s.innerHTML = '<option value="">all categories</option>';
+                cats.forEach(c => {
+                    const opt = document.createElement('option'); opt.value = c; opt.innerText = c;
+                    s.appendChild(opt);
+                });
+            });
+        }
+        function filterByCategory(cat) {
+            document.getElementById('category-filter').value = cat;
+            applyFilter();
+            showTab('shop');
+        }
+        function applyFilter() {
+            const q = document.getElementById('search-input').value.trim().toLowerCase();
+            const cat = document.getElementById('category-filter').value;
+            let keys = Object.keys(productsData || {});
+            keys = keys.filter(k => {
+                const p = productsData[k];
+                if (!p) return false;
+                if (cat && p.category !== cat) return false;
+                if (!q) return true;
+                const text = `${p.name} ${p.description} ${p.brand || ''} ${p.color || ''} ${p.category || ''}`.toLowerCase();
+                return text.indexOf(q) !== -1;
+            });
+            renderProducts(keys.reverse());
+        }
+        function searchShop() {
+            const q = document.getElementById('search-shop').value.trim().toLowerCase();
+            const cat = document.getElementById('cat-shop').value;
+            let keys = Object.keys(productsData || {});
+            keys = keys.filter(k => {
+                const p = productsData[k];
+                if (!p) return false;
+                if (cat && p.category !== cat) return false;
+                if (!q) return true;
+                const text = `${p.name} ${p.description} ${p.brand || ''} ${p.color || ''} ${p.category || ''}`.toLowerCase();
+                return text.indexOf(q) !== -1;
+            });
+            renderProducts(keys.reverse());
+        }
+
+        // ---------- cart (persistent) ----------
+        function addToCart(pid) {
+            cart[pid] = (cart[pid] || 0) + 1;
+            saveCartToDb();
+            renderCart();
+            updateCartCount();
+        }
+        function renderCart() {
+            const cont = document.getElementById('cart-list'); cont.innerHTML = '';
+            let subtotal = 0;
+            Object.keys(cart).forEach(pid => {
+                const p = productsData[pid];
+                if (!p) return;
+                const qty = cart[pid];
+                const price = calcDiscountPrice(p.price, p.discount);
+                subtotal += Number(price || 0) * qty;
+                const div = document.createElement('div'); div.className = 'card';
+                div.innerHTML = `
+                    <img src="${(p.images && p.images[0]) || 'https://via.placeholder.com/100'}" alt="${p.name}">
+                    <div style="flex:1;">
+                        <div style="display:flex;justify-content:space-between;align-items:center"><strong>${p.name}</strong><div>₹${price}</div></div>
+                        <div class="small">qty: ${qty}</div>
+                        <div style="margin-top:8px">
+                            <button class="btn secondary" onclick="decrement('${pid}')" style="padding: 6px 10px;">-</button>
+                            <button class="btn" onclick="increment('${pid}')" style="padding: 6px 10px;">+</button>
+                            <button class="btn secondary" onclick="removeFromCart('${pid}')" style="padding: 6px 10px;margin-left:8px;">remove</button>
+                        </div>
+                    </div>
+                `;
+                cont.appendChild(div);
+            });
+            document.getElementById('cart-subtotal').innerText = subtotal;
+            updateCartCount();
+        }
+        function increment(pid) { cart[pid] = (cart[pid] || 0) + 1; saveCartToDb(); renderCart(); }
+        function decrement(pid) { if (!cart[pid]) return; cart[pid] = cart[pid] - 1; if (cart[pid] <= 0) delete cart[pid]; saveCartToDb(); renderCart(); }
+        function removeFromCart(pid) { delete cart[pid]; saveCartToDb(); renderCart(); }
+        function clearCart() { cart = {}; saveCartToDb(); renderCart(); }
+
+        // persist cart
+        function saveCartToDb() {
+            if (!currentUser) return;
+            DB_ROOT.child('carts/' + currentUser.uid).set(cart);
+        }
+        function loadCartFromDb() {
+            if (!currentUser) return;
+            DB_ROOT.child('carts/' + currentUser.uid).on('value', snap => {
+                cart = snap.val() || {};
+                renderCart();
+            });
+        }
+        function updateCartCount() {
+            const count = Object.values(cart).reduce((s, v) => s + v, 0);
+            const el = document.getElementById('cart-count');
+            if (count > 0) { el.style.display = 'flex'; el.innerText = count; } else { el.style.display = 'none'; }
+        }
+
+        // ---------- checkout / orders (modal flow) ----------
+        function openCheckoutModal() {
+            if (Object.keys(cart).length === 0) return alert('cart empty');
+            
+            const itemsDiv = document.getElementById('checkout-items');
+            itemsDiv.innerHTML = '';
+            
+            Object.keys(cart).forEach(pid => {
+                const p = productsData[pid];
+                if (!p) return;
+                const qty = cart[pid];
+                const price = calcDiscountPrice(p.price, p.discount);
+                const row = document.createElement('div');
+                row.className = 'card';
+                row.innerHTML = `<div style="display:flex;justify-content:space-between"><div>${p.name} × ${qty}</div><div>₹${price * qty}</div></div>`;
+                itemsDiv.appendChild(row);
+            });
+
+            // Address display is handled by the userProfile listener
+            // Initialize checkout address edit fields
+            fillAddressEditFields(userProfile.address);
+            document.getElementById('checkout-address-edit').classList.add('field-hidden'); // Hide form initially
+            document.getElementById('checkout-utr').value = '';
+            document.getElementById('checkout-overlay').style.display = 'flex';
+        }
+        function closeCheckoutModal() { document.getElementById('checkout-overlay').style.display = 'none'; }
+        async function confirmCheckout() {
+            const utr = (document.getElementById('checkout-utr').value || '').trim();
+            if (!utr || utr.length !== 12) return alert('enter valid 12-digit UTR');
+
+            const addr = userProfile.address;
+            if (!addr || !addr.house) return alert('Please save a valid delivery address before proceeding.');
+
+            const orderId = 'o' + Date.now();
+            const subtotal = Number(document.getElementById('cart-subtotal').innerText) || 0;
+            const order = {
+                id: orderId,
+                user: currentUser.uid,
+                items: cart,
+                total: subtotal,
+                address: addr,
+                utr,
+                status: 'pending', // pending until admin marks payment
+                created_at: Date.now()
+            };
+            
+            await DB_ROOT.child('orders/' + orderId).set(order);
+            await DB_ROOT.child('users/' + currentUser.uid + '/order_history/' + orderId).set(order);
+            await DB_ROOT.child('payment_requests/' + orderId).set({ type: 'cart', user: currentUser.uid, orderId, amount: subtotal, utr, status: 'pending', created_at: Date.now() });
+
+            // clear cart
+            cart = {}; saveCartToDb(); renderCart();
+            closeCheckoutModal();
+            alert('order request sent to admin (payment pending)');
+            showTab('profile'); loadOrderHistory();
+        }
+
+        // ---------- gold requests ----------
+        document.getElementById('gold-amount').addEventListener('input', (e)=>{
+             const amount = Number(e.target.value) || 0;
+             const grams = (amount / GOLD_RATE).toFixed(4);
+             document.getElementById('gold-grams-calc').innerText = grams;
+        });
+        function buyGold() {
+            const amount = Number(document.getElementById('gold-amount').value);
+            const utr = (document.getElementById('gold-utr').value || '').trim();
+            if (!amount || amount < 50) return alert('minimum ₹50');
+            if (!utr || utr.length !== 12) return alert('enter 12-digit utr');
+            
+            const id = 'g' + Date.now();
+            const grams = (amount / GOLD_RATE).toFixed(4);
+            const payload = { id, user: currentUser.uid, amount, gold_rate: GOLD_RATE, grams, utr, status: 'pending', created_at: Date.now() };
+            
+            DB_ROOT.child('gold_requests/' + id).set(payload);
+            DB_ROOT.child('users/' + currentUser.uid + '/gold_history/' + id).set(payload);
+            DB_ROOT.child('payment_requests/' + id).set({ type: 'gold', user: currentUser.uid, id, amount, utr, status: 'pending', created_at: Date.now() });
+            
+            alert('gold purchase request sent to admin');
+            document.getElementById('gold-amount').value = '';
+            document.getElementById('gold-utr').value = '';
+            document.getElementById('gold-grams-calc').innerText = '0.0000';
+            loadGoldHistory(); // Show history immediately
+        }
+
+        // ---------- wallet requests ----------
+        function addWallet() {
+            const amount = Number(document.getElementById('wallet-add-amount').value);
+            const utr = (document.getElementById('wallet-utr').value || '').trim();
+            if (!amount || amount < 10) return alert('enter valid amount');
+            if (!utr || utr.length !== 12) return alert('enter 12-digit utr');
+            
+            const id = 'w' + Date.now();
+            const req = { id, user: currentUser.uid, amount, utr, status: 'pending', created_at: Date.now() };
+            
+            DB_ROOT.child('wallet_requests/' + id).set(req);
+            DB_ROOT.child('users/' + currentUser.uid + '/wallet_history/' + id).set({ ...req, type: 'add' });
+            DB_ROOT.child('payment_requests/' + id).set({ type: 'wallet', user: currentUser.uid, id, amount, utr, status: 'pending', created_at: Date.now() });
+            
+            alert('wallet add request sent to admin');
+            document.getElementById('wallet-add-amount').value = '';
+            document.getElementById('wallet-utr').value = '';
+            loadWalletHistory(); // Show history immediately
+        }
+
+        // withdraw modal
+        function openWithdrawModal() { document.getElementById('withdraw-overlay').style.display = 'flex'; }
+        function closeWithdrawModal() { document.getElementById('withdraw-overlay').style.display = 'none'; }
+        function submitWithdraw() {
+            const amount = Number(document.getElementById('withdraw-amount').value);
+            const note = (document.getElementById('withdraw-note').value || '').trim();
+            
+            if (amount < 50) return alert('min withdraw ₹50');
+            if (amount > userProfile.wallet) return alert('insufficient wallet balance');
+            
+            const wid = 'wd' + Date.now();
+            const payload = { id: wid, user: currentUser.uid, amount, note, status: 'pending', created_at: Date.now() };
+            
+            DB_ROOT.child('withdrawRequests/' + wid).set(payload);
+            DB_ROOT.child('users/' + currentUser.uid + '/wallet_history/' + wid).set({ ...payload, type: 'withdraw' });
+            
+            // Immediately deduct from wallet and set status to 'processing' until admin approval
+            DB_ROOT.child('users/' + currentUser.uid + '/wallet').transaction(curr => Number(curr || 0) - amount);
+            DB_ROOT.child('users/' + currentUser.uid + '/wallet_history/' + wid + '/status').set('processing');
+            
+            alert('withdraw request sent to admin (amount deducted and processing)');
+            closeWithdrawModal();
+            loadWalletHistory(); // Show history immediately
+        }
+
+        // ---------- refer ----------
+        function submitRefer() {
+            const name = document.getElementById('refer-friend-name').value.trim();
+            const email = document.getElementById('refer-friend-email').value.trim();
+            const mobile = document.getElementById('refer-friend-mobile').value.trim();
+            if (!name || !email || !mobile) return alert('fill friend details');
+            
+            const id = 'r' + Date.now();
+            const req = { id, user: currentUser.uid, name, email, mobile, status: 'pending', created_at: Date.now(), refer_code: userProfile.refer };
+
+            DB_ROOT.child('refer_cash_requests/' + id).set(req);
+            DB_ROOT.child('users/' + currentUser.uid + '/refer_history/' + id).set(req);
+            
+            alert('refer request sent to admin');
+            document.getElementById('refer-friend-name').value = '';
+            document.getElementById('refer-friend-email').value = '';
+            document.getElementById('refer-friend-mobile').value = '';
+            loadReferHistory(); // Show history immediately
+        }
+
+        // ---------- kyc ----------
+        function uploadKYC() {
+            const existingKYC = userProfile.kyc;
+            if (existingKYC && existingKYC.status === 'verified') return alert('KYC already verified — cannot resubmit');
+            if (existingKYC && existingKYC.status === 'pending') return alert('KYC already submitted and is pending verification.');
+
+            const name = document.getElementById('kyc-name').value.trim();
+            const number = document.getElementById('kyc-number').value.trim();
+            const front = document.getElementById('kyc-front').files[0];
+            const back = document.getElementById('kyc-back').files[0];
+
+            if (!name || !number || !front || !back || number.length !== 12) return alert('fill all kyc fields correctly (Aadhaar number must be 12 digits)');
+
+            // Upload Front
+            const f1 = new FormData();
+            f1.append('image', front);
+            axios.post('https://api.imgbb.com/1/upload?key=' + imgbbKey, f1).then(r1 => {
+                const u1 = r1.data.data.url;
+
+                // Upload Back
+                const f2 = new FormData();
+                f2.append('image', back);
+                axios.post('https://api.imgbb.com/1/upload?key=' + imgbbKey, f2).then(r2 => {
+                    const u2 = r2.data.data.url;
+
+                    const id = 'k' + Date.now();
+                    const payload = {
+                        id, user: currentUser.uid, name, number,
+                        front_url: u1, back_url: u2,
+                        status: 'pending',
+                        created_at: Date.now()
+                    };
+
+                    DB_ROOT.child('kyc_requests/' + id).set(payload);
+                    DB_ROOT.child('users/' + currentUser.uid + '/kyc').set({ status: 'pending', id, number });
+
+                    alert('kyc submitted to admin');
+                    // Rerender KYC block to show status
+                    renderKYCBlock({status:'pending', id, number});
+
+                }).catch(e => alert('imgbb upload failed (back)'));
+            }).catch(e => alert('imgbb upload failed (front)'));
+        }
+
+        function showKYCStatus() {
+            const v = userProfile.kyc;
+            if (!v) return alert('no kyc submitted yet');
+
+            DB_ROOT.child('kyc_requests/' + v.id).once('value').then(snap2 => {
+                const r = snap2.val() || {};
+                const status = r.status || 'pending';
+                const note = r.admin_note || 'none';
+                
+                document.getElementById('kyc-status').innerHTML = `Status: ${renderStatusBadge(status)}<br>Admin Note: ${note}`;
+            });
+        }
+
+        // ---------- loan feature ----------
+        function toggleLoanForm(forceHide) {
+            const form = document.getElementById('loan-form');
+            const block = document.getElementById('loan-block');
+            if (forceHide) { form.classList.add('field-hidden'); block.classList.remove('field-hidden'); return; }
+            form.classList.toggle('field-hidden');
+            block.classList.toggle('field-hidden');
+        }
+
+        async function loadLoanStatus() {
+            const block = document.getElementById('loan-block');
+            block.innerHTML = `<button class="btn" onclick="toggleLoanForm()">apply for quick loan</button>`;
+            document.getElementById('loan-form').classList.add('field-hidden');
+
+            const loanSnap = await DB_ROOT.child('users/' + currentUser.uid + '/active_loan').once('value');
+            const loan = loanSnap.val();
+            
+            if (!loan || loan.status === 'closed') {
+                activeLoanId = null;
+                block.innerHTML = `
+                    <div class="card" style="border-left: 4px solid #1f2937; margin-bottom:10px;">
+                        <div class="small">No Active Loan.</div>
+                        <button class="btn" onclick="toggleLoanForm()" style="margin-top:8px;">apply for quick loan</button>
+                    </div>
+                `;
+                return;
+            }
+
+            activeLoanId = loan.id;
+            const emiListHTML = (loan.emis || []).map(emi => {
+                const button = emi.status === 'unpaid' 
+                    ? `<button class="btn" onclick="openLoanPaymentModal('${loan.id}','${emi.id}', ${emi.amount})" style="padding:6px 10px;font-size:12px;">pay now</button>`
+                    : `<button class="btn secondary" disabled style="padding:6px 10px;font-size:12px;">paid</button>`;
+                return `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed rgba(0,0,0,0.05);">
+                        <div class="small-muted">EMI ${emi.id} (Due: ${emi.due_date}) - ₹${emi.amount}</div>
+                        ${button}
+                    </div>
+                `;
+            }).join('');
+            
+            const totalRepaid = (loan.emis || []).filter(e => e.status === 'paid').reduce((sum, e) => sum + e.amount, 0);
+            const totalAmount = loan.loan_amount;
+
+            if (loan.status === 'approved') {
+                 block.innerHTML = `
+                    <div class="card" style="border-left: 4px solid var(--success); margin-bottom:10px;">
+                        <h4 style="margin-top:0;">loan approved! ${renderStatusBadge('approved')}</h4>
+                        <p class="small">Amount: **₹${loan.loan_amount}** | Repayment: ₹${loan.total_repay} (${loan.tenure} months)</p>
+                        <p class="small">Admin Note: ${loan.admin_note || 'N/A'}</p>
+                        <button class="btn" onclick="acceptLoan('${loan.id}', ${loan.loan_amount})" style="margin-top:8px;">accept loan & receive funds</button>
+                    </div>
+                    <h4 style="margin-top:16px;">loan history</h4>
+                    <div style="font-weight:600;margin-bottom:8px;">Repaid: ₹${totalRepaid} / ₹${totalAmount}</div>
+                    <div class="card">${emiListHTML}</div>
+                `;
+            } else if (loan.status === 'active') {
+                block.innerHTML = `
+                    <div class="card" style="border-left: 4px solid #3b82f6; margin-bottom:10px;">
+                        <h4 style="margin-top:0;">active loan ${renderStatusBadge('active')}</h4>
+                        <p class="small">Amount: **₹${loan.loan_amount}** | Repayment: ₹${loan.total_repay}</p>
+                    </div>
+                    <h4 style="margin-top:16px;">loan history</h4>
+                    <div style="font-weight:600;margin-bottom:8px;">Repaid: ₹${totalRepaid} / ₹${totalAmount}</div>
+                    <div class="card">${emiListHTML}</div>
+                `;
+            } else if (loan.status === 'pending') {
+                 block.innerHTML = `
+                    <div class="card" style="border-left: 4px solid var(--pending); margin-bottom:10px;">
+                        <h4 style="margin-top:0;">loan application ${renderStatusBadge('pending')}</h4>
+                        <p class="small">Reviewing your application. We will notify you soon.</p>
+                        <p class="small-muted">Amount Requested: ₹${loan.amount_requested}</p>
+                    </div>
+                `;
+            } else if (loan.status === 'rejected') {
+                 block.innerHTML = `
+                    <div class="card" style="border-left: 4px solid var(--failure); margin-bottom:10px;">
+                        <h4 style="margin-top:0;">loan application ${renderStatusBadge('rejected')}</h4>
+                        <p class="small">Status: Rejected. Admin Note: ${loan.admin_note || 'N/A'}</p>
+                        <button class="btn" onclick="toggleLoanForm()" style="margin-top:8px;">apply for quick loan</button>
+                    </div>
+                `;
+            }
+        }
+        
+        async function submitLoanApplication() {
+            const amount = Number(document.getElementById('loan-amount-req').value);
+            const name = document.getElementById('loan-name').value.trim();
+            const pan = document.getElementById('loan-pan').value.trim();
+            const profession = document.getElementById('loan-profession').value.trim();
+            const ref1 = document.getElementById('loan-ref1').value.trim();
+            const ref2 = document.getElementById('loan-ref2').value.trim();
+            const panPhoto = document.getElementById('loan-pan-photo').files[0];
+
+            if (amount < 5000) return alert('minimum loan amount is ₹5000');
+            if (!name || !pan || !profession || !ref1 || !ref2 || !panPhoto) return alert('fill all required fields and upload PAN photo');
+            
+            // Upload PAN Photo
+            const f = new FormData(); f.append('image', panPhoto);
+            
+            try {
+                const res = await axios.post('https://api.imgbb.com/1/upload?key=' + imgbbKey, f);
+                const panUrl = res.data.data.url;
+                
+                const id = 'l' + Date.now();
+                const loanData = {
+                    id, user: currentUser.uid, amount_requested: amount, name, pan, profession,
+                    ref1, ref2, pan_url: panUrl, status: 'pending', created_at: Date.now()
+                };
+
+                await DB_ROOT.child('loan_requests/' + id).set(loanData);
+                await DB_ROOT.child('users/' + currentUser.uid + '/active_loan').set({ id, status: 'pending', amount_requested: amount, created_at: Date.now() });
+
+                alert('loan application submitted successfully. reviewing your application.');
+                toggleLoanForm(true); // Hide form
+                loadLoanStatus(); // Update status display
+            } catch (e) {
+                alert('loan application failed: ' + e.message);
+            }
+        }
+
+        async function acceptLoan(loanId, amount) {
+            if (!confirm(`Do you accept the loan of ₹${amount}? This will transfer the amount to your wallet and activate the repayment plan.`)) return;
+
+            // 1. Transfer loan amount to wallet
+            await DB_ROOT.child('users/' + currentUser.uid + '/wallet').transaction(curr => Number(curr || 0) + amount);
+
+            // 2. Update loan status to active
+            await DB_ROOT.child('users/' + currentUser.uid + '/active_loan/status').set('active');
+            
+            // 3. Add to wallet history
+            const txId = 'loan_add_' + Date.now();
+            await DB_ROOT.child('users/' + currentUser.uid + '/wallet_history/' + txId).set({ id: txId, amount, type: 'loan_credit', status: 'completed', created_at: Date.now() });
+            
+            alert(`Loan of ₹${amount} accepted and credited to your wallet. Repayment plan is now active.`);
+            loadLoanStatus();
+            loadWalletHistory();
+        }
+
+        function openLoanPaymentModal(loanId, emiId, amount) {
+            activeLoanId = loanId;
+            emiToPayId = emiId;
+            document.getElementById('loan-payment-details').innerHTML = `
+                <p>Paying EMI ${emiId} for Loan ${loanId}</p>
+                <div style="font-weight:700;font-size:20px;">Amount: ₹${amount}</div>
+                <div class="small-muted" style="margin-top:8px;">Scan the UPI QR in the Gold Tab to pay.</div>
+            `;
+            document.getElementById('loan-payment-utr').value = '';
+            document.getElementById('loan-payment-overlay').style.display = 'flex';
+        }
+        function closeLoanPaymentModal() { document.getElementById('loan-payment-overlay').style.display = 'none'; emiToPayId = null; }
+        
+        async function submitLoanPayment() {
+            const utr = (document.getElementById('loan-payment-utr').value || '').trim();
+            if (!utr || utr.length !== 12) return alert('enter valid 12-digit UTR');
+            if (!activeLoanId || !emiToPayId) return alert('error: missing loan or emi ID');
+            
+            // Get EMI details
+            const loanSnap = await DB_ROOT.child('users/' + currentUser.uid + '/active_loan').once('value');
+            const loan = loanSnap.val();
+            const emi = (loan.emis || []).find(e => e.id === emiToPayId);
+            if(!emi) return alert('error: emi not found');
+
+            const paymentId = 'loan_pay_' + Date.now();
+            const payload = {
+                id: paymentId, user: currentUser.uid, loanId: activeLoanId, emiId: emiToPayId,
+                amount: emi.amount, utr, status: 'pending', created_at: Date.now(), type: 'loan_payment'
+            };
+
+            await DB_ROOT.child('loan_payments/' + paymentId).set(payload);
+            await DB_ROOT.child('payment_requests/' + paymentId).set(payload); // For admin verification
+
+            // Update local loan status to pending payment
+            const emiIndex = loan.emis.findIndex(e => e.id === emiToPayId);
+            if(emiIndex !== -1) {
+                loan.emis[emiIndex].status = 'pending_payment';
+                await DB_ROOT.child('users/' + currentUser.uid + '/active_loan/emis').set(loan.emis);
+            }
+            
+            alert('EMI payment request submitted. Admin will verify the UTR.');
+            closeLoanPaymentModal();
+            loadLoanStatus(); // Refresh loan status
+        }
+
+        // ---------- history / quick lists (Refactored to show status immediately) ----------
+        function loadQuickHistory() {
+            const c = document.getElementById('quick-history');
+            c.innerHTML = '<h4 style="margin-bottom:8px;">Latest 5 Transactions</h4>';
+
+            DB_ROOT.child('users/' + currentUser.uid).once('value').then(snap => {
+                const u = snap.val() || {};
+                
+                const allHistory = [
+                    ...(u.order_history ? Object.values(u.order_history).map(o => ({...o, type:'order'})) : []),
+                    ...(u.gold_history ? Object.values(u.gold_history).map(g => ({...g, type:'gold'})) : []),
+                    ...(u.wallet_history ? Object.values(u.wallet_history).map(w => ({...w, type:'wallet'})) : [])
+                ];
+                
+                allHistory.sort((a,b)=>b.created_at - a.created_at);
+                
+                allHistory.slice(0, 5).forEach(item => {
+                    const d = document.createElement('div');
+                    d.className = 'card history';
+                    
+                    let text = '';
+                    if(item.type === 'order') text = `Order ${item.id} • ₹${item.total || 0}`;
+                    else if(item.type === 'gold') text = `Gold Buy • ₹${item.amount} → ${item.grams}g`;
+                    else if(item.type === 'wallet') text = `Wallet ${item.type_text||item.type} • ₹${item.amount}`;
+                    else return;
+                    
+                    d.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>${text}</div>
+                            ${renderStatusBadge(item.status)}
+                        </div>
+                    `;
+                    c.appendChild(d);
+                });
+                
+                if(allHistory.length === 0) c.innerHTML = '<div class="card">no history found</div>';
+            });
+        }
+
+        function loadReferHistory() {
+            const list = document.getElementById('refer-history-list');
+            list.innerHTML = '';
+            
+            DB_ROOT.child('users/' + currentUser.uid + '/refer_history').on('value', snap => {
+                const data = snap.val() || {};
+                list.innerHTML = '';
+
+                Object.values(data).sort((a,b)=>b.created_at - a.created_at).forEach(r => {
+                    const d = document.createElement('div');
+                    d.className = 'card history';
+                    d.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>**${r.name}** (${r.mobile})</div>
+                            ${renderStatusBadge(r.status)}
+                        </div>
+                        <div class="small-muted" style="margin-top:4px;">${r.email}</div>
+                    `;
+                    list.appendChild(d);
+                });
+                
+                if(Object.keys(data).length === 0) list.innerHTML = '<div class="card">no referral history found</div>';
+            });
+        }
+
+        function loadWalletHistory() {
+            const list = document.getElementById('wallet-history-list');
+            list.innerHTML = '';
+
+            DB_ROOT.child('users/' + currentUser.uid + '/wallet_history').on('value', snap => {
+                const data = snap.val() || {};
+                list.innerHTML = '';
+
+                Object.values(data).sort((a,b)=>b.created_at - a.created_at).forEach(w => {
+                    const d = document.createElement('div');
+                    d.className = 'card history';
+                    let typeText = w.type === 'add' ? 'Add Money' : (w.type === 'withdraw' ? 'Withdrawal' : (w.type === 'bonus' ? 'Bonus' : 'Credit'));
+                    
+                    d.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>**${typeText}** • ₹${w.amount}</div>
+                            ${renderStatusBadge(w.status)}
+                        </div>
+                        <div class="small-muted" style="margin-top:4px;">${new Date(w.created_at).toLocaleString()}</div>
+                    `;
+                    list.appendChild(d);
+                });
+                
+                if(Object.keys(data).length === 0) list.innerHTML = '<div class="card">no wallet history found</div>';
+            });
+        }
+
+        function loadGoldHistory() {
+            const list = document.getElementById('gold-status-list');
+            list.innerHTML = '';
+
+            DB_ROOT.child('users/' + currentUser.uid + '/gold_history').on('value', snap => {
+                const data = snap.val() || {};
+                list.innerHTML = '';
+
+                Object.values(data).sort((a,b)=>b.created_at - a.created_at).forEach(g => {
+                    const d = document.createElement('div');
+                    d.className = 'card history';
+                    d.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>**Buy Gold** • ₹${g.amount} → ${g.grams}g</div>
+                            ${renderStatusBadge(g.status || 'pending')}
+                        </div>
+                        <div class="small-muted" style="margin-top:4px;">Rate: ₹${g.gold_rate}/g | ${new Date(g.created_at).toLocaleString()}</div>
+                    `;
+                    list.appendChild(d);
+                });
+                
+                if(Object.keys(data).length === 0) list.innerHTML = '<div class="card">no gold history found</div>';
+            });
+        }
+
+        function loadOrderHistory() {
+            const container = document.getElementById('orders-full-list');
+            container.innerHTML = '<h3>My Orders</h3>';
+
+            const wrapper = document.createElement('div');
+            container.appendChild(wrapper);
+
+            DB_ROOT.child('users/' + currentUser.uid + '/order_history').on('value', snap => {
+                wrapper.innerHTML = '';
+
+                const data = snap.val() || {};
+                const items = Object.values(data).sort((a, b) => b.created_at - a.created_at);
+
+                items.forEach(o => {
+                    const d = document.createElement('div');
+                    d.className = 'card history';
+
+                    const itemsSummary = o.items
+                        ? Object.keys(o.items).map(pid => {
+                            const p = productsData[pid];
+                            return (p ? p.name : pid) + (o.items[pid] ? ' x' + o.items[pid] : '');
+                        }).join(', ')
+                        : '—';
+
+                    d.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                            <div>
+                                <div style="font-weight:700">${o.id || ''} • ₹${o.total || 0}</div>
+                                <div class="small-muted">${new Date(o.created_at).toLocaleString()}</div>
+                                <div class="small" style="margin-top:6px;font-weight:600;color:var(--accent);">Items: ${itemsSummary}</div>
+                                <div class="small" style="margin-top:4px;">Address: ${o.address ? `${o.address.house}, ${o.address.city}` : '—'}</div>
+                                <div class="small" style="margin-top:4px;">UTR: ${o.utr || '—'}</div>
+                            </div>
+                            <div style="text-align:right">
+                                ${renderStatusBadge(o.status)}
+                            </div>
+                        </div>
+                    `;
+                    wrapper.appendChild(d);
+                });
+                
+                if(items.length === 0) wrapper.innerHTML = '<div class="card">no order history found</div>';
+            });
+        }
+
+        // ---------- listen to payment_requests ----------
+        DB_ROOT.child('payment_requests').on('child_changed', handlePaymentRequest);
+
+        function handlePaymentRequest(snap) {
+            const pr = snap.val();
+            if (!pr) return;
+
+            const uid = pr.user;
+            const key = pr.id || snap.key;
+            
+            // Only proceed for status changes
+            if (pr.status !== 'completed' && pr.status !== 'paid' && pr.status !== 'success' && pr.status !== 'rejected') return;
+            
+            // Check if it's the current user
+            if(uid !== currentUser.uid) return;
+            
+            // Helper to update user history status (avoids overwriting whole record)
+            const updateHistoryStatus = async (path) => {
+                const historyRef = DB_ROOT.child(`users/${uid}/${path}/${key}`);
+                const hSnap = await historyRef.once('value');
+                if(!hSnap.exists() || hSnap.val().status === pr.status) return; // Avoid re-update
+                await historyRef.child('status').set(pr.status);
+            };
+
+            // GOLD
+            if (pr.type === 'gold' && (pr.status === 'completed' || pr.status === 'success')) {
+                updateHistoryStatus('gold_history').then(async ()=>{
+                    const grams = Number(pr.grams || (pr.amount / GOLD_RATE));
+                    DB_ROOT.child('users/' + uid + '/gold_balance').transaction(curr => Number(curr || 0) + grams);
+                    alert(`✅ Gold purchase successful! ${grams}g added to your balance.`);
+                });
+            } else if (pr.type === 'gold' && pr.status === 'rejected') {
+                updateHistoryStatus('gold_history');
+                alert(`❌ Gold purchase rejected by admin. Please contact support.`);
+            }
+
+            // WALLET (Add)
+            if (pr.type === 'wallet' && (pr.status === 'completed' || pr.status === 'success')) {
+                DB_ROOT.child('users/' + uid + '/wallet_history/' + key).once('value').then(async h => {
+                    if (h.exists() && h.val().status === 'completed') return;
+                    
+                    // Only add if not already added to prevent duplicate adding
+                    DB_ROOT.child('users/' + uid + '/wallet').transaction(curr => Number(curr || 0) + Number(pr.amount));
+                    await DB_ROOT.child('users/' + uid + '/wallet_history/' + key + '/status').set('completed');
+                    await DB_ROOT.child('users/' + uid + '/wallet_history/' + key + '/admin_at').set(Date.now());
+                    alert(`✅ Wallet add successful! ₹${pr.amount} credited.`);
+                });
+            } else if (pr.type === 'wallet' && pr.status === 'rejected') {
+                updateHistoryStatus('wallet_history');
+                alert(`❌ Wallet add rejected by admin. Please check UTR.`);
+            }
+
+            // CART
+            if (pr.type === 'cart') {
+                const orderId = pr.orderId || key;
+                DB_ROOT.child('orders/' + orderId + '/status').set(pr.status);
+                updateHistoryStatus('order_history');
+                alert(`🔔 Order ${orderId} status updated to ${pr.status.toUpperCase()}.`);
+            }
+            
+            // LOAN PAYMENT (Admin approves payment)
+            if (pr.type === 'loan_payment' && (pr.status === 'completed' || pr.status === 'success')) {
+                 DB_ROOT.child('users/' + uid + '/active_loan').once('value').then(async loanSnap => {
+                    const loan = loanSnap.val();
+                    if (!loan || loan.status !== 'active') return;
+
+                    const emiIndex = (loan.emis || []).findIndex(e => e.id === pr.emiId);
+                    if (emiIndex === -1 || loan.emis[emiIndex].status === 'paid') return;
+                    
+                    // Mark EMI as paid
+                    loan.emis[emiIndex].status = 'paid';
+                    await DB_ROOT.child('users/' + uid + '/active_loan/emis').set(loan.emis);
+                    
+                    // Check for loan closure
+                    const allPaid = loan.emis.every(e => e.status === 'paid');
+                    if(allPaid){
+                        await DB_ROOT.child('users/' + uid + '/active_loan/status').set('closed');
+                        alert(`🥳 Loan ${pr.loanId} fully closed!`);
+                    } else {
+                         alert(`✅ EMI ${pr.emiId} paid successfully!`);
+                    }
+                    loadLoanStatus(); // Refresh status
+                });
+            }
+            
+            // WITHDRAW (Admin approves withdrawal)
+            if (pr.type === 'withdraw' && (pr.status === 'completed' || pr.status === 'success')) {
+                 DB_ROOT.child('users/' + uid + '/wallet_history/' + key).once('value').then(async h => {
+                    if (h.exists() && h.val().status === 'completed') return;
+                    
+                    // Since amount was already deducted and status set to 'processing', just mark as 'completed'
+                    await DB_ROOT.child('users/' + uid + '/wallet_history/' + key + '/status').set('completed');
+                    alert(`✅ Wallet withdrawal successful! Funds sent to your account.`);
+                });
+            } else if (pr.type === 'withdraw' && pr.status === 'rejected') {
+                 DB_ROOT.child('users/' + uid + '/wallet_history/' + key).once('value').then(async h => {
+                    if (h.exists() && h.val().status === 'rejected') return;
+                    
+                    // Reverse the deduction and mark as rejected
+                    const amount = h.val().amount;
+                    DB_ROOT.child('users/' + uid + '/wallet').transaction(curr => Number(curr || 0) + Number(amount));
+                    await DB_ROOT.child('users/' + uid + '/wallet_history/' + key + '/status').set('rejected');
+                    alert(`❌ Withdrawal rejected by admin. Funds returned to wallet.`);
+                });
+            }
+
+            loadQuickHistory(); // Global refresh
+        }
+
+        // ---------- logout ----------
+        function logout() {
+            auth.signOut().then(() => location.href = 'rupe.html');
+        }
+
+        // ---------- small UI init ----------
+        document.getElementById('search-input').addEventListener('input', () => {
+            if (!document.getElementById('search-input').value) applyFilter();
+        });
+        document.getElementById('search-shop').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') searchShop();
+        });
+
+    </script>
+</body>
+</html>
+

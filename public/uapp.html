@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium App Store</title>
+    <style>
+        /* --- MODERN PREMIUM UI --- */
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f8f9fa; margin: 0; color: #202124; }
+        .header { background: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .header h1 { margin: 0; font-size: 1.4em; color: #007bff; }
+        .logout-btn { background: #ff4757; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .logout-btn:hover { background: #ff6b81; }
+
+        .search-bar { width: 90%; max-width: 550px; padding: 14px 25px; margin: 25px auto; display: block; border: 1px solid #dfe1e5; border-radius: 30px; font-size: 16px; outline: none; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .search-bar:focus { border-color: #007bff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+        .category-nav { display: flex; overflow-x: auto; padding: 10px 20px; background: #fff; gap: 10px; border-bottom: 1px solid #eee; }
+        .category-nav::-webkit-scrollbar { display: none; }
+        .category-nav button { white-space: nowrap; padding: 8px 18px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; transition: 0.3s; }
+        .category-nav button.active { background: #007bff; color: white; border-color: #007bff; }
+
+        #apps-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; padding: 25px; }
+        .app-card { background: white; border-radius: 18px; padding: 15px; text-align: center; cursor: pointer; border: 1px solid #efefef; transition: 0.3s; }
+        .app-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+        .app-icon { width: 75px; height: 75px; border-radius: 18px; object-fit: cover; margin-bottom: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .app-title { font-size: 0.95em; font-weight: 600; margin: 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-price { color: #15934e; font-weight: bold; font-size: 0.85em; }
+
+        /* Modal & Progress */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); overflow-y: auto; }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; border-radius: 24px; width: 90%; max-width: 500px; position: relative; }
+        .close-btn { position: absolute; right: 20px; top: 15px; font-size: 32px; color: #5f6368; cursor: pointer; }
+
+        .btn-main { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        .btn-install { background: #007bff; color: white; }
+        .btn-open { background: #0f9d58; color: white; }
+
+        .download-box { margin-top: 20px; display: none; text-align: center; }
+        .progress-container { width: 100%; background: #e8f0fe; height: 14px; border-radius: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: #007bff; width: 0%; transition: width 0.1s linear; }
+        .status-text { font-size: 13px; color: #5f6368; margin-top: 8px; font-weight: 500; }
+
+        .screenshot-gallery { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0; }
+        .screenshot-gallery img { height: 160px; border-radius: 12px; border: 1px solid #eee; }
+        .review-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>App Store</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <input type="text" id="search-input" class="search-bar" placeholder="Search for apps..." onkeyup="filterApps()">
+
+    <div id="category-nav" class="category-nav">
+        <button class="active" onclick="filterApps('All')">All Apps</button>
+    </div>
+
+    <div id="apps-container">
+        <p>Loading apps...</p>
+    </div>
+
+    <div id="app-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modal-body"></div>
+            
+            <div id="download-ui" class="download-box">
+                <div class="progress-container">
+                    <div id="real-progress-bar" class="progress-bar"></div>
+                </div>
+                <p id="real-status-text" class="status-text">Connecting to server...</p>
+            </div>
+
+            <div id="action-area"></div>
+            <hr>
+            <h3>Reviews</h3>
+            <div id="reviews-display"></div>
+            <div style="margin-top: 15px;">
+                <input type="number" id="review-rating" placeholder="Rating (1-5)" min="1" max="5" style="width: 80px; padding: 5px;">
+                <textarea id="review-text" placeholder="Write a review..." rows="2" style="width: 100%; margin-top: 8px; border-radius: 8px; padding: 8px;"></textarea>
+                <button onclick="submitReview()" style="margin-top: 8px; background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px;">Post Review</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="utr-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeUtrModal()">&times;</span>
+            <h3>Payment Required</h3>
+            <p>Pay ₹<span id="p-price"></span> to <b>UPI ID:</b> <span id="p-vpa" style="color:#007bff;"></span></p>
+            <img id="p-qr" style="width: 180px; display: block; margin: 15px auto; border: 1px solid #eee; padding: 5px;">
+            <input type="text" id="utr-input" placeholder="Enter 12-digit UTR Number" maxlength="12" style="width: 100%; padding: 12px; box-sizing: border-box; border-radius: 8px; border: 1px solid #ccc;">
+            <button onclick="submitUTR()" class="btn-main btn-open">Submit UTR</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let allApps = [];
+        let purchased = {};
+        let currentApp = null;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                db.ref(`users/${user.uid}/purchased_apps`).on('value', s => { purchased = s.val() || {}; });
+                loadApps();
+            } else { auth.signInAnonymously(); }
+        });
+
+        function logout() { auth.signOut().then(() => location.reload()); }
+
+        async function loadApps() {
+            const snap = await db.ref('APPS').once('value');
+            const data = snap.val();
+            if (data) {
+                allApps = Object.keys(data).map(k => ({ ...data[k], id: k }));
+                loadCategories();
+                filterApps('All');
+            }
+        }
+
+        async function loadCategories() {
+            const nav = document.getElementById('category-nav');
+            const snap = await db.ref('APP_STORE_CATEGORIES').once('value');
+            const cats = snap.val();
+            if (cats) {
+                Object.keys(cats).forEach(m => {
+                    Object.keys(cats[m]).forEach(s => {
+                        const b = document.createElement('button');
+                        b.innerText = s;
+                        b.onclick = () => filterApps(s);
+                        nav.appendChild(b);
+                    });
+                });
+            }
+        }
+
+        function filterApps(cat) {
+            const container = document.getElementById('apps-container');
+            const query = document.getElementById('search-input').value.toLowerCase();
+            container.innerHTML = '';
+            
+            document.querySelectorAll('.category-nav button').forEach(b => {
+                b.classList.toggle('active', b.innerText === cat || (cat === 'All' && b.innerText === 'All Apps'));
+            });
+
+            allApps.filter(a => (cat === 'All' || a.category === cat) && a.name.toLowerCase().includes(query)).forEach(app => {
+                const card = document.createElement('div');
+                card.className = 'app-card';
+                card.onclick = () => openModal(app.id);
+                card.innerHTML = `<img src="${app.iconUrl}" class="app-icon"><p class="app-title">${app.name}</p><p class="app-price">${app.type==='Free'?'FREE':'₹'+app.price}</p>`;
+                container.appendChild(card);
+            });
+        }
+
+        function openModal(id) {
+            currentApp = allApps.find(a => a.id === id);
+            const isOwned = purchased[id] && purchased[id].accessType === 'full';
+            
+            document.getElementById('modal-body').innerHTML = `
+                <div style="display:flex; align-items:center;">
+                    <img src="${currentApp.iconUrl}" class="app-icon" style="width:80px; height:80px;">
+                    <div style="margin-left:15px;">
+                        <h2 style="margin:0;">${currentApp.name}</h2>
+                        <p style="margin:0; color:#666;">★ ${currentApp.rating || 0} (${currentApp.reviewCount || 0} reviews)</p>
+                    </div>
+                </div>
+                <div class="screenshot-gallery">${(currentApp.screenshotUrls || []).map(u => `<img src="${u}">`).join('')}</div>
+                <p style="font-size:14px;">${currentApp.fullDesc}</p>
+            `;
+
+            updateActionBtn(isOwned);
+            loadReviews(id);
+            document.getElementById('app-detail-modal').style.display = 'block';
+        }
+
+        function updateActionBtn(isOwned) {
+            const area = document.getElementById('action-area');
+            document.getElementById('download-ui').style.display = 'none';
+
+            if (currentApp.type === 'Free' || isOwned) {
+                area.innerHTML = `<button id="main-btn" class="btn-main btn-install" onclick="startRealDownload()">INSTALL NOW</button>`;
+            } else {
+                area.innerHTML = `<button class="btn-main btn-install" onclick="openPayment()">BUY FOR ₹${currentApp.price}</button>`;
+            }
+        }
+
+        // --- REAL APK DOWNLOAD LOGIC ---
+        function startRealDownload() {
+            const url = currentApp.apkUrl;
+            if (!url) return alert("APK Link Missing!");
+
+            const btn = document.getElementById('main-btn');
+            const ui = document.getElementById('download-ui');
+            const bar = document.getElementById('real-progress-bar');
+            const txt = document.getElementById('real-status-text');
+
+            btn.style.display = 'none';
+            ui.style.display = 'block';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'blob'; // APK binary data
+
+            xhr.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const pct = Math.floor((e.loaded / e.total) * 100);
+                    bar.style.width = pct + '%';
+                    txt.innerText = `Downloading: ${pct}% (${(e.loaded/1048576).toFixed(1)}MB / ${(e.total/1048576).toFixed(1)}MB)`;
+                }
+            };
+
+            xhr.onload = async () => {
+                if (xhr.status === 200) {
+                    bar.style.width = '100%';
+                    txt.innerText = "Download Successful! Installing...";
+                    
+                    const blob = xhr.response;
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    
+                    // Create Anchor to trigger system installer
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = `${currentApp.name}.apk`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    // Auto Purchase (for Free Apps)
+                    await db.ref(`users/${auth.currentUser.uid}/purchased_apps/${currentApp.id}`).set({ accessType: 'full', date: Date.now() });
+
+                    setTimeout(() => {
+                        ui.style.display = 'none';
+                        btn.style.display = 'block';
+                        btn.className = 'btn-main btn-open';
+                        btn.innerText = 'OPEN APP';
+                        btn.onclick = () => { window.location.href = 'uapp.html?appId=' + currentApp.id; };
+                    }, 3000);
+                }
+            };
+
+            xhr.onerror = () => { alert("Check network connection!"); btn.style.display='block'; ui.style.display='none'; };
+            xhr.send();
+        }
+
+        function openPayment() {
+            document.getElementById('p-price').innerText = currentApp.price;
+            document.getElementById('p-vpa').innerText = currentApp.upiVpaId;
+            document.getElementById('p-qr').src = currentApp.upiQrUrl;
+            document.getElementById('utr-modal').style.display = 'block';
+            window.location.href = `upi://pay?pa=${currentApp.upiVpaId}&pn=AppStore&am=${currentApp.price}&cu=INR`;
+        }
+
+        async function submitUTR() {
+            const val = document.getElementById('utr-input').value.trim();
+            if(val.length !== 12) return alert("Enter 12-digit UTR!");
+            await db.ref('PENDING_PAYMENTS/' + Date.now()).set({ utr: val, appId: currentApp.id, userId: auth.currentUser.uid, status: 'pending', amount: currentApp.price });
+            alert("UTR Submitted! Admin will verify soon.");
+            closeUtrModal();
+        }
+
+        async function loadReviews(id) {
+            const disp = document.getElementById('reviews-display');
+            disp.innerHTML = 'Loading...';
+            const snap = await db.ref(`RATINGS_REVIEWS/${id}`).once('value');
+            const revs = snap.val();
+            disp.innerHTML = '';
+            if (revs) {
+                Object.values(revs).forEach(r => {
+                    disp.innerHTML += `<div class="review-item"><b>★ ${r.rating}</b><p style="margin:2px 0;">${r.review_text}</p></div>`;
+                });
+            } else { disp.innerHTML = '<p>No reviews yet.</p>'; }
+        }
+
+        async function submitReview() {
+            const r = document.getElementById('review-rating').value;
+            const t = document.getElementById('review-text').value;
+            if(!r || !t) return alert("Fill all fields");
+            await db.ref(`RATINGS_REVIEWS/${currentApp.id}/${Date.now()}`).set({ rating: r, review_text: t, createdAt: Date.now() });
+            alert("Review Added!"); loadReviews(currentApp.id);
+        }
+
+        function closeModal() { document.getElementById('app-detail-modal').style.display = 'none'; }
+        function closeUtrModal() { document.getElementById('utr-modal').style.display = 'none'; }
+    </script>
+</body>
+</html>
+

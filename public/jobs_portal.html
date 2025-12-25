@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Career Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --brand-color: #0061ff;
+            --dark-bg: #0f172a;
+            --card-glass: rgba(255, 255, 255, 0.9);
+            --text-heading: #1e293b;
+            --text-body: #64748b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            background-image: radial-gradient(at 0% 0%, rgba(0, 97, 255, 0.05) 0, transparent 50%), 
+                              radial-gradient(at 50% 0%, rgba(99, 102, 241, 0.05) 0, transparent 50%);
+            color: var(--text-heading);
+            overflow-x: hidden;
+        }
+
+        /* Top Header / Nav */
+        .top-nav {
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--brand-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 60px 5% 100px;
+            text-align: center;
+            background: var(--dark-bg);
+            color: white;
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+        }
+
+        .hero h1 {
+            font-size: clamp(32px, 5vw, 48px);
+            margin: 0;
+            line-height: 1.2;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 20px auto;
+            font-size: 18px;
+        }
+
+        /* Main Content Container */
+        .main-wrapper {
+            max-width: 1100px;
+            margin: -60px auto 50px;
+            padding: 0 20px;
+        }
+
+        /* Search Section - High Professional Look */
+        .search-outer {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255,255,255,1);
+            margin-bottom: 40px;
+        }
+
+        .search-title {
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-heading);
+        }
+
+        /* Job Box Section */
+        .job-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .job-list-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .job-list-card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            transform: translateY(-5px);
+        }
+
+        .section-tag {
+            background: #eff6ff;
+            color: var(--brand-color);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        /* Careerjet Overrides (Attempt to clean widget look) */
+        .cj-search-box, .cj-job-box {
+            border: none !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+
+        /* Footer */
+        .footer-minimal {
+            text-align: center;
+            padding: 50px 0;
+            color: var(--text-body);
+            font-size: 14px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .hero { padding: 40px 5% 80px; }
+            .main-wrapper { margin-top: -40px; }
+            .search-outer { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <div class="logo">
+            <i class="ri-briefcase-4-fill"></i> CAREER<span>PRO</span>
+        </div>
+        <div style="font-size: 14px; font-weight: 600; color: var(--text-body);">
+            <i class="ri-map-pin-line"></i> Madhya Pradesh, IN
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Find Work That Matters</h1>
+        <p>Explore thousands of opportunities in Madhya Pradesh and across India with our AI-powered job search.</p>
+    </section>
+
+    <div class="main-wrapper">
+        <div class="search-outer">
+            <div class="search-title">
+                <i class="ri-search-eye-line"></i> Quick Job Search
+            </div>
+            <div 
+              class="cj-search-box" 
+              data-url="https://widget.careerjet.net/search-box/c4964d8b97726b2a8eb87d844e6a9679"
+            ></div>
+        </div>
+
+        <div class="job-section">
+            <div class="job-list-card">
+                <span class="section-tag">FEATURED OPPORTUNITIES</span>
+                <h2 style="font-size: 20px; margin-bottom: 20px;">Latest Jobs in Madhya Pradesh & India</h2>
+                
+                <div 
+                  class="cj-job-box" 
+                  data-url="https://widget.careerjet.net/job-box/258bb7feb75624f82110bfd991456d11" 
+                  data-search="" 
+                  data-location="India Madhya pradesh"
+                ></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-minimal">
+        <p>&copy; 2025 Professional Career Portal. Secure & Verified Jobs.</p>
+    </footer>
+
+    <script>
+        (function(d){
+            // Search Box Script
+            var sjs=d.createElement('script');
+            sjs.id='cj-search-box';
+            sjs.async=true;
+            sjs.src='https://static.careerjet.org/js/all_widget_search_box_3rd_party.min.js?t='+Date.now();
+            d.body.appendChild(sjs);
+
+            // Job Box Script
+            var jjs=d.createElement('script');
+            jjs.id='cj-job-box';
+            jjs.async=true;
+            jjs.src='https://static.careerjet.org/js/all_widget_job_box_3rd_party.min.js?t='+Date.now();
+            d.body.appendChild(jjs);
+        })(document);
+    </script>
+
+</body>
+</html>
+

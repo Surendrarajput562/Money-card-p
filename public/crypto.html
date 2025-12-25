@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ChangeNOW Crypto Widgets</title>
+<style>
+body {
+    background: #000;
+    color: #0ff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+h2 {
+    margin-bottom: 20px;
+}
+.widget-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+.widget-box {
+    background: #111;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #0ff;
+}
+.widget-box iframe {
+    width: 100%;
+    height: 350px;
+    border: none;
+}
+</style>
+</head>
+<body>
+
+<h2>ChangeNOW Crypto Widgets</h2>
+<div class="widget-container">
+
+    <!-- Exchange / Swap Widget -->
+    <div class="widget-box">
+        <h3>Exchange / Swap</h3>
+        <iframe src="https://changenow.io/embeds/exchange-widget/v2/widget.html?FAQ=true&amount=0.1&amountFiat=1500&backgroundColor=FFFFFF&darkMode=false&from=btc&fromFiat=eur&horizontal=false&isFiat&lang=en-US&link_id=942d0e81f5df42&locales=true&logo=true&primaryColor=00C26F&to=eth&toFiat=eth&toTheMoon=true"></iframe>
+    </div>
+
+    <!-- Buy / Sell Widget -->
+    <div class="widget-box">
+        <h3>Buy / Sell</h3>
+        <iframe src="https://changenow.io/embeds/exchange-widget/v2/widget.html?FAQ=true&amount=0.01&amountFiat=1500&backgroundColor=FFFFFF&darkMode=false&from=btc&fromFiat=eur&horizontal=false&isFiat&lang=en-US&link_id=942d0e81f5df42&locales=true&logo=true&primaryColor=00C26F&to=eth&toFiat=eth&toTheMoon=true"></iframe>
+    </div>
+
+    <!-- Deposit Crypto -->
+    <div class="widget-box">
+        <h3>Deposit Crypto</h3>
+        <iframe src="https://changenow.io/embeds/exchange-widget/v2/widget.html?FAQ=true&amount=0.1&amountFiat=3000&backgroundColor=FFFFFF&darkMode=false&from=btc&horizontal=false&isFiat&lang=en-US&link_id=942d0e81f5df42&locales=true&logo=true&primaryColor=00C26F&to=eth&toFiat=eth&toTheMoon=true&topUpAddress&topUpCurrency=eth&topUpExtraId&topUpMode=true&topUpNetwork=eth"></iframe>
+    </div>
+
+    <!-- Deposit Flat / Wallet -->
+    <div class="widget-box">
+        <h3>Deposit to Wallet</h3>
+        <iframe src="https://changenow.io/embeds/exchange-widget/v2/widget.html?FAQ=true&amount=0.1&amountFiat=1500&backgroundColor=FFFFFF&darkMode=false&from=btc&fromFiat=eur&horizontal=false&isFiat&lang=en-US&link_id=942d0e81f5df42&locales=true&logo=true&primaryColor=00C26F&to=eth&toFiat=eth&toTheMoon=true&topUpAddress&topUpCurrency=eth&topUpExtraId&topUpMode=true&topUpNetwork=eth"></iframe>
+    </div>
+
+</div>
+
+<script defer type="text/javascript" src="https://changenow.io/embeds/exchange-widget/v2/stepper-connector.js"></script>
+</body>
+</html>

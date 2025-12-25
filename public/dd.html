@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 Admin Console - App & Payment Management</title>
+    <style>
+        /* CSS is correct and unchanged, but listed for completeness */
+        body { font-family: 'Arial', sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h1 { color: #007bff; text-align: center; margin-bottom: 30px; }
+        .tab-menu { display: flex; justify-content: center; margin-bottom: 25px; border-bottom: 2px solid #eee; }
+        .tab-menu button { background: none; border: none; padding: 10px 20px; cursor: pointer; font-size: 16px; font-weight: bold; color: #555; transition: all 0.3s; }
+        .tab-menu button.active { color: #007bff; border-bottom: 3px solid #007bff; }
+        .tab-content { padding: 20px 0; }
+        fieldset { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        legend { font-size: 1.2em; font-weight: bold; color: #333; padding: 0 10px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input[type="text"], input[type="number"], input[type="email"], input[type="password"], textarea, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        input[type="file"] { margin-top: 10px; }
+        button { background-color: #28a745; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px; transition: background-color 0.3s; }
+        button:hover:not(:disabled) { background-color: #218838; }
+        button:disabled { background-color: #999; cursor: not-allowed; }
+        #upload-status, #verification-message, #auth-status { margin-top: 15px; padding: 10px; border-radius: 4px; font-weight: bold; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        
+        #pending-payments-list { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        #pending-payments-list th, #pending-payments-list td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        #pending-payments-list th { background-color: #007bff; color: white; }
+        .action-btn { background-color: #ffc107; color: #333; padding: 6px 10px; margin-right: 5px; font-size: 14px; }
+        .action-btn.approve { background-color: #28a745; color: white; }
+
+        /* Shatter/Step Styling */
+        .step { border-left: 5px solid #007bff; padding-left: 15px; margin-bottom: 25px; background: #fafafa; border-radius: 4px; }
+        .step-body { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
+        .step.open .step-body { max-height: 1000px; /* Large value for smooth transition */ }
+        .step-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 10px 0; font-size: 1.1em; font-weight: bold; color: #007bff; }
+        .step-header span { transition: transform 0.3s; }
+        .step.open .step-header span { transform: rotate(90deg); }
+        
+        /* New Login Page Styling */
+        #login-page {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .google-btn {
+            background-color: #db4437;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-page">
+    <h2>🔑 एडमिन लॉग इन</h2>
+    <div id="auth-status" style="margin-bottom: 20px;"></div>
+
+    <fieldset>
+        <legend>ईमेल और पासवर्ड</legend>
+        <label for="login-email">ईमेल:</label>
+        <input type="email" id="login-email" required>
+        <label for="login-password">पासवर्ड:</label>
+        <input type="password" id="login-password" required>
+        <button onclick="emailPasswordLogin()">लॉग इन करें</button>
+    </fieldset>
+
+    <fieldset style="margin-top: 20px;">
+        <legend>या</legend>
+        <button class="google-btn" onclick="googleLogin()">
+            <i class="ri-google-fill" style="font-style: normal; margin-right: 10px;"></i> Google से लॉग इन करें
+        </button>
+    </fieldset>
+</div>
+
+
+<div class="container" id="main-admin-console" style="display:none;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>👑 एडमिन कंसोल</h1>
+        <button onclick="adminLogout()">🚪 लॉगआउट</button>
+    </div>
+
+    <div class="tab-menu">
+        <button id="tab-upload" class="active" onclick="openTab('upload')">➕ नया ऐप अपलोड करें</button>
+        <button id="tab-verify" onclick="openTab('verify')">✅ पेमेंट सत्यापन</button>
+        <button id="tab-moderation" onclick="openTab('moderation')">💬 रिव्यू मॉडरेट करें</button>
+    </div>
+
+    <div id="upload" class="tab-content">
+        <h2>🚀 ऐप सबमिशन फ्लो (Play Store Style)</h2>
+        <form id="app-upload-form">
+            
+            <div class="step open" id="shatter-1">
+                <div class="step-header" onclick="toggleShatter(1)">
+                    1. ऐप विवरण <span id="arrow-1">▶</span>
+                </div>
+                <div class="step-body">
+                    <fieldset>
+                        <label for="app-name">ऐप का नाम:</label>
+                        <input type="text" id="app-name" required>
+                        <label for="app-category">कैटेगरी:</label>
+                        <select id="app-category" required>
+                            <option value="">-- चुनें --</option>
+                        </select>
+                        <label for="app-short-desc">छोटा विवरण (Max 80):</label>
+                        <textarea id="app-short-desc" rows="2" maxlength="80" required></textarea>
+                        <label for="app-full-desc">पूरा विवरण:</label>
+                        <textarea id="app-full-desc" rows="5" required></textarea>
+                        <button type="button" onclick="nextShatter(1, 2)">आगे बढ़ें</button>
+                    </fieldset>
+                </div>
+            </div>
+
+            <div class="step" id="shatter-2">
+                <div class="step-header" onclick="toggleShatter(2)">
+                    2. मीडिया और फ़ाइल अपलोड <span id="arrow-2">▶</span>
+                </div>
+                <div class="step-body">
+                    <fieldset>
+                        <label for="app-icon-file">ऐप आइकॉन (R2/ImgBB):</label>
+                        <input type="file" id="app-icon-file" accept="image/*" required>
+                        <label for="app-screenshots-files">स्क्रीनशॉट (Max 8):</label>
+                        <input type="file" id="app-screenshots-files" accept="image/*" multiple required>
+                        <label for="app-apk-file">APK फ़ाइल (R2):</label>
+                        <input type="file" id="app-apk-file" accept=".apk" required>
+                        <label for="cover-upload-target">Icon Upload Target:</label>
+                        <select id="cover-upload-target">
+                            <option value="r2">R2 (Recommended)</option>
+                            <option value="imgbb">ImgBB</option>
+                        </select>
+                        <button type="button" onclick="nextShatter(2, 3)">आगे बढ़ें</button>
+                    </fieldset>
+                </div>
+            </div>
+
+            <div class="step" id="shatter-3">
+                <div class="step-header" onclick="toggleShatter(3)">
+                    3. मूल्य निर्धारण और पब्लिश <span id="arrow-3">▶</span>
+                </div>
+                <div class="step-body">
+                    <fieldset>
+                        <legend>मूल्य निर्धारण</legend>
+                        <label for="app-type">ऐप का प्रकार:</label>
+                        <select id="app-type" required onchange="togglePricingFields()">
+                            <option value="Free">फ्री</option>
+                            <option value="Paid">पेड (एकमुश्त)</option>
+                            <option value="Subscription">सब्सक्रिप्शन</option>
+                        </select>
+
+                        <div id="paid-fields" style="display:none;">
+                            <label for="app-price">ऐप कीमत (₹):</label>
+                            <input type="number" id="app-price" min="1" value="100">
+                            <label for="upi-qr-code-url">UPI QR Code URL (Payment QR):</label>
+                            <input type="text" id="upi-qr-code-url" value="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" required>
+                        </div>
+                        <div id="subscription-fields" style="display:none;">
+                            <label for="sub-monthly">मासिक सब्सक्रिप्शन (₹):</label>
+                            <input type="number" id="sub-monthly" min="1" value="50">
+                            <label for="sub-yearly">वार्षिक सब्सक्रिप्शन (₹):</label>
+                            <input type="number" id="sub-yearly" min="1" value="500">
+                        </div>
+                        
+                        <button type="submit" id="upload-app-btn">🔥 ऐप अपलोड करें और पब्लिश करें</button>
+                        <p id="upload-status"></p>
+                    </fieldset>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="verify" class="tab-content" style="display:none;">
+        <h2>💳 UTR पेमेंट सत्यापन</h2>
+        <p id="verification-message">यहां पेंडिंग पेमेंट्स की सूची दिखेगी।</p>
+        <button onclick="loadPendingPayments()">🔄 पेंडिंग पेमेंट्स लोड करें</button>
+        <table id="pending-payments-list">
+            <thead>
+                <tr>
+                    <th>UTR</th>
+                    <th>ऐप</th>
+                    <th>राशि</th>
+                    <th>यूजर ID</th>
+                    <th>स्थिति</th>
+                    <th>एक्शन</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+    
+    <div id="moderation" class="tab-content" style="display:none;">
+        <h2>💬 रिव्यू मॉडरेशन</h2>
+        <p id="review-moderation-message">सभी नवीनतम रिव्यूज लोड हो रहे हैं...</p>
+        <button onclick="loadReviews()">🔄 रिव्यूज लोड करें</button>
+        <div id="reviews-list">
+            </div>
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    // --- CONFIGURATION (Ensure this config is correct for your Firebase project) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+        authDomain: "smbrand-4543a.firebaseapp.com",
+        databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+        projectId: "smbrand-4543a",
+        storageBucket: "smbrand-4543a.firebasestorage.app",
+        messagingSenderId: "720775550032",
+        appId: "1:720775550032:web:0622548a007597778bad55",
+    };
+    
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    const imgbbKey = '021a2437b889915669b66554687bf17f';
+    const R2_WORKER_URL = 'https://ebookandapk-uploder.rajputsurendra562.workers.dev';
+    
+    // --- AUTHENTICATION & ACCESS CONTROL LOGIC ---
+
+    /**
+     * UI को नियंत्रित करता है: लॉगिन पेज या एडमिन कंसोल दिखाता है।
+     */
+    function showLoginPage() {
+        document.getElementById('login-page').style.display = 'block';
+        document.getElementById('main-admin-console').style.display = 'none';
+    }
+
+    function showAdminConsole() {
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('main-admin-console').style.display = 'block';
+        loadCategories(); // Categories load only after access is granted
+        openTab('upload'); // Open default tab
+    }
+    
+    /**
+     * Firebase से एडमिन ईमेल की जाँच करता है और एक्सेस देता है।
+     */
+    async function checkAdminAccess(user) {
+        const statusDiv = document.getElementById('auth-status');
+        statusDiv.innerHTML = '';
+        
+        if (!user) {
+            showLoginPage();
+            return;
+        }
+
+        try {
+            statusDiv.innerHTML = 'एक्सेस की जाँच की जा रही है...';
+            const adminEmailRef = db.ref('ADMIN_CONTROL_LISTS/adminEmail');
+            const snapshot = await adminEmailRef.once('value');
+            const primaryAdminEmail = snapshot.val();
+
+            if (user.email === primaryAdminEmail) {
+                statusDiv.innerHTML = `<p class="success">सफलता! एडमिन के रूप में लॉग इन: ${user.email}</p>`;
+                showAdminConsole();
+            } else {
+                // User is logged into Firebase but is not the primary admin
+                statusDiv.innerHTML = `<p class="error">एक्सेस अस्वीकृत: यह कंसोल केवल प्राइमरी एडमिन (${primaryAdminEmail}) के लिए है।</p>`;
+                auth.signOut(); // Force log out the non-admin user
+                showLoginPage();
+            }
+        } catch (error) {
+            console.error("Error checking admin email:", error);
+            statusDiv.innerHTML = `<p class="error">Database Error: एडमिन ईमेल लोड नहीं हो सका। ${error.message}</p>`;
+            auth.signOut();
+            showLoginPage();
+        }
+    }
+
+    /**
+     * Email/Password Login
+     */
+    async function emailPasswordLogin() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const statusDiv = document.getElementById('auth-status');
+        statusDiv.innerHTML = 'लॉग इन किया जा रहा है...';
+
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
+            // checkAdminAccess will be called automatically by onAuthStateChanged
+        } catch (error) {
+            statusDiv.innerHTML = `<p class="error">लॉग इन विफल: ${error.message}</p>`;
+        }
+    }
+    
+    /**
+     * Google Sign-In
+     */
+    async function googleLogin() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const statusDiv = document.getElementById('auth-status');
+        statusDiv.innerHTML = 'Google पर रीडायरेक्ट किया जा रहा है...';
+
+        try {
+            await auth.signInWithPopup(provider);
+            // checkAdminAccess will be called automatically by onAuthStateChanged
+        } catch (error) {
+            statusDiv.innerHTML = `<p class="error">Google लॉग इन विफल: ${error.message}</p>`;
+        }
+    }
+
+    /**
+     * Logout function
+     */
+    function adminLogout() {
+        auth.signOut();
+        alert('आप लॉगआउट हो गए हैं।');
+        // onAuthStateChanged will handle UI transition
+    }
+
+    // --- R2/IMGBB UPLOAD UTILITIES (Unchanged) ---
+    async function uploadImgbb(file){
+        const base64Image = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+        const form = new FormData();
+        form.append('image', base64Image);
+        const res = await axios.post(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, form);
+        return res.data.data.url;
+    }
+
+    async function uploadR2(file, prefix){
+        const fd = new FormData();
+        fd.append("file", file, file.name);
+        fd.append("prefix", prefix);
+
+        const resp = await fetch(R2_WORKER_URL, { method: "POST", body: fd });
+
+        if (!resp.ok) {
+            const text = await resp.text();
+            throw new Error(`R2 Upload failed. Status: ${resp.status}. Response: ${text}`);
+        }
+        const json = await resp.json();
+        if (json.publicURL) {
+            return json.publicURL;
+        } else {
+            throw new Error('R2 Worker did not return public URL.');
+        }
+    }
+    
+    // --- SHATTER UI LOGIC (Unchanged) ---
+    function toggleShatter(stepNum) {
+        const shatter = document.getElementById(`shatter-${stepNum}`);
+        shatter.classList.toggle('open');
+    }
+
+    function nextShatter(current, next) {
+        const currentShatter = document.getElementById(`shatter-${current}`);
+        const requiredInputs = currentShatter.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredInputs.forEach(input => {
+            if (!input.value || (input.type === 'file' && input.files.length === 0)) {
+                isValid = false;
+                input.style.borderColor = 'red';
+            } else {
+                input.style.borderColor = '#ccc';
+            }
+        });
+
+        if (isValid) {
+            document.getElementById(`shatter-${current}`).classList.remove('open');
+            document.getElementById(`shatter-${next}`).classList.add('open');
+        } else {
+            alert('कृपया सभी आवश्यक फ़ील्ड भरें/फ़ाइलें चुनें।');
+        }
+    }
+    
+    // --- INITIAL LOAD AND CATEGORY POPULATION (Unchanged) ---
+    async function loadCategories() {
+        try {
+            const categorySelect = document.getElementById('app-category');
+            categorySelect.querySelectorAll('option:not([value=""])').forEach(option => option.remove());
+
+            const allCategoriesSnapshot = await db.ref('APP_STORE_CATEGORIES').once('value');
+            const allCategories = allCategoriesSnapshot.val();
+
+            if (allCategories) {
+                Object.keys(allCategories).forEach(majorCat => {
+                    const subCats = allCategories[majorCat];
+                    if (typeof subCats === 'object' && subCats !== null) {
+                        Object.keys(subCats).forEach(subCat => {
+                            const option = document.createElement('option');
+                            option.value = subCat; 
+                            option.textContent = `${majorCat} > ${subCat}`; 
+                            categorySelect.appendChild(option);
+                        });
+                    }
+                });
+            } else {
+                const defaultOption = document.createElement('option');
+                defaultOption.value = 'General';
+                defaultOption.textContent = 'General (Fallback)';
+                categorySelect.appendChild(defaultOption);
+            }
+        } catch (error) {
+            console.error("Error loading categories:", error);
+        }
+    }
+    
+    // --- TAB SWITCHING AND PRICING TOGGLE (Unchanged) ---
+    function openTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-menu button').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabName).style.display = 'block';
+        document.getElementById('tab-' + tabName).classList.add('active');
+        
+        if (tabName === 'verify') { loadPendingPayments(); }
+        if (tabName === 'moderation') { loadReviews(); }
+    }
+
+    function togglePricingFields() {
+        const appType = document.getElementById('app-type').value;
+        document.getElementById('paid-fields').style.display = (appType === 'Paid') ? 'block' : 'none';
+        document.getElementById('subscription-fields').style.display = (appType === 'Subscription') ? 'block' : 'none';
+    }
+    
+    // --- UPLOAD APP LOGIC (Unchanged) ---
+    document.getElementById('app-upload-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('upload-app-btn');
+        const statusP = document.getElementById('upload-status');
+
+        btn.disabled = true;
+        statusP.className = '';
+        statusP.innerHTML = 'Status: अपलोड शुरू हो रहा है...';
+
+        const appData = {
+            name: document.getElementById('app-name').value.trim(),
+            category: document.getElementById('app-category').value,
+            shortDesc: document.getElementById('app-short-desc').value.trim(),
+            fullDesc: document.getElementById('app-full-desc').value.trim(),
+            type: document.getElementById('app-type').value,
+            coverUploadTarget: document.getElementById('cover-upload-target').value,
+            iconFile: document.getElementById('app-icon-file').files[0],
+            screenshotFiles: document.getElementById('app-screenshots-files').files,
+            apkFile: document.getElementById('app-apk-file').files[0],
+            qrUrl: document.getElementById('upi-qr-code-url').value.trim()
+        };
+        
+        if (appData.type === 'Paid') {
+            appData.price = Number(document.getElementById('app-price').value);
+        } else if (appData.type === 'Subscription') {
+            appData.subMonthly = Number(document.getElementById('sub-monthly').value);
+            appData.subYearly = Number(document.getElementById('sub-yearly').value);
+        }
+
+        try {
+            // --- Media Upload (R2/ImgBB) ---
+            const appId = 'app' + Date.now();
+            const safeName = appData.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+            let uploadedUrls = {};
+
+            statusP.innerHTML = 'Status: ऐप आइकॉन अपलोड हो रहा है...';
+            const iconUploader = (appData.coverUploadTarget === 'r2') ? (file) => uploadR2(file, 'app-icons/') : uploadImgbb;
+            uploadedUrls.iconUrl = await iconUploader(appData.iconFile);
+            
+            statusP.innerHTML = `Status: ${appData.screenshotFiles.length} स्क्रीनशॉट्स अपलोड हो रहे हैं...`;
+            const screenshotUploadPromises = Array.from(appData.screenshotFiles).map((file, index) => 
+                uploadR2(file, `app-screenshots/${safeName}-${index}/`)
+            );
+            uploadedUrls.screenshotUrls = await Promise.all(screenshotUploadPromises);
+
+            statusP.innerHTML = 'Status: APK फ़ाइल R2 पर अपलोड हो रही है...';
+            uploadedUrls.apkUrl = await uploadR2(appData.apkFile, `app-apks/${safeName}/`);
+
+            // --- Save to Firebase (using 'APPS' node) ---
+            statusP.innerHTML = 'Status: Firebase में सभी विवरण सेव किए जा रहे हैं... 🔥';
+            
+            const dataToSave = {
+                id: appId,
+                name: appData.name,
+                // Logged-in admin's email is used as developer/uploader ID
+                developer: auth.currentUser ? auth.currentUser.email : 'Admin Console (Unknown)', 
+                category: appData.category,
+                shortDesc: appData.shortDesc,
+                fullDesc: appData.fullDesc,
+                type: appData.type,
+                iconUrl: uploadedUrls.iconUrl,
+                screenshotUrls: uploadedUrls.screenshotUrls,
+                apkUrl: uploadedUrls.apkUrl,
+                downloadCount: 0,
+                rating: 0,
+                reviewCount: 0,
+                isPublished: true,
+                upiQrUrl: appData.qrUrl, 
+                createdAt: Date.now()
+            };
+            if (appData.type === 'Paid') { dataToSave.price = appData.price; } 
+            else if (appData.type === 'Subscription') { dataToSave.subMonthly = appData.subMonthly; dataToSave.subYearly = appData.subYearly; }
+
+            // Save the new app to the 'APPS' node
+            await db.ref('APPS/' + appId).set(dataToSave); 
+            
+            statusP.innerHTML = `Success! ऐप "${appData.name}" सफलतापूर्वक अपलोड हो गया है।`;
+            statusP.classList.add('success');
+            document.getElementById('app-upload-form').reset(); 
+            document.getElementById('shatter-3').classList.remove('open');
+            document.getElementById('shatter-1').classList.add('open'); // Go back to step 1
+
+        } catch(err) {
+            console.error('Upload Error:', err);
+            statusP.innerHTML = 'Error: अपलोड विफल रहा। ' + (err.message || '');
+            statusP.classList.add('error');
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    // --- PAYMENT VERIFICATION LOGIC (Unchanged) ---
+    async function loadPendingPayments() {
+        const tbody = document.getElementById('pending-payments-list').getElementsByTagName('tbody')[0];
+        const statusP = document.getElementById('verification-message');
+        tbody.innerHTML = '';
+        statusP.className = '';
+        statusP.innerHTML = 'पेंडिंग पेमेंट्स लोड हो रहे हैं...';
+        
+        try {
+            const snapshot = await db.ref('ORDERS').orderByChild('status').equalTo('Pending').once('value');
+            const payments = snapshot.val();
+
+            if (!payments) {
+                statusP.innerHTML = 'कोई पेंडिंग पेमेंट नहीं मिला।';
+                return;
+            }
+            
+            Object.keys(payments).forEach(key => {
+                const payment = payments[key];
+                if (payment.app_source === 'E_COMMERCE' || payment.paymentMethod === 'UPI_UTR') { 
+                    const row = tbody.insertRow();
+                    row.insertCell().textContent = payment.utr || 'N/A';
+                    row.insertCell().textContent = payment.appName || payment.appId || 'N/A';
+                    row.insertCell().textContent = payment.total_amount;
+                    row.insertCell().textContent = payment.user_id ? payment.user_id.substring(0, 5) + '...' : 'N/A'; 
+                    row.insertCell().textContent = payment.status;
+                    
+                    const actionCell = row.insertCell();
+                    const approveBtn = document.createElement('button');
+                    approveBtn.className = 'action-btn approve';
+                    approveBtn.textContent = 'अप्रूव';
+                    approveBtn.onclick = () => handlePaymentAction(key, payment.user_id, payment.appId, 'Completed');
+                    actionCell.appendChild(approveBtn);
+                }
+            });
+            statusP.innerHTML = `सफलतापूर्वक ${tbody.rows.length} पेंडिंग पेमेंट्स लोड किए गए।`;
+
+        } catch (error) {
+            console.error("Error loading payments:", error);
+            statusP.innerHTML = 'पेमेंट्स लोड करने में एरर।';
+            statusP.classList.add('error');
+        }
+    }
+
+    async function handlePaymentAction(orderKey, userId, appId, status) {
+        if (!confirm(`क्या आप इस ऑर्डर को '${status}' करना चाहते हैं?`)) return;
+
+        try {
+            await db.ref('ORDERS/' + orderKey).update({ status: status, adminVerifiedAt: Date.now() });
+
+            if (status === 'Completed' && appId) {
+                await db.ref('USERS/' + userId + '/purchased_apps/' + appId).set({
+                    purchasedAt: Date.now(),
+                    orderKey: orderKey,
+                    accessType: 'full'
+                });
+            }
+            
+            alert(`पेमेंट ${status} कर दिया गया है और यूज़र को एक्सेस मिल गया है।`);
+            loadPendingPayments();
+
+        } catch (error) {
+            console.error(`Error handling action:`, error);
+            alert(`एक्शन विफल: ${error.message}`);
+        }
+    }
+    
+    // --- REVIEW MODERATION LOGIC (Unchanged) ---
+    async function loadReviews() {
+        const reviewListDiv = document.getElementById('reviews-list');
+        const statusP = document.getElementById('review-moderation-message');
+        reviewListDiv.innerHTML = '';
+        statusP.className = '';
+        statusP.innerHTML = 'रिव्यूज लोड हो रहे हैं...';
+
+        try {
+            const snapshot = await db.ref('RATINGS_REVIEWS').once('value');
+            const reviewsByItem = snapshot.val();
+            let reviewArray = [];
+
+            if (reviewsByItem) {
+                Object.keys(reviewsByItem).forEach(itemId => {
+                    const itemReviews = reviewsByItem[itemId];
+                    Object.keys(itemReviews).forEach(reviewId => {
+                        reviewArray.push({
+                            id: reviewId,
+                            itemId: itemId,
+                            ...itemReviews[reviewId]
+                        });
+                    });
+                });
+            }
+
+            if (reviewArray.length === 0) {
+                statusP.innerHTML = 'कोई रिव्यू नहीं मिला।';
+                return;
+            }
+            
+            reviewArray.reverse();
+            
+            reviewArray.forEach(review => {
+                const div = document.createElement('div');
+                div.style.border = '1px solid #ddd';
+                div.style.padding = '10px';
+                div.style.margin = '10px 0';
+                div.innerHTML = `
+                    <p><strong>आइटम ID:</strong> ${review.itemId} (${review.item_type || 'N/A'})</p>
+                    <p><strong>यूजर ID:</strong> ${review.user_id ? review.user_id.substring(0, 10) + '...' : 'N/A'}</p>
+                    <p><strong>रेटिंग:</strong> ${review.rating} ⭐</p>
+                    <p><strong>रिव्यू:</strong> ${review.review_text}</p>
+                    <button class="action-btn" onclick="moderateReview('${review.itemId}', '${review.id}', true)">हाइड करें</button>
+                    <button class="action-btn" style="background-color: #dc3545;" onclick="moderateReview('${review.itemId}', '${review.id}', false)">डिलीट करें</button>
+                `;
+                reviewListDiv.appendChild(div);
+            });
+            statusP.innerHTML = `सफलतापूर्वक ${reviewArray.length} रिव्यूज लोड किए गए।`;
+            
+        } catch (error) {
+            console.error("Error loading reviews:", error);
+            statusP.innerHTML = 'रिव्यूज लोड करने में एरर।';
+            statusP.classList.add('error');
+        }
+    }
+
+    async function moderateReview(itemId, reviewId, hide) {
+        if (hide && !confirm('क्या आप इस रिव्यू को छिपाना चाहते हैं? यह डेटाबेस में मौजूद रहेगा।')) return;
+        if (!hide && !confirm('क्या आप इस रिव्यू को स्थायी रूप से DELETE करना चाहते हैं?')) return;
+
+        try {
+            if (hide) {
+                await db.ref('RATINGS_REVIEWS/' + itemId + '/' + reviewId).update({ hidden: true });
+            } else {
+                await db.ref('RATINGS_REVIEWS/' + itemId + '/' + reviewId).remove();
+            }
+            alert(hide ? 'रिव्यू छिपा दिया गया है।' : 'रिव्यू डिलीट कर दिया गया है।');
+            loadReviews();
+        } catch (error) {
+            console.error("Moderation Error:", error);
+            alert(`मॉडरेशन विफल: ${error.message}`);
+        }
+    }
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Firebase Auth State Listener UI को कंट्रोल करता है
+        auth.onAuthStateChanged(checkAdminAccess);
+    });
+
+</script>
+</body>
+</html>
+

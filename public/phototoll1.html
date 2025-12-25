@@ -1,0 +1,360 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11380267758"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'AW'-11380267758');
+    </script>
+
+</head>
+<body>
+
+    <h1>hhhhh</h1>
+
+    <!-- Event snippet for Sign-up conversion page -->
+    <script>
+      gtag('event', 'conversion', { 'send_to': 'AW-11380267758/7ERoCNPK-OIaEO61xLIq' });
+    </script>
+
+    <p>hhhh</p>
+
+</body>
+</html>
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+
+    <!-- Google AdSense Code -->
+    <script async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7356424946387381"
+        crossorigin="anonymous">
+    </script>
+</head>
+
+<body>
+    <h1>vvvv</h1>
+    <p>vgvg</p>
+
+</body>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Image Manual Cropper (FIXED)</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <style>
+        :root { --primary: #3b82f6; --bg: #f8fafc; --card: #ffffff; --text: #1f2937; --border: #e2e8f0; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: var(--primary); }
+        .container { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 1000px; width: 100%; border: 1px solid var(--border); }
+        
+        /* Upload Area */
+        #uploadLabel { padding: 20px; border: 2px dashed var(--primary); background: #eff6ff; border-radius: 8px; text-align: center; cursor: pointer; margin-bottom: 20px; font-weight: bold; }
+
+        /* Image List */
+        #imageList { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
+        .image-thumbnail { width: 100px; height: 100px; cursor: pointer; border: 3px solid transparent; border-radius: 6px; overflow: hidden; position: relative; }
+        .image-thumbnail.active { border-color: var(--primary); box-shadow: 0 0 5px rgba(59, 130, 246, 0.7); }
+        .image-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+        .image-thumbnail span { position: absolute; bottom: 0; right: 0; background: rgba(59, 130, 246, 0.9); color: white; padding: 2px 5px; font-size: 0.7rem; border-radius: 4px 0 0 0; }
+        .image-thumbnail.cropped span { background: #10b981; }
+
+        /* Cropper Area & Controls */
+        .editor-section { display: flex; gap: 20px; }
+        .cropper-area { flex-grow: 1; border: 1px solid var(--border); background: #f1f5f9; height: 450px; overflow: hidden; position: relative; }
+        .cropper-controls { width: 250px; display: flex; flex-direction: column; gap: 15px; }
+
+        /* Hide the original image element until a file is selected */
+        #imageToCrop { max-width: 100%; display: none; }
+        .cropper-active img { display: block !important; }
+
+        /* Buttons */
+        button { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #2563eb; }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        #downloadAllBtn { background: #10b981; margin-top: 20px; }
+        #downloadAllBtn:hover { background: #059669; }
+        
+        .cropper-container { /* Cropper.js container style */ margin-bottom: 0 !important; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <h1>✨ Multi-Image Manual Cropper (FIXED)</h1>
+    <p>Upload karein, phir neeche thumbnails par click karke ek-ek image ko crop karein.</p>
+
+    <div class="container">
+        <label for="imageInput" id="uploadLabel">
+           ⬆️ Click to Upload Multiple Images
+        </label>
+        <input type="file" id="imageInput" multiple accept="image/*" class="hidden">
+
+        <h3>Select Image to Edit:</h3>
+        <div id="imageList">
+            <p id="infoText">No images uploaded yet.</p>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+        
+        <div class="editor-section">
+            <div class="cropper-area" id="cropperArea">
+                <img id="imageToCrop" alt="Image to be cropped">
+                <p id="selectImageText" style="text-align: center; padding-top: 200px; color: #64748b;">Select an image thumbnail above to start editing.</p>
+            </div>
+            
+            <div class="cropper-controls">
+                <button id="applyCropBtn" disabled>✅ Apply Crop & Next</button>
+                <button onclick="resetCrop()" disabled id="resetBtn" style="background: #ef4444;">↩️ Reset Crop</button>
+
+                <div style="margin-top: auto; padding-top: 20px; border-top: 1px dashed var(--border);">
+                    <button id="downloadAllBtn" disabled>💾 Download All Cropped Images (ZIP)</button>
+                    <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px;">(Please crop all images first)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const imageList = document.getElementById('imageList');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const applyCropBtn = document.getElementById('applyCropBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const infoText = document.getElementById('infoText');
+        const selectImageText = document.getElementById('selectImageText');
+        const uploadLabel = document.getElementById('uploadLabel');
+
+        let allImageData = []; // Store original file data and cropped data
+        let activeCropper = null;
+        let activeIndex = -1;
+
+        // --- FIXED: File Upload Handling ---
+        imageInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length === 0) return;
+
+            // UI Reset
+            infoText.classList.add('hidden');
+            imageList.innerHTML = '';
+            allImageData = [];
+            activeIndex = -1; // Reset active index
+
+            // Update Label
+            uploadLabel.textContent = `✅ ${files.length} Images Selected. Scroll down to edit.`;
+            
+            // File processing loop (Promise.all ensures all files are read before moving on)
+            const fileReaders = Array.from(files).map(file => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const data = {
+                            name: file.name,
+                            originalSrc: event.target.result,
+                            croppedSrc: null,
+                            cropData: null,
+                            thumbnailElement: null
+                        };
+                        resolve(data);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            // Wait for all files to be read
+            Promise.all(fileReaders).then(results => {
+                allImageData = results;
+                allImageData.forEach((data, index) => {
+                    // Create and attach thumbnail element
+                    data.thumbnailElement = createThumbnail(data.name, data.originalSrc, index);
+                });
+                // Automatically select the first image to display it immediately
+                if (allImageData.length > 0) {
+                    selectImage(0);
+                }
+            });
+        });
+        
+        // 2. Thumbnail Creation (Updated to pass index)
+        function createThumbnail(name, src, index) {
+            const div = document.createElement('div');
+            div.className = 'image-thumbnail';
+            div.dataset.index = index; // Add index for easy lookup
+            const img = document.createElement('img');
+            img.src = src;
+            const span = document.createElement('span');
+            span.textContent = 'Uncropped';
+            div.appendChild(img);
+            div.appendChild(span);
+            imageList.appendChild(div);
+            return div;
+        }
+
+        // 3. Image Selection Handler
+        imageList.addEventListener('click', function(e) {
+            const thumbnail = e.target.closest('.image-thumbnail');
+            if (!thumbnail) return;
+
+            const index = parseInt(thumbnail.dataset.index); // Get index from dataset
+            if (index !== -1 && index !== activeIndex) {
+                selectImage(index);
+            }
+        });
+
+        function selectImage(index) {
+            if (allImageData.length === 0) return;
+            
+            // 1. Cleanup previous active state
+            if (activeIndex !== -1) {
+                const prevData = allImageData[activeIndex];
+                if(prevData.thumbnailElement) {
+                    prevData.thumbnailElement.classList.remove('active');
+                }
+            }
+            if (activeCropper) {
+                activeCropper.destroy();
+                activeCropper = null;
+            }
+            
+            // 2. Set new active state
+            activeIndex = index;
+            const data = allImageData[activeIndex];
+            if(data.thumbnailElement) {
+                data.thumbnailElement.classList.add('active');
+            }
+            
+            // 3. Update editor view
+            selectImageText.classList.add('hidden');
+            imageToCrop.src = data.originalSrc;
+            imageToCrop.classList.remove('hidden');
+
+            // 4. Initialize Cropper
+            // FIX: Cropper ko initialize karne se pehle, browser ko time do ki imageToCrop ka source load kar le.
+            // Iske liye hum Image ke 'onload' event ka istemal karenge.
+            imageToCrop.onload = function() {
+                 activeCropper = new Cropper(imageToCrop, {
+                    viewMode: 1, 
+                    aspectRatio: NaN,
+                    ready: function() {
+                        if (data.cropData) {
+                            activeCropper.setData(data.cropData);
+                        }
+                        applyCropBtn.disabled = false;
+                        resetBtn.disabled = false;
+                    }
+                });
+                imageToCrop.onload = null; // Remove handler after use
+            };
+
+            // Agar image cached ho, toh onload fire nahi hota. Isliye ek chota sa timeout bhi.
+            if (imageToCrop.complete) {
+                imageToCrop.onload();
+            }
+        }
+        
+        // 4. Apply Crop (Save Data)
+        applyCropBtn.addEventListener('click', function() {
+            if (!activeCropper) return;
+
+            const croppedCanvas = activeCropper.getCroppedCanvas();
+            const data = allImageData[activeIndex];
+
+            // FIX: PNG support ke liye check kiya
+            const isPNG = data.name.toLowerCase().endsWith('.png');
+            data.croppedSrc = croppedCanvas.toDataURL(isPNG ? 'image/png' : 'image/jpeg', 0.95);
+            data.cropData = activeCropper.getData(); 
+
+            data.thumbnailElement.classList.add('cropped');
+            data.thumbnailElement.querySelector('span').textContent = 'Cropped';
+
+            checkDownloadStatus();
+            
+            // Move to next image (if available)
+            if (activeIndex < allImageData.length - 1) {
+                selectImage(activeIndex + 1);
+            } else {
+                alert("All images have been cropped! You can now download the ZIP file.");
+            }
+        });
+
+        // 5. Reset Crop
+        function resetCrop() {
+            if (activeCropper) {
+                activeCropper.reset();
+            }
+            const data = allImageData[activeIndex];
+            data.croppedSrc = null;
+            data.cropData = null;
+            data.thumbnailElement.classList.remove('cropped');
+            data.thumbnailElement.querySelector('span').textContent = 'Uncropped';
+            checkDownloadStatus();
+        }
+
+        // 6. Check Download Status
+        function checkDownloadStatus() {
+            const allCropped = allImageData.length > 0 && allImageData.every(img => img.croppedSrc !== null);
+            downloadAllBtn.disabled = !allCropped;
+        }
+
+        // 7. Bulk Download
+        downloadAllBtn.addEventListener('click', function() {
+            if (downloadAllBtn.disabled) return;
+
+            const zip = new JSZip();
+            const folder = zip.folder("manually_cropped_images");
+
+            allImageData.forEach(img => {
+                if (img.croppedSrc) {
+                    const mimeType = img.croppedSrc.split(';')[0].split(':')[1];
+                    const extension = mimeType.includes('png') ? 'png' : 'jpg';
+                    
+                    const base64Data = img.croppedSrc.split(',')[1];
+                    const originalName = img.name.split('.')[0];
+                    const fileName = `cropped_${originalName}.${extension}`;
+                    
+                    folder.file(fileName, base64Data, {base64: true});
+                }
+            });
+
+            downloadAllBtn.textContent = "Creating ZIP...";
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                saveAs(content, "cropped_images_bundle.zip");
+                downloadAllBtn.textContent = "💾 Download All Cropped Images (ZIP)";
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>gold rupi - </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root{
+            --gold:#d4af37;
+            --gold-strong:#c59b2d;
+            --glass: rgba(255,255,255,0.8);
+            --card-bg: rgba(255,255,255,0.95);
+            --bg-grad: linear-gradient(135deg,#fff7e1,#ffe9a6);
+            --accent:#1f2937;
+            --text-color:#1f2937;
+            --bg-color:#fffaf0;
+            --card-shadow:0 6px 24px rgba(0,0,0,0.06);
+            --history-border: var(--gold-strong);
+        }
+        [data-theme="dark"] {
+            --gold:#ffd76b;
+            --gold-strong:#ffc44a;
+            --glass: rgba(31, 41, 55, 0.7);
+            --card-bg: rgba(31, 41, 55, 0.9);
+            --bg-grad: linear-gradient(135deg,#2e3a47,#4f5f70);
+            --accent:#f3f4f6;
+            --text-color:#f3f4f6;
+            --bg-color:#111827;
+            --card-shadow:0 6px 24px rgba(0,0,0,0.4);
+            --history-border: var(--gold);
+        }
+
+        *{box-sizing:border-box}
+        body{
+            margin:0;
+            font-family:'Poppins',sans-serif;
+            background: var(--bg-color);
+            color:var(--text-color);
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:14px 16px;
+            background:var(--glass);
+            backdrop-filter:blur(8px);
+            position:sticky;
+            top:0;
+            z-index:1000;
+        }
+        .brand{ display:flex;align-items:center;gap:10px; }
+        .logo{
+            width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold-strong));
+            display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);
+            box-shadow:0 6px 20px rgba(197,155,45,0.18);
+        }
+        .h1{font-weight:700;font-size:18px;color:var(--text-color)}
+        .top-right{display:flex;gap:10px;align-items:center}
+        .search-bar{padding:10px;border-radius:12px;border:none;width:100%;background:var(--card-bg);margin:12px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.05)}
+        [data-theme="dark"] .search-bar{background:rgba(255,255,255,0.1); box-shadow:none;}
+        .search-bar input, .search-bar select{border:none;background:transparent;outline:none;width:100%;font-size:15px;color:var(--text-color)}
+        
+        /* Increased Spacing for Clarity (User Request: "space me karo thoda sab clear dur dur dikhe") */
+        .container { padding: 16px; }
+        .card { margin-bottom: 16px; }
+        .section-title { display:flex; justify-content: space-between; align-items: center; margin-top: 24px; margin-bottom: 16px; }
+        
+        .section{display:none}
+        .section.active{display:block}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:12px}
+        
+        /* Category Grid (User Request: "गोल गोल" photo) */
+        .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+        .category-card { text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .category-icon { 
+            width: 55px; height: 55px; border-radius: 50%; /* Making it round */
+            background-color: var(--card-bg); 
+            display: flex; align-items: center; justify-content: center; 
+            margin: 0 auto 6px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .category-icon i { font-size: 24px; color: var(--gold-strong); }
+        .category-icon img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        .category-name { font-size: 11px; font-weight: 500; color: var(--text-color); line-height: 1.2; }
+
+
+        .card{
+            background:var(--card-bg);
+            border-radius:14px;padding:12px;box-shadow:var(--card-shadow);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .product-img{width:100%;height:140px;object-fit:cover;border-radius:10px;margin-bottom:8px}
+        /* Updated Product Card Look */
+        .product-card-inner { position: relative; }
+        .product-card-inner .product-img { height: 120px; margin-bottom: 6px; }
+        .product-card-inner .pmeta { display: block; margin-bottom: 4px; }
+        .product-card-inner .pname { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .product-card-inner .pprice { font-weight: 800; color:var(--gold-strong); font-size: 14px; }
+        .small{font-size:12px;color:var(--text-color);opacity:0.8;}
+        .small-muted{font-size:11px;color:var(--text-color);opacity:0.6;}
+        .field-hidden{display:none;}
+        
+        /* cart list */
+        .cart-list .card{display:flex;gap:10px;align-items:center;padding:10px;margin-bottom:10px;border-left:4px solid var(--gold);}
+        .cart-list img{width:72px;height:72px;object-fit:cover;border-radius:8px}
+
+        /* profile */
+        .profile-top{display:flex;gap:12px;align-items:center}
+        .profile-photo{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid var(--card-bg);box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+        .field{margin-top:8px}
+        input:not([type="file"]), select, textarea{
+            width:100%;
+            padding:10px;
+            border-radius:8px;
+            border:1px solid rgba(0,0,0,0.1);
+            margin-top:4px;
+            margin-bottom:8px;
+            background:var(--card-bg);
+            color:var(--text-color);
+            transition: border-color 0.3s;
+        }
+        [data-theme="dark"] input:not([type="file"]), [data-theme="dark"] select, [data-theme="dark"] textarea {
+            border:1px solid rgba(255,255,255,0.2);
+            background:rgba(255,255,255,0.05);
+        }
+
+        /* buttons */
+        .btn{background:var(--gold);border:none;padding:10px 14px;border-radius:10px;color:var(--accent);font-weight:600;cursor:pointer;transition:background-color 0.3s, opacity 0.3s;}
+        .btn:hover{opacity:0.9;}
+        .btn.secondary{background:transparent;border:1px solid rgba(0,0,0,0.1);color:var(--text-color)}
+        [data-theme="dark"] .btn.secondary{border:1px solid rgba(255,255,255,0.2);color:var(--text-color)}
+        .row{display:flex;gap:10px;flex-wrap:wrap}
+
+        /* variant selectors */
+        .variant-selector-grid {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .variant-option {
+            padding: 8px 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .variant-option.selected {
+            border-color: var(--gold-strong);
+            background-color: var(--gold);
+            color: var(--accent);
+            box-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+        }
+
+        /* bottom nav */
+        .bottom-nav{position:fixed;left:0;right:0;bottom:0;height:66px;background:var(--glass);backdrop-filter:blur(8px);display:flex;justify-content:space-around;z-index:9999;box-shadow:0 -2px 10px rgba(0,0,0,0.05)}
+        .navbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--text-color);opacity:0.7;cursor:pointer;flex:1}
+        .navbtn i{font-size:22px;margin-bottom:2px;color:var(--text-color)}
+        .navbtn.active{opacity:1;color:var(--gold-strong);font-weight:600}
+        .navbtn.active i{color:var(--gold-strong)}
+
+        /* gold/wallet section */
+        .gold-box{background:linear-gradient(90deg, rgba(212,175,55,0.15), rgba(212,175,55,0.08));padding:16px;border-radius:12px;margin:8px 0;border-left:5px solid var(--gold-strong);}
+        [data-theme="dark"] .gold-box{background:rgba(212,175,55,0.08);}
+        .note{font-size:13px;color:var(--text-color);opacity:0.7;}
+        .balance-display{font-weight:800;font-size:24px;color:var(--gold-strong);margin-top:4px;}
+        .balance-label{font-weight:700;font-size:14px;opacity:0.8;}
+
+        /* history styling */
+        .history .card{background:var(--card-bg);border-left:4px solid var(--history-border);margin-bottom:8px;padding:10px;font-size:13px;}
+
+        /* detail overlay & modals */
+        .overlay{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:10000}
+        .overlay .modal{width:92%;max-width:760px;background:var(--bg-color);padding:20px;border-radius:16px;max-height:90vh;overflow:auto;color:var(--text-color);box-shadow:var(--card-shadow);}
+        .overlay .images{display:flex;gap:8px;overflow-x:auto;margin-bottom:8px}
+        .overlay img{height:220px;object-fit:cover;border-radius:8px}
+        .modal-row{display:flex;gap:8px;align-items:center}
+        
+        .section-title h2 { font-size: 16px; margin:0; }
+
+        /* Order Status Badge */
+        .badge{padding:4px 8px;border-radius:6px;font-weight:600;font-size:12px;display:inline-block;text-transform:capitalize;color:#fff;}
+        .badge-pending{background-color:#f59e0b;}
+        .badge-paid{background-color:#06b6d4;}
+        .badge-processing{background-color:#6366f1;}
+        .badge-delivered, .badge-completed{background-color:#10b981;}
+        .badge-rejected{background-color:#ef4444;}
+        .badge-withdraw{background-color:#f97316;}
+        .badge-add{background-color:#059669;}
+        .badge-loan{background-color:#3b82f6;}
+        .badge-eligible{background-color: #6d28d9;}
+        /* Home Latest Product Look */
+        #latest-products img {
+            width: 100% !important;
+            height: 120px !important;
+            object-fit: cover !important;
+            border-radius: 10px;
+            display: block !important;
+        }
+        .quick-actions{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .product-actions{ display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+        .product-actions .btn, .product-actions .btn.secondary { padding: 6px 10px; font-size: 12px; }
+        .rating { font-size: 14px; color: gold; }
+
+        /* New crypto exchange styles */
+        .crypto-widget-container {
+            margin-top: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            max-width: 100%;
+            height: 0; /* start collapsed */
+            transition: height 0.5s ease-out;
+        }
+        .crypto-widget-container.expanded {
+            height: 400px; /* Adjust as needed for the largest widget */
+        }
+        .crypto-widget-container iframe {
+            display: block;
+            width: 100%;
+            border: none;
+            min-height: 350px;
+        }
+        .exchange-widget-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        /* Loan Dashboard Styles */
+        .loan-step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .loan-step {
+            flex: 1;
+            text-align: center;
+            font-size: 10px;
+            color: #ccc;
+            position: relative;
+            padding-top: 25px;
+        }
+        .loan-step::before {
+            content: attr(data-step);
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            border-radius: 50%;
+            background: #ccc;
+            color: white;
+            font-weight: 700;
+        }
+        .loan-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #ccc;
+            z-index: -1;
+            transform: translateX(10px);
+        }
+        .loan-step.active::before,
+        .loan-step.completed::before {
+            background: var(--gold-strong);
+        }
+        .loan-step.completed ~ .loan-step::after {
+            background: var(--gold-strong);
+        }
+        .loan-step-content {
+            padding: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .loan-step-content h4 { margin-top: 0; }
+
+        .loan-offer-details div {
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .loan-offer-details div:last-child { border-bottom: none; }
+
+        /* General service grid from original file */
+        .grid-services {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Mobile default */
+            gap: 10px;
+        }
+        @media (min-width: 640px) {
+            .grid-services {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        .service-button {
+            display: none; /* Initially hidden, JavaScript will show them */
+        }
+        
+    </style>
+</head>
+<body data-theme="light">
+    <div class="header">
+        <div class="brand">
+            <div class="logo">gr</div>
+            <div>
+                <div class="h1">gold rupi</div>
+                <div class="small">buy gold • shop • wallet</div>
+            </div>
+        </div>
+        <div class="top-right" style="display:flex;align-items:center;gap:12px">
+            <div class="small" id="goldrate-display">rate: ₹6500 / g</div>
+            <div class="small" id="wallet-mini">wallet: ₹0</div>
+            
+            <div class="notification-icon" onclick="showTab('notifications')" title="Notifications" style="position:relative; cursor:pointer;">
+                <i class="ri-notification-line" style="font-size:20px;"></i>
+                <span id="notification-badge" class="badge" style="position:absolute; top:-5px; right:-5px; background-color:#ef4444; color:#fff; padding:1px 5px; border-radius:50%; font-size:10px; line-height:1; display:none;">!</span>
+            </div>
+
+            <button class="btn secondary" onclick="toggleTheme()" style="padding: 6px 8px;"><i id="theme-icon" class="ri-moon-line"></i></button>
+            <div class="cart-icon" onclick="showTab('cart')" title="Cart" style="position:relative;">
+                <i class="ri-shopping-cart-line"></i>
+                <span id="cart-count" class="badge">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="home" class="section active container">
+        <div class="card" style="background:var(--bg-grad);padding:16px;text-align:center;">
+            <h3 style="margin:0 0 4px;">Welcome Back, Admin User!</h3>
+            <p class="note" style="margin:0 0 10px;">Check out the latest offers and app updates.</p>
+            <a href="#" style="font-size:12px; font-weight:700; color:var(--gold-strong);">VIEW OFFERS &rarr;</a>
+            <div id="ad-banner-slot" style="margin-top:10px;">
+                <img src="https://ad.link/banner01.jpg" style="width:100%; height:80px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none';" />
+            </div>
+        </div>
+
+        <div class="card" style="padding:16px;">
+            <div class="section-title">
+                <h2 style="font-size:16px;">Shop by Category</h2>
+                <a href="#" onclick="showTab('shop'); return false;" class="small-muted">View All &rarr;</a>
+            </div>
+            <div id="ecommerce-categories-grid" class="category-grid">
+                </div>
+        </div>
+
+        <div class="gold-box">
+            <div class="balance-label">Digital Gold Balance</div>
+            <div class="balance-display" id="gold-balance">0.0000 g</div>
+            <p class="note" style="margin-bottom:10px;">Worth: <strong id="gold-value-inr">₹0.00</strong></p>
+            <div class="row">
+                <button class="btn" onclick="showTab('buy-gold')">Buy Gold</button>
+                <button class="btn secondary" onclick="showTab('sell-gold')">Sell Gold</button>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <h2 style="font-size:16px;">Latest Products</h2>
+        </div>
+        <div id="latest-products" class="grid">
+            </div>
+        
+        <div id="servicesBox">
+            <div class="section-title">
+                <h2 style="font-size:16px;">Other Services</h2>
+            </div>
+            <div class="grid-services" id="service-button-container">
+                <button id="service1" class="btn secondary service-button" data-href="loan-application">Loan Application</button>
+                <button id="service2" class="btn secondary service-button" data-href="crypto-exchange">Crypto Exchange</button>
+                <button id="service3" class="btn secondary service-button" data-href="flight-tickets">Flight Booking</button>
+                <button id="service4" class="btn secondary service-button" data-href="house-cleaning">Home Services</button>
+                <button id="service5" class="btn secondary service-button" data-href="job-listings">Job Listings</button>
+                <button id="service6" class="btn secondary service-button" data-href="ebooks-store">Ebooks Store</button>
+                <button id="service7" class="btn secondary service-button" data-href="property-sale">Property Sale</button>
+                <button id="service8" class="btn secondary service-button" data-href="food-delivery">Food Delivery</button>
+                <button id="service9" class="btn secondary service-button" data-href="refer">Refer & Earn</button>
+                <button id="service10" class="btn secondary service-button" data-href="example.html" style="display:none;">10</button>
+                <button id="service11" class="btn secondary service-button" data-href="example.html" style="display:none;">11</button>
+                <button id="service12" class="btn secondary service-button" data-href="example.html" style="display:none;">12</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="shop" class="section container">
+        <div class="section-title">
+            <h2 id="shop-title">E-Commerce Shop</h2>
+            <button class="btn secondary small-muted" onclick="showShopView('categories')" id="back-to-categories" style="display:none;">&larr; Back to Categories</button>
+        </div>
+        
+        <div id="shop-category-view" class="card" style="padding:16px;">
+            <h3 style="margin-top:0;">All E-Commerce Categories</h3>
+            <div id="shop-all-categories-grid" class="category-grid" style="grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));">
+                </div>
+        </div>
+
+        <div id="shop-product-list-view" class="field-hidden">
+            <h3 id="product-list-title" style="margin-top:0;">Products in Category</h3>
+            <div id="products-list-container" class="grid">
+                </div>
+        </div>
+        
+        <div id="wishlist-container" style="display: none;">
+            <div class="section-title">
+                <h2 style="margin:0;">My Wishlist</h2>
+            </div>
+            <div id="wishlist-products" class="grid">
+                </div>
+        </div>
+    </div>
+    
+    <div id="wallet" class="section container">
+        <div class="section-title">
+            <h2 style="margin:0;">My Wallet</h2>
+        </div>
+        <div class="gold-box">
+            <div class="balance-label">Available Balance (<span id="wallet-currency">INR</span>)</div>
+            <div class="balance-display" id="wallet-balance">₹0.00</div>
+            <div class="row" style="margin-top:12px;">
+                <button class="btn" onclick="showTab('add-funds')"><i class="ri-wallet-line"></i> Add Funds</button>
+                <button class="btn secondary" onclick="showTab('withdraw')"><i class="ri-send-plane-line"></i> Withdraw</button>
+            </div>
+        </div>
+        
+        <div class="section-title">
+            <h3 style="margin:0;">Wallet History</h3>
+        </div>
+        <div id="wallet-history-list" class="history">
+            </div>
+    </div>
+    
+    <div id="buy-gold" class="section container">
+        <div class="section-title">
+            <h2 style="margin:0;">Buy Digital Gold</h2>
+        </div>
+        <div class="gold-box">
+            <div class="balance-label">Current Gold Price</div>
+            <div class="balance-display" id="buy-goldrate">₹6500 / g</div>
+            <p class="note" style="margin-bottom:10px;">Min purchase: ₹10</p>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-top:0;">Payment Details</h3>
+            <label class="small">enter amount in ₹</label>
+            <input id="gold-amount" type="number" placeholder="amount in ₹" oninput="calculateGoldGrams()">
+            <div class="note small" style="margin-bottom:8px;">will get: <strong id="gold-grams-calc">0.0000 g</strong></div>
+            <label class="small">enter utr (12 digits)</label>
+            <input id="gold-utr" type="text" placeholder="12 digit utr">
+            <div style="margin-top:8px" class="small-muted">scan the upi qr and paste utr then submit.</div>
+        </div>
+        
+        <div style="width:160px;text-align:center;margin: 0 auto; margin-top:16px;">
+            <img id="gold-qr-img" src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" style="width:140px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);">
+            <div class="small" style="margin-top:6px">scan & pay UPI</div>
+        </div>
+
+        <button class="btn" onclick="submitGoldPurchase()" style="width:100%;margin-top:16px;"><i class="ri-secure-payment-line"></i> Submit Payment</button>
+    </div>
+    
+    <div id="notifications" class="section container">
+        <div class="section-title">
+            <h2 style="margin:0;">Notifications</h2>
+        </div>
+        <div id="notifications-list">
+            <div class="card" style="border-left: 4px solid var(--gold-strong);">
+                <div style="font-weight:600;">Welcome Back!</div>
+                <div class="small-muted">Check out new offers. (2025-12-01)</div>
+            </div>
+            </div>
+    </div>
+    
+    <div id="product-modal-overlay" class="overlay" onclick="closeOverlay()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2 id="modal-title" style="margin-top:0;">Product Name</h2>
+            
+            <div id="modal-images" class="images">
+                </div>
+            
+            <p id="modal-desc" class="note"></p>
+            
+            <div style="margin:16px 0; padding:10px; border-radius:10px; background:var(--card-bg); border:1px solid rgba(0,0,0,0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span id="modal-price" style="font-weight:800; font-size:20px; color:var(--gold-strong);">₹799</span>
+                    <span id="modal-rating" class="rating">★★★★☆ (120)</span>
+                </div>
+            </div>
+
+            <div id="modal-variants-section">
+                <h4 style="margin-bottom:8px; font-size:14px;">Select Color</h4>
+                <div id="modal-color-options" class="variant-selector-grid">
+                    </div>
+                
+                <h4 style="margin-bottom:8px; font-size:14px;">Select Size</h4>
+                <div id="modal-size-options" class="variant-selector-grid">
+                    </div>
+            </div>
+            
+            <div id="modal-stock-info" class="note small" style="color:red; margin-bottom:10px;">Stock: N/A</div>
+
+            <div class="row" style="margin-top:16px;">
+                <button class="btn" id="modal-add-to-cart" onclick="addToCart(modalProductId, true)" style="flex:1;"><i class="ri-shopping-cart-line"></i> Add to Cart</button>
+                <button class="btn secondary" onclick="closeOverlay()">Close</button>
+            </div>
+            
+            <div class="section-title">
+                <h4 style="margin-top:16px; margin-bottom:0;">Reviews</h4>
+            </div>
+            <div id="modal-reviews-list">
+                </div>
+
+            <div class="card" style="margin-top:16px;">
+                <h4 style="margin-top:0;">Write a Review</h4>
+                <select id="review-rating" style="margin-bottom:8px;">
+                    <option value="5">5 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="2">2 Stars</option>
+                    <option value="1">1 Star</option>
+                </select>
+                <textarea id="review-text" placeholder="Share your experience..." rows="3"></textarea>
+                <button class="btn" onclick="submitReview(modalProductId)">Submit Review</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="navbtn active" data-target="home" onclick="navClick(event)">
+            <i class="ri-home-4-fill"></i><div>home</div>
+        </div>
+        <div class="navbtn" data-target="shop" onclick="navClick(event)">
+            <i class="ri-store-line"></i><div>shop</div>
+        </div>
+        <div class="navbtn" data-target="wallet" onclick="navClick(event)">
+            <i class="ri-wallet-3-line"></i><div>wallet</div>
+        </div>
+        <div class="navbtn" data-target="profile" onclick="navClick(event)">
+            <i class="ri-user-line"></i><div>profile</div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // --- MASTER JSON DATABASE (Simulated from user input) ---
+        const MASTER_DB = JSON.parse(document.getElementById('master-db-json').textContent);
+
+        // Simulated Global State (like a Firebase DB structure)
+        const productsData = MASTER_DB.PRODUCTS;
+        const ecomCategories = MASTER_DB.E_COMMERCE_CATEGORIES;
+        const attributes = MASTER_DB.PRODUCT_ATTRIBUTES;
+        const notificationsHistory = MASTER_DB.NOTIFICATIONS.history;
+        const reviewsData = MASTER_DB.RATINGS_REVIEWS;
+        
+        // Simulating user data
+        const currentUser = { uid: 'user_uid_12345' };
+        let cart = {}; // { 'prod_id_T001_RED_M': 1, 'prod_id_T002_BLACK_OS': 2 }
+        let wishlist = {};
+        let goldBalance = 0.0000;
+        let walletBalance = 0.00;
+        let selectedVariantKey = null; // Used for product modal
+
+        let modalProductId = null; // Currently open product in modal
+
+        // Helper function for simplified Firebase simulation
+        const db = {
+            ref: (path) => ({
+                set: (value) => {
+                    console.log(`DB WRITE: ${path} =`, value);
+                    // Update local state for cart/wishlist
+                    if (path.startsWith('users/' + currentUser.uid + '/cart')) {
+                        cart = value;
+                        renderCart();
+                    }
+                    if (path.startsWith('users/' + currentUser.uid + '/wishlist')) {
+                        wishlist = value;
+                    }
+                },
+                once: () => Promise.resolve({ val: () => ({ /* simplified data retrieval */ }) }),
+                on: (event, callback) => {
+                    // Simplified listener for admin toggle on services
+                    if (path.startsWith('services/service')) {
+                         // Simulate all e-commerce services as 'on'
+                        const serviceId = path.split('/').pop();
+                        if (serviceId.startsWith('service')) {
+                            callback('on'); // Assume all exist to honor "don't hide anything"
+                        }
+                    }
+                }
+            })
+        };
+
+        // --- CORE UTILITIES ---
+        function renderStatusBadge(status) {
+            let badgeClass = '';
+            switch (status) {
+                case 'Pending': badgeClass = 'badge-pending'; break;
+                case 'Shipped':
+                case 'In_Transit': badgeClass = 'badge-processing'; break;
+                case 'Delivered': badgeClass = 'badge-delivered'; break;
+                default: badgeClass = 'badge-pending';
+            }
+            return `<span class="badge ${badgeClass}">${status.replace(/_/g, ' ')}</span>`;
+        }
+
+        function toggleTheme(){
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', newTheme);
+            document.getElementById('theme-icon').className = newTheme === 'light' ? 'ri-moon-line' : 'ri-sun-line';
+        }
+        
+        function navClick(e){
+            document.querySelectorAll('.navbtn').forEach(n=>n.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            showTab(e.currentTarget.dataset.target);
+        }
+        
+        function showTab(id){
+            document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+            const el = document.getElementById(id);
+            if(el) el.classList.add('active');
+            closeOverlay(); 
+            // Load specific content when tab is shown
+            if (id === 'shop') showShopView('categories');
+            if (id === 'home') updateLatestPreview();
+            if (id === 'notifications') loadNotifications();
+        }
+        
+        function closeOverlay() {
+            document.getElementById('product-modal-overlay').style.display = 'none';
+            selectedVariantKey = null; // Clear selected variant on close
+        }
+
+        // --- NOTIFICATIONS LOGIC (User Request: uper aana cahiye, admin भेजो to bell pr, new product ad ka bell pr) ---
+        function loadNotifications() {
+            const list = document.getElementById('notifications-list');
+            list.innerHTML = '';
+            
+            // Convert history object to array for display
+            const notifArray = Object.keys(notificationsHistory).map(key => notificationsHistory[key]).reverse();
+            
+            notifArray.forEach(n => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.borderLeft = n.user_id === 'all' ? '4px solid var(--gold-strong)' : '4px solid #6366f1';
+                card.innerHTML = `
+                    <div style="font-weight:600;">${n.title}</div>
+                    <div class="small-muted">${n.message} (${n.timestamp ? n.timestamp.substring(0, 10) : 'n/a'})</div>
+                `;
+                list.appendChild(card);
+            });
+            // Reset badge after viewing
+            document.getElementById('notification-badge').style.display = 'none';
+        }
+
+        // Simulate a new notification from the admin
+        function simulateNewAdminNotification(title, message) {
+            const newId = 'notif_' + Date.now();
+            notificationsHistory[newId] = {
+                title: title,
+                message: message,
+                user_id: 'admin',
+                timestamp: new Date().toISOString()
+            };
+            // Show badge on bell icon
+            document.getElementById('notification-badge').style.display = 'block';
+        }
+
+
+        // --- E-COMMERCE LOGIC (User Request: all category aani cahiye, color/size selection) ---
+        
+        // Maps e-commerce category keys to an icon
+        const ECOM_ICONS = {
+            "Fashion_Apparel": "ri-t-shirt-line", "Electronics_Gadgets": "ri-headphone-line",
+            "Home_Kitchen": "ri-home-line", "Beauty_Care": "ri-lipstick-line"
+        };
+        const ECOM_IMAGES = {
+             "Fashion_Apparel": "https://via.placeholder.com/55/d4af37/ffffff?text=F", "Electronics_Gadgets": "https://via.placeholder.com/55/3b82f6/ffffff?text=E",
+            "Home_Kitchen": "https://via.placeholder.com/55/10b981/ffffff?text=H", "Beauty_Care": "https://via.placeholder.com/55/f97316/ffffff?text=B"
+        };
+
+
+        function populateECommerceCategories(containerId, isFullGrid = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            const mainCategories = ecomCategories;
+
+            Object.keys(mainCategories).forEach(catKey => {
+                const catName = catKey.replace(/_/g, ' ');
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.setAttribute('onclick', `showProductsByCategory('${catKey}')`);
+                
+                const iconOrImage = ECOM_IMAGES[catKey] 
+                    ? `<img src="${ECOM_IMAGES[catKey]}" alt="${catName}">`
+                    : `<i class="${ECOM_ICONS[catKey] || 'ri-apps-line'}"></i>`;
+
+                card.innerHTML = `
+                    <div class="category-icon">${iconOrImage}</div>
+                    <div class="category-name">${catName}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        function showShopView(view, categoryKey = null) {
+            const categoryView = document.getElementById('shop-category-view');
+            const productListView = document.getElementById('shop-product-list-view');
+            const backBtn = document.getElementById('back-to-categories');
+            
+            if (view === 'categories') {
+                categoryView.classList.remove('field-hidden');
+                productListView.classList.add('field-hidden');
+                backBtn.style.display = 'none';
+                document.getElementById('shop-title').innerText = 'E-Commerce Shop';
+                populateECommerceCategories('shop-all-categories-grid');
+            } else if (view === 'products' && categoryKey) {
+                categoryView.classList.add('field-hidden');
+                productListView.classList.remove('field-hidden');
+                backBtn.style.display = 'inline-block';
+                const title = categoryKey.replace(/_/g, ' ');
+                document.getElementById('shop-title').innerText = title;
+                document.getElementById('product-list-title').innerText = `Products in ${title}`;
+                renderProducts('products-list-container', categoryKey);
+            }
+        }
+
+        function showProductsByCategory(categoryKey) {
+            showShopView('products', categoryKey);
+        }
+
+
+        function renderProducts(containerId, categoryFilter = null) {
+            const cont = document.getElementById(containerId);
+            cont.innerHTML = '';
+            let productKeys = Object.keys(productsData);
+
+            if (categoryFilter) {
+                productKeys = productKeys.filter(k => productsData[k].category === categoryFilter);
+            }
+            
+            // For home page latest preview, show only first 4
+            if (containerId === 'latest-products') {
+                productKeys = productKeys.slice(0, 4);
+            }
+
+            productKeys.forEach(k => {
+                const p = productsData[k];
+                const firstVariantKey = Object.keys(p.variants)[0];
+                const firstVariant = p.variants[firstVariantKey];
+                const displayPrice = firstVariant.price;
+
+                const card = document.createElement('div');
+                card.className = 'card product-card-inner';
+                card.setAttribute('onclick', `openProductModal('${k}')`);
+                
+                const reviewCount = (reviewsData[k] ? Object.keys(reviewsData[k]).length : 0);
+
+                card.innerHTML = `
+                    <img src="${p.images[0] || 'https://via.placeholder.com/150'}" class="product-img" alt="${p.name}">
+                    <span class="pmeta pname">${p.name}</span>
+                    <span class="pmeta pprice">₹${displayPrice}</span>
+                    <div class="small-muted">${p.category.replace(/_/g, ' ')}</div>
+                    <div class="product-actions">
+                        <span class="rating">
+                            ${'★'.repeat(Math.round(p.rating))}
+                            ${'☆'.repeat(5 - Math.round(p.rating))}
+                        </span>
+                        <span class="small-muted">(${reviewCount})</span>
+                        <button class="btn secondary" onclick="toggleWishlist(event, '${k}')" title="Wishlist">
+                            ${wishlist[k] ? `<i class="ri-heart-fill" style="color:red;"></i>` : `<i class="ri-heart-line"></i>`}
+                        </button>
+                    </div>
+                `;
+                cont.appendChild(card);
+            });
+        }
+        
+        // --- PRODUCT MODAL & VARIANT LOGIC ---
+        
+        function getVariantKey(color, size) {
+            // Converts "Red" and "M" to "RED_M" to match JSON keys
+            return (color || 'OS').toUpperCase().replace(/\s/g, '_') + '_' + (size || 'OS').toUpperCase().replace(/\s/g, '_');
+        }
+
+        function handleVariantSelection(type, value) {
+            const p = productsData[modalProductId];
+            if (!p) return;
+
+            let currentColor = document.querySelector('#modal-color-options .variant-option.selected')?.dataset.value;
+            let currentSize = document.querySelector('#modal-size-options .variant-option.selected')?.dataset.value;
+
+            if (type === 'color') {
+                currentColor = value;
+            } else if (type === 'size') {
+                currentSize = value;
+            }
+            
+            // Clear previous selections for the given type
+            document.querySelectorAll(`#modal-${type}-options .variant-option`).forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.dataset.value === value) {
+                    opt.classList.add('selected');
+                }
+            });
+
+            // Find matching variant key
+            selectedVariantKey = Object.keys(p.variants).find(key => {
+                const v = p.variants[key];
+                const colorMatch = currentColor ? v.color === currentColor : true;
+                const sizeMatch = currentSize ? v.size === currentSize : true;
+                return colorMatch && sizeMatch;
+            });
+
+            // If a variant is selected, update price/stock
+            const stockInfo = document.getElementById('modal-stock-info');
+            const addToCartBtn = document.getElementById('modal-add-to-cart');
+            const priceDisplay = document.getElementById('modal-price');
+
+            if (selectedVariantKey && p.variants[selectedVariantKey]) {
+                const variant = p.variants[selectedVariantKey];
+                priceDisplay.innerText = `₹${variant.price}`;
+                stockInfo.style.color = variant.stock > 10 ? 'green' : (variant.stock > 0 ? 'orange' : 'red');
+                stockInfo.innerText = `Stock: ${variant.stock > 0 ? variant.stock : 'Out of Stock'}`;
+                addToCartBtn.disabled = variant.stock <= 0;
+            } else {
+                priceDisplay.innerText = `₹${p.base_price}`;
+                stockInfo.style.color = 'red';
+                stockInfo.innerText = 'Please select a valid variant.';
+                addToCartBtn.disabled = true;
+            }
+        }
+        
+        function openProductModal(id){
+            const p = productsData[id];
+            if(!p) return alert('product not found');
+            modalProductId = id;
+            selectedVariantKey = null; // Reset selection
+
+            document.getElementById('modal-title').innerText = p.name;
+            document.getElementById('modal-price').innerText = `₹${p.base_price}`;
+            document.getElementById('modal-desc').innerText = p.description || '';
+
+            // Image Rendering
+            const imgs = document.getElementById('modal-images');
+            imgs.innerHTML=''; 
+            (p.images||[]).forEach(url=>{
+                const img = document.createElement('img');
+                img.src = url;
+                imgs.appendChild(img);
+            });
+
+            // Reviews/Rating
+            const rating = p.rating || 0;
+            const reviewCount = reviewsData[id] ? Object.keys(reviewsData[id]).length : 0;
+            document.getElementById('modal-rating').innerHTML = `
+                ${'★'.repeat(Math.round(rating))}
+                ${'☆'.repeat(5 - Math.round(rating))} 
+                &nbsp;(${reviewCount})
+            `;
+            const reviewsList = document.getElementById('modal-reviews-list');
+            reviewsList.innerHTML = '';
+            if (reviewsData[id]) {
+                Object.values(reviewsData[id]).forEach(review => {
+                    reviewsList.innerHTML += `<div class="card small" style="margin-bottom:8px; padding:8px;">
+                        <div class="rating" style="margin-bottom:4px;">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                        <div>${review.review_text}</div>
+                        <div class="small-muted" style="margin-top:4px;">- User ID: ${review.user_id}</div>
+                    </div>`;
+                });
+            } else {
+                reviewsList.innerHTML = '<div class="small-muted">No reviews yet. Be the first!</div>';
+            }
+
+
+            // Variant Rendering (Color & Size)
+            const availableColors = new Set();
+            const availableSizes = new Set();
+            Object.values(p.variants).forEach(v => {
+                if (v.color) availableColors.add(v.color);
+                if (v.size && v.size !== 'OS') availableSizes.add(v.size);
+            });
+
+            const colorOptionsDiv = document.getElementById('modal-color-options');
+            const sizeOptionsDiv = document.getElementById('modal-size-options');
+            colorOptionsDiv.innerHTML = '';
+            sizeOptionsDiv.innerHTML = '';
+            
+            document.getElementById('modal-variants-section').style.display = (availableColors.size > 0 || availableSizes.size > 0) ? 'block' : 'none';
+
+
+            availableColors.forEach(color => {
+                colorOptionsDiv.innerHTML += `<div class="variant-option" data-value="${color}" onclick="handleVariantSelection('color', '${color}')">${color}</div>`;
+            });
+
+            const allApparelSizes = Object.keys(attributes.Size_List_Apparel);
+            allApparelSizes.filter(s => availableSizes.has(s)).forEach(size => {
+                 sizeOptionsDiv.innerHTML += `<div class="variant-option" data-value="${size}" onclick="handleVariantSelection('size', '${size}')">${size}</div>`;
+            });
+
+            // Initial state (force selection or default to first variant if one exists)
+            const firstVariantKey = Object.keys(p.variants)[0];
+            if (firstVariantKey) {
+                const v = p.variants[firstVariantKey];
+                if (v.color) {
+                    handleVariantSelection('color', v.color);
+                }
+                if (v.size && v.size !== 'OS') {
+                    handleVariantSelection('size', v.size);
+                } else {
+                    // Force the stock/price update for single-variant products
+                    selectedVariantKey = firstVariantKey;
+                    handleVariantSelection('color', null); // Trigger update
+                }
+            } else {
+                // No variants defined, default behavior
+                 document.getElementById('modal-stock-info').style.color = 'green';
+                 document.getElementById('modal-stock-info').innerText = 'Stock: In Stock';
+                 document.getElementById('modal-add-to-cart').disabled = false;
+            }
+            
+            document.getElementById('product-modal-overlay').style.display = 'flex';
+        }
+
+        function submitReview(productId) {
+            const rating = parseInt(document.getElementById('review-rating').value);
+            const reviewText = document.getElementById('review-text').value.trim();
+
+            if (reviewText.length < 10) {
+                return alert('Please write a detailed review (min 10 characters).');
+            }
+
+            const reviewId = 'review_' + Date.now();
+            const newReview = {
+                user_id: currentUser.uid,
+                rating: rating,
+                review_text: reviewText,
+                item_type: 'product'
+            };
+
+            // Simulate DB write
+            if (!reviewsData[productId]) {
+                reviewsData[productId] = {};
+            }
+            reviewsData[productId][reviewId] = newReview;
+            
+            alert('Review submitted successfully! Pending moderation.');
+            document.getElementById('review-text').value = '';
+            openProductModal(productId); // Reload modal to show new review
+        }
+        
+        // --- CART LOGIC (Updated to handle variants) ---
+        function addToCart(pid, isModal) {
+            let key = pid;
+            
+            if (isModal) {
+                if (!selectedVariantKey) {
+                    return alert('Please select a color and size first.');
+                }
+                key = pid + '_' + selectedVariantKey;
+            }
+
+            cart[key] = (cart[key] || 0) + 1;
+            saveCartToDb();
+            
+            if(isModal) closeOverlay();
+        }
+
+        function saveCartToDb(){
+            db.ref('users/'+currentUser.uid+'/cart').set(cart);
+            updateCartCount();
+        }
+
+        function updateCartCount(){
+            const totalCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+            document.getElementById('cart-count').innerText = totalCount;
+        }
+
+        function renderCart() {
+            const cont = document.getElementById('cart-list-container');
+            if (!cont) return;
+            cont.innerHTML = '';
+            let subtotal = 0;
+
+            Object.keys(cart).forEach(variantKey => {
+                const qty = cart[variantKey];
+                const parts = variantKey.split('_');
+                const pid = parts[0];
+                const product = productsData[pid];
+
+                if (!product) return;
+                
+                // Find the specific variant
+                let variant = null;
+                const variantId = parts.slice(1).join('_');
+                if (product.variants && product.variants[variantId]) {
+                    variant = product.variants[variantId];
+                } else if (product.variants && Object.keys(product.variants).length === 1) {
+                     // For single-variant products that might not have a full key
+                    variant = Object.values(product.variants)[0];
+                }
+
+                if (!variant) return;
+
+                const price = variant.price || product.base_price;
+                const totalVariantPrice = price * qty;
+                subtotal += totalVariantPrice;
+                
+                const variantDetails = (variant.color ? variant.color : '') + 
+                                       (variant.color && variant.size ? ' / ' : '') + 
+                                       (variant.size && variant.size !== 'OS' ? variant.size : '');
+                
+                const variantText = variantDetails ? `<div class="small-muted">${variantDetails}</div>` : '';
+
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <img src="${product.images[0] || 'https://via.placeholder.com/72'}" alt="${product.name}">
+                    <div style="flex-grow:1;">
+                        <div style="font-weight:600;">${product.name}</div>
+                        ${variantText}
+                        <div class="small-muted">Price: ₹${price} x ${qty}</div>
+                        <div style="font-weight:700;">Total: ₹${totalVariantPrice}</div>
+                    </div>
+                    <div class="row" style="align-items:center;">
+                        <button class="btn secondary" onclick="decrement('${variantKey}')" style="padding:6px 10px;">-</button>
+                        <button class="btn" onclick="increment('${variantKey}')" style="padding:6px 10px;">+</button>
+                        <button class="btn secondary" onclick="removeFromCart('${variantKey}')" style="padding:6px 10px;margin-left:auto;"><i class="ri-delete-bin-line"></i></button>
+                    </div>
+                `;
+                cont.appendChild(div);
+            });
+
+            document.getElementById('cart-subtotal').innerText = subtotal.toFixed(2);
+            updateCartCount();
+        }
+
+        function increment(variantKey){
+            cart[variantKey] = (cart[variantKey]||0)+1;
+            saveCartToDb(); 
+            renderCart();
+        }
+
+        function decrement(variantKey){
+            if(!cart[variantKey]) return;
+            cart[variantKey] = cart[variantKey]-1;
+            if(cart[variantKey]<=0) delete cart[variantKey];
+            saveCartToDb(); 
+            renderCart();
+        }
+        
+        function removeFromCart(variantKey){
+            delete cart[variantKey];
+            saveCartToDb();
+            renderCart();
+        }
+        
+        // --- INITIALIZATION ---
+        function initApp() {
+            console.log('App Initializing...');
+            // Load and render E-commerce categories on Home and Shop tabs
+            populateECommerceCategories('ecommerce-categories-grid');
+            populateECommerceCategories('shop-all-categories-grid');
+            
+            // Load latest products on home
+            renderProducts('latest-products');
+            
+            // Render cart state (even if empty)
+            renderCart(); 
+            
+            // Simulate a new product being added and trigger admin notification
+            simulateNewAdminNotification("New Product Alert!", "A new product 'Noise Cancelling Headphones' has been added to the Electronics category.");
+            
+            // Initial view
+            showTab('home');
+
+            // Set current user name
+            document.querySelector('.gold-box h3').innerText = `Welcome Back, ${MASTER_DB.USERS[currentUser.uid].name.split(' ')[0]}!`;
+        }
+
+        // Dummy/Placeholder functions for existing features
+        function loadProducts() { /* Called by renderProducts */ }
+        function saveWishlistToDb() { /* Simplified */ console.log('Wishlist saved:', wishlist); }
+        function toggleWishlist(e, pid) { e.stopPropagation(); wishlist[pid] = !wishlist[pid]; saveWishlistToDb(); renderProducts('latest-products'); }
+        function loadWishlist() { /* Renders wishlist products */ }
+        function calculateGoldGrams() { /* Gold calculation logic */ }
+        function submitGoldPurchase() { alert('Gold purchase request submitted. Pending UTR verification.'); }
+        function submitReview(id) { alert('Review submitted. Needs integration.'); }
+
+        // Start the application
+        window.onload = initApp;
+
+        // Ensure existing service buttons are visible (simulating Firebase 'on' status from the original snippet)
+        for (let i = 1; i <= 20; i++) {
+             const btn = document.getElementById("service" + i);
+             if (btn) btn.style.display = 'inline-block';
+        }
+    </script>
+    
+    <script id="master-db-json" type="application/json">
+        {
+            "APP_STORE_CATEGORIES": {
+                "Games": { "Action_FPS": true, "Adventure_RPG": true, "Casual_Hypercasual": true, "Puzzle_Brain": true, "Strategy_RTS": true, "Sports_Racing": true, "Simulation_Sandbox": true, "Board_Card_Casino": true, "Music_Rhythm": true, "Educational_Games": true },
+                "Productivity_Business": { "Project_Mgt": true, "Accounting_Billing": true, "CRM_ERP": true, "File_Managers": true, "Cloud_Storage": true, "Notes_Reminders": true, "POS_Systems": true, "HR_Recruitment_Tools": true, "Digital_Signatures": true },
+                "Communication_Social": { "Messaging_Chat": true, "Video_Calling": true, "Social_Networking": true, "Dating_Apps": true, "Professional_Networking": true, "Blogging_Microblogging": true, "Live_Streaming": true, "Community_Forums": true },
+                "Education_Learning": { "E-learning_Courses": true, "Language_Learning": true, "Exam_Test_Prep": true, "Science_Mathematics": true, "Coding_Programming": true, "Higher_Education": true, "Skill_Development": true, "Kids_Learning": true },
+                "Health_Fitness_Wellness": { "Workout_Tracking": true, "Nutrition_Diet": true, "Mental_Health": true, "Sleep_Monitoring": true, "Meditation_Yoga": true, "Doctor_Telemedicine": true, "Pill_Reminder": true, "First_Aid": true },
+                "Utility_Tools": { "Security_VPN": true, "System_Cleaners": true, "Calculators_Scanners": true, "Weather_Tracking": true, "Maps_Navigation": true, "Developer_Tools": true, "QR_Barcode_Scanners": true }
+            },
+            "APPS": { "app_id_001": { "name": "Super Cleaner App", "category": "Utility_Tools", "developer_id": "dev_uid_101", "downloads": 500000, "app_version": "2.1.0", "link_android": "http://link.to/android_app" } },
+            "APP_GLOBAL_UTILITY": { "Language_List": { "en": "English", "hi": "Hindi", "es": "Spanish", "fr": "French", "de": "German" }, "Pricing_Models": { "Free": true, "Paid_One_Time": true, "Subscription_Monthly": true, "Freemium": true }, "App_Type": { "Android": true, "iOS": true, "Web_App": true } },
+            "E_COMMERCE_CATEGORIES": {
+                "Fashion_Apparel": { "Mens_Clothing": true, "Womens_Clothing": true, "Kids_Clothing": true, "Footwear_Shoes": true, "Jewellery_Watches": true, "Bags_Accessories": true, "Sportswear_Activewear": true, "Ethnic_Wear": true },
+                "Electronics_Gadgets": { "Mobiles_Tablets": true, "Laptops_Computers": true, "Audio_Video": true, "Smart_Home": true, "Cameras_Drones": true, "Gaming_Accessories": true, "Wearable_Tech": true },
+                "Home_Kitchen": { "Furniture_Decor": true, "Appliances_Large": true, "Kitchenware_Cookware": true, "Gardening_Outdoor": true, "Tools_Hardware": true, "Bedding_Linen": true, "Storage_Organization": true },
+                "Beauty_Care": { "Skincare": true, "Hair_Care": true, "Makeup_Cosmetics": true, "Fragrances": true, "Vitamins_Supplements": true }
+            },
+            "PRODUCTS": {
+                "prod_id_T001": {
+                    "name": "Premium T-Shirt",
+                    "category": "Fashion_Apparel",
+                    "base_price": 799,
+                    "brand": "ApparelCo",
+                    "images": ["https://via.placeholder.com/200/FF0000/FFFFFF?text=Red+T-Shirt", "https://via.placeholder.com/200/0000FF/FFFFFF?text=Blue+T-Shirt"],
+                    "description": "A premium cotton t-shirt with great comfort and style.",
+                    "variants": {
+                        "RED_M": { "color": "Red", "size": "M", "stock": 25, "price": 799 },
+                        "BLUE_L": { "color": "Blue", "size": "L", "stock": 10, "price": 849 },
+                        "BLACK_XL": { "color": "Black", "size": "XL", "stock": 0, "price": 899 }
+                    },
+                    "rating": 4.5, "reviews_count": 120
+                },
+                "prod_id_T002": {
+                    "name": "Noise Cancelling Headphones",
+                    "category": "Electronics_Gadgets",
+                    "base_price": 4999,
+                    "brand": "AudioMax",
+                    "images": ["https://via.placeholder.com/200/000000/FFFFFF?text=Black+Headphones"],
+                    "description": "High-quality headphones with industry-leading noise cancellation.",
+                    "variants": {
+                        "BLACK_OS": { "color": "Black", "size": "OS", "stock": 50, "price": 4999 }
+                    },
+                    "rating": 4.8, "reviews_count": 55
+                }
+            },
+            "PRODUCT_ATTRIBUTES": {
+                "Color_List": { "Red": true, "Blue": true, "Black": true, "White": true, "Green": true, "Yellow": true, "Navy": true },
+                "Size_List_Apparel": { "XS": true, "S": true, "M": true, "L": true, "XL": true, "XXL": true },
+                "Material_List": { "Cotton": true, "Polyester": true, "Leather": true, "Denim": true },
+                "Condition_List": { "New": true, "Used_Like_New": true, "Refurbished": true }
+            },
+            "EBOOK_CATEGORIES": { "Fiction": { "Thriller": true, "Romance": true, "Science_Fiction": true }, "Non_Fiction": { "Self_Help": true, "Biography": true, "Business_Finance": true } },
+            "JOB_APP_CATEGORIES": { "Industry": { "IT_Software": true, "Banking_Finance": true, "Marketing_Sales": true, "Healthcare_Pharma": true, "Engineering_Manufacturing": true, "Education_Academia": true }, "Role_Type": { "Managerial_Leadership": true, "Entry_Level_Fresher": true, "Remote_Freelance": true, "Internship_Trainee": true } },
+            "JOBS": { "job_id_J001": { "title": "React Developer", "industry": "IT_Software", "role_type": "Remote_Freelance", "location": "Remote", "salary_lpa": 12, "status": "Active" } },
+            "FINANCE_CATEGORIES": { "Loans_Credit": { "Personal_Loan": true, "Business_Loan": true, "Home_Loan": true, "Credit_Cards": true }, "Investments": { "Mutual_Funds": true, "Stocks_Trading": true, "Crypto_Exchange": true } },
+            "TRAVEL_CATEGORIES": { "Bookings": { "Flight_Tickets": true, "Hotel_Reservations": true, "Car_Rentals": true } },
+            "GLOBAL_UTILITY_LISTS": { "Location_List": { "Country_India": { "Delhi": true, "Mumbai": true, "Bangalore": true }, "Country_USA": { "New_York": true, "California": true } }, "Image_Types_List": { "Product_Main_Image": true, "App_Screenshot": true, "Profile_Picture": true, "Job_Company_Logo": true }, "Currency_List": { "INR": "Indian Rupee", "USD": "US Dollar", "EUR": "Euro" } },
+            "USERS": { "user_uid_12345": { "name": "Admin User", "email": "admin@yoursite.com", "role": "admin", "created_at": "2025-12-01" } },
+            "ORDERS": { "order_id_O101": { "user_id": "user_uid_12345", "total_amount": 1500, "status": "Pending", "app_source": "E_COMMERCE" } },
+            "SETTINGS": { "global_config": { "is_maintenance_mode": false, "app_version": "1.0.0" } },
+            "REAL_ESTATE_CATEGORIES": { "Property_Type": { "Residential_Sale": true, "Residential_Rent": true, "Commercial_Sale": true, "Commercial_Rent": true }, "BHK_List": { "1_BHK": true, "2_BHK": true, "3_BHK": true, "4_Plus_BHK": true }, "Services": { "Broker_Agent_Finder": true, "Property_Valuation": true, "Legal_Loan_Services": true } },
+            "FOOD_DELIVERY_CATEGORIES": { "Cuisine_Type": { "Indian": true, "Chinese": true, "Italian": true, "Fast_Food": true, "Desserts": true }, "Service_Type": { "Restaurant_Delivery": true, "Grocery_Essentials": true, "Recipe_Meal_Kits": true } },
+            "HOME_SERVICES_CATEGORIES": { "Service_Domain": { "Plumbing_Electrician": true, "Carpentry_HVAC": true, "House_Cleaning": true, "Pest_Control": true, "Appliance_Repair": true } },
+            "RATINGS_REVIEWS": {
+                "app_id_001": { "review_01": { "user_id": "user_uid_12345", "rating": 5, "review_text": "Excellent performance!", "item_type": "app" } },
+                "prod_id_T001": { "review_02": { "user_id": "user_uid_9876", "rating": 4, "review_text": "Good quality but delayed delivery.", "item_type": "product" } }
+            },
+            "MEDIA_ADVERTISEMENTS": { "Homepage_Banners": { "banner_id_01": { "image_url": "https://ad.link/banner01.jpg", "target_link": "product_id_X456", "is_active": true } }, "App_Promotions": { "promo_id_A01": { "app_id": "app_id_001", "ad_type": "Interstitial", "budget": 50000 } } },
+            "NOTIFICATIONS": { "push_tokens": { "user_uid_12345": "fcm_token_string_here_..." }, "history": { "notif_001": { "title": "Welcome Back!", "message": "Check out new offers.", "user_id": "all", "timestamp": "2025-12-01" } } },
+            "LOGISTICS_TRACKING": { "courier_partners": { "partner_01": "FedEx", "partner_02": "BlueDart", "partner_03": "Local_Delivery" }, "delivery_status_list": { "Pending": true, "Shipped": true, "In_Transit": true, "Out_For_Delivery": true, "Delivered": true, "Failed_Attempt": true, "Returned": true }, "tracking_data": { "order_id_O101": { "current_status": "In_Transit", "last_update": "2025-12-01T15:00:00Z", "tracking_number": "TRK987654321" } } },
+            "COUPONS_DISCOUNTS": { "coupon_CASH10": { "code": "CASH10", "type": "percentage", "value": 10, "min_order_value": 500, "expiry_date": "2026-01-31", "is_active": true }, "coupon_FREESHIP": { "code": "FREESHIP", "type": "shipping", "min_order_value": 1000, "is_active": true } },
+            "SUPPORT_TICKETS": { "ticket_T001": { "user_id": "user_uid_12345", "subject": "Wrong item delivered", "status": "Open", "priority": "High", "created_at": "2025-12-01T17:00:00Z" }, "ticket_T002": { "user_id": "user_uid_9876", "subject": "App crashing on startup", "status": "Closed", "priority": "Medium" } },
+            "ANALYTICS_DATA": { "daily_summary": { "2025-11-30": { "new_users": 500, "total_sales_inr": 150000, "app_downloads": 1200 } }, "crash_reports": { "report_001": { "app_version": "1.0.0", "device_model": "Samsung S23", "error_code": "NULL_POINTER_EXCEPTION" } } },
+            "LEGAL_CONTENT": { "Privacy_Policy": { "version": "1.2", "last_updated": "2024-11-01", "content_url": "https://moneycard-8f457.web.app/privacy/v1.2" }, "Terms_of_Service": { "version": "2.0", "last_updated": "2024-10-15", "content_url": "https://moneycard-8f457.web.app/terms/v2.0" }, "Refund_Policy": { "version": "1.0", "content_text_short": "Refunds processed within 7 days.", "content_url": "https://moneycard-8f457.web.app/refund" } },
+            "ADMIN_CONTROL_LISTS": { "Country_Block_List": { "Iran": true, "North_Korea": true }, "Blocked_IPs": { "192_168_1_1": true, "10_0_0_5": true }, "Moderation_Keywords": { "spam": true, "hate_speech": true } },
+            "REWARDS_LOYALTY": { "Reward_Points_Rules": { "signup_bonus": 100, "per_100_spent": 5 }, "User_Points_Balance": { "user_uid_12345": { "balance": 550, "last_earned_date": "2025-12-01" } } },
+            "MAINTENANCE_LOGS": { "log_001": { "timestamp": "2025-12-01T02:00:00Z", "reason": "Database optimization", "duration_minutes": 30, "status": "Completed" } },
+            "FINANCE_RATES": { "Exchange_Rates": { "USD_to_INR": 83.50, "EUR_to_INR": 91.00, "Last_Updated": "2025-12-01T18:00:00Z" }, "Tax_Rates": { "GST_India_General": 18, "VAT_USA_Avg": 7.25, "Shipping_Tax": 5 } },
+            "ADMIN_ROLES": { "roles_list": { "admin": "Super Administrator with full access", "moderator": "Manages user content and reviews", "support_agent": "Handles customer support tickets only", "finance_manager": "Manages payments and coupons" }, "permissions": { "admin": ["read_all", "write_all", "delete_all"], "moderator": ["read_content", "write_reviews", "delete_comments"] } },
+            "STORAGE_METADATA": { "product_images": { "prod_id_T001_main": { "storage_path": "images/products/t001/main.jpg", "uploaded_by_uid": "admin_uid_555", "size_kb": 150 } }, "user_documents": { "user_uid_12345_id_proof": { "storage_path": "documents/users/12345/id.pdf", "is_verified": true } } }
+        }
+    </script>
+</body>
+</html>

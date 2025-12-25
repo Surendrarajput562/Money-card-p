@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gold Rupi - Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root{
+            --gold:#d4af37;
+            --card-bg: #ffffff;
+            --bg-color:#f8f9fa;
+            --text-color:#1f2937;
+            --success:#10b981;
+            --danger:#ef4444;
+            --warning:#f59e0b;
+            --info: #3b82f6;
+            --secondary: #6b7280;
+        }
+        *{box-sizing:border-box}
+        body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg-color);color:var(--text-color);padding:20px;}
+        
+        .header{display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid #ddd; padding-bottom:15px;}
+        .logo{font-weight:800;font-size:24px;color:var(--gold);letter-spacing:-1px;}
+        
+        .card{background:var(--card-bg);border-radius:12px;padding:15px;box-shadow:0 4px 10px rgba(0,0,0,0.05);margin-bottom:15px;}
+        .btn{background:var(--gold);color:#000;border:none;padding:8px 15px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer; transition: background-color 0.3s;}
+        .btn:hover { background: #c5a034; }
+        .btn.secondary{background:#e5e7eb; color:var(--text-color); border:1px solid #ddd;}
+        .btn.danger{background:var(--danger); color:#fff;}
+        .btn.danger:hover { background: #d93030; }
+        
+        .tab-nav{display:flex; margin-bottom:20px; border-bottom:1px solid #ddd; overflow-x: auto;}
+        .tab-item{padding:10px 15px; cursor:pointer; font-weight:600; opacity:0.6; white-space: nowrap; transition: opacity 0.3s;}
+        .tab-item.active{opacity:1; color:var(--gold); border-bottom:2px solid var(--gold);}
+
+        .request-item { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #eee; }
+        .request-item:last-child { border-bottom:none; }
+        .req-id { font-weight:600; font-size:14px; color:var(--text-color); }
+        .req-status-badge { padding:4px 8px; border-radius:10px; font-size:10px; font-weight:600; color:#fff;}
+        .bg-pending { background:var(--warning); }
+        .bg-active { background:var(--success); }
+        .bg-reviewed { background:var(--info); }
+        .bg-rejected { background:var(--danger); }
+        .bg-paid { background:var(--success); }
+        .bg-submitted { background:var(--warning); }
+        .bg-overdue { background:var(--danger); animation: pulse-red 1s infinite alternate; }
+        .bg-closed { background:var(--secondary); }
+        
+        @keyframes pulse-red {
+            from { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            to { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+        }
+
+        /* Modal Styles */
+        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter: blur(5px);}
+        .modal{background:var(--card-bg);width:90%;max-width:900px;border-radius:12px;padding:20px;max-height:95vh;overflow-y:auto;position: relative;}
+        .close-modal{position:absolute;top:15px;right:15px;background:none;border:none;font-size:24px;color:var(--text-color);cursor:pointer;}
+        
+        .detail-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #eee; font-size:14px; }
+        .detail-row strong { font-weight:600; }
+        
+        .action-btns { margin-top:20px; display:flex; gap:10px; }
+        .document-link { color:var(--gold); text-decoration:none; font-size:12px; margin-top:5px; display:block; }
+
+        .verification-status { padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; font-weight: 600; }
+        .verification-pending { background:#fef3c7; color:var(--warning); }
+        .verification-success { background:#d1fae5; color:var(--success); }
+
+        /* Input styling for modals */
+        .modal input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        /* EMI History Table Styling */
+        .emi-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .emi-table th, .emi-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        .emi-table th { background: #f4f4f4; font-weight: 600; color: #666; }
+        .emi-table tr:last-child td { border-bottom: none; }
+        .emi-table .btn-mini { padding: 4px 8px; font-size: 11px; margin-left: 5px; background: var(--success); color: #fff; border-radius: 4px; transition: background-color 0.3s;}
+        .emi-table .btn-mini:hover { background: #0c9c69; }
+
+        /* Document Image Style - FIX */
+        .document-image { 
+            max-width: 100%; 
+            height: auto; 
+            max-height: 400px; /* Increased Max height */
+            border-radius: 8px; 
+            margin-top: 10px; 
+            border: 1px solid #ddd;
+            display: block;
+            cursor: zoom-in;
+            object-fit: contain; /* Ensures the whole image fits without cropping */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><i class="ri-money-rupee-circle-fill"></i> Admin: Gold Rupi</div>
+        <button class="btn secondary" onclick="logout()"><i class="ri-logout-box-line"></i> Logout</button>
+    </div>
+
+    <div class="tab-nav">
+        <div class="tab-item active" onclick="switchTab('tab-pending', this)">Pending Requests (<span id="count-pending">0</span>)</div>
+        <div class="tab-item" onclick="switchTab('tab-payments', this)">Payment Verification (<span id="count-payments">0</span>)</div>
+        <div class="tab-item" onclick="switchTab('tab-active', this)">Active Loans (<span id="count-active">0</span>)</div>
+        <div class="tab-item" onclick="switchTab('tab-history', this)">All Loans (<span id="count-history">...</span>)</div>
+    </div>
+
+    <div id="tab-pending" class="tab-content">
+        <h2><i class="ri-file-list-3-line"></i> New Loan Applications / Disbursals</h2>
+        <div class="card" id="pending-list">
+            Loading...
+        </div>
+    </div>
+
+    <div id="tab-payments" class="tab-content" style="display:none;">
+        <h2><i class="ri-money-check-line"></i> Payment Verification</h2>
+        <div class="card" id="payment-list">
+            No payments pending verification.
+        </div>
+    </div>
+
+    <div id="tab-active" class="tab-content" style="display:none;">
+        <h2><i class="ri-wallet-3-line"></i> Active Loans (Tracking)</h2>
+        <div class="card" id="active-list">
+            No active loans currently being tracked.
+        </div>
+    </div>
+
+    <div id="tab-history" class="tab-content" style="display:none;">
+        <h2><i class="ri-history-line"></i> All Loan History (Active & Closed)</h2>
+        <div class="card" id="history-list">
+            Loading all loans...
+        </div>
+    </div>
+    
+    <div id="review-modal" class="overlay">
+        <div class="modal">
+            <button class="close-modal" onclick="closeModal('review-modal')">&times;</button>
+            <h3 style="margin-top:0;"><i class="ri-file-shield-line"></i> Review Loan Application: <span id="modal-lid"></span></h3>
+            
+            <div class="card" id="user-info-full">
+                <h4>Applicant Details</h4>
+                <div class="detail-row"><span>Name:</span> <strong id="modal-name"></strong></div>
+                <div class="detail-row"><span>Email:</span> <strong id="modal-email"></strong></div>
+                <div class="detail-row"><span>Mobile:</span> <strong id="modal-mobile"></strong></div>
+                <div class="detail-row"><span>**Address:**</span> <strong id="modal-address"></strong></div>
+                <div class="detail-row"><span>**PAN:**</span> <strong id="modal-pan" style="color:var(--danger);"></strong></div>
+                <div class="detail-row"><span>User ID:</span> <strong id="modal-uid"></strong></div>
+                <hr style="margin: 8px 0; border: none; border-top: 1px dashed #ddd;">
+                <div class="detail-row"><span>Monthly Income:</span> <strong id="modal-income" style="color:var(--success);"></strong></div>
+                <div class="detail-row"><span>Requested Amount:</span> <strong id="modal-amt" style="color:var(--info);"></strong></div>
+            </div>
+
+            <h4 style="margin-top:20px;"><i class="ri-folder-open-line"></i> Verification Documents (Images Displayed Below)</h4>
+            <div id="documents-container" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                </div>
+            
+            <h4 style="margin-top:20px;">Loan Offer Decision</h4>
+            <div class="card">
+                <label style="font-size:12px;">Approved Amount (₹)</label>
+                <input id="approve-amt" type="number" min="5000" max="50000" value="10000">
+                <label style="font-size:12px;">Approved Tenure (Months)</label>
+                <input id="approve-tenure" type="number" min="3" max="24" value="6">
+            </div>
+
+            <div class="action-btns">
+                <button class="btn" style="flex:1;" onclick="sendOffer()"><i class="ri-check-line"></i> Send Offer</button>
+                <button class="btn danger" style="flex:1;" onclick="rejectLoan()"><i class="ri-close-circle-line"></i> Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="overlay">
+        <div class="modal" style="max-width: 500px;">
+            <button class="close-modal" onclick="closeModal('payment-modal')">&times;</button>
+            <h3 style="margin-top:0;"><i class="ri-exchange-box-line"></i> Verify Payment: <span id="pay-req-id"></span></h3>
+            
+            <div class="card" id="pay-user-info-full">
+                <h4>Payer Details</h4>
+                <div class="detail-row"><span>Name:</span> <strong id="pay-name"></strong></div>
+                <div class="detail-row"><span>Email:</span> <strong id="pay-email"></strong></div>
+                <div class="detail-row"><span>Mobile:</span> <strong id="pay-mobile"></strong></div>
+                <div class="detail-row"><span>Loan ID:</span> <strong id="pay-lid"></strong></div>
+                <div class="detail-row"><span>EMI ID:</span> <strong id="pay-emi-id"></strong></div>
+            </div>
+            
+            <div class="card" style="border-left:4px solid var(--warning);">
+                <div class="detail-row"><span>Amount Paid:</span> <strong style="font-size:18px; color:var(--success);" id="pay-amount"></strong></div>
+                <div class="detail-row"><span>UTR Number:</span> <strong id="pay-utr"></strong></div>
+            </div>
+
+            <h4 style="margin-top:20px;">Verification Action</h4>
+            <div class="action-btns">
+                <button class="btn" style="flex:1; background:var(--success);" onclick="verifyPayment('verified')"><i class="ri-check-double-line"></i> Mark as Paid</button>
+                <button class="btn danger" style="flex:1;" onclick="verifyPayment('failed')"><i class="ri-close-line"></i> UTR Invalid</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="disbursement-modal" class="overlay">
+        <div class="modal" style="max-width: 500px;">
+            <button class="close-modal" onclick="closeModal('disbursement-modal')">&times;</button>
+            <h3 style="margin-top:0;"><i class="ri-money-rupee-circle-line"></i> Disburse Funds: <span id="disburse-lid"></span></h3>
+            
+            <div class="card" id="disburse-user-info-full">
+                <h4>Recipient Details</h4>
+                <div class="detail-row"><span>Name:</span> <strong id="disburse-name"></strong></div>
+                <div class="detail-row"><span>Mobile:</span> <strong id="disburse-mobile"></strong></div>
+                <div class="detail-row"><span>Loan ID:</span> <strong id="disburse-lid-info"></strong></div>
+            </div>
+            
+            <div class="card" style="border-left:4px solid var(--gold);">
+                <h4>Final Loan Details</h4>
+                <div class="detail-row"><span>Approved Amount:</span> <strong id="disburse-approved-amt"></strong></div>
+                <div class="detail-row"><span>Processing Fee (8%):</span> <strong style="color:var(--danger);" id="disburse-fee"></strong></div>
+                <div class="detail-row"><span>**Net Disbursal (Sent to Bank):**</span> <strong style="font-size:18px; color:var(--success);" id="disburse-net"></strong></div>
+                <div class="detail-row"><span>Tenure (Months):</span> <strong id="disburse-tenure"></strong></div>
+            </div>
+
+            <div class="verification-status verification-success" style="margin-top:20px;">
+                <i class="ri-check-line"></i> User has **Accepted** the offer and is ready for funding.
+            </div>
+
+            <h4 style="margin-top:20px;">Action</h4>
+            <div class="action-btns">
+                <button class="btn" style="flex:1; background:var(--gold);" onclick="disburseFunds()"><i class="ri-send-plane-fill"></i> Confirm & Disburse Funds</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="history-modal" class="overlay">
+        <div class="modal">
+            <button class="close-modal" onclick="closeModal('history-modal')">&times;</button>
+            <h3 style="margin-top:0;"><i class="ri-booklet-line"></i> Loan History: <span id="history-lid"></span></h3>
+            
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:15px;">
+                <div class="card" id="history-user-info-full">
+                    <h4>User & Loan Details</h4>
+                    <div class="detail-row"><span>Name:</span> <strong id="history-name"></strong></div>
+                    <div class="detail-row"><span>Mobile:</span> <strong id="history-mobile"></strong></div>
+                    <div class="detail-row"><span>Email:</span> <strong id="history-email"></strong></div>
+                    <div class="detail-row"><span>Address:</span> <strong id="history-address"></strong></div>
+                </div>
+                
+                <div class="card" style="border-left:4px solid var(--info);">
+                    <h4>Loan Summary</h4>
+                    <div class="detail-row"><span>Loan Status:</span> <strong id="history-status"></strong></div>
+                    <div class="detail-row"><span>Total Repayment:</span> <strong id="history-total-repay"></strong></div>
+                    <div class="detail-row"><span>Monthly EMI:</span> <strong id="history-emi-amt"></strong></div>
+                    <div class="detail-row"><span>Total EMIs Paid:</span> <strong id="history-paid-count"></strong></div>
+                    <div class="detail-row"><span>**Outstanding Balance:**</span> <strong id="history-outstanding" style="color:var(--danger); font-size:1.1em;"></strong></div>
+                </div>
+            </div>
+            
+            <h4 style="margin-top:20px;"><i class="ri-list-check"></i> EMI Payment History</h4>
+            <div id="emi-history-table-container">
+                </div>
+        </div>
+    </div>
+
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // CONFIG (Use the same config as the user app)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentReviewLoanId = null;
+        let currentPaymentRequestId = null;
+
+        // --- UTILITY FUNCTIONS ---
+
+        /**
+         * ✅ FIX: Fetches PAN and Address from the user profile or verification steps.
+         */
+        async function fetchUserDetails(uid) {
+            const userSnap = await db.ref('users/' + uid).once('value');
+            const userData = userSnap.val() || {};
+            
+            // Prioritize data from loan_verification step1 if main fields are missing
+            const name = userData.name || userData.loan_verification?.step1_data?.fname || 'N/A';
+            const email = userData.email || userData.loan_verification?.step1_data?.email || 'N/A';
+            const mobile = userData.mobile || userData.loan_verification?.step1_data?.mobile || 'N/A';
+            
+            // ✅ FIX: Get PAN from step 2 data
+            const pan = userData.loan_verification?.step2_data?.pan || 'N/A';
+            
+            // ✅ FIX: Get Address from step 5 data (Permanent and Current)
+            let address = 'N/A';
+            const addressData = userData.loan_verification?.step5_data;
+            if (addressData) {
+                const perm = addressData.permanent_address || 'N/A';
+                const curr = addressData.current_address || 'N/A';
+                address = `Perm: ${perm}; Curr: ${curr}`;
+            }
+
+            return { name, email, mobile, pan, address, uid, loan_verification: userData.loan_verification };
+        }
+
+        // --- AUTH & INITIALIZATION ---
+        
+        auth.onAuthStateChanged(user => {
+            if(!user) {
+                // Ensure this redirects to your admin login page
+                // Note: For a real app, this should redirect to an admin login page.
+                // return window.location.href = 'admin_login.html'; 
+            }
+            
+            // Start listening for all data streams
+            listenForRequests();
+            listenForPayments();
+            listenForActiveLoans();
+            listenForAllHistory(); 
+        });
+
+        function logout(){
+            // Redirect to admin login page after sign out
+            auth.signOut().then(() => alert("Logged out successfully.")); 
+        }
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(d => d.style.display = 'none');
+            document.getElementById(tabId).style.display = 'block';
+            document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // --- 1. PENDING REQUESTS ---
+        
+        async function listenForRequests() {
+            const listDiv = document.getElementById('pending-list');
+            listDiv.innerHTML = 'Loading...';
+            
+            let pendingRequests = {};
+
+            // Fetch all loan requests
+            const primarySnap = await db.ref('loan_requests').once('value');
+            const loanRequests = primarySnap.val() || {};
+
+            // Filter for 'pending', 'reviewed', and 'accepted' statuses
+            Object.keys(loanRequests).forEach(lid => {
+                const req = loanRequests[lid];
+                if (req.status === 'pending' || req.status === 'reviewed' || req.status === 'accepted') {
+                    pendingRequests[lid] = req;
+                }
+            });
+            
+            const keys = Object.keys(pendingRequests);
+            
+            listDiv.innerHTML = '';
+            // Sort to show 'accepted' first (Disbursement), then 'pending' (Review)
+            const sortedKeys = keys.sort((a, b) => {
+                const statusA = pendingRequests[a].status;
+                const statusB = pendingRequests[b].status;
+                
+                if (statusA === 'accepted' && statusB !== 'accepted') return -1;
+                if (statusA !== 'accepted' && statusB === 'accepted') return 1;
+
+                if (statusA === 'pending' && statusB !== 'pending') return -1;
+                if (statusA !== 'pending' && statusB === 'pending') return 1;
+
+                return 0; // Maintain original order if statuses are the same
+            });
+
+            sortedKeys.forEach(lid => {
+                const req = pendingRequests[lid];
+                req.id = lid; 
+                listDiv.insertAdjacentHTML('beforeend', renderRequestItem(req));
+            });
+            
+            if (keys.length === 0) {
+                 listDiv.innerHTML = '<div class="card text-center">No pending loan applications.</div>';
+            }
+
+            document.getElementById('count-pending').innerText = keys.length;
+        }
+
+
+        function renderRequestItem(req) {
+            let statusClass = 'bg-pending';
+            let buttonText = 'Review';
+            let actionFunction = `openReviewModal('${req.id}')`; 
+
+            if (req.status === 'accepted') {
+                 statusClass = 'bg-active';
+                 buttonText = '<i class="ri-send-plane-fill"></i> Disburse Funds'; 
+                 actionFunction = `openDisbursementModal('${req.id}')`; 
+            } else if (req.status === 'reviewed') {
+                statusClass = 'bg-reviewed';
+                buttonText = 'Re-Review (Offer Sent)';
+                actionFunction = `openReviewModal('${req.id}')`;
+            } else if (req.status === 'pending') {
+                 statusClass = 'bg-warning';
+                 buttonText = 'Review Application';
+            }
+            
+            return `
+                <div class="request-item">
+                    <div>
+                        <div class="req-id">${req.id}</div>
+                        <div style="font-size:12px; opacity:0.7;">User: ${req.user_id.substring(0, 8)}... | Req Amt: ₹${parseInt(req.amount_req).toLocaleString()}</div>
+                    </div>
+                    <div>
+                        <span class="req-status-badge ${statusClass}">${req.status.toUpperCase()}</span>
+                        <button class="btn" style="margin-left:10px; padding:5px 10px; ${req.status === 'accepted' ? 'background:var(--success); color:#fff;' : ''}" onclick="${actionFunction}">${buttonText}</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function openReviewModal(lid) {
+            const snap = await db.ref('loan_requests/' + lid).once('value');
+            const data = snap.val();
+            if (!data) return alert("Request not found.");
+
+            currentReviewLoanId = lid;
+            document.getElementById('modal-lid').innerText = lid;
+            
+            const userData = await fetchUserDetails(data.user_id);
+            
+            // ✅ FIX: Extracting Document URLs from verification steps (step2, step3, step4) 
+            // Note: Prioritize data from loan_verification path which stores step completion data
+            const verificationData = userData.loan_verification || {};
+            const identityData = verificationData.step2_data || {}; // PAN/Aadhaar
+            const bankData = verificationData.step3_data || {};    // Bank/Passbook
+            const workData = verificationData.step4_data || {};    // Salary Slip/Income
+
+            // Populate Full User Details (FIXED with correct userData structure)
+            document.getElementById('modal-name').innerText = userData.name;
+            document.getElementById('modal-email').innerText = userData.email;
+            document.getElementById('modal-mobile').innerText = userData.mobile;
+            document.getElementById('modal-address').innerText = userData.address;
+            document.getElementById('modal-pan').innerText = userData.pan; 
+            document.getElementById('modal-uid').innerText = userData.uid;
+
+            // Populate Loan Summary
+            document.getElementById('modal-income').innerText = '₹' + (workData?.monthly_income || 'N/A');
+            document.getElementById('modal-amt').innerText = '₹' + parseInt(data.amount_req).toLocaleString();
+            
+            document.getElementById('approve-amt').value = data.approved_amount || data.amount_req;
+            document.getElementById('approve-tenure').value = data.approved_tenure || data.tenure_req;
+            
+            // Populate Documents (FIXED to use correct paths and render images)
+            const docContainer = document.getElementById('documents-container');
+            docContainer.innerHTML = '';
+            
+            // Step 2: Identity Documents
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('PAN Card', identityData?.pan, identityData?.pan_img_url));
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('Aadhaar Front', 'Aadhaar Front', identityData?.aadhaar_front_url));
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('Aadhaar Back', 'Aadhaar Back', identityData?.aadhaar_back_url));
+            
+            // Step 3: Bank Documents
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('Passbook/Cheque', bankData?.account_number ? `A/C: ${bankData.account_number}` : 'N/A', bankData?.passbook_url));
+            
+            // Step 4: Income Documents
+            docContainer.insertAdjacentHTML('beforeend', renderDocSection('Salary Slip', workData?.monthly_income ? `Income: ₹${workData.monthly_income}` : 'N/A', workData?.salary_slip_url));
+
+
+            document.getElementById('review-modal').style.display = 'flex';
+        }
+
+        /**
+         * 🏆 FINAL FIX: Renders Document Section with visible image if a valid URL exists.
+         */
+        function renderDocSection(title, textValue, url) {
+            // Check if the URL is present and starts with http/https (case-insensitive)
+            const isValidUrl = url && (url.toLowerCase().startsWith('http://') || url.toLowerCase().startsWith('https://'));
+            const status = isValidUrl ? 'verification-success' : 'verification-pending';
+            const statusText = isValidUrl ? 'Verified' : 'Missing/Failed';
+            
+            const imageHtml = isValidUrl ? 
+                // Image tag for display, click to open full size
+                `<img src="${url}" class="document-image" onclick="window.open('${url}', '_blank')" alt="${title} Document" title="Click to view full image">` 
+                : '';
+
+            return `
+                <div class="card" style="padding:10px; border-left:4px solid ${status === 'verification-success' ? 'var(--success)' : 'var(--danger)'}">
+                    <div class="detail-row">
+                        <span>${title}:</span>
+                        <span class="req-status-badge ${status === 'verification-success' ? 'bg-success' : 'bg-danger'}">${statusText}</span>
+                    </div>
+                    <div style="font-size:12px; margin-top:5px; word-break: break-all;">Details: ${textValue}</div>
+                    ${imageHtml}
+                    ${isValidUrl ? `<a href="${url}" target="_blank" class="document-link">View Original <i class="ri-external-link-line"></i></a>` : ''}
+                </div>
+            `;
+        }
+
+        function sendOffer() {
+            const approvedAmt = document.getElementById('approve-amt').value;
+            const approvedTenure = document.getElementById('approve-tenure').value;
+            const uid = document.getElementById('modal-uid').innerText;
+
+            if(!approvedAmt || !approvedTenure || parseInt(approvedAmt) < 100) return alert("Invalid amount or tenure.");
+
+            const fee = Math.round(parseInt(approvedAmt) * 0.08); // Assuming 8% processing fee
+            const net = parseInt(approvedAmt) - fee;
+
+            const updates = {
+                status: 'reviewed', 
+                approved_amount: parseInt(approvedAmt),
+                approved_tenure: parseInt(approvedTenure),
+                processing_fee: fee,
+                net_disbursal: net,
+                reviewed_by: auth.currentUser?.uid || 'Admin', 
+                reviewed_at: Date.now()
+            };
+
+            db.ref('loan_requests/' + currentReviewLoanId).update(updates).then(() => {
+                db.ref('users/' + uid + '/loan_app/status').set('reviewed');
+                alert(`Offer of ₹${approvedAmt} sent to user for request ${currentReviewLoanId}.`);
+                closeModal('review-modal');
+                listenForRequests(); 
+            }).catch(e => {
+                alert("Error sending offer: " + e.message);
+            });
+        }
+
+        function rejectLoan() {
+            if(!confirm("Are you sure you want to reject this loan application?")) return;
+
+            const uid = document.getElementById('modal-uid').innerText;
+            
+            db.ref('loan_requests/' + currentReviewLoanId).update({
+                status: 'rejected',
+                rejected_by: auth.currentUser?.uid || 'Admin', 
+                rejected_at: Date.now()
+            }).then(() => {
+                db.ref('users/' + uid + '/loan_app').update({status: 'rejected', loan_id: currentReviewLoanId});
+                alert(`Loan ${currentReviewLoanId} rejected.`);
+                closeModal('review-modal');
+                listenForRequests(); 
+            }).catch(e => {
+                alert("Error rejecting loan: " + e.message);
+            });
+        }
+        
+        /**
+         * FIX: Ensures the final EMI amount is precisely calculated to zero out the total repayment.
+         */
+        function generateEmiSchedule(totalRepayment, tenure, monthlyEMI, loanId) {
+            const emis = {};
+            const disbursementDate = new Date();
+            
+            // Set first due date to 5th of next month
+            const firstDueDate = new Date(disbursementDate);
+            firstDueDate.setDate(5); 
+            firstDueDate.setMonth(firstDueDate.getMonth() + 1);
+
+            let remainingAmount = totalRepayment; 
+            
+            for (let i = 1; i <= tenure; i++) {
+                const dueDate = new Date(firstDueDate);
+                dueDate.setMonth(dueDate.getMonth() + (i - 1));
+                
+                let currentEmiAmount;
+                
+                if (i === tenure) {
+                    // Last EMI takes the exact remaining amount
+                    currentEmiAmount = Math.round(remainingAmount);
+                } else {
+                    currentEmiAmount = monthlyEMI;
+                }
+                
+                if (currentEmiAmount <= 0) break; 
+
+                emis[`emi_${i}`] = {
+                    id: `EMI_${loanId}_${i}`,
+                    num: i,
+                    amount: currentEmiAmount, 
+                    due_date: dueDate.getTime(),
+                    status: 'pending' 
+                };
+                
+                // Use the precise amount set for the EMI for subtraction
+                remainingAmount -= currentEmiAmount; 
+            }
+            return emis;
+        }
+        
+        // 2. DISBURSEMENT LOGIC
+        
+        async function openDisbursementModal(lid) {
+            const snap = await db.ref('loan_requests/' + lid).once('value');
+            const data = snap.val();
+            if (!data) return alert("Loan request not found.");
+
+            if (data.status !== 'accepted') return alert("Loan status is not 'accepted'. Cannot disburse.");
+
+            currentReviewLoanId = lid; 
+            
+            const userData = await fetchUserDetails(data.user_id);
+            
+            document.getElementById('disburse-name').innerText = userData.name;
+            document.getElementById('disburse-mobile').innerText = userData.mobile;
+            document.getElementById('disburse-lid-info').innerText = lid;
+            
+            document.getElementById('disburse-lid').innerText = lid;
+            document.getElementById('disburse-approved-amt').innerText = '₹' + parseInt(data.approved_amount).toLocaleString();
+            document.getElementById('disburse-fee').innerText = '- ₹' + parseInt(data.processing_fee).toLocaleString();
+            document.getElementById('disburse-net').innerText = '₹' + parseInt(data.net_disbursal).toLocaleString();
+            document.getElementById('disburse-tenure').innerText = data.approved_tenure;
+
+            document.getElementById('disbursement-modal').style.display = 'flex';
+        }
+
+        function disburseFunds() {
+            if(!confirm("Are you absolutely sure you want to DISBURSE these funds and mark the loan as ACTIVE? This action cannot be easily undone.")) return;
+
+            const lid = currentReviewLoanId;
+            
+            db.ref('loan_requests/' + lid).once('value').then(snap => {
+                const data = snap.val();
+                if (!data) throw new Error("Loan data not found during disbursement.");
+
+                const uid = data.user_id;
+                
+                const approvedAmount = data.approved_amount;
+                const netDisbursal = data.net_disbursal;
+                const tenure = data.approved_tenure;
+                
+                // Interest Calculation: Using 8% simple interest as standard
+                const INTEREST_RATE = 0.08; 
+                const totalInterest = Math.round(approvedAmount * INTEREST_RATE);
+                const totalRepayment = approvedAmount + totalInterest;
+                
+                // Calculate average monthly EMI
+                const monthlyEMI = Math.round(totalRepayment / tenure); 
+                
+                const emiSchedule = generateEmiSchedule(totalRepayment, tenure, monthlyEMI, lid);
+                
+                const updates = {
+                    status: 'active',
+                    disbursed_by: auth.currentUser?.uid || 'Admin', 
+                    disbursed_at: Date.now(),
+                    disbursed_amount: netDisbursal, 
+                    approved_tenure: tenure,
+                    emi_amount: monthlyEMI,
+                    emis: emiSchedule, 
+                    total_repayment: totalRepayment, 
+                    total_emis_paid: 0,
+                    outstanding_balance: totalRepayment 
+                };
+                
+                db.ref('loan_requests/' + lid).update(updates).then(() => {
+                    
+                    db.ref('disbursements').push({
+                        loanId: lid,
+                        userId: uid,
+                        amount: netDisbursal,
+                        timestamp: Date.now(),
+                        status: 'disbursed'
+                    });
+                    
+                    db.ref('users/' + uid + '/loan_app/status').set('active');
+                    
+                    alert(`Funds successfully DISBURSED for Loan ${lid}. Loan is now ACTIVE.`);
+                    closeModal('disbursement-modal');
+                    listenForRequests(); 
+                    listenForActiveLoans(); 
+                }).catch(e => {
+                    alert("Error disbursing funds: " + e.message);
+                });
+            }).catch(e => alert("Could not retrieve UID for disbursement or other error: " + e.message));
+        }
+        
+        // --- 3. PAYMENT VERIFICATION ---
+        
+        function listenForPayments() {
+            const listDiv = document.getElementById('payment-list');
+            listDiv.innerHTML = 'Loading...';
+            
+            db.ref('payment_requests').orderByChild('status').equalTo('verification_pending').on('value', snap => {
+                const requests = snap.val() || {};
+                const keys = Object.keys(requests);
+                
+                listDiv.innerHTML = keys.length === 0 ? '<div class="card text-center">No payments pending verification.</div>' : '';
+
+                keys.forEach(prid => {
+                    const req = requests[prid];
+                    req.id = prid;
+                    listDiv.insertAdjacentHTML('afterbegin', renderPaymentItem(req));
+                });
+                document.getElementById('count-payments').innerText = keys.length;
+            });
+        }
+
+        function renderPaymentItem(req) {
+             return `
+                <div class="request-item">
+                    <div>
+                        <div class="req-id">${req.id}</div>
+                        <div style="font-size:12px; opacity:0.7;">Loan: ${req.loan_id} | EMI: ${req.emi_id} | Amt: ₹${(req.amount || 0).toLocaleString()}</div>
+                    </div>
+                    <div>
+                        <span class="req-status-badge bg-pending">VERIFY UTR</span>
+                        <button class="btn" style="margin-left:10px; padding:5px 10px;" onclick="openPaymentModal('${req.id}', '${req.user_id}')">View</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function openPaymentModal(prid, uid) {
+            const snap = await db.ref('payment_requests/' + prid).once('value');
+            const data = snap.val();
+            if (!data) return alert("Payment request not found.");
+
+            const userData = await fetchUserDetails(uid);
+
+            currentPaymentRequestId = prid;
+            document.getElementById('pay-req-id').innerText = prid;
+            
+            document.getElementById('pay-name').innerText = userData.name;
+            document.getElementById('pay-email').innerText = userData.email;
+            document.getElementById('pay-mobile').innerText = userData.mobile;
+            document.getElementById('pay-lid').innerText = data.loan_id;
+            document.getElementById('pay-emi-id').innerText = data.emi_id;
+            document.getElementById('pay-amount').innerText = parseInt(data.amount || 0).toLocaleString();
+            document.getElementById('pay-utr').innerText = data.utr_number;
+
+            document.getElementById('payment-modal').style.display = 'flex';
+        }
+
+        
+        // CORE FUNCTION: To verify payment requests (UTR-based)
+        async function verifyPayment(action) {
+            const prid = currentPaymentRequestId;
+            const lid = document.getElementById('pay-lid').innerText;
+            const eid = document.getElementById('pay-emi-id').innerText;
+            
+            const loanSnap = await db.ref(`loan_requests/${lid}`).once('value');
+            const loanData = loanSnap.val();
+            const emiData = loanData?.emis?.[eid];
+
+            if (!emiData) return alert("EMI data not found for verification. Cannot proceed. Check if EMI ID is correct.");
+            
+            if (action === 'verified') {
+                try {
+                    // Check if EMI is already paid.
+                    if (emiData.status === 'paid') {
+                        alert(`EMI ${eid} is already marked as PAID. Updating payment request status only.`);
+                    } else {
+                         // 1. Mark EMI Status as Paid in loan_requests
+                        await db.ref(`loan_requests/${lid}/emis/${eid}`).update({
+                            status: 'paid',
+                            paid_at: Date.now(),
+                            verified_by: auth.currentUser?.uid || 'Admin',
+                            payment_method: 'UTR Verified' 
+                        });
+                        
+                        // 3. Recalculate Loan Summary (FIXED LOGIC)
+                        await updateLoanSummary(lid);
+                    }
+                   
+                    // 2. Mark Payment Request as verified
+                    await db.ref('payment_requests/' + prid).update({
+                        status: 'verified',
+                        verified_by: auth.currentUser?.uid || 'Admin',
+                        verified_at: Date.now(),
+                        admin_note: 'Payment successfully verified and EMI marked as paid.'
+                    });
+
+                    alert(`EMI ${eid} marked as PAID via UTR verification. Loan Summary Updated.`);
+                    closeModal('payment-modal');
+                    listenForActiveLoans(); 
+                    listenForPayments(); 
+                    listenForAllHistory(); 
+
+                } catch (e) {
+                    alert("Error verifying payment and updating summary: " + e.message);
+                }
+
+            } else if (action === 'failed') {
+                // If payment failed, only update the payment request status. Do not touch loan/EMI status.
+                try {
+                    await db.ref('payment_requests/' + prid).update({
+                        status: 'failed',
+                        failed_by: auth.currentUser?.uid || 'Admin',
+                        failed_at: Date.now(),
+                        admin_note: 'UTR verification failed. Please contact support or resubmit payment.'
+                    });
+                    
+                    alert(`Payment ${prid} marked as FAILED.`);
+                    closeModal('payment-modal');
+                    listenForPayments();
+                } catch (e) {
+                     alert("Error failing payment: " + e.message);
+                }
+            }
+        }
+
+        // NEW FUNCTION: Manually Mark EMI as Paid (Direct Entry)
+        async function markEmiAsPaid(lid, eid, emiAmount) {
+             if(!confirm(`Confirm Manual Payment: Are you sure you want to mark EMI ${eid} (₹${emiAmount.toLocaleString()}) for Loan ${lid} as PAID?`)) return;
+
+             try {
+                // 1. Mark EMI Status as Paid
+                await db.ref(`loan_requests/${lid}/emis/${eid}`).update({
+                    status: 'paid',
+                    paid_at: Date.now(),
+                    verified_by: auth.currentUser?.uid || 'Admin',
+                    payment_method: 'Manual Admin Entry' 
+                });
+
+                // 2. Recalculate Loan Summary (FIXED LOGIC)
+                await updateLoanSummary(lid);
+
+                // 3. Refresh UI
+                alert(`EMI ${eid} manually marked as PAID. Loan Summary Updated.`);
+                
+                // Re-fetch data for the currently open history modal 
+                const loanSnap = await db.ref(`loan_requests/${lid}`).once('value');
+                const uid = loanSnap.val().user_id;
+                viewLoanHistory(lid, uid); // Re-render the history modal with updated data
+                listenForActiveLoans();
+                listenForAllHistory();
+
+             } catch (e) {
+                alert("Error marking EMI as paid: " + e.message);
+             }
+        }
+
+
+        /**
+         * 🏆 FINAL FIX: Calculates Outstanding Balance correctly by summing the amount of all PAID EMIs.
+         */
+        async function updateLoanSummary(lid) {
+            const loanSnap = await db.ref(`loan_requests/${lid}`).once('value');
+            const loanData = loanSnap.val();
+            
+            if (!loanData || !loanData.emis) return;
+
+            const allEmis = Object.values(loanData.emis);
+
+            const paidCount = allEmis.filter(e => e.status === 'paid').length;
+            const totalEmis = allEmis.length;
+            
+            const totalRepayment = parseFloat(loanData.total_repayment || 0); 
+            
+            // FIX: Calculate total paid by summing up the *amount* of all paid EMIs
+            const totalPaid = allEmis
+                .filter(e => e.status === 'paid')
+                .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+            
+            let outstanding = totalRepayment - totalPaid;
+            
+            // Ensure outstanding balance is not negative and round to nearest whole number
+            outstanding = Math.max(0, Math.round(outstanding)); 
+            
+            let newStatus = loanData.status;
+            
+            // Logic to mark loan as CLOSED
+            if (outstanding === 0 && totalEmis > 0) {
+                 newStatus = 'closed';
+            } 
+            // If loan was marked closed but outstanding is > 0 (e.g., error correction), revert to active
+            if (newStatus === 'closed' && outstanding > 0) {
+                 newStatus = 'active'; 
+            }
+
+
+            // Update the loan summary fields
+            await db.ref(`loan_requests/${lid}`).update({
+                total_emis_paid: paidCount,
+                outstanding_balance: outstanding,
+                last_payment_date: Date.now(),
+                status: newStatus
+            });
+        }
+
+
+        // --- 4. ACTIVE LOANS (VIEW HISTORY UPDATED FOR OVERDUE LOGIC) ---
+
+        function listenForActiveLoans() {
+            const listDiv = document.getElementById('active-list');
+            listDiv.innerHTML = 'Loading...';
+
+            db.ref('loan_requests').orderByChild('status').equalTo('active').on('value', snap => {
+                const requests = snap.val() || {};
+                const keys = Object.keys(requests);
+                
+                listDiv.innerHTML = ''; 
+
+                keys.forEach(lid => {
+                    const req = requests[lid];
+                    req.id = lid;
+                    let paidEmis = req.total_emis_paid || 0;
+                    let totalEmis = Object.keys(req.emis || {}).length;
+                    let progressText = `${paidEmis} / ${totalEmis} EMIs Paid`;
+
+                    listDiv.insertAdjacentHTML('afterbegin', renderActiveLoanItem(req, progressText));
+                });
+
+                if (keys.length === 0) {
+                     listDiv.innerHTML = '<div class="card text-center">No active loans currently being tracked.</div>';
+                }
+                
+                document.getElementById('count-active').innerText = keys.length;
+            });
+        }
+
+        function renderActiveLoanItem(req, progressText) {
+            return `
+                <div class="request-item">
+                    <div>
+                        <div class="req-id">${req.id} (${req.user_id.substring(0, 8)}...)</div>
+                        <div style="font-size:12px; opacity:0.7;">Amt: ₹${parseInt(req.approved_amount || 0).toLocaleString()} | ${progressText}</div>
+                    </div>
+                    <div>
+                        <span class="req-status-badge bg-active">ACTIVE</span>
+                        <button class="btn secondary" style="margin-left:10px; padding:5px 10px;" onclick="viewLoanHistory('${req.id}', '${req.user_id}')">View History</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        /** * **UPDATED viewLoanHistory** * Includes Overdue logic and manual pay button.
+         */
+        async function viewLoanHistory(lid, uid) {
+            const snap = await db.ref('loan_requests/' + lid).once('value');
+            let data = snap.val();
+
+            if (!data) {
+                return alert("Loan data not found.");
+            }
+            
+            // Safety check for corrupt EMI data 
+            if (!data.emis) {
+                 await updateLoanSummary(lid); 
+                 const reSnap = await db.ref('loan_requests/' + lid).once('value');
+                 data = reSnap.val(); 
+                 if (!data || !data.emis) return alert("EMI history is missing or corrupted.");
+            }
+            
+            const userData = await fetchUserDetails(uid);
+            
+            // Populate User Details
+            document.getElementById('history-name').innerText = userData.name;
+            document.getElementById('history-email').innerText = userData.email;
+            document.getElementById('history-mobile').innerText = userData.mobile;
+            document.getElementById('history-address').innerText = userData.address;
+
+
+            const emis = Object.values(data.emis)
+                         .filter(e => e.num && parseFloat(e.amount) > 0) 
+                         .sort((a, b) => (a.num || 0) - (b.num || 0)); 
+            
+            const totalRepayment = data.total_repayment || 0;
+            const paidCount = data.total_emis_paid || 0; 
+            const outstanding = data.outstanding_balance || 0;
+            const totalEmis = emis.length;
+
+            // Populate Summary
+            document.getElementById('history-lid').innerText = lid;
+            document.getElementById('history-status').innerText = data.status.toUpperCase();
+            document.getElementById('history-status').className = `req-status-badge ${data.status === 'active' ? 'bg-active' : data.status === 'closed' ? 'bg-closed' : 'bg-secondary'}`;
+            document.getElementById('history-total-repay').innerText = '₹' + totalRepayment.toLocaleString();
+            document.getElementById('history-emi-amt').innerText = '₹' + (data.emi_amount || 0).toLocaleString();
+            document.getElementById('history-paid-count').innerText = `${paidCount} / ${totalEmis}`;
+            document.getElementById('history-outstanding').innerText = '₹' + outstanding.toLocaleString();
+
+            const today = new Date();
+            const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime(); 
+            
+            // Populate EMI Table
+            let tableHTML = `
+                <table class="emi-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Paid At</th>
+                            <th>Action</th> </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            emis.forEach(e => {
+                let statusClass = '';
+                let statusText = (e.status || 'pending').toUpperCase().replace('_', ' ');
+                let paidAt = e.paid_at ? new Date(e.paid_at).toLocaleDateString() : 'N/A';
+                let actionButton = '';
+                
+                const emiAmount = parseFloat(e.amount || 0);
+
+                // Determine Status and Class
+                if (e.status === 'paid') {
+                    statusClass = 'bg-paid';
+                } else if (e.status === 'payment_submitted') {
+                    statusClass = 'bg-submitted';
+                    statusText = 'SUBMITTED (Pending Verify)';
+                } else if (e.status === 'pending' && e.due_date && e.due_date < startOfToday) {
+                    statusClass = 'bg-overdue';
+                    statusText = 'OVERDUE';
+                } else {
+                    statusClass = 'bg-pending';
+                    statusText = 'PENDING';
+                }
+                
+                const dueDate = e.due_date ? new Date(e.due_date).toLocaleDateString() : 'N/A';
+                
+                // Add Mark Paid Button for Pending/Overdue/Submitted EMIs
+                if (e.status !== 'paid' && emiAmount > 0) {
+                     actionButton = `<button class="btn btn-mini" onclick="markEmiAsPaid('${lid}', '${e.id}', ${emiAmount})">Mark Paid</button>`;
+                }
+
+
+                tableHTML += `
+                    <tr>
+                        <td>${e.num || 'N/A'}</td>
+                        <td>₹${emiAmount.toLocaleString()}</td>
+                        <td>${dueDate}</td>
+                        <td><span class="req-status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${paidAt}</td>
+                        <td>${actionButton}</td> </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('emi-history-table-container').innerHTML = tableHTML;
+            document.getElementById('history-modal').style.display = 'flex';
+        }
+
+        // --- 5. FULL HISTORY TAB ---
+
+        function listenForAllHistory() {
+            const listDiv = document.getElementById('history-list');
+            listDiv.innerHTML = 'Loading all loans...';
+
+            // Use 'once' for full history to avoid continuous, heavy stream
+            db.ref('loan_requests').once('value', async snap => {
+                const requests = snap.val() || {};
+                const keys = Object.keys(requests);
+                
+                if (keys.length === 0) {
+                     listDiv.innerHTML = '<div class="card text-center">No loan history available.</div>';
+                     document.getElementById('count-history').innerText = 0;
+                     return;
+                }
+
+                listDiv.innerHTML = '';
+                
+                // Fetch user details for each loan concurrently
+                const loanDataWithUsers = await Promise.all(keys.map(async lid => {
+                    const req = requests[lid];
+                    req.id = lid;
+                    // Check if user_id exists before fetching
+                    if (!req.user_id) return { ...req, userData: { name: 'Unknown', mobile: 'N/A' }, id: lid };
+                    
+                    const userData = await fetchUserDetails(req.user_id);
+                    return { ...req, userData, id: lid };
+                }));
+
+                // Sort by status (Active first, then Closed)
+                loanDataWithUsers.sort((a, b) => {
+                    if (a.status === 'active' && b.status !== 'active') return -1;
+                    if (a.status !== 'active' && b.status === 'active') return 1;
+                    return 0;
+                });
+
+
+                loanDataWithUsers.forEach(req => {
+                    listDiv.insertAdjacentHTML('beforeend', renderAllHistoryItem(req));
+                });
+                
+                document.getElementById('count-history').innerText = keys.length;
+            });
+        }
+
+        function renderAllHistoryItem(req) {
+            let statusClass = 'bg-closed'; 
+            let statusText = req.status.toUpperCase();
+            
+            if (req.status === 'active') {
+                statusClass = 'bg-active';
+            } else if (req.status === 'rejected') {
+                statusClass = 'bg-rejected';
+            } else if (req.status === 'reviewed' || req.status === 'pending') {
+                statusClass = 'bg-reviewed';
+            }
+
+            const amount = parseInt(req.approved_amount || req.amount_req || 0).toLocaleString();
+
+             return `
+                <div class="request-item">
+                    <div>
+                        <div class="req-id">${req.id}</div>
+                        <div style="font-size:12px; opacity:0.7;">User: ${req.userData.name} (${req.userData.mobile}) | Amt: ₹${amount}</div>
+                    </div>
+                    <div>
+                        <span class="req-status-badge ${statusClass}">${statusText}</span>
+                        <button class="btn secondary" style="margin-left:10px; padding:5px 10px;" onclick="viewLoanHistory('${req.id}', '${req.user_id}')">View Details</button>
+                    </div>
+                </div>
+            `;
+        }
+
+    </script>
+</body>
+</html>
+

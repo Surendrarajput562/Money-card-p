@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Workie</title>
+
+<style>
+body{
+  font-family:sans-serif;
+  background:#e8f5e9;
+  margin:0;
+  padding:15px;
+}
+.container{
+  max-width:900px;
+  margin:auto;
+  background:#fff;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.1);
+  border-top:6px solid #2ecc71;
+}
+.tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
+}
+.tab-btn{
+  flex:1;
+  padding:10px;
+  background:#2ecc71;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.tab-btn.inactive{
+  background:#c8e6c9;
+  color:#2e7d32;
+}
+input, textarea, button{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+button{ background:#2ecc71; color:white; font-size:16px; }
+.item{
+  background:#f9fff9;
+  padding:12px;
+  border:1px solid #dcedc8;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+.item img{
+  width:100%;
+  border-radius:10px;
+  margin:8px 0;
+}
+.delete-btn{
+  background:red;
+  padding:6px 10px;
+  border-radius:6px;
+  color:white;
+  float:right;
+  border:none;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>Admin Panel – Workie</h2>
+
+<div class="tabs">
+  <button class="tab-btn" onclick="openTab('jobs', this)">Jobs</button>
+  <button class="tab-btn inactive" onclick="openTab('tasks', this)">Tasks</button>
+  <button class="tab-btn inactive" onclick="openTab('insta', this)">Instagram</button>
+</div>
+
+<!-- JOBS -->
+<div id="jobs" class="tab">
+  <h3>Add Job</h3>
+
+  <input id="job_title" placeholder="Job Title">
+  <textarea id="job_desc" placeholder="Job Description"></textarea>
+  <input id="job_link" placeholder="Job Link (URL)">
+  <input id="job_contact" placeholder="WhatsApp Number">
+  <input id="job_pay" placeholder="Job Payment ₹">
+  <input type="file" id="job_img">
+
+  <button onclick="uploadJob()">Add Job</button>
+
+  <h3>All Jobs</h3>
+  <div id="jobs_list"></div>
+</div>
+
+<!-- TASKS -->
+<div id="tasks" class="tab" style="display:none;">
+  <h3>Add Task</h3>
+
+  <input id="task_title" placeholder="Task Title">
+  <textarea id="task_desc" placeholder="Task Description"></textarea>
+  <input id="task_link" placeholder="Task Link">
+  <input id="task_pay" placeholder="Task Payment ₹">
+  <input type="file" id="task_img">
+
+  <button onclick="uploadTask()">Add Task</button>
+
+  <h3>All Tasks</h3>
+  <div id="tasks_list"></div>
+</div>
+
+<!-- INSTAGRAM -->
+<div id="insta" class="tab" style="display:none;">
+  <h3>Add Instagram Task</h3>
+
+  <input id="insta_title" placeholder="Title">
+  <textarea id="insta_desc" placeholder="Description"></textarea>
+  <input id="insta_link" placeholder="Open Link (URL)">
+  <input id="insta_pay" placeholder="Payment ₹">
+  <input type="file" id="insta_img">
+
+  <button onclick="uploadInsta()">Add Instagram Task</button>
+
+  <h3>Instagram Tasks</h3>
+  <div id="insta_list"></div>
+</div>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+
+// ❗ यहाँ अपना Firebase Config डाल देना
+const firebaseConfig = {
+
+  // Your Config Here
+apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+  authDomain: "smbrand-4543a.firebaseapp.com",
+  databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+  projectId: "smbrand-4543a",
+  storageBucket: "smbrand-4543a.firebasestorage.app",
+  messagingSenderId: "720775550032",
+  appId: "1:720775550032:web:0622548a007597778bad55",
+  measurementId: "G-3LS5W6F8QW"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+const imgbb = "021a2437b889915669b66554687bf17f";   // ← अपनी Key डालना
+
+// TAB SWITCH
+function openTab(tabName, btn){
+  document.querySelectorAll(".tab").forEach(t => t.style.display="none");
+  document.getElementById(tabName).style.display="block";
+
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.add("inactive"));
+  btn.classList.remove("inactive");
+}
+
+// IMAGE UPLOAD
+async function uploadImage(file){
+  const fd = new FormData();
+  fd.append("image", file);
+
+  let r = await fetch("https://api.imgbb.com/1/upload?key=" + imgbb, {
+    method: "POST",
+    body: fd
+  });
+
+  let j = await r.json();
+  return j.data.url;
+}
+
+// ---------------- JOBS ----------------
+async function uploadJob(){
+  let title = document.getElementById("job_title").value;
+  let desc  = document.getElementById("job_desc").value;
+  let link  = document.getElementById("job_link").value;
+  let contact = document.getElementById("job_contact").value;
+  let pay   = document.getElementById("job_pay").value;
+  let file  = document.getElementById("job_img").files[0];
+
+  let url = file ? await uploadImage(file) : "";
+
+  db.ref("jobs").push({
+    title, desc, link, contact, pay, img:url, date:Date.now()
+  });
+
+  loadJobs();
+}
+
+function loadJobs(){
+  db.ref("jobs").on("value", s=>{
+    let box = document.getElementById("jobs_list");
+    box.innerHTML = "";
+
+    s.forEach(c=>{
+      let v=c.val();
+      box.innerHTML += `
+      <div class="item">
+        <button class="delete-btn" onclick="del('jobs','${c.key}')">Delete</button>
+        <h3>${v.title}</h3>
+        <p>${v.desc}</p>
+        <img src="${v.img}">
+        <p>₹${v.pay}</p>
+        <p>📞 ${v.contact}</p>
+        <p>🔗 ${v.link}</p>
+      </div>`;
+    });
+  });
+}
+
+// ---------------- TASKS ----------------
+async function uploadTask(){
+  let title = task_title.value;
+  let desc  = task_desc.value;
+  let link  = task_link.value;
+  let pay   = task_pay.value;
+  let file  = task_img.files[0];
+
+  let url = file ? await uploadImage(file) : "";
+
+  db.ref("tasks").push({
+    title, desc, link, pay, img:url, date:Date.now()
+  });
+
+  loadTasks();
+}
+
+function loadTasks(){
+  db.ref("tasks").on("value", s=>{
+    let box = tasks_list;
+    box.innerHTML="";
+
+    s.forEach(c=>{
+      let v=c.val();
+      box.innerHTML += `
+      <div class="item">
+        <button class="delete-btn" onclick="del('tasks','${c.key}')">Delete</button>
+        <h3>${v.title}</h3>
+        <p>${v.desc}</p>
+        <img src="${v.img}">
+        <p>₹${v.pay}</p>
+        <p>🔗 ${v.link}</p>
+      </div>`;
+    });
+  });
+}
+
+// ---------------- INSTAGRAM ----------------
+async function uploadInsta(){
+  let title = insta_title.value;
+  let desc  = insta_desc.value;
+  let link  = insta_link.value;
+  let pay   = insta_pay.value;
+  let file  = insta_img.files[0];
+
+  let url = file ? await uploadImage(file) : "";
+
+  db.ref("insta").push({
+    title, desc, link, pay, img:url, date:Date.now()
+  });
+
+  loadInsta();
+}
+
+function loadInsta(){
+  db.ref("insta").on("value", s=>{
+    let box = insta_list;
+    box.innerHTML="";
+
+    s.forEach(c=>{
+      let v=c.val();
+      box.innerHTML += `
+      <div class="item">
+        <button class="delete-btn" onclick="del('insta','${c.key}')">Delete</button>
+        <h3>${v.title}</h3>
+        <p>${v.desc}</p>
+        <img src="${v.img}">
+        <p>₹${v.pay}</p>
+        <p>🔗 ${v.link}</p>
+      </div>`;
+    });
+  });
+}
+
+// DELETE
+function del(type,key){
+  db.ref(type + "/" + key).remove();
+}
+
+// LOGOUT
+function logout(){
+  auth.signOut().then(()=>location.href="admi.html");
+}
+
+// LOAD ALL
+loadJobs();
+loadTasks();
+loadInsta();
+
+</script>
+</body>
+</html>

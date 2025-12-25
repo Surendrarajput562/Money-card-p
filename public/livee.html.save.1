@@ -1,0 +1,693 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Live Streaming App</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=BAADaL9tcLlRLdHvYLi4BBA8PSLVY31pLHE7hyR08DcMzdre2unAWtxgjFemGYqd0gnV5cyCaXmCYK_sU0&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <style>
+      /* --- CSS Styles --- */
+      :root { --bg: #0f0f13; --card: #1a1a24; --primary: #ff0055; --text: #ffffff; --sub: #888; }
+      body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; }
+      .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; }
+      .active { display: flex; }
+      .auth-box { margin: auto; padding: 20px; background: var(--card); border-radius: 12px; width: 80%; max-width: 400px; text-align: center; }
+      input { width: 90%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; }
+      .btn { background: var(--primary); color: #fff; border: none; padding: 12px 20px; border-radius: 30px; font-weight: bold; width: 100%; cursor: pointer; }
+      .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 10; }
+      .tabs { display: flex; gap: 15px; font-size: 14px; font-weight: bold; text-transform: lowercase; color: var(--sub); }
+      .tab-active { color: #fff; border-bottom: 2px solid var(--primary); }
+      .feed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; overflow-y: auto; flex: 1; }
+      .room-card { background: var(--card); border-radius: 10px; height: 200px; position: relative; overflow: hidden; background-size: cover; cursor: pointer; }
+      .room-card:before { content: attr(data-title); position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: rgba(0,0,0,0.7); color: #fff; font-weight: bold; font-size: 14px; }
+      .live-badge { position: absolute; top: 10px; left: 10px; background: var(--primary); padding: 2px 8px; font-size: 10px; border-radius: 4px; z-index: 2; }
+      .player-container { flex: 1; position: relative; background: #000; }
+      video { width: 100%; height: 100%; object-fit: cover; }
+      .overlay-ui { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; box-sizing: border-box; }
+      .chat-area { height: 150px; overflow-y: scroll; pointer-events: auto; margin-bottom: 60px; mask-image: linear-gradient(to bottom, transparent, black 20%); }
+      .chat-msg, .gift-msg { font-size: 13px; margin-bottom: 5px; text-shadow: 1px 1px 2px #000; }
+      .chat-msg b { color: #ffd700; }
+      .gift-msg { color: #ff0055; font-weight: bold; }
+      .controls { position: absolute; bottom: 10px; width: 90%; display: flex; gap: 10px; pointer-events: auto; }
+      .gift-btn { background: linear-gradient(45deg, #ff9900, #ff0055); border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #fff; box-shadow: 0 0 10px var(--primary); }
+      .menu-list { overflow-y: auto; padding: 20px; }
+      .menu-item { padding: 15px 0; border-bottom: 1px solid #333; font-size: 14px; color: #ddd; display: flex; justify-content: space-between; text-transform: lowercase; }
+      .balance-card { background: linear-gradient(135deg, #222, #333); padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+      .nav { height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 100; }
+      .nav-icon { font-size: 24px; color: #555; cursor: pointer; }
+      .nav-icon.active-icon { color: #fff; }
+      .go-live-btn { width: 50px; height: 50px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #000; font-size: 28px; margin-top: -20px; border: 4px solid #000; }
+      #sticker-panel { position: absolute; bottom: 70px; right: 10px; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); padding: 10px; border-radius: 8px; max-height: 150px; overflow-y: auto; display: none; flex-wrap: wrap; gap: 10px; pointer-events: auto; }
+      .sticker-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 5px; border-radius: 5px; border: 1px solid transparent; width: 50px; }
+      .sticker-item:hover { border-color: var(--primary); }
+      .sticker-item img { width: 40px; height: 40px; }
+      .sticker-item span { font-size: 10px; color: #ffd700; margin-top: 2px; }
+      .gift-animation-container { position: absolute; top: 100px; right: 10px; width: 200px; }
+      .gift-pop { background: rgba(255, 255, 255, 0.9); padding: 5px 10px; border-radius: 20px; margin-bottom: 10px; display: flex; align-items: center; animation: slideIn 0.3s ease-out; }
+      .gift-pop img { width: 30px; height: 30px; margin-right: 5px; }
+      .gift-pop .combo { font-size: 20px; font-weight: bold; color: var(--primary); margin-left: 5px; }
+      @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+  <div id="auth-screen" class="screen active">
+    <div class="auth-box">
+      <h2 style="color:var(--primary)">live app</h2>
+      <input type="text" id="username" placeholder="display name">
+      <input type="email" id="email" placeholder="email">
+      <input type="password" id="password" placeholder="password">
+      <button class="btn" onclick="handleAuth()">login / signup</button>
+      <p style="font-size:12px; color:#666; margin-top:10px;">if account not exists, it will be created.</p>
+    </div>
+  </div>
+
+  <div id="home-screen" class="screen">
+    <div class="header">
+      <div class="tabs">
+        <div class="tab-active" onclick="changeTab(this, 'for you')">for you</div>
+        <div onclick="changeTab(this, 'following')">following</div>
+        <div onclick="changeTab(this, 'explore')">explore</div>
+        <div onclick="changeTab(this, 'coins')">coins</div>
+      </div>
+      <div id="my-diamonds" style="font-size:12px; background:#222; padding:5px 10px; border-radius:20px;">💎 0</div>
+    </div>
+    
+    <div class="feed-grid" id="room-list"></div>
+
+    <div class="nav">
+      <div class="nav-icon active-icon" onclick="showScreen('home-screen')">🏠</div>
+      <div class="nav-icon">🔍</div>
+      <div class="go-live-btn" onclick="goLive()">+</div>
+      <div class="nav-icon">💬</div>
+      <div class="nav-icon" onclick="showScreen('profile-screen')">👤</div>
+    </div>
+  </div>
+
+  <div id="room-screen" class="screen" style="background: black;">
+    <div class="player-container">
+      <video id="video-player" autoplay playsinline muted></video>
+      <div class="gift-animation-container" id="gift-animation-area"></div>
+      <div style="position:absolute; top:20px; right:20px; color:white; font-size:20px; z-index:100; pointer-events: auto;" onclick="leaveRoom()">✕</div>
+      
+      <div class="overlay-ui">
+        <div class="chat-area" id="chat-box"></div>
+        <div id="sticker-panel"></div>
+        <div class="controls">
+          <input type="text" id="chat-input" placeholder="say something..." style="background:rgba(255,255,255,0.2); border:none; flex-grow: 1;">
+          <button class="btn" style="width:auto; padding: 10px 15px;" onclick="sendChat()">send</button>
+          <div class="gift-btn" onclick="toggleStickerPanel()">🎁</div>
+        </div>
+      </div>
+      
+      <div id="host-controls" style="position:absolute; top:50%; left:10%; right:10%; background:#222; padding:20px; display:none; border-radius:10px; text-align:center; z-index:101;">
+        <h3>broadcasting live</h3>
+        <p style="font-size:11px; color:#aaa;">Your stream is pushing directly from the browser.</p>
+        <button class="btn" onclick="document.getElementById('host-controls').style.display='none'">close & monitor</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="profile-screen" class="screen">
+    <div class="header"><span>me</span> <span style="cursor:pointer;" onclick="showScreen('home-screen')">✕</span></div>
+    <div style="padding:20px; text-align:center;">
+      <div style="width:80px; height:80px; background:#333; border-radius:50%; margin:0 auto;"></div>
+      <h2 id="profile-name">User Name</h2>
+      <p id="profile-uid" style="font-size:10px; color:#555;"></p>
+    </div>
+
+    <div class="menu-list">
+      <div class="balance-card">
+        <h3>wallet</h3>
+        <h1 id="wallet-balance">💎 0 | 🪙 0</h1>
+        <div id="paypal-container-LDLU6UV2GPRQE" style="margin-top: 15px;"></div> 
+      </div>
+      <div class="menu-item">agency program <span>></span></div>
+      <div class="menu-item">vip loyalty <span>></span></div>
+      <div class="menu-item">myvip store <span>></span></div>
+      <div class="menu-item">live cards auction <span>></span></div>
+      <div class="menu-item">settings <span>></span></div>
+      <div class="menu-item">account <span>></span></div>
+      <div class="menu-item">payments <span>></span></div>
+      <div class="menu-item">notifications <span>></span></div>
+      <div class="menu-item">privacy & terms <span>></span></div>
+      <div class="menu-item">general <span>></span></div>
+      <div class="menu-item">dark theme <span>●</span></div>
+      <div style="margin-top:20px; color:var(--primary); font-size:12px; font-weight:bold;">creator tools</div>
+      <div class="menu-item">get money <span>></span></div>
+      <div class="menu-item">statistics <span>></span></div>
+      <div class="menu-item">my fans <span>></span></div>
+      <div style="margin-top:20px; color:var(--sub); font-size:12px;">help center</div>
+      <div class="menu-item">legal information <span>></span></div>
+      <div class="menu-item">customer support <span>></span></div>
+      <div class="menu-item" onclick="firebase.auth().signOut()">logout</div>
+    </div>
+  </div>
+
+  <script>
+    // --- CONFIG ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+      authDomain: "smbrand-4543a.firebaseapp.com",
+      databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+      projectId: "smbrand-4543a",
+      storageBucket: "smbrand-4543a.firebasestorage.app",
+      messagingSenderId: "720775550032",
+      appId: "1:720775550032:web:0622548a007597778bad55",
+      measurementId: "G-3LS5W6F8QW"
+    };
+    firebase.initializeApp(firebaseConfig);
+    
+    // Global Firebase references
+    const auth = firebase.auth();
+    const db = firebase.database();
+    
+    // ⚠️ IMPORTANT: Cloudflare Worker URL (NO trailing slash)
+    const WORKER_URL = "https://dawn-heart-dc55.rajputsurendra562.workers.dev";
+    
+    let currentUser = null;
+    let currentRoomId = null;
+    let hls = null;
+    let localStream = null;
+    let publisherConnection = null; 
+    let stickersData = {}; // Store sticker details (id: {name, value, url})
+    let chatListener = null;
+    let giftListener = null;
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if (id === 'home-screen' && currentUser) {
+            loadLiveRooms(); // Load rooms when returning to home screen
+        }
+    }
+
+    // --- 🏠 HOME FEED LOGIC ---
+    function createRoomCard(roomId, data) {
+        const card = document.createElement('div');
+        card.className = 'room-card';
+        card.setAttribute('data-title', data.title);
+        card.style.backgroundImage = `url('https://picsum.photos/300/400?random=${roomId}')`; // Placeholder image
+        card.innerHTML = `
+            <div class="live-badge">LIVE</div>
+            <p style="position:absolute; bottom:30px; left:10px; font-weight:bold; font-size:14px;">${data.hostName}</p>
+        `;
+        card.onclick = () => {
+            enterRoom(roomId, false, data);
+        };
+        return card;
+    }
+
+    async function loadLiveRooms() {
+        const roomListElement = document.getElementById('room-list');
+        roomListElement.innerHTML = '';
+        
+        const snapshot = await db.ref('liveRooms').orderByChild('status').equalTo('live').once('value');
+        
+        if (snapshot.exists()) {
+            snapshot.forEach(childSnapshot => {
+                const roomId = childSnapshot.key;
+                const roomData = childSnapshot.val();
+                
+                // Exclude the current user's room if they are the host
+                if (roomId !== 'room-' + currentUser.uid) {
+                    const card = createRoomCard(roomId, roomData);
+                    roomListElement.appendChild(card);
+                }
+            });
+        }
+        
+        if (roomListElement.children.length === 0) {
+            roomListElement.innerHTML = '<p style="padding: 20px; color: var(--sub);">No live streams available right now.</p>';
+        }
+    }
+
+    // --- 🎁 STICKER LOGIC ---
+    async function loadStickers() {
+        const panel = document.getElementById('sticker-panel');
+        panel.innerHTML = '';
+        
+        const snapshot = await db.ref('stickers').once('value');
+        
+        if (snapshot.exists()) {
+            stickersData = snapshot.val();
+            
+            Object.keys(stickersData).forEach(stickerId => {
+                const sticker = stickersData[stickerId];
+                const item = document.createElement('div');
+                item.className = 'sticker-item';
+                item.innerHTML = `
+                    <img src="${sticker.url}" alt="${sticker.name}">
+                    <span>${sticker.value} 💎</span>
+                `;
+                item.onclick = () => sendGift(stickerId, sticker);
+                panel.appendChild(item);
+            });
+        } else {
+            panel.innerHTML = '<p style="font-size: 10px; color: var(--sub);">No stickers available.</p>';
+        }
+    }
+
+    function toggleStickerPanel() { 
+        const panel = document.getElementById('sticker-panel');
+        if (panel.style.display === 'flex') {
+            panel.style.display = 'none';
+        } else {
+            loadStickers(); // Load or refresh stickers when opening
+            panel.style.display = 'flex';
+        }
+    }
+
+    async function sendGift(stickerId, sticker) {
+        if (!currentRoomId || !currentUser) return;
+
+        // 1. Check User's Diamond Balance (Optional, but highly recommended)
+        const userSnapshot = await db.ref('users/' + currentUser.uid + '/wallet/diamonds').once('value');
+        const userDiamonds = userSnapshot.val() || 0;
+        
+        if (userDiamonds < sticker.value) {
+            alert(`Insufficient diamonds. You need ${sticker.value} but only have ${userDiamonds}.`);
+            return;
+        }
+
+        // 2. Write Gift Transaction to Firebase
+        await db.ref(`gifts/${currentRoomId}`).push({
+            from: currentUser.uid,
+            fromName: document.getElementById('profile-name').innerText,
+            stickerId: stickerId,
+            stickerUrl: sticker.url, 
+            name: sticker.name,
+            value: sticker.value,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        // 3. Update User's Wallet (Subtract diamonds)
+        const newDiamonds = userDiamonds - sticker.value;
+        await db.ref('users/' + currentUser.uid + '/wallet/diamonds').set(newDiamonds);
+
+        // 4. Close panel after sending
+        document.getElementById('sticker-panel').style.display = 'none';
+
+        console.log(`Gift '${sticker.name}' sent.`);
+    }
+
+    function animateGift(giftData) {
+        const area = document.getElementById('gift-animation-area');
+        const pop = document.createElement('div');
+        pop.className = 'gift-pop';
+        pop.innerHTML = `
+            <img src="${giftData.stickerUrl || 'https://picsum.photos/30/30'}" alt="${giftData.name}">
+            <span><b>${giftData.fromName || 'User'}</b> sent ${giftData.name}</span>
+            <span class="combo"> x1</span>
+        `;
+        area.prepend(pop);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            pop.remove();
+        }, 3000);
+    }
+    
+    // --- CHAT LOGIC ---
+    function addMessageToChat(message, type) {
+        const chatBox = document.getElementById('chat-box');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = type === 'chat' ? 'chat-msg' : 'gift-msg';
+
+        if (type === 'chat') {
+            msgDiv.innerHTML = `<b>${message.userName || 'User'}:</b> ${message.text}`;
+        } else { // gift
+            msgDiv.innerHTML = `🎉 <b>${message.fromName || 'User'}</b> sent a ${message.name}! (${message.value} 💎)`;
+        }
+        
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendChat() { 
+        const chatInput = document.getElementById('chat-input');
+        const text = chatInput.value.trim();
+        
+        if (!text || !currentRoomId || !currentUser) return;
+
+        db.ref(`chats/${currentRoomId}`).push({
+            userId: currentUser.uid,
+            userName: document.getElementById('profile-name').innerText,
+            text: text,
+            time: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        chatInput.value = '';
+    }
+
+    // --- REAL-TIME LISTENERS ---
+    function setupRoomListeners(roomId) {
+        // Remove previous listeners
+        if (chatListener) db.ref('chats/' + roomId).off('child_added', chatListener);
+        if (giftListener) db.ref('gifts/' + roomId).off('child_added', giftListener);
+
+        // 1. Chat Listener
+        chatListener = db.ref('chats/' + roomId).limitToLast(50).on('child_added', snapshot => {
+            addMessageToChat(snapshot.val(), 'chat');
+        });
+
+        // 2. Gift Listener
+        giftListener = db.ref('gifts/' + roomId).limitToLast(10).on('child_added', snapshot => {
+            const giftData = snapshot.val();
+            addMessageToChat(giftData, 'gift');
+            animateGift(giftData);
+        });
+    }
+
+    function removeRoomListeners(roomId) {
+        if (chatListener) db.ref('chats/' + roomId).off('child_added', chatListener);
+        if (giftListener) db.ref('gifts/' + roomId).off('child_added', giftListener);
+        chatListener = null;
+        giftListener = null;
+    }
+
+    // --- 🔑 AUTH FLOW (Login Check & Routing) 🔑 --- 
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        console.log("Firebase: User Logged In:", user.uid);
+        
+        // Load user data and check for ban status
+        db.ref('users/' + user.uid).once('value', snap => {
+            const data = snap.val();
+            const wallet = (data && data.wallet) || { diamonds: 0, coins: 0 };
+            
+            if (data && data.isBanned) {
+                auth.signOut();
+                alert("Account is banned. Please contact support.");
+            } else {
+                // Set profile details and show Home screen
+                document.getElementById('profile-name').innerText = data.displayName || 'User';
+                document.getElementById('profile-uid').innerText = user.uid;
+                // Update diamond balance display
+                document.getElementById('my-diamonds').innerText = `💎 ${wallet.diamonds || 0}`;
+                document.getElementById('wallet-balance').innerText = `💎 ${wallet.diamonds || 0} | 🪙 ${wallet.coins || 0}`;
+                
+                // Initialize Stickers
+                loadStickers(); 
+
+                showScreen('home-screen');
+            }
+        });
+      } else {
+        console.log("Firebase: No User Logged In.");
+        showScreen('auth-screen');
+      }
+    });
+
+    // --- 📝 HANDLE LOGIN / SIGNUP FUNCTION ---
+    async function handleAuth() {
+      const email = document.getElementById('email').value.trim();
+      const pass = document.getElementById('password').value;
+      const name = document.getElementById('username').value.trim() || 'user_' + Math.random().toString(36).substr(2, 5);
+      
+      if (!email || !pass || pass.length < 6) {
+          alert("Error: Email is required, and Password must be at least 6 characters.");
+          return;
+      }
+      
+      try {
+        // Attempt 1: Sign In (Login)
+        await auth.signInWithEmailAndPassword(email, pass);
+        console.log("Login Successful.");
+        
+      } catch (loginError) {
+        console.warn("Login Failed, trying Signup:", loginError.code);
+        
+        // Attempt 2: Create User (Signup) if user not found or wrong password
+        if (loginError.code === 'auth/user-not-found' || loginError.code === 'auth/wrong-password') {
+            try {
+                const res = await auth.createUserWithEmailAndPassword(email, pass);
+                
+                // Save user data to Realtime Database
+                await db.ref('users/' + res.user.uid).set({
+                  displayName: name,
+                  email: email,
+                  wallet: { diamonds: 100, coins: 0 }, // Give 100 free diamonds to new users
+                  isBanned: false,
+                  createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                console.log("Signup Successful.");
+                
+            } catch (signupError) { 
+                console.error("Signup Failed:", signupError.message);
+                alert("Signup Failed: " + signupError.message);
+            }
+        } else {
+             alert("Login Error: " + loginError.message);
+        }
+      }
+    }
+    
+// --- 🚀 WebRTC Publish Logic (Robust ICE Finalization with SDP Fix) 🚀 --- 
+async function startWebRTCPublishing(stream, publishUrl) {
+    const peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
+    
+    stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+    });
+    
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+
+    console.log("Waiting for ICE candidates to be gathered (max 3s)...");
+
+    await new Promise(resolve => {
+        let timeout = setTimeout(() => {
+            console.warn("ICE gathering timed out after 3s. Sending SDP now.");
+            resolve();
+        }, 3000); 
+
+        peerConnection.onicecandidate = ({ candidate }) => {
+            if (!candidate) { 
+                clearTimeout(timeout);
+                console.log("ICE Candidate gathering complete (SDP Ready).");
+                resolve();
+            }
+        };
+    });
+    
+    let sdpToSend = peerConnection.localDescription.sdp; 
+    
+    if (!sdpToSend || sdpToSend.length < 50) {
+        throw new Error("Local SDP Offer is too short or invalid.");
+    }
+    
+    // ✅ FIX: Ensure SDP termination is clean (remove extra whitespace/newlines)
+    sdpToSend = sdpToSend.trim(); 
+    // This simple .trim() often solves the "missing termination" issue.
+    
+    console.log("Sending FINALIZED SDP Offer to Cloudflare...");
+
+    const raw = await fetch(publishUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sdp: sdpToSend, type: 'offer' })
+    });
+    
+    const sdpText = await raw.text(); 
+    
+    if (raw.ok && sdpText) {
+        // Cloudflare Live Input returns the WebRTC Answer SDP
+        await peerConnection.setRemoteDescription(new RTCSessionDescription({ sdp: sdpText, type: 'answer' }));
+        console.log("WebRTC Publish successful!");
+        return peerConnection;
+    } else {
+        console.error("Cloudflare WebRTC Answer Failed:", sdpText);
+        throw new Error("Failed to get WebRTC Answer from Cloudflare: " + sdpText);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // --- 🎥 STREAMING (GO LIVE) 🎥 ---
+    async function goLive() {
+      if (!currentUser) {
+          alert("Login required to go live.");
+          showScreen('auth-screen');
+          return;
+      }
+      
+      const title = prompt("Room title:");
+      if (!title) return;
+
+      const btn = document.querySelector('.go-live-btn');
+      btn.innerText = "↻";
+      
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        
+        const video = document.getElementById('video-player');
+        video.srcObject = localStream; 
+        video.muted = true; 
+        video.play().catch(e => console.warn("Video play error:", e));
+        
+      } catch (err) {
+        alert("Camera/Mic access denied. Cannot go live: " + err.message);
+        btn.innerText = "+";
+        return;
+      }
+
+      showScreen('room-screen');
+      document.getElementById('host-controls').style.display = 'block';
+
+      // 2. Get WebRTC Input URL from Worker
+      const fetchResp = await fetch(WORKER_URL + '/create-live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: currentUser.uid })
+      });
+      
+      const responseText = await fetchResp.text(); 
+      let data;
+      
+      try {
+          data = JSON.parse(responseText);
+      } catch (e) {
+          alert("FATAL WORKER ERROR: Invalid JSON response from /create-live. Response: " + responseText.substring(0, 150));
+          leaveRoom();
+          btn.innerText = "+";
+          return;
+      }
+      
+
+      if(data.ok) {
+        const roomId = "room-" + currentUser.uid;
+        const roomData = {
+          uid: currentUser.uid,
+          hostName: document.getElementById('profile-name').innerText,
+          title: title,
+          status: 'live',
+          webRTCPublishUrl: data.webRTCPublishUrl,
+          playbackUrl: data.playbackUrl, 
+          startedAt: firebase.database.ServerValue.TIMESTAMP
+        };
+        
+        console.log("Waiting 2.5 seconds for Cloudflare Live Input to activate...");
+        await delay(2500); 
+
+        // 3. Start WebRTC Publish Connection
+        try {
+            publisherConnection = await startWebRTCPublishing(localStream, data.webRTCPublishUrl);
+            await db.ref('liveRooms/' + roomId).set(roomData);
+            enterRoom(roomId, true, roomData, localStream); 
+            
+        } catch (e) {
+            alert("WebRTC publishing failed: " + e.message);
+            leaveRoom(); 
+        }
+
+      } else {
+        alert("Could not start stream: Worker Error! Details: " + (data.msg || data.error || data.detail || "Unknown Worker Error"));
+        leaveRoom(); 
+      }
+      btn.innerText = "+";
+    }
+
+    // --- ROOM ENTRY / LEAVE LOGIC ---
+    function enterRoom(roomId, isHost, roomData, stream = null) {
+      currentRoomId = roomId;
+      removeRoomListeners(currentRoomId); // Clean up any previous listeners
+      showScreen('room-screen');
+      document.getElementById('chat-box').innerHTML = "";
+      
+      const video = document.getElementById('video-player');
+
+      if(!isHost) {
+        document.getElementById('host-controls').style.display = 'none';
+        video.muted = false; 
+        video.srcObject = null; 
+        
+        // HLS Playback Logic
+        if (Hls.isSupported()) {
+          if(hls) hls.destroy();
+          hls = new Hls();
+          hls.loadSource(roomData.playbackUrl);
+          hls.attachMedia(video);
+          video.play().catch(e => console.error("Play failed:", e));
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = roomData.playbackUrl;
+          video.play().catch(e => console.error("Play failed:", e));
+        }
+      } else {
+        if(stream) {
+            video.srcObject = stream;
+            video.muted = true;
+            video.play().catch(e => console.warn("Host play error:", e));
+        }
+        document.getElementById('host-controls').style.display = 'block';
+      }
+
+      // Setup listeners for the new room
+      setupRoomListeners(roomId);
+    }
+    
+    function leaveRoom() {
+      if(hls) hls.destroy();
+      if(publisherConnection) publisherConnection.close();
+      if(localStream) localStream.getTracks().forEach(track => track.stop());
+      
+      removeRoomListeners(currentRoomId); // Remove listeners when leaving
+
+      // If host, notify worker and database
+      if(currentRoomId && document.getElementById('host-controls').style.display === 'block') {
+         db.ref(`liveRooms/${currentRoomId}`).update({ status: 'offline' });
+         fetch(WORKER_URL + '/end-live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ roomId: currentRoomId }) });
+      }
+      
+      currentRoomId = null;
+      document.getElementById('host-controls').style.display = 'none';
+      document.getElementById('video-player').srcObject = null; 
+      
+      showScreen('home-screen');
+    }
+
+    // --- UI PLACEHOLDERS ---
+    function changeTab(element, tabName) {
+      document.querySelectorAll('.tabs > div').forEach(div => div.classList.remove('tab-active'));
+      element.classList.add('tab-active');
+      console.log(`Switched to tab: ${tabName}`);
+      loadLiveRooms(); 
+      // In a real app, you would load different rooms here (e.g., following, explore)
+    }
+    
+  </script>
+</body>
+</html>
+

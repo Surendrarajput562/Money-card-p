@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Rupi - Real Money Setup</title>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: #1e293b; border: 2px solid #fbbf24; border-radius: 20px; padding: 30px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .address-box { background: #334155; padding: 12px; font-family: monospace; font-size: 13px; word-break: break-all; margin: 15px 0; border-radius: 8px; border: 1px dashed #fbbf24; color: #fbbf24; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn-verify { background: #fbbf24; color: #000; }
+        .btn-verify:hover { background: #f59e0b; }
+        .btn-logout { background: #ef4444; color: white; margin-top: 15px; }
+        #statusMsg { margin-top: 15px; font-weight: bold; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2 style="color: #fbbf24; margin: 0 0 10px 0;">Gold Rupi Real Pay</h2>
+        <p style="font-size: 13px; color: #94a3b8;">Real INR/XRP Add Karein (No Middlemen)</p>
+        
+        <div class="address-box">rDHW1Rg8WyBv1r7k5D9XS1xUZUuWUDZin4 (Paste Your Trust Wallet Address)</div>
+        <p style="font-size: 14px;"><strong>Tag:</strong> <span id="userTag" style="color:#fbbf24">100234</span></p>
+
+        <input type="text" id="txHash" placeholder="Paste Transaction Hash (TxID) Here">
+        
+        <button class="btn btn-verify" onclick="verifyPayment()">Verify Automatically</button>
+        <div id="statusMsg"></div>
+        
+        <button class="btn btn-logout" onclick="handleLogout()">Logout Securely</button>
+    </div>
+
+    <script>
+        /* ==========================================
+           IMPORTANT: Apne Cloudflare Worker ka URL 
+           niche wale quotes "" ke beech mein dalo.
+           Example: "https://gold-rupi-backend.workers.dev"
+           ========================================== */
+        const API_BASE = "https://bold-sunset-92e5.surendrarathode040.workers.dev"; 
+
+        async function verifyPayment() {
+            const txHash = document.getElementById('txHash').value;
+            const userTag = document.getElementById('userTag').innerText;
+            const statusMsg = document.getElementById('statusMsg');
+
+            if(!txHash) {
+                alert("Bhai, Transaction Hash to dalo!");
+                return;
+            }
+
+            statusMsg.innerText = "Hawa mein check kar raha hoon...";
+            statusMsg.style.color = "#fbbf24";
+
+            try {
+                // Cloudflare Worker se connection [cite: 2025-12-24]
+                const res = await fetch(`${API_BASE}/verify-payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ txHash, userTag })
+                });
+                
+                const data = await res.json();
+
+                if(data.status === "Success") {
+                    statusMsg.innerText = `Success! ${data.amount} XRP verified.`;
+                    statusMsg.style.color = "#22c55e";
+                } else {
+                    statusMsg.innerText = "Abhi pending hai ya hash galat hai.";
+                    statusMsg.style.color = "#ef4444";
+                }
+            } catch (e) {
+                statusMsg.innerText = "Backend se connect nahi ho pa raha!";
+                statusMsg.style.color = "#ef4444";
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch(`${API_BASE}/logout`);
+                alert("Session Clear! Ab login process waisa hi rahega.");
+                // Logout ke baad ka logic [cite: 2025-12-21]
+                window.location.href = "/login"; 
+            } catch (e) {
+                window.location.href = "/login";
+            }
+        }
+    </script>
+</body>
+</html>

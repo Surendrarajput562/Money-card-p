@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMBrand Admin Panel - Full Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300,400,500,700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <style>
+        /* Modern and Systematic CSS */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #343a40;
+        }
+
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: var(--background-color); 
+            color: var(--text-color);
+        }
+
+        /* --- Login Screen --- */
+        #login-container { 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e9ecef;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 380px;
+            padding: 30px;
+            background: var(--card-background); 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            text-align: center;
+        }
+        .login-card h2 { color: var(--primary-color); margin-bottom: 25px; font-weight: 500;}
+
+        /* --- Input and Buttons --- */
+        input[type="text"], input[type="password"] { 
+            padding: 12px; 
+            margin: 10px 0; 
+            width: 100%; 
+            box-sizing: border-box; 
+            border-radius: 6px; 
+            border: 1px solid #ced4da;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        button { 
+            padding: 12px 20px; 
+            margin-top: 15px; 
+            width: 100%; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 500;
+            cursor: pointer; 
+            transition: background-color 0.3s, opacity 0.3s;
+            color: white;
+        }
+        .btn-primary { background: var(--primary-color); }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-success { background: var(--secondary-color); }
+        .btn-success:hover { background: #1e7e34; }
+        .btn-danger { background: var(--danger-color); }
+        .btn-danger:hover { background: #bd2130; }
+        .btn-warning { background: var(--warning-color); color: var(--text-color); }
+        .btn-warning:hover { background: #d39e00; }
+        .btn-small { width: auto; padding: 6px 12px; margin: 0 5px; font-size: 0.9em; }
+
+
+        /* --- Dashboard Layout --- */
+        #dashboard-container { 
+            display: flex; 
+            min-height: 100vh; 
+            display: none; 
+        }
+
+        /* Side Navigation */
+        #sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .sidebar-header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            font-size: 1.5em; 
+            font-weight: 700;
+        }
+        .nav-link {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s;
+            font-weight: 400;
+        }
+        .nav-link:hover { background-color: #495057; }
+        .nav-link.active { background-color: var(--primary-color); font-weight: 500; }
+        .nav-link span { margin-left: 10px; }
+        
+        /* Main Content Area */
+        #content-area {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        /* Content Modules */
+        .content-module { display: none; }
+        .content-module.active { display: block; }
+        
+        /* Data Cards/List */
+        .card {
+            background: var(--card-background);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .data-list { list-style: none; padding: 0; }
+        .data-list li { 
+            padding: 15px 0; 
+            border-bottom: 1px solid #e9ecef; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 0.95em;
+        }
+        .data-list li:last-child { border-bottom: none; }
+        .data-status { font-weight: 500; padding: 4px 8px; border-radius: 4px; }
+        .status-pending { background: #fffae6; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .status-disbursed { background: #cce5ff; color: #004085; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-container">
+        <div class="login-card">
+            <h2>🔐 SMBrand Admin Access</h2>
+            <input type="text" id="admin-email" placeholder="Admin Email" value="rajputsurendra562@gmail.com" required>
+            <input type="password" id="admin-password" placeholder="Password" required>
+            <button class="btn-primary" onclick="loginAdmin()">Sign In</button>
+            <p id="login-error" style="color: var(--danger-color); text-align: center; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <div id="dashboard-container">
+        
+        <div id="sidebar">
+            <div class="sidebar-header">Admin Control</div>
+            <a class="nav-link active" onclick="openModule('users', this)"><i class="fas fa-users"></i><span>👥 User Management</span></a>
+            <a class="nav-link" onclick="openModule('loans', this)"><i class="fas fa-hand-holding-usd"></i><span>⭐️ Loan & EMI Control</span></a>
+            <a class="nav-link" onclick="openModule('payments', this)"><i class="fas fa-money-check-alt"></i><span>💰 Payments & UTR</span></a>
+            <a class="nav-link" onclick="openModule('orders', this)"><i class="fas fa-shopping-cart"></i><span>📦 Orders & Shop</span></a>
+            <a class="nav-link" onclick="openModule('apps_books', this)"><i class="fas fa-book"></i><span>📱 Apps & Books</span></a>
+            <a class="nav-link" onclick="openModule('config', this)"><i class="fas fa-cog"></i><span>⚙️ Global Config</span></a>
+        </div>
+        
+        <div id="content-area">
+            <div id="header">
+                <h1 id="module-title">User Management</h1>
+                <button class="btn-danger btn-small" onclick="logoutAdmin()">Logout</button>
+            </div>
+
+            <div id="users" class="content-module active">
+                <div class="card">
+                    <h3>User Search & Control (Ban/Wallet)</h3>
+                    <input type="text" id="search-user-input" placeholder="Search User by UID or Name/Email..." style="width: 70%; margin-right: 10px;">
+                    <button class="btn-primary btn-small" onclick="searchUser()" style="width: 25%;">Search</button>
+                    <ul class="data-list" id="user-list">
+                        <li>Loading Users...</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="loans" class="content-module">
+                <div class="card">
+                    <h3>Loan Requests (/loan_requests)</h3>
+                    <ul class="data-list" id="loan-request-list">
+                        <li>Loading Loan Requests...</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="payments" class="content-module">
+                <div class="card">
+                    <h3>Pending Payments for UTR/Verification (/PENDING_PAYMENTS)</h3>
+                    <ul class="data-list" id="pending-payment-list">
+                        <li>Loading Pending Payments...</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>All Payments History (/payments)</h3>
+                    <ul class="data-list" id="payment-list">
+                        <li>Loading Payments...</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="orders" class="content-module">
+                 <div class="card">
+                    <h3>E-Commerce Orders (/orders)</h3>
+                    <ul class="data-list" id="order-list">
+                        <li>Loading Orders...</li>
+                    </ul>
+                </div>
+                 <div class="card">
+                    <h3>Products (/products)</h3>
+                    <ul class="data-list" id="product-list">
+                        <li>Loading Products...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="apps_books" class="content-module">
+                <div class="card">
+                    <h3>Apps Management (/APPS)</h3>
+                    <ul class="data-list" id="app-list">
+                        <li>Loading Apps...</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Books Management (/books)</h3>
+                    <ul class="data-list" id="book-list">
+                        <li>Loading Books...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="config" class="content-module">
+                <div class="card">
+                    <h3>Global Configuration Settings (/GLOBAL_CONFIG)</h3>
+                    <div id="config-details">
+                        <li>Loading Global Config...</li>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <script>
+        // ---------- config ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55",
+            measurementId: "G-3LS5W6F8QW"
+        };
+        const ADMIN_EMAIL = 'rajputsurendra562@gmail.com';
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // ---------------- AUTH FUNCTIONS ----------------
+
+        auth.onAuthStateChanged(user => {
+            if (user && user.email === ADMIN_EMAIL) {
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('dashboard-container').style.display = 'flex';
+                // Load data for the default 'users' module
+                loadDashboardData();
+            } else {
+                document.getElementById('login-container').style.display = 'flex';
+                document.getElementById('dashboard-container').style.display = 'none';
+            }
+        });
+
+        function loginAdmin() {
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const errorElement = document.getElementById('login-error');
+            errorElement.textContent = '';
+
+            if (email !== ADMIN_EMAIL) {
+                errorElement.textContent = 'Only the registered admin email can log in.';
+                return;
+            }
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    console.log("Admin logged in.");
+                })
+                .catch((error) => {
+                    errorElement.textContent = 'Login Failed: ' + error.message;
+                });
+        }
+
+        function logoutAdmin() {
+            auth.signOut().then(() => {
+                console.log("Admin logged out.");
+            }).catch((error) => {
+                console.error("Logout Error:", error);
+            });
+        }
+        
+        // ---------------- UI/UTILITY FUNCTIONS ----------------
+        
+        function openModule(moduleName, element) {
+            // Update active link
+            const links = document.querySelectorAll('#sidebar .nav-link');
+            links.forEach(link => link.classList.remove('active'));
+            element.classList.add('active');
+
+            // Update active content module
+            const contents = document.getElementsByClassName('content-module');
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].classList.remove('active');
+            }
+            document.getElementById(moduleName).classList.add('active');
+            document.getElementById('module-title').textContent = element.textContent.trim();
+            
+            // Load data for the selected module
+            if (moduleName === 'users') loadUsers();
+            if (moduleName === 'payments') { loadPayments(); loadPendingPayments(); }
+            if (moduleName === 'loans') loadLoanRequests();
+            if (moduleName === 'orders') { loadOrders(); loadProducts(); }
+            if (moduleName === 'apps_books') { loadApps(); loadBooks(); }
+            if (moduleName === 'config') loadGlobalConfig();
+        }
+
+        function loadDashboardData() {
+            // Load initial module data
+            openModule('users', document.querySelector('.nav-link.active'));
+        }
+        
+        function getStatusSpan(status) {
+            const lowerStatus = status.toLowerCase();
+            let className = '';
+            if (lowerStatus.includes('pending') || lowerStatus.includes('requested')) {
+                className = 'status-pending';
+            } else if (lowerStatus.includes('approved') || lowerStatus.includes('accepted')) {
+                className = 'status-approved';
+            } else if (lowerStatus.includes('rejected') || lowerStatus.includes('failed')) {
+                className = 'status-rejected';
+            } else if (lowerStatus.includes('disbursed') || lowerStatus.includes('paid')) {
+                className = 'status-disbursed';
+            }
+            return `<span class="data-status ${className}">${status}</span>`;
+        }
+
+        // ---------------- DATA MANAGEMENT FUNCTIONS ----------------
+
+        // 1. Users (Including Ban/Freeze Logic)
+        function loadUsers() {
+            const list = document.getElementById('user-list');
+            list.innerHTML = '<li>Loading Users...</li>';
+
+            // Fetch a limited list of users
+            db.ref('users').limitToFirst(20).once('value', (snapshot) => {
+                list.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const user = childSnapshot.val();
+                    const uid = childSnapshot.key;
+                    const name = user.name || 'Anonymous';
+                    const email = user.email || 'No Email';
+                    
+                    // Check if banned from the separate 'bans' node (for systematic check)
+                    db.ref('bans/' + uid).once('value', (banSnapshot) => {
+                        const isBanned = banSnapshot.exists();
+                        
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <span>**${name}** (${email}) - UID: ${uid} ${isBanned ? getStatusSpan('BANNED') : ''}</span>
+                            <div>
+                                <button class="btn-primary btn-small" onclick="viewUserDetails('${uid}')">Details/Wallet</button>
+                                <button class="btn-warning btn-small" onclick="freezeWallet('${uid}')">Freeze Wallet</button>
+                                <button class="btn-danger btn-small" onclick="toggleBan('${uid}', ${isBanned})">
+                                    ${isBanned ? 'Unban User' : 'Ban User'}
+                                </button>
+                            </div>
+                        `;
+                        list.appendChild(listItem);
+                    });
+                });
+            });
+        }
+        
+        function viewUserDetails(uid) {
+            alert("Viewing full profile, KYC, and history for user: " + uid + "\n\n(Here you would implement a detailed modal to view/edit user data, subscriptions, cart, and transactions.)");
+        }
+        
+        function toggleBan(uid, isBanned) {
+            const banStatus = !isBanned;
+            const actionText = banStatus ? 'Ban' : 'Unban';
+            if (confirm(`Are you sure you want to ${actionText} user ${uid}? This will affect their login access.`)) {
+                // Rules allow Admin to write to the 'bans' node
+                db.ref('bans/' + uid).set(banStatus ? { timestamp: Date.now(), by: auth.currentUser.uid } : null) 
+                    .then(() => {
+                        alert(`User ${uid} ${actionText} successful.`);
+                        loadUsers(); // Refresh the list
+                    })
+                    .catch(error => alert(`Action failed: ${error.message}`));
+            }
+        }
+        
+        function freezeWallet(uid) {
+             alert("Wallet freeze functionality is implemented by setting a flag in 'users/" + uid + "/wallet/isFrozen'.\n\n(Implement a modal to set the freeze reason and duration, then write to the DB.)");
+             // Example action (Admin write to /users/$uid/wallet is allowed):
+             // db.ref('users/' + uid + '/wallet/isFrozen').set(true); 
+        }
+
+        // 2. Loans
+        function loadLoanRequests() {
+            const list = document.getElementById('loan-request-list');
+            list.innerHTML = '<li>Loading Loan Requests...</li>';
+
+            db.ref('loan_requests').limitToLast(10).once('value', (snapshot) => {
+                list.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const loan = childSnapshot.val();
+                    const id = childSnapshot.key;
+                    const statusSpan = getStatusSpan(loan.status);
+                    
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span>Loan ID: **${id}** - Req Amt: ${loan.amount_req || 0} - Status: ${statusSpan} - User: ${loan.user_id}</span>
+                        <div>
+                            <button class="btn-primary btn-small" onclick="viewLoanDetails('${id}')">Review/EMIs</button>
+                            ${loan.status === 'pending' ? `<button class="btn-success btn-small" onclick="reviewLoan('${id}', 'reviewed')">Approve Review</button>` : ''}
+                        </div>
+                    `;
+                    list.appendChild(listItem);
+                });
+            });
+        }
+        
+        function viewLoanDetails(id) {
+            alert(`Reviewing Loan: ${id}. \n\n(Here you would display all loan details, including the 'emis' sub-node, and process final acceptance/rejection.)`);
+        }
+
+        function reviewLoan(id, status) {
+            if (confirm(`Confirm status change for Loan ${id} to '${status}'?`)) {
+                // Admin write is allowed here
+                db.ref('loan_requests/' + id + '/status').set(status)
+                    .then(() => {
+                        alert(`Loan ${id} status updated to ${status}.`);
+                        loadLoanRequests();
+                    })
+                    .catch(error => alert(`Action failed: ${error.message}`));
+            }
+        }
+        
+        // 3. Payments (Pending & History)
+        function loadPendingPayments() {
+            const list = document.getElementById('pending-payment-list');
+            list.innerHTML = '<li>Loading Pending Payments...</li>';
+
+            db.ref('PENDING_PAYMENTS').limitToLast(10).once('value', (snapshot) => {
+                list.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const payment = childSnapshot.val();
+                    const id = childSnapshot.key;
+                    const statusSpan = getStatusSpan(payment.status);
+                    
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span>**${payment.appName || 'N/A'}** - Amt: ${payment.amount || 0} - UTR: ${payment.utr || 'N/A'} - Status: ${statusSpan}</span>
+                        <div>
+                            <button class="btn-success btn-small" onclick="processPendingPayment('${id}', 'approved')">Approve</button>
+                            <button class="btn-danger btn-small" onclick="processPendingPayment('${id}', 'rejected')">Reject</button>
+                        </div>
+                    `;
+                    list.appendChild(listItem);
+                });
+            });
+        }
+        
+        function loadPayments() {
+            const list = document.getElementById('payment-list');
+            list.innerHTML = '<li>Loading Payments History...</li>';
+
+            db.ref('payments').limitToLast(10).once('value', (snapshot) => {
+                list.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const payment = childSnapshot.val();
+                    const id = childSnapshot.key;
+                    const statusSpan = getStatusSpan(payment.status);
+                    
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span>ID: ${id} - **${payment.planName || 'N/A'}** - Amt: ${payment.amount || 0} - Status: ${statusSpan}</span>
+                        <button class="btn-primary btn-small" onclick="alert('Full details for Payment ${id}.')">View</button>
+                    `;
+                    list.appendChild(listItem);
+                });
+            });
+        }
+        
+        function processPendingPayment(id, status) {
+            if (confirm(`Confirm ${status} for Pending Payment ${id}?`)) {
+                // Admin write is allowed here
+                db.ref('PENDING_PAYMENTS/' + id + '/status').set(status)
+                    .then(() => {
+                        alert(`Payment ${id} marked as ${status}.`);
+                        loadPendingPayments(); // Refresh list
+                    })
+                    .catch(error => alert(`Action failed: ${error.message}`));
+            }
+        }
+
+        // 4. Orders & Products
+        function loadOrders() {
+            const list = document.getElementById('order-list');
+            list.innerHTML = '<li>Loading Orders...</li>';
+
+            db.ref('orders').limitToLast(10).once('value', (snapshot) => {
+                list.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const order = childSnapshot.val();
+                    const id = childSnapshot.key;
+                    const statusSpan = getStatusSpan(order.status);
+                    
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span>Order ID: **${id}** - Total: ${order.total || 0} - Status: ${statusSpan} - User: ${order.user}</span>
+                        <div>
+                            <button class="btn-primary btn-small" onclick="alert('Manage shipping status for Order ${id}.')">Manage</button>
+                        </div>
+                    `;
+                    list.appendChild(listItem);
+                });
+            });
+        }
+        
+        function loadProducts() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = '<li>Loading Products...</li>';
+             
+            // Read all products (Admin read is allowed)
+            db.ref('products').limitToFirst(5).once('value', (snapshot) => {
+                list.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const product = childSnapshot.val();
+                    const id = childSnapshot.key;
+                    
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span>Product ID: **${id}** - Name: ${product.name || 'N/A'} - Price: ${product.price || 'N/A'}</span>
+                        <div>
+                            <button class="btn-primary btn-small" onclick="alert('Edit product details for ${id}.')">Edit</button>
+                        </div>
+                    `;
+                    list.appendChild(listItem);
+                });
+                if (!snapshot.exists()) {
+                    list.innerHTML = '<li>No products found.</li>';
+                }
+            });
+        }
+        
+        // 5. Apps & Books
+        function loadApps() {
+            const list = document.getElementById('app-list');
+            list.innerHTML = '<li>Loading Apps...</li>';
+            // Implementation similar to loadProducts/loadBooks
+            db.ref('APPS').limitToFirst(5).once('value', (snapshot) => {
+                list.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const app = childSnapshot.val();
+                    const id = childSnapshot.key;
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span>**${app.name || 'N/A'}** (ID: ${id}) - Downloads: ${app.downloads || 0}</span>
+                        <div>
+                            <button class="btn-primary btn-small" onclick="alert('Edit App details for ${id}.')">Edit</button>
+                        </div>
+                    `;
+                    list.appendChild(listItem);
+                });
+            });
+        }
+        
+        function loadBooks() {
+            const list = document.getElementById('book-list');
+            list.innerHTML = '<li>Loading Books...</li>';
+             // Implementation similar to loadProducts/loadApps
+            db.ref('books').limitToFirst(5).once('value', (snapshot) => {
+                list.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const book = childSnapshot.val();
+                    const id = childSnapshot.key;
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span>**${book.title || 'N/A'}** (Author: ${book.author || 'N/A'}) - Price: ${book.priceMonthly || 'N/A'}</span>
+                        <div>
+                            <button class="btn-primary btn-small" onclick="alert('Edit Book details for ${id}.')">Edit</button>
+                        </div>
+                    `;
+                    list.appendChild(listItem);
+                });
+            });
+        }
+
+        // 6. Global Config
+        function loadGlobalConfig() {
+            const detailsDiv = document.getElementById('config-details');
+            detailsDiv.innerHTML = '<li>Loading Global Config...</li>';
+
+            db.ref('GLOBAL_CONFIG').once('value', (snapshot) => {
+                detailsDiv.innerHTML = '';
+                const config = snapshot.val();
+                
+                const configHtml = Object.entries(config || {}).map(([key, value]) => {
+                    // Use a slightly different card style for config items
+                    return `
+                        <div class="card" style="padding: 15px; margin-bottom: 10px;">
+                            <strong>${key}:</strong> 
+                            <span id="config-val-${key}">${JSON.stringify(value)}</span>
+                            <button class="btn-warning btn-small" style="float: right;" onclick="editConfig('${key}', '${JSON.stringify(value).replace(/'/g, "\\'")}')">Edit Value</button>
+                        </div>
+                    `;
+                }).join('');
+                
+                detailsDiv.innerHTML = configHtml;
+            });
+        }
+        
+        function editConfig(key, currentValueString) {
+            const currentValue = JSON.parse(currentValueString.replace(/\\'/g, "'"));
+            const newValue = prompt(`Enter new JSON value for GLOBAL_CONFIG/${key}:`, JSON.stringify(currentValue, null, 2)); // Show JSON prettified
+
+            if (newValue !== null) {
+                try {
+                    const newConfigValue = JSON.parse(newValue);
+                    db.ref('GLOBAL_CONFIG/' + key).set(newConfigValue)
+                        .then(() => {
+                            alert('Config updated successfully!');
+                            loadGlobalConfig();
+                        })
+                        .catch(error => alert(`Update failed: ${error.message}`));
+                } catch (e) {
+                    alert('Invalid JSON format. Please enter valid JSON.');
+                }
+            }
+        }
+        
+        // Load Font Awesome icons after the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const script = document.createElement('script');
+            script.src = "https://kit.fontawesome.com/a076d05399.js"; // This should load the icons
+            script.setAttribute('crossorigin', 'anonymous');
+            document.head.appendChild(script);
+        });
+
+    </script>
+
+</body>
+</html>
+
+

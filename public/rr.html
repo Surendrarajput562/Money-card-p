@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Rupi - Full App</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --gold: #FFD700;
+            --dark: #121212;
+            --light: #f4f6f8;
+            --success: #00c851;
+            --danger: #ff4444;
+            --pending: #ffbb33;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background: var(--light); color: #333; padding-bottom: 80px; }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Buttons & Inputs */
+        .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; width: 100%; margin-bottom: 5px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-gold { background: var(--gold); color: black; }
+        .btn-dark { background: var(--dark); color: var(--gold); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; width: auto; margin: 0 2px; }
+
+        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        input:focus { border-color: var(--gold); }
+
+        /* Layout */
+        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+        .card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 10px; }
+
+        /* Header */
+        header { background: var(--dark); color: var(--gold); padding: 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        
+        /* Product Grid */
+        .search-row { display: flex; gap: 5px; margin-bottom: 10px; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative; cursor: pointer; }
+        .product-img { width: 100%; height: 150px; object-fit: cover; }
+        .badge { position: absolute; top: 5px; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; color: white; }
+        .badge-off { left: 5px; background: var(--gold); color: black; }
+        .badge-out { right: 5px; background: red; }
+        .p-details { padding: 8px; }
+        .p-price { font-weight: bold; color: var(--success); }
+        .p-old { text-decoration: line-through; color: #999; font-size: 11px; margin-left: 5px; }
+
+        /* Status Badges */
+        .status { padding: 3px 8px; border-radius: 12px; font-size: 10px; color: white; font-weight: bold; }
+        .st-pending { background: var(--pending); color: black; }
+        .st-success, .st-delivered, .st-approved { background: var(--success); }
+        .st-rejected, .st-failed { background: var(--danger); }
+        .st-processing, .st-out_for_delivery { background: #17a2b8; }
+
+        /* Modal */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; }
+        .modal-content { background: white; width: 100%; max-width: 600px; max-height: 90vh; border-radius: 20px 20px 0 0; padding: 20px; overflow-y: auto; animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .gallery-box { margin-bottom: 15px; }
+        .main-img { width: 100%; height: 250px; object-fit: contain; border: 1px solid #eee; border-radius: 5px; }
+        .thumb-row { display: flex; gap: 5px; overflow-x: auto; margin-top: 5px; }
+        .thumb { width: 50px; height: 50px; object-fit: cover; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; }
+        .thumb.active { border: 2px solid var(--gold); }
+
+        /* Admin */
+        .admin-panel { border: 2px solid var(--gold); padding: 10px; background: #fffde7; margin-bottom: 60px; }
+        .admin-tab-btns { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 10px; }
+        .admin-tab-btns button { white-space: nowrap; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid #eee; display: flex; justify-content: space-around; padding: 10px 0; z-index: 999; }
+        .nav-item { text-align: center; font-size: 10px; color: #888; cursor: pointer; }
+        .nav-item.active { color: var(--gold); font-weight: bold; transform: translateY(-2px); }
+        .nav-item i { font-size: 18px; margin-bottom: 3px; display: block; }
+
+        #loading { position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: var(--gold); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 3000; }
+    </style>
+</head>
+<body>
+
+    <div id="loading" class="hidden">
+        <i class="fas fa-circle-notch fa-spin fa-3x"></i>
+        <p style="margin-top:10px;">Please Wait...</p>
+    </div>
+
+    <div id="auth-screen" class="container" style="margin-top: 40px;">
+        <div class="card text-center">
+            <h2 class="text-center mb-3">GOLD RUPI</h2>
+            <div id="auth-form">
+                <input type="text" id="reg-name" placeholder="Full Name" class="hidden">
+                <input type="text" id="reg-mobile" placeholder="Mobile Number" class="hidden">
+                <input type="email" id="auth-email" placeholder="Email Address">
+                <input type="password" id="auth-pass" placeholder="Password">
+                
+                <button onclick="authenticate()" id="auth-btn" class="btn btn-gold">Login</button>
+                
+                <p style="font-size:12px; margin-top:15px;">
+                    <span id="auth-toggle-text">New User? </span>
+                    <b onclick="toggleAuthMode()" style="cursor:pointer; color:var(--dark);">Create Account</b>
+                </p>
+                <small style="color: green;" class="hidden" id="bonus-msg">Sign up now & get ₹100 Bonus!</small>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden">
+        
+        <header class="flex-between">
+            <div style="font-weight: bold; font-size: 18px;"><i class="fas fa-bars"></i> Gold Rupi</div>
+            <div style="text-align: right;">
+                <span style="font-size:12px; display:block;">Wallet</span>
+                <span style="font-weight:bold;">₹<span id="head-wallet">0</span></span>
+            </div>
+            <i onclick="logout()" class="fas fa-power-off" style="margin-left:10px; cursor:pointer;"></i>
+        </header>
+
+        <div id="pages-container" class="container">
+
+            <div id="page-home">
+                <div class="search-row">
+                    <input type="text" id="search-inp" placeholder="Search..." onkeyup="renderProducts()">
+                    <select id="cat-filter" onchange="renderProducts()" style="width:100px;">
+                        <option value="all">All</option>
+                        <option value="Gold">Gold</option>
+                        <option value="Silver">Silver</option>
+                        <option value="Jewelry">Jewelry</option>
+                        <option value="Coin">Coin</option>
+                    </select>
+                </div>
+
+                <div id="product-list" class="product-grid">
+                    </div>
+            </div>
+
+            <div id="page-orders" class="hidden">
+                <h3>My Orders</h3>
+                <div id="orders-list"></div>
+            </div>
+
+            <div id="page-refer" class="hidden">
+                <div class="card" style="background: linear-gradient(135deg, #FFD700 0%, #ffdb4d 100%);">
+                    <h3>Refer & Earn ₹100</h3>
+                    <p style="font-size:12px;">Fill friend's details. Once Admin approves, you get ₹100.</p>
+                </div>
+
+                <div class="card">
+                    <h4>Add New Referral</h4>
+                    <input type="text" id="ref-name" placeholder="Friend's Name">
+                    <input type="number" id="ref-mobile" placeholder="Friend's Mobile">
+                    <input type="email" id="ref-email" placeholder="Friend's Email">
+                    <button onclick="submitReferral()" class="btn btn-dark">Submit Request</button>
+                </div>
+
+                <h4>Referral History</h4>
+                <div id="refer-list"></div>
+            </div>
+
+            <div id="page-wallet" class="hidden">
+                <div class="card" style="background:#222; color:var(--gold);">
+                    <div class="flex-between">
+                        <span>Wallet Balance</span>
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h1 style="margin:10px 0;">₹<span id="wallet-main">0</span></h1>
+                    <div class="flex-between" style="gap:10px;">
+                        <button onclick="openMoneyModal('add')" class="btn btn-success btn-sm" style="flex:1;">+ Add Money</button>
+                        <button onclick="openMoneyModal('withdraw')" class="btn btn-danger btn-sm" style="flex:1;">- Withdraw</button>
+                    </div>
+                </div>
+
+                <div class="card" style="background:#fffbe6; border:1px solid var(--gold);">
+                    <div class="flex-between">
+                        <span>Gold Balance</span>
+                        <i class="fas fa-cubes text-gold"></i>
+                    </div>
+                    <h2 style="margin:5px 0;"><span id="gold-bal">0.000</span> gm</h2>
+                    <small>Rate: ₹6450/gm</small>
+                    <button onclick="openMoneyModal('buy_gold')" class="btn btn-gold btn-sm" style="margin-top:10px; width:100%;">Buy Digital Gold</button>
+                </div>
+
+                <h4>Transaction History</h4>
+                <div id="trans-list"></div>
+            </div>
+
+            <div id="page-rules" class="hidden">
+                <div class="card">
+                    <h3><i class="fas fa-book"></i> Rules & Terms</h3>
+                    <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8; margin-top: 10px;">
+                        <li><b>Signup Bonus:</b> You get ₹100 immediately upon signup.</li>
+                        <li><b>Referral:</b> Earn ₹100 when your referred friend is verified by Admin.</li>
+                        <li><b>Withdrawal:</b> Minimum withdrawal is ₹100. Processed in 24 hours.</li>
+                        <li><b>Delivery:</b> Check unboxing video policy for returns.</li>
+                        <li><b>Gold:</b> Digital gold prices are linked to market rates (₹6450/gm fixed for now).</li>
+                        <li><b>Payments:</b> 12-Digit UTR is mandatory for all deposits/purchases.</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4>KYC Verification <span id="kyc-badge" class="status st-pending">Pending</span></h4>
+                    <div id="kyc-form">
+                        <label>Upload Aadhaar Front</label>
+                        <input type="file" id="kyc-file" accept="image/*">
+                        <button onclick="submitKYC()" class="btn btn-dark btn-sm">Submit KYC</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="admin-container" class="container hidden"></div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="nav('home')"><i class="fas fa-store"></i> Shop</div>
+            <div class="nav-item" onclick="nav('orders')"><i class="fas fa-box-open"></i> Orders</div>
+            <div class="nav-item" onclick="nav('refer')"><i class="fas fa-user-friends"></i> Refer</div>
+            <div class="nav-item" onclick="nav('wallet')"><i class="fas fa-wallet"></i> Wallet</div>
+            <div class="nav-item" onclick="nav('rules')"><i class="fas fa-info-circle"></i> Rules</div>
+        </nav>
+    </div>
+
+    <div id="prod-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="flex-between">
+                <h3 id="pm-brand" style="color:#666; font-size:14px;">BRAND</h3>
+                <i onclick="closeModal('prod-modal')" class="fas fa-times fa-lg"></i>
+            </div>
+            
+            <div class="gallery-box">
+                <img id="pm-main-img" class="main-img" src="">
+                <div id="pm-thumbs" class="thumb-row"></div>
+            </div>
+
+            <h2 id="pm-name" style="line-height:1.2;">Product Name</h2>
+            <div class="flex-between" style="margin:10px 0;">
+                <div>
+                    <span id="pm-price" style="font-size:20px; font-weight:bold; color:var(--success);">₹0</span>
+                    <span id="pm-old" class="p-old">₹0</span>
+                </div>
+                <span id="pm-off" class="status st-processing">0% OFF</span>
+            </div>
+
+            <div class="card" style="background:#f9f9f9; padding:10px;">
+                <p><b>Color:</b> <span id="pm-color"></span> &nbsp;|&nbsp; <b>Size:</b> <span id="pm-size"></span></p>
+                <p><b>Category:</b> <span id="pm-cat"></span></p>
+                <p><b>Stock:</b> <span id="pm-stock" style="font-weight:bold;"></span></p>
+            </div>
+
+            <p id="pm-desc" style="font-size:13px; color:#555; margin:15px 0;"></p>
+
+            <div id="buy-section">
+                <div class="card" style="border:1px solid var(--gold);">
+                    <small>Delivery Address (Edit if needed)</small>
+                    <textarea id="buy-address" rows="2" placeholder="House No, City, State, Pin Code"></textarea>
+                    
+                    <div class="text-center" style="margin:10px 0;">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=rajputsurendra562@okaxis&pn=GoldRupi" style="width:120px;">
+                        <p style="font-size:10px; color:red;">Scan & Pay Total Amount</p>
+                    </div>
+                    
+                    <input type="text" id="buy-utr" placeholder="Enter 12-Digit Payment UTR">
+                    <button id="confirm-buy-btn" onclick="placeOrder()" class="btn btn-gold">Confirm Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="money-modal" class="modal hidden" style="align-items:center;">
+        <div class="card" style="width:90%; max-width:400px; position:relative;">
+            <i onclick="closeModal('money-modal')" class="fas fa-times" style="position:absolute; right:15px; top:15px;"></i>
+            <h3 id="mm-title" class="text-center mb-3">Title</h3>
+            
+            <div id="mm-qr" class="text-center hidden">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=rajputsurendra562@okaxis&pn=GoldRupi" style="width:150px;">
+                <p style="font-size:10px; color:red;">Pay & Enter UTR below</p>
+            </div>
+
+            <input type="number" id="mm-amount" placeholder="Amount (₹)">
+            <input type="text" id="mm-utr" placeholder="12-Digit UTR / Account Info">
+            
+            <button onclick="submitMoneyRequest()" class="btn btn-gold">Submit</button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const ADMIN_EMAIL = "rajputsurendra562@gmail.com";
+        const IMGBB_KEY = "021a2437b889915669b66554687bf17f";
+        const GOLD_RATE = 6450;
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+
+        // INIT FIREBASE
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // GLOBAL VARS
+        let currentUser = null;
+        let userData = {};
+        let products = [];
+        let currentProduct = null;
+        let isSignup = false;
+
+        // --- UTILS ---
+        const getEl = (id) => document.getElementById(id);
+        const toggleLoader = (show) => getEl('loading').classList.toggle('hidden', !show);
+        const closeModal = (id) => getEl(id).classList.add('hidden');
+        
+        async function uploadImage(file) {
+            const formData = new FormData();
+            formData.append("image", file);
+            try {
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {method: "POST", body: formData});
+                const data = await res.json();
+                return data.data ? data.data.url : null;
+            } catch(e) { return null; }
+        }
+
+        // --- AUTH ---
+        function toggleAuthMode() {
+            isSignup = !isSignup;
+            getEl('auth-btn').innerText = isSignup ? "Sign Up" : "Login";
+            getEl('auth-toggle-text').innerText = isSignup ? "Already User? " : "New User? ";
+            getEl('reg-name').classList.toggle('hidden', !isSignup);
+            getEl('reg-mobile').classList.toggle('hidden', !isSignup);
+            getEl('bonus-msg').classList.toggle('hidden', !isSignup);
+        }
+
+        async function authenticate() {
+            const email = getEl('auth-email').value;
+            const pass = getEl('auth-pass').value;
+            
+            if(!email || !pass) return alert("Enter details");
+            toggleLoader(true);
+
+            try {
+                if(isSignup) {
+                    const name = getEl('reg-name').value;
+                    const mobile = getEl('reg-mobile').value;
+                    if(!name || !mobile) throw new Error("Name & Mobile required");
+
+                    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                    const uid = cred.user.uid;
+                    
+                    // Initial User Data + ₹100 Bonus
+                    await db.ref('users/'+uid).set({
+                        name, mobile, email,
+                        wallet: 100, // Signup Bonus
+                        gold: 0,
+                        address: "",
+                        kyc_status: "pending",
+                        created_at: Date.now()
+                    });
+                    
+                    // Log Bonus History
+                    await db.ref('users/'+uid+'/history').push({
+                        type: 'Bonus', amount: 100, status: 'success', date: Date.now(), desc: 'Signup Bonus'
+                    });
+
+                    alert("Account Created! ₹100 Bonus Credited.");
+                } else {
+                    await auth.signInWithEmailAndPassword(email, pass);
+                }
+            } catch(e) {
+                alert(e.message);
+                toggleLoader(false);
+            }
+        }
+
+        auth.onAuthStateChanged(user => {
+            toggleLoader(false);
+            currentUser = user;
+            if(user) {
+                getEl('auth-screen').classList.add('hidden');
+                getEl('app-screen').classList.remove('hidden');
+                initAppData();
+                if(user.email === ADMIN_EMAIL) initAdmin();
+            } else {
+                getEl('auth-screen').classList.remove('hidden');
+                getEl('app-screen').classList.add('hidden');
+            }
+        });
+
+        function logout() { auth.signOut(); location.reload(); }
+
+        // --- APP DATA LOGIC ---
+        function initAppData() {
+            const uid = currentUser.uid;
+
+            // 1. User Profile Listener (Realtime Wallet/Gold/Address)
+            db.ref('users/'+uid).on('value', snap => {
+                userData = snap.val();
+                getEl('head-wallet').innerText = userData.wallet;
+                getEl('wallet-main').innerText = userData.wallet;
+                getEl('gold-bal').innerText = (userData.gold || 0).toFixed(3);
+                
+                // KYC Status
+                if(userData.kyc_status === 'verified') {
+                    getEl('kyc-badge').innerText = "Verified";
+                    getEl('kyc-badge').className = "status st-success";
+                    getEl('kyc-form').innerHTML = '<p class="text-center text-success">KYC Completed ✅</p>';
+                } else if(userData.kyc_status === 'rejected') {
+                    getEl('kyc-badge').innerText = "Rejected";
+                    getEl('kyc-badge').className = "status st-failed";
+                }
+            });
+
+            // 2. History Listener (Wallet/Gold)
+            db.ref('users/'+uid+'/history').limitToLast(20).on('value', snap => {
+                const list = getEl('trans-list');
+                list.innerHTML = '';
+                const arr = [];
+                snap.forEach(c => arr.unshift(c.val()));
+                arr.forEach(t => {
+                    list.innerHTML += `
+                        <div class="card" style="padding:10px; display:flex; justify-content:space-between;">
+                            <div>
+                                <b>${t.type}</b> <small>${new Date(t.date).toLocaleDateString()}</small><br>
+                                <span style="font-size:12px; color:#666;">${t.desc || ''}</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:bold;">${t.amount ? '₹'+t.amount : (t.grams+'gm')}</div>
+                                <span class="status st-${t.status.toLowerCase()}">${t.status}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            // 3. Products Listener
+            db.ref('products').on('value', snap => {
+                products = [];
+                snap.forEach(c => products.push({id: c.key, ...c.val()}));
+                renderProducts();
+            });
+
+            // 4. Orders Listener
+            db.ref('orders').orderByChild('user_id').equalTo(uid).on('value', snap => {
+                const list = getEl('orders-list');
+                list.innerHTML = '';
+                const arr = [];
+                snap.forEach(c => arr.unshift({id: c.key, ...c.val()}));
+                if(arr.length === 0) list.innerHTML = '<p class="text-center">No orders yet.</p>';
+                
+                arr.forEach(o => {
+                    let stClass = o.status === 'delivered' ? 'st-delivered' : (o.status==='out_for_delivery'?'st-out_for_delivery':'st-processing');
+                    list.innerHTML += `
+                        <div class="card">
+                            <div class="flex-between">
+                                <b>Order #${o.id.substr(-4)}</b>
+                                <span class="status ${stClass}">${o.status.toUpperCase().replace(/_/g, ' ')}</span>
+                            </div>
+                            <p style="font-size:13px; margin:5px 0;">${o.item_name}</p>
+                            <div class="flex-between">
+                                <span style="font-weight:bold;">₹${o.total}</span>
+                                <small>${new Date(o.date).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            // 5. Referrals Listener
+            db.ref('referrals').orderByChild('referrer_id').equalTo(uid).on('value', snap => {
+                const list = getEl('refer-list');
+                list.innerHTML = '';
+                snap.forEach(c => {
+                    const r = c.val();
+                    list.innerHTML += `
+                        <div class="card" style="padding:10px; display:flex; justify-content:space-between;">
+                            <div><b>${r.friend_name}</b><br><small>${r.friend_mobile}</small></div>
+                            <span class="status st-${r.status}">${r.status.toUpperCase()}</span>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // --- NAVIGATION ---
+        function nav(page) {
+            document.querySelectorAll('#pages-container > div').forEach(d => d.classList.add('hidden'));
+            getEl('page-'+page).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        // --- SHOP & PRODUCT LOGIC ---
+        function renderProducts() {
+            const list = getEl('product-list');
+            const term = getEl('search-inp').value.toLowerCase();
+            const cat = getEl('cat-filter').value;
+            
+            list.innerHTML = '';
+            products.forEach(p => {
+                if(cat !== 'all' && p.category !== cat) return;
+                if(term && !p.name.toLowerCase().includes(term)) return;
+
+                const img = (p.images && p.images[0]) ? p.images[0] : '';
+                const off = p.discount ? `<div class="badge badge-off">${p.discount}% OFF</div>` : '';
+                const stock = (p.active === false) ? '<div class="badge badge-out">OUT OF STOCK</div>' : '';
+
+                list.innerHTML += `
+                    <div class="product-card" onclick="openProduct('${p.id}')">
+                        ${off} ${stock}
+                        <img src="${img}" class="product-img">
+                        <div class="p-details">
+                            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:13px; font-weight:600;">${p.name}</div>
+                            <div style="font-size:11px; color:#666;">${p.category}</div>
+                            <div>
+                                <span class="p-price">₹${p.price}</span>
+                                ${p.discount ? `<span class="p-old">₹${Math.round(p.price/(1-(p.discount/100)))}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openProduct(pid) {
+            currentProduct = products.find(x => x.id === pid);
+            if(!currentProduct) return;
+            const p = currentProduct;
+
+            getEl('pm-name').innerText = p.name;
+            getEl('pm-brand').innerText = p.brand || 'No Brand';
+            getEl('pm-cat').innerText = p.category;
+            getEl('pm-desc').innerText = p.desc;
+            getEl('pm-color').innerText = p.color || 'N/A';
+            getEl('pm-size').innerText = p.size || 'N/A';
+            getEl('pm-price').innerText = '₹' + p.price;
+            
+            if(p.discount) {
+                getEl('pm-old').innerText = '₹' + Math.round(p.price / (1 - (p.discount/100)));
+                getEl('pm-off').innerText = p.discount + '% OFF';
+            } else {
+                getEl('pm-old').innerText = '';
+                getEl('pm-off').innerText = '';
+            }
+
+            // Stock Logic
+            const btn = getEl('confirm-buy-btn');
+            if(p.active === false) {
+                getEl('pm-stock').innerText = "Out of Stock";
+                getEl('pm-stock').style.color = "red";
+                btn.disabled = true;
+                btn.innerText = "Out of Stock";
+                btn.style.background = "#ccc";
+            } else {
+                getEl('pm-stock').innerText = "In Stock";
+                getEl('pm-stock').style.color = "green";
+                btn.disabled = false;
+                btn.innerText = "Confirm Order";
+                btn.style.background = "var(--gold)";
+            }
+
+            // Images
+            const imgs = p.images || [];
+            getEl('pm-main-img').src = imgs[0] || '';
+            const thumbs = getEl('pm-thumbs');
+            thumbs.innerHTML = '';
+            imgs.forEach(url => {
+                thumbs.innerHTML += `<img src="${url}" class="thumb" onclick="getEl('pm-main-img').src='${url}'">`;
+            });
+
+            // Address Prefill
+            getEl('buy-address').value = userData.address || "";
+            getEl('buy-utr').value = "";
+
+            getEl('prod-modal').classList.remove('hidden');
+        }
+
+        async function placeOrder() {
+            const addr = getEl('buy-address').value;
+            const utr = getEl('buy-utr').value;
+            
+            if(!addr || !utr) return alert("Please fill Address and UTR");
+
+            if(confirm("Place this order?")) {
+                toggleLoader(true);
+                try {
+                    // Update address
+                    await db.ref('users/'+currentUser.uid).update({address: addr});
+
+                    await db.ref('orders').push({
+                        user_id: currentUser.uid,
+                        item_id: currentProduct.id,
+                        item_name: currentProduct.name,
+                        total: currentProduct.price,
+                        address: addr,
+                        utr: utr,
+                        status: 'processing', // processing -> out_for_delivery -> delivered
+                        date: Date.now()
+                    });
+                    
+                    alert("Order Placed Successfully!");
+                    closeModal('prod-modal');
+                    nav('orders');
+                } catch(e) { alert("Error"); }
+                toggleLoader(false);
+            }
+        }
+
+        // --- WALLET / GOLD ACTIONS ---
+        function openMoneyModal(type) {
+            getEl('money-modal').classList.remove('hidden');
+            const mm = getEl('money-modal');
+            mm.dataset.type = type;
+            
+            getEl('mm-qr').classList.add('hidden');
+            getEl('mm-utr').classList.remove('hidden');
+            
+            if(type === 'add') {
+                getEl('mm-title').innerText = "Add Money to Wallet";
+                getEl('mm-qr').classList.remove('hidden');
+            } else if (type === 'withdraw') {
+                getEl('mm-title').innerText = "Withdraw Money";
+                getEl('mm-utr').placeholder = "Enter UPI / Bank Details";
+            } else {
+                getEl('mm-title').innerText = "Buy Gold";
+                getEl('mm-qr').classList.remove('hidden');
+                getEl('mm-utr').placeholder = "Enter Payment UTR";
+            }
+        }
+
+        async function submitMoneyRequest() {
+            const type = getEl('money-modal').dataset.type;
+            const amt = parseFloat(getEl('mm-amount').value);
+            const utr = getEl('mm-utr').value;
+
+            if(!amt || !utr) return alert("Fill all fields");
+            if(type === 'buy_gold' && amt < 50) return alert("Min Gold buy is ₹50");
+
+            toggleLoader(true);
+            try {
+                if(type === 'buy_gold') {
+                    const grams = amt / GOLD_RATE;
+                    await db.ref('gold_requests').push({
+                        user_id: currentUser.uid,
+                        amount: amt,
+                        grams: grams,
+                        utr: utr,
+                        status: 'pending',
+                        date: Date.now()
+                    });
+                } else {
+                    // Wallet add/withdraw
+                    await db.ref('wallet_requests').push({
+                        user_id: currentUser.uid,
+                        type: type,
+                        amount: amt,
+                        utr: utr,
+                        status: 'pending',
+                        date: Date.now()
+                    });
+                }
+                alert("Request Submitted for Approval");
+                closeModal('money-modal');
+            } catch(e) { console.error(e); }
+            toggleLoader(false);
+        }
+
+        // --- REFER & KYC ---
+        async function submitReferral() {
+            const name = getEl('ref-name').value;
+            const mobile = getEl('ref-mobile').value;
+            const email = getEl('ref-email').value;
+            if(!name || !mobile) return alert("Details required");
+
+            await db.ref('referrals').push({
+                referrer_id: currentUser.uid,
+                friend_name: name,
+                friend_mobile: mobile,
+                friend_email: email,
+                status: 'pending',
+                date: Date.now()
+            });
+            alert("Referral Submitted");
+            getEl('ref-name').value = "";
+        }
+
+        async function submitKYC() {
+            const file = getEl('kyc-file').files[0];
+            if(!file) return alert("Select Aadhaar Image");
+            toggleLoader(true);
+            const url = await uploadImage(file);
+            if(url) {
+                await db.ref('kyc_requests').push({user_id: currentUser.uid, image: url, status: 'pending'});
+                await db.ref('users/'+currentUser.uid).update({kyc_status: 'pending'});
+                alert("KYC Submitted");
+            }
+            toggleLoader(false);
+        }
+
+        // ==========================================
+        // ADMIN PANEL LOGIC (Only runs for Admin)
+        // ==========================================
+        function initAdmin() {
+            const con = getEl('admin-container');
+            con.classList.remove('hidden');
+            con.innerHTML = `
+                <div class="admin-panel">
+                    <h3 class="text-center">ADMIN PANEL</h3>
+                    <div class="admin-tab-btns">
+                        <button onclick="admSwitch('prod')" class="btn-sm btn-dark">Products</button>
+                        <button onclick="admSwitch('req')" class="btn-sm btn-dark">Wallet/Gold</button>
+                        <button onclick="admSwitch('ord')" class="btn-sm btn-dark">Orders</button>
+                        <button onclick="admSwitch('ref')" class="btn-sm btn-dark">Refer</button>
+                        <button onclick="admSwitch('kyc')" class="btn-sm btn-dark">KYC</button>
+                    </div>
+
+                    <div id="adm-prod" class="adm-sec">
+                        <div class="card">
+                            <h4>Add Product</h4>
+                            <input id="ap-name" placeholder="Name">
+                            <input id="ap-price" type="number" placeholder="Price">
+                            <input id="ap-disc" type="number" placeholder="Discount %">
+                            <textarea id="ap-desc" placeholder="Desc"></textarea>
+                            <div class="flex-between">
+                                <input id="ap-brand" placeholder="Brand">
+                                <input id="ap-col" placeholder="Color">
+                            </div>
+                            <div class="flex-between">
+                                <input id="ap-size" placeholder="Size">
+                                <select id="ap-cat"><option>Gold</option><option>Silver</option><option>Jewelry</option><option>Coin</option></select>
+                            </div>
+                            <label>Select 5 Images</label>
+                            <input type="file" id="ap-imgs" multiple accept="image/*">
+                            <button onclick="admAddProduct()" class="btn btn-success">Upload</button>
+                        </div>
+                        <div id="adm-prod-list"></div>
+                    </div>
+
+                    <div id="adm-req" class="adm-sec hidden"><div id="adm-req-list"></div></div>
+                    
+                    <div id="adm-ord" class="adm-sec hidden"><div id="adm-ord-list"></div></div>
+                    
+                    <div id="adm-ref" class="adm-sec hidden"><div id="adm-ref-list"></div></div>
+
+                    <div id="adm-kyc" class="adm-sec hidden"><div id="adm-kyc-list"></div></div>
+                </div>
+            `;
+
+            // Admin Listeners
+            // 1. Products
+            db.ref('products').on('value', s => {
+                const d = getEl('adm-prod-list'); d.innerHTML = '';
+                s.forEach(c => {
+                    const p = c.val();
+                    const stk = p.active !== false ? 'In Stock' : 'Out';
+                    d.innerHTML += `<div class="card flex-between">
+                        <span>${p.name}</span>
+                        <div>
+                            <button onclick="admStock('${c.key}', ${p.active!==false})" class="btn-sm btn-dark">${stk}</button>
+                            <button onclick="db.ref('products/${c.key}').remove()" class="btn-sm btn-danger">X</button>
+                        </div>
+                    </div>`;
+                });
+            });
+
+            // 2. Wallet/Gold Requests
+            const renderReq = (snap, type) => {
+                const list = getEl('adm-req-list');
+                snap.forEach(c => {
+                    const r = c.val();
+                    const txt = type==='gold' ? `BUY GOLD ₹${r.amount}` : `${r.type.toUpperCase()} ₹${r.amount}`;
+                    list.innerHTML += `<div class="card">
+                        <b>${txt}</b><br>UTR: ${r.utr}<br>
+                        <button onclick="admApproveMoney('${c.key}', '${type}', '${r.user_id}', ${r.amount}, '${r.type||''}', ${r.grams||0})" class="btn-sm btn-success">Approve</button>
+                        <button onclick="db.ref('${type}_requests/${c.key}/status').set('rejected')" class="btn-sm btn-danger">Reject</button>
+                    </div>`;
+                });
+            }
+            db.ref('wallet_requests').orderByChild('status').equalTo('pending').on('value', s => { getEl('adm-req-list').innerHTML=''; renderReq(s, 'wallet'); });
+            db.ref('gold_requests').orderByChild('status').equalTo('pending').on('value', s => { renderReq(s, 'gold'); });
+
+            // 3. Orders
+            db.ref('orders').on('value', s => {
+                const d = getEl('adm-ord-list'); d.innerHTML='';
+                s.forEach(c => {
+                    const o = c.val();
+                    if(o.status !== 'delivered') {
+                        d.innerHTML += `<div class="card">
+                            ID: ${c.key.substr(-4)} | ₹${o.total} | UTR: ${o.utr}<br>
+                            Status: <b>${o.status}</b><br>
+                            Addr: ${o.address}<br>
+                            <button onclick="db.ref('orders/${c.key}').update({status:'out_for_delivery'})" class="btn-sm btn-dark">Out for Delivery</button>
+                            <button onclick="db.ref('orders/${c.key}').update({status:'delivered'})" class="btn-sm btn-success">Delivered</button>
+                        </div>`;
+                    }
+                });
+            });
+
+            // 4. Referrals
+            db.ref('referrals').orderByChild('status').equalTo('pending').on('value', s => {
+                const d = getEl('adm-ref-list'); d.innerHTML='';
+                s.forEach(c => {
+                    const r = c.val();
+                    d.innerHTML += `<div class="card">
+                        Referrer: ${r.referrer_id}<br>Friend: ${r.friend_name}<br>
+                        <button onclick="admApproveRefer('${c.key}', '${r.referrer_id}')" class="btn-sm btn-success">Approve & Send ₹100</button>
+                        <button onclick="db.ref('referrals/${c.key}/status').set('rejected')" class="btn-sm btn-danger">Reject</button>
+                    </div>`;
+                });
+            });
+
+             // 5. KYC
+             db.ref('kyc_requests').orderByChild('status').equalTo('pending').on('value', s => {
+                const d = getEl('adm-kyc-list'); d.innerHTML='';
+                s.forEach(c => {
+                    const k = c.val();
+                    d.innerHTML += `<div class="card">
+                        UID: ${k.user_id}<br><a href="${k.image}" target="_blank">View Image</a><br>
+                        <button onclick="admKYC('${c.key}','${k.user_id}','verified')" class="btn-sm btn-success">Verify</button>
+                        <button onclick="admKYC('${c.key}','${k.user_id}','rejected')" class="btn-sm btn-danger">Reject</button>
+                    </div>`;
+                });
+            });
+        }
+
+        function admSwitch(tab) {
+            document.querySelectorAll('.adm-sec').forEach(d=>d.classList.add('hidden'));
+            getEl('adm-'+tab).classList.remove('hidden');
+        }
+
+        async function admAddProduct() {
+            toggleLoader(true);
+            const files = getEl('ap-imgs').files;
+            const imgs = [];
+            for(let i=0; i<Math.min(files.length, 5); i++) {
+                const url = await uploadImage(files[i]);
+                if(url) imgs.push(url);
+            }
+            
+            await db.ref('products').push({
+                name: getEl('ap-name').value,
+                price: parseFloat(getEl('ap-price').value),
+                discount: parseFloat(getEl('ap-disc').value) || 0,
+                desc: getEl('ap-desc').value,
+                brand: getEl('ap-brand').value,
+                color: getEl('ap-col').value,
+                size: getEl('ap-size').value,
+                category: getEl('ap-cat').value,
+                images: imgs,
+                active: true,
+                created_at: Date.now()
+            });
+            alert("Product Added");
+            toggleLoader(false);
+        }
+
+        function admStock(key, current) { db.ref('products/'+key).update({active: !current}); }
+
+        async function admApproveMoney(key, dbType, uid, amt, transType, grams) {
+            if(!confirm("Approve?")) return;
+            const path = dbType === 'gold' ? 'gold_requests' : 'wallet_requests';
+            
+            // Get current user data
+            const snap = await db.ref('users/'+uid).get();
+            const u = snap.val();
+            
+            let updates = {};
+            updates[`${path}/${key}/status`] = 'success';
+            
+            let histData = { status: 'success', date: Date.now() };
+
+            if(dbType === 'gold') {
+                updates[`users/${uid}/gold`] = (u.gold || 0) + grams;
+                histData.type = 'Buy Gold'; histData.grams = grams; histData.amount = amt;
+            } else {
+                let newBal = u.wallet || 0;
+                if(transType === 'add') { newBal += amt; histData.type = 'Deposit'; }
+                else { newBal -= amt; histData.type = 'Withdraw'; }
+                updates[`users/${uid}/wallet`] = newBal;
+                histData.amount = amt;
+            }
+            
+            updates[`users/${uid}/history/${key}`] = histData;
+            await db.ref().update(updates);
+        }
+
+        async function admApproveRefer(key, refId) {
+            const snap = await db.ref('users/'+refId+'/wallet').get();
+            const bal = snap.val() || 0;
+            
+            let updates = {};
+            updates[`referrals/${key}/status`] = 'success';
+            updates[`users/${refId}/wallet`] = bal + 100;
+            updates[`users/${refId}/history/${key}`] = {
+                type: 'Refer Bonus', amount: 100, status: 'success', date: Date.now(), desc: 'Referral Approved'
+            };
+            await db.ref().update(updates);
+        }
+
+        async function admKYC(key, uid, status) {
+            await db.ref('kyc_requests/'+key).update({status: status});
+            await db.ref('users/'+uid).update({kyc_status: status});
+        }
+
+    </script>
+</body>
+</html>

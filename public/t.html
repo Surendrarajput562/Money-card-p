@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete E-commerce Checkout</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input[type="text"], input[type="email"] { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #45a049; }
+        .section-header { margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .hidden { display: none; }
+        .cart-summary { background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🛒 Checkout Simulation</h1>
+        <p>⚠️ **NOTE:** This demo uses Firebase Realtime DB and Email Link Sign-in (no billing needed). UTR field is for simulation.</p>
+        
+        <div id="auth-status">
+            <p>Status: <span id="user-info">Not Logged In</span></p>
+            <input type="email" id="auth-email" placeholder="Enter your email to login/signup">
+            <button onclick="handleAuth()">Start Checkout / Login</button>
+        </div>
+
+        <div id="checkout-section" class="hidden">
+            <div class="cart-summary">
+                <h2>Cart Summary</h2>
+                <p>Items: <span id="cart-item-count">3</span></p>
+                <p>Subtotal: ₹<span id="cart-subtotal">1500.00</span></p>
+            </div>
+
+            <h2 class="section-header">1. Delivery Address</h2>
+            <input type="text" id="co-addr-house" placeholder="House/Flat No, Street" value="Flat 404">
+            <input type="text" id="co-addr-city" placeholder="City" value="Mumbai">
+            <input type="text" id="co-addr-district" placeholder="District" value="Mumbai Suburban">
+            <input type="text" id="co-addr-country" placeholder="Country" value="India">
+
+            <h2 class="section-header">2. Payment Proof (UTR)</h2>
+            <input type="text" id="checkout-utr" placeholder="Enter 12-digit UTR (Simulated)" maxlength="12">
+
+            <h2 class="section-header">3. Order Confirmation</h2>
+            <button onclick="confirmCheckout()">Place Order & Verify Payment</button>
+        </div>
+
+        <div id="verification-message" class="hidden">
+            <h2>📧 Email Verification Pending</h2>
+            <p id="otp-status">Please check your email and click the sign-in link. Then, return to this page to complete the checkout automatically.</p>
+        </div>
+        
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    
+    <script>
+        // =========================================================================
+        // 1. FIREBASE CONFIGURATION (Replace with your actual config)
+        // =========================================================================
+        const firebaseConfig = {
+    
+      apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+      authDomain: "smbrand-4543a.firebaseapp.com",
+      databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+      projectId: "smbrand-4543a",
+      storageBucket: "smbrand-4543a.firebasestorage.app",
+      messagingSenderId: "720775550032",
+      appId: "1:720775550032:web:0622548a007597778bad55",
+      measurementId: "G-3LS5W6F8QW"
+    };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentUser = null;
+        let cart = {
+            p1: { productId: 'prod1', qty: 1, color: 'Red', size: 'M' },
+            p2: { productId: 'prod2', qty: 2, color: 'Blue', size: 'L' }
+        };
+        // Dummy Product Data (Must be available to calculate prices/details)
+        const productsData = {
+            'prod1': { name: 'T-Shirt', price: 1000, discount: 10, images: ['url1'] },
+            'prod2': { name: 'Jeans', price: 250, discount: 0, images: ['url2'] }
+        };
+
+        // =========================================================================
+        // 2. UTILITY FUNCTIONS
+        // =========================================================================
+
+        function calcDiscountPrice(price, discount) {
+            price = Number(price) || 0;
+            discount = Number(discount) || 0;
+            return Math.round(price * (1 - discount / 100));
+        }
+
+        // --- AUTH LOGIC ---
+
+        function updateUI(user) {
+            currentUser = user;
+            const statusEl = document.getElementById('user-info');
+            const authSection = document.getElementById('auth-status');
+            const checkoutSection = document.getElementById('checkout-section');
+            const verificationMessage = document.getElementById('verification-message');
+
+            if (user) {
+                statusEl.innerText = `Logged in as: ${user.email} (UID: ${user.uid.substring(0, 8)}...)`;
+                authSection.classList.add('hidden');
+                checkoutSection.classList.remove('hidden');
+                verificationMessage.classList.add('hidden');
+            } else {
+                statusEl.innerText = 'Not Logged In';
+                authSection.classList.remove('hidden');
+                checkoutSection.classList.add('hidden');
+            }
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('auth-email').value.trim();
+            if (!email || !email.includes('@')) {
+                return alert('Please enter a valid email.');
+            }
+
+            // 1. OTP / Email Link Request
+            const actionCodeSettings = {
+                url: window.location.href, 
+                handleCodeInApp: true,
+            };
+
+            try {
+                await auth.sendSignInLinkToEmail(email, actionCodeSettings);
+                window.localStorage.setItem('emailForSignIn', email);
+
+                alert(`✅ Verification link sent to ${email}. Please check your inbox.`);
+                
+                document.getElementById('auth-status').classList.add('hidden');
+                document.getElementById('verification-message').classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error sending sign-in link:", error);
+                alert(`❌ Error: Could not send verification link. Reason: ${error.message}`);
+            }
+        }
+
+        async function attemptSignInWithLink() {
+            if (auth.isSignInWithEmailLink(window.location.href)) {
+                let email = window.localStorage.getItem('emailForSignIn');
+                if (!email) {
+                    email = prompt('Please provide your email for verification:');
+                }
+
+                if (email) {
+                    try {
+                        const result = await auth.signInWithEmailLink(email, window.location.href);
+                        window.localStorage.removeItem('emailForSignIn');
+                        // Successfully logged in. Update UI and start checkout.
+                        updateUI(result.user);
+                        alert(`🎉 Successfully logged in as ${result.user.email}!`);
+                        
+                        // Check if cart is empty and proceed to checkout functions
+                        if (document.getElementById('cart-subtotal').innerText !== '0.00') {
+                            // Automatically proceed to checkout logic if order confirmation was the goal
+                            // Note: You might want to call confirmCheckout() here if the user was interrupted mid-process
+                            console.log("User successfully logged in via email link.");
+                        }
+
+                    } catch (error) {
+                        console.error("Email Link Sign-in Failed:", error);
+                        alert(`❌ Sign-in failed: ${error.message}. Please try logging in again.`);
+                        // Redirect to clean URL or show error state
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        updateUI(null);
+                    }
+                }
+            }
+        }
+
+        // --- ORDER LOGIC ---
+
+        async function confirmCheckout(){
+            if (!currentUser) {
+                alert('You must be logged in to confirm checkout.');
+                return;
+            }
+
+            const utr = (document.getElementById('checkout-utr').value||'').trim();
+            if(!utr || utr.length !== 12) return alert('enter valid 12-digit UTR');
+
+            // Get Address
+            const house = document.getElementById('co-addr-house').value.trim();
+            const city = document.getElementById('co-addr-city').value.trim();
+            const district = document.getElementById('co-addr-district').value.trim();
+            const country = document.getElementById('co-addr-country').value.trim();
+            if(!house || !city || !district || !country) return alert('fill all delivery address fields');
+
+            const addr = {house,city,district,country};
+
+            try {
+                // 1. Save Address
+                await db.ref('users/'+currentUser.uid+'/address').set(addr); 
+
+                const orderId = 'o'+Date.now();
+                const subtotal = Number(document.getElementById('cart-subtotal').innerText) || 0;
+
+                if(subtotal === 0) return alert('Cart is empty. Simulation failed.');
+
+                // Store detailed product info in order
+                const detailedItems = {};
+                let calculatedTotal = 0;
+                Object.keys(cart).forEach(cartKey => {
+                    const cartItem = cart[cartKey];
+                    const pid = cartItem.productId;
+                    const p = productsData[pid];
+
+                    if(!p) throw new Error(`Product data missing for item ID: ${pid}.`);
+
+                    const finalPrice = calcDiscountPrice(p.price, p.discount);
+                    calculatedTotal += finalPrice * cartItem.qty;
+
+                    detailedItems[cartKey] = {
+                        id: pid,
+                        name: p.name,
+                        quantity: cartItem.qty,
+                        price: Number(p.price),
+                        final_price: finalPrice,
+                        // ... other details
+                    };
+                });
+                
+                // Safety check (optional)
+                if (Math.round(calculatedTotal) !== Math.round(subtotal)) {
+                    console.warn(`Total mismatch: Calculated ${calculatedTotal} vs UI ${subtotal}`);
+                    // return alert('Error: Calculated total mismatch. Please refresh cart.');
+                }
+
+
+                const order = {
+                    id: orderId,
+                    user: currentUser.uid,
+                    items: detailedItems,
+                    total: subtotal,
+                    address: addr,
+                    utr,
+                    status: 'payment_pending',
+                    created_at: Date.now()
+                };
+
+                // --- START FIREBASE TRANSACTIONS ---
+                
+                const updates = {};
+                // 2. Save to Orders
+                updates['/orders/' + orderId] = order;
+                // 3. Save to User Orders History
+                updates['/users/' + currentUser.uid + '/order_history/' + orderId] = order;
+                // 4. Save Payment Request to the DEDICATED NODE
+                updates['/product_payment_orders/' + orderId] = {
+                    type:'cart',
+                    user: currentUser.uid,
+                    orderId,
+                    amount: subtotal,
+                    utr,
+                    status:'pending',
+                    created_at: Date.now()
+                };
+                // 5. Clear cart (Optional: can be done via Cloud Function later)
+                updates['/users/' + currentUser.uid + '/cart'] = null;
+
+                // Execute Multi-path Update
+                await db.ref().update(updates);
+                
+                // Clear local cart state
+                cart = {};
+                document.getElementById('cart-subtotal').innerText = '0.00';
+                
+                // --- END FIREBASE TRANSACTIONS ---
+
+                // ✅ Success Message
+                const successMessage = `
+                    ✅ ऑर्डर सफलतापूर्वक सबमिट हो गया! (Order ID: ${orderId.substring(0,8)}...)
+                    आपकी पेमेंट डिटेल (UTR: ${utr}) हमें प्राप्त हो गई है।
+                    आपका ऑर्डर स्टेटस अब 'payment_pending' है।
+                `;
+                alert(successMessage.trim());
+
+                // UI Cleanup/Redirection
+                document.getElementById('checkout-section').classList.add('hidden');
+                document.getElementById('auth-status').classList.remove('hidden'); // Show login status again
+                document.getElementById('user-info').innerText = 'Order Placed!';
+
+
+            } catch(error) {
+                // 🛑 Failure Alert
+                console.error("🔥 CHECKOUT FAILED:", error);
+                alert(`❌ ऑर्डर सबमिट नहीं हुआ। तकनीकी खराबी। \n\nकारण: ${error.message}`);
+                return;
+            }
+        }
+
+        // =========================================================================
+        // 3. INITIALIZATION & LISTENERS
+        // =========================================================================
+        
+        // 1. Listen for Auth State Changes
+        auth.onAuthStateChanged(updateUI);
+
+        // 2. Check for Email Link Sign-in on page load
+        attemptSignInWithLink();
+        
+        // Initial cart setup (simulated)
+        if (Object.keys(cart).length === 0) {
+            document.getElementById('cart-subtotal').innerText = '0.00';
+            document.getElementById('cart-item-count').innerText = '0';
+        }
+    </script>
+
+</body>
+</html>
+

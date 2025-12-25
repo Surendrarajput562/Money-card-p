@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>International Money Streamer</title>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .dashboard { background: #1e293b; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 400px; text-align: center; }
+        .status-box { background: #334155; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; border: 1px solid #38bdf8; }
+        .stream-btn { background: #38bdf8; color: #0f172a; border: none; padding: 0.8rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: bold; width: 100%; margin-top: 1rem; }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.3rem; cursor: pointer; margin-top: 2rem; font-size: 0.8rem; }
+        .money-flow { color: #4ade80; font-family: monospace; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <h2>ILP Money Streamer</h2>
+        <p>Hawa mein transaction control</p>
+        
+        <div class="status-box">
+            <p>Connection: <span style="color: #4ade80;">Active (Interledger)</span></p>
+            <div class="money-flow" id="stream-display">INR 0.0000</div>
+        </div>
+
+
+        <input type="text" id="receiver" placeholder="$payment.pointer/receiver" style="width: 90%; padding: 0.5rem; border-radius: 0.3rem; border: none;">
+        
+        <button class="stream-btn" onclick="startStreaming()">Start Automated Stream</button>
+
+        <br>
+        <button class="logout-btn" onclick="logout()">Logout / Reset Session</button>
+    </div>
+
+    <script>
+        // Firebase config yahan teri purani wali hi rahegi
+        // Login process vaisa hi rahega jaisa pehle tha [cite: 2025-12-21]
+
+        let balance = 0;
+        function startStreaming() {
+            const receiver = document.getElementById('receiver').value;
+            if(!receiver) return alert("Receiver Pointer Daalo!");
+            
+            // Simulation of ILP Streaming Packets
+            setInterval(() => {
+                balance += 0.0012;
+                document.getElementById('stream-display').innerText = "INR " + balance.toFixed(4);
+            }, 500);
+        }
+
+        // Dedicated Logout Feature [cite: 2025-12-21]
+        function logout() {
+            // Firebase signOut call
+            // firebase.auth().signOut().then(() => { ... });
+            
+            console.log("Logging out... login process remains the same [cite: 2025-12-21]");
+            
+            // Page reload for clean session reset as per instruction [cite: 2025-12-21]
+            window.location.reload(); 
+        }
+    </script>
+</body>
+</html>
+
+

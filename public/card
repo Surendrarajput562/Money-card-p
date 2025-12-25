@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omni Card Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffcc00;
+            --dark-bg: #121212;
+            --card-bg: linear-gradient(135deg, #1e1e1e, #333);
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Card Design */
+        .card-container {
+            width: 320px;
+            height: 200px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            margin-bottom: 30px;
+            transition: 0.3s;
+        }
+
+        .card-container:hover { transform: translateY(-5px); border-color: var(--gold); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        .card-type { color: var(--gold); font-weight: bold; font-size: 14px; letter-spacing: 1px; }
+        
+        .chip { width: 40px; height: 30px; background: #d4af37; border-radius: 5px; margin-top: 15px; }
+
+        .card-number { margin-top: 20px; font-size: 18px; letter-spacing: 3px; color: #eee; }
+        
+        .card-footer { margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .user-name { text-transform: uppercase; font-size: 14px; color: #ccc; }
+        .balance-label { font-size: 10px; opacity: 0.7; }
+        .balance-amount { font-size: 18px; color: var(--gold); font-weight: bold; }
+
+        /* Payment Section */
+        .payment-box {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #252525;
+            color: white;
+            text-align: center;
+        }
+
+        .btn-add {
+            background: var(--gold);
+            color: black;
+            border: none;
+            padding: 12px 20px;
+            width: 100%;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #qr-section { margin-top: 20px; display: none; }
+        #qr-section img { background: white; padding: 10px; border-radius: 8px; margin-top: 10px; }
+        
+        .utr-box { display: none; margin-top: 15px; border-top: 1px dashed #444; padding-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <h2 style="color: var(--gold);">My Virtual Card</h2>
+
+    <div class="card-container">
+        <div class="card-header">
+            <span class="card-type">PREMIUM ACCESS</span>
+            <i class="ri-visa-line" style="font-size: 30px; color: white;"></i>
+        </div>
+        <div class="chip"></div>
+        <div class="card-number" id="display-card-num">**** **** **** 4582</div>
+        <div class="card-footer">
+            <div>
+                <div class="user-name" id="display-name">USER NAME</div>
+            </div>
+            <div style="text-align: right;">
+                <div class="balance-label">CARD BALANCE</div>
+                <div class="balance-amount">₹ <span id="balance">0.00</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="payment-box">
+        <input type="text" id="name-input" placeholder="Enter Your Name" oninput="updateCardName()">
+        <input type="number" id="amount-input" placeholder="Enter Amount (₹)">
+        <button class="btn-add" onclick="generatePayment()">Add Money to Card</button>
+
+        <div id="qr-section">
+            <p style="font-size: 13px;">Scan this QR to Pay</p>
+            <div id="qr-container"></div>
+            <p style="font-size: 11px; color: var(--gold); margin-top: 5px;" id="payment-note"></p>
+            
+            <div class="utr-box" id="utr-section">
+                <input type="text" id="utr-input" placeholder="Enter UTR / Trans. ID">
+                <button class="btn-add" style="background: #27ae60; color: white;" onclick="submitUTR()">Submit & Add Balance</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentBalance = 0;
+        const myUpi = "aapki-upi@okaxis"; // <--- APNI UPI ID YAHAN DALO
+
+        function updateCardName() {
+            let name = document.getElementById('name-input').value;
+            document.getElementById('display-name').innerText = name || "USER NAME";
+        }
+
+        function generatePayment() {
+            let amount = document.getElementById('amount-input').value;
+            let name = document.getElementById('name-input').value;
+
+            if(!amount || !name) {
+                alert("Please enter Name and Amount");
+                return;
+            }
+
+            // UPI Deep Link with Note
+            let upiUrl = `upi://pay?pa=${myUpi}&pn=LibraryApp&tn=CardAdd_${name}&am=${amount}&cu=INR`;
+            
+            // Generate QR Code URL
+            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUrl)}`;
+            
+            document.getElementById('qr-container').innerHTML = `<img src="${qrUrl}" alt="QR Code">`;
+            document.getElementById('payment-note').innerText = `Note: CardAdd_${name}`;
+            document.getElementById('qr-section').style.display = 'block';
+            document.getElementById('utr-section').style.display = 'block';
+        }
+
+        function submitUTR() {
+            let utr = document.getElementById('utr-input').value;
+            let amount = parseFloat(document.getElementById('amount-input').value);
+
+            if(utr.length < 6) {
+                alert("Please enter a valid UTR number");
+                return;
+            }
+
+            // Real app mein yahan Admin approval chahiye hoga
+            // Test ke liye hum turant add kar rahe hain
+            alert("UTR Submitted! Admin will verify and update balance.");
+            
+            // Dummy logic for testing
+            currentBalance += amount;
+            document.getElementById('balance').innerText = currentBalance.toFixed(2);
+            
+            // Reset
+            document.getElementById('qr-section').style.display = 'none';
+            document.getElementById('utr-input').value = "";
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Manage Services</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* Inter Font */
+  body { font-family: 'Inter', Arial, sans-serif; background-color: #f7f7f9; }
+  
+  /* Custom Styles */
+  .grid-container { 
+    display: grid; 
+    /* Default: 2 columns for mobile */
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 12px; 
+    margin-bottom: 20px; 
+  }
+  @media (min-width: 640px) {
+    /* Tablet/Desktop: 4 columns */
+    .grid-container {
+      grid-template-columns: repeat(4, 1fr); 
+    }
+  }
+
+  input { 
+    width: 100%; 
+    padding: 12px; 
+    margin: 8px 0; 
+    border-radius: 8px; 
+    border: 1px solid #e0e0e0; 
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+  }
+  input:focus {
+    border-color: #3b82f6;
+    outline: none;
+  }
+  
+  button { 
+    padding: 12px; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-weight: 700; 
+    font-size: 14px; 
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 100%;
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+
+  .on { 
+    background-color: #10B981; /* Emerald 500 (Green) */
+    color: #fff; 
+  }
+  .off { 
+    background-color: #EF4444; /* Red 500 (Red) */
+    color: #fff; 
+  }
+
+  #loginBox { 
+    max-width: 400px; 
+    margin: 40px auto; 
+    background: #fff; 
+    padding: 30px; 
+    border-radius: 12px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+  }
+  
+  #adminPanel { 
+    display: none; 
+    padding: 20px;
+  }
+
+  #messageBox {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+</style>
+</head>
+<body>
+
+<!-- Global Message Box -->
+<div id="messageBox"></div>
+
+<!-- LOGIN BOX -->
+<div id="loginBox">
+  <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">एडमिन लॉगिन (Admin Login)</h2>
+  <input type="email" id="email" placeholder="ईमेल (admin@gmail.com)" value="rajputsurendra562@gmail.com">
+  <input type="password" id="password" placeholder="पासवर्ड (Password)">
+  <div class="text-center mt-6">
+    <button onclick="login()" class="bg-blue-600 hover:bg-blue-700 text-white w-full">लॉगिन (Login)</button>
+  </div>
+  <p class="text-center text-sm text-gray-500 mt-4">केवल <strong>rajputsurendra562@gmail.com</strong> को ही अनुमति है।</p>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+  <h2 class="text-3xl font-extrabold text-center mb-8 text-gray-800">सेवाएँ प्रबंधित करें (Manage Services)</h2>
+  <div class="grid-container">
+    <button id="admin1" onclick="toggleService('service1')">Loading...</button>
+    <button id="admin2" onclick="toggleService('service2')">Loading...</button>
+    <button id="admin3" onclick="toggleService('service3')">Loading...</button>
+    <button id="admin4" onclick="toggleService('service4')">Loading...</button>
+    <button id="admin5" onclick="toggleService('service5')">Loading...</button>
+    <button id="admin6" onclick="toggleService('service6')">Loading...</button>
+    <button id="admin7" onclick="toggleService('service7')">Loading...</button>
+    <button id="admin8" onclick="toggleService('service8')">Loading...</button>
+    <button id="admin9" onclick="toggleService('service9')">Loading...</button>
+    <button id="admin10" onclick="toggleService('service10')">Loading...</button>
+    <button id="admin11" onclick="toggleService('service11')">Loading...</button>
+    <button id="admin12" onclick="toggleService('service12')">Loading...</button>
+    <button id="admin13" onclick="toggleService('service13')">Loading...</button>
+    <button id="admin14" onclick="toggleService('service14')">Loading...</button>
+    <button id="admin15" onclick="toggleService('service15')">Loading...</button>
+    <button id="admin16" onclick="toggleService('service16')">Loading...</button>
+    <button id="admin17" onclick="toggleService('service17')">Loading...</button>
+    <button id="admin18" onclick="toggleService('service18')">Loading...</button>
+    <button id="admin19" onclick="toggleService('service19')">Loading...</button>
+    <button id="admin20" onclick="toggleService('service20')">Loading...</button>
+  </div>
+</div>
+
+<!-- Firebase v8.10.1 CDN -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  // Global message handler instead of alert()
+  function showMessage(msg, duration = 3000) {
+    const box = document.getElementById('messageBox');
+    box.textContent = msg;
+    box.style.display = 'block';
+    setTimeout(() => {
+      box.style.display = 'none';
+    }, duration);
+  }
+
+  // 🔥 Firebase Config (Using the config provided by the user)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.appspot.com",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597778bad55",
+    measurementId: "G-3LS5W6F8QW"
+  };
+
+  // Initialize Firebase and Services
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  // --- Core Logic ---
+
+  /**
+   * sets up a realtime listener for a single service button (Realtime Synchronization)
+   * This ensures the button state reflects the database state immediately and on refresh.
+   * @param {number} i - Service index (1 to 20)
+   */
+  function setupServiceListener(i) {
+    const sid = "service" + i;
+    const bid = "admin" + i;
+    const btn = document.getElementById(bid);
+    const serviceName = "Service " + i;
+    
+    // Realtime Listener: This function executes IMMEDIATELY on load 
+    // AND every time the value of "services/serviceX" changes in the database.
+    db.ref("services/" + sid).on('value', (snapshot) => {
+        let status = snapshot.val(); 
+
+        if (status === null || (status !== "on" && status !== "off")) {
+            // Initialize the database value if it is missing or invalid
+            // Note: This write operation needs permission! (auth.token.admin === true)
+            db.ref("services/" + sid).set("off"); 
+            status = "off";
+        }
+
+        // Update the UI based on the database status
+        if (status === "on") {
+            btn.innerHTML = serviceName + " ON";
+            btn.className = "on";
+        } else {
+            btn.innerHTML = serviceName + " OFF";
+            btn.className = "off";
+        }
+    }, (error) => {
+        console.error("Firebase Listener Error for " + sid + ":", error);
+        // Note: Read operation requires auth != null, which should be true if logged in.
+        showMessage("डेटाबेस त्रुटि (रीड): " + error.message);
+    });
+  }
+
+  // Set up listeners for all 20 services
+  function loadAllListeners() {
+    for (let i = 1; i <= 20; i++) {
+      setupServiceListener(i);
+    }
+    showMessage("सेवाएँ सफलतापूर्वक लोड हो गईं।", 2000);
+  }
+
+  /**
+   * Toggles the service state in the database.
+   * @param {string} sid - The service ID (e.g., 'service1')
+   */
+  function toggleService(sid) {
+    // 1. Read the CURRENT state from the database (once)
+    db.ref("services/" + sid).once('value', (snapshot) => {
+        const currentState = snapshot.val() || "off";
+        // 2. Calculate the new state
+        const newState = currentState === "on" ? "off" : "on";
+
+        // 3. Write the new state back to the database
+        // NOTE: This SET operation requires 'auth.token.admin === true' based on your rules.
+        db.ref("services/" + sid).set(newState)
+            .then(() => {
+                // UI update is handled automatically by the setupServiceListener (realtime listener)
+                showMessage(sid + " की स्थिति अब " + (newState === 'on' ? 'ON' : 'OFF') + " है।", 1500);
+            })
+            .catch(error => {
+              console.error("Toggle Error:", error);
+              showMessage("त्रुटि: टॉगल नहीं कर सका। (अनुमति या नेटवर्क समस्या) " + error.message, 5000);
+            });
+    });
+  }
+
+  // --- Authentication ---
+
+  // Handle initial login status and subsequent state changes
+  auth.onAuthStateChanged(user => {
+    if (user && user.email === "rajputsurendra562@gmail.com") {
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("adminPanel").style.display = "block";
+      loadAllListeners(); // Start listeners after successful admin login
+    } else {
+      document.getElementById("loginBox").style.display = "block";
+      document.getElementById("adminPanel").style.display = "none";
+      // Optionally stop listeners if auth state changes from logged in to logged out, 
+      // but for this simple app, we just hide the panel.
+    }
+  });
+
+  // Login function
+  function login() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (email !== "rajputsurendra562@gmail.com") {
+        showMessage("लॉगिन विफल: केवल rajputsurendra562@gmail.com अनुमति है।");
+        return;
+    }
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        // UI update is handled by onAuthStateChanged listener
+        showMessage("सफलतापूर्वक लॉगिन किया गया!", 2000);
+      })
+      .catch(err => {
+        console.error("Login Error:", err);
+        showMessage("लॉगिन त्रुटि: " + err.message);
+      });
+  }
+</script>
+
+</body>
+</html>
+

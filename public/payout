@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dynamic Auto Pay</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 330px; position: relative; }
+        .amount { font-size: 35px; font-weight: bold; margin: 10px 0; color: #222; }
+        #status { background: #fff3cd; color: #856404; padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; }
+        .success-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; border-radius: 20px; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        .logout { position: absolute; top: 10px; right: 15px; color: #999; cursor: pointer; border: none; background: none; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <button class="logout" onclick="logout()">Logout</button>
+    <h3 style="margin-bottom:0;">Smart Payment</h3>
+    <p style="font-size:12px; color:#666; margin-top:5px;">Scan to Verify Automatically</p>
+    
+    <div style="border: 2px solid #eee; border-radius: 15px; margin: 10px 0; padding: 10px;">
+        <img id="qrImg" style="width:100%" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=7649070168@okbizaxis&am=10.00&cu=INR">
+    </div>
+
+    <div class="amount">₹10.00</div>
+    <div id="status">⏳ Waiting for Payment...</div>
+
+    <div id="successScreen" class="success-overlay">
+        <div style="font-size: 80px; color: #28a745;">✔</div>
+        <h2 style="margin:0;">Verified!</h2>
+        <p>Payment from Surendra Received</p>
+        <button onclick="location.reload()" style="margin-top:10px;">Done</button>
+    </div>
+</div>
+
+<script>
+    const amountToFind = "10"; 
+    // Local Python Server Address
+    const dataUrl = "http://127.0.0.1:8080/last_pay.json";
+
+    async function checkPayment() {
+        try {
+            // Cache busting ke liye timestamp joda
+            const res = await fetch(dataUrl + '?nocache=' + new Date().getTime());
+            const data = await res.json();
+            
+            // Notification ka poora text scan karna
+            const checkText = (data.title + " " + data.content).toLowerCase();
+            console.log("Checking Text:", checkText);
+
+            if (checkText.includes(amountToFind) && (checkText.includes("received") || checkText.includes("surendra"))) {
+                document.getElementById('successScreen').style.display = 'flex';
+                clearInterval(autoCheck);
+            }
+        } catch (e) { console.error("Error reading Termux data..."); }
+    }
+
+    // Har 1.5 second mein check karo
+    const autoCheck = setInterval(checkPayment, 1500);
+
+    function logout() {
+        localStorage.clear();
+        sessionStorage.clear();
+        // [cite: 2025-12-21] Logout takes user to original login process
+        window.location.href = '/login';
+    }
+</script>
+</body>
+</html>
+

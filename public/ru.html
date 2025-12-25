@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gold Rupi</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDKs (v8.10.0 as requested) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+    <!-- Markdown Parser for AI responses -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            color: #333;
+            overscroll-behavior-y: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .glass-card:active {
+            transform: scale(0.98);
+        }
+
+        /* Neumorphic Inputs */
+        .neu-input {
+            background: #ebedee;
+            border: none;
+            box-shadow: inset 2px 2px 5px #babecc, inset -5px -5px 10px #ffffff;
+            border-radius: 12px;
+            transition: all 0.2s ease-in-out;
+            padding: 12px;
+            font-size: 14px;
+        }
+        .neu-input:focus {
+            box-shadow: inset 1px 1px 2px #babecc, inset -1px -1px 2px #ffffff;
+            outline: none;
+        }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Loader */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* Hide Scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Mobile Layout Adjustments */
+        #app-section .nav-btn.active {
+            color: #fbbf24; /* yellow-500 */
+        }
+        
+        /* Admin specific styles */
+        .admin-view {
+            transition: opacity 0.3s;
+        }
+
+        /* Custom scrollbar for chat box */
+        #ai-chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        #ai-chat-box::-webkit-scrollbar-thumb {
+            background-color: #fcd34d;
+            border-radius: 3px;
+        }
+        #ai-chat-box::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+        
+        /* Custom Message Box Style */
+        .modal-box {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .modal-bg {
+            animation: modalFadeIn 0.3s;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden">
+
+    <!-- Loading Spinner -->
+    <div id="loader">
+        <div class="w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full spin"></div>
+    </div>
+
+    <!-- Toast Notifications (Success/Error/Info) -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[10000] space-y-2"></div>
+
+    <!-- Custom Modal/Message Box -->
+    <div id="custom-modal" class="hidden fixed inset-0 z-[10001] modal-bg flex items-center justify-center p-4 bg-black bg-opacity-40">
+        <div class="modal-box w-full max-w-sm p-6 text-center">
+            <h3 id="modal-title" class="text-xl font-bold mb-3 text-gray-800">Title</h3>
+            <p id="modal-message" class="text-gray-600 mb-6 text-sm">Message content.</p>
+            <div id="modal-actions" class="flex justify-center space-x-4">
+                <button id="modal-cancel" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+                <button id="modal-confirm" class="px-6 py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chat Modal (Hidden by default) -->
+    <div id="ai-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-40 backdrop-blur-sm flex flex-col justify-end sm:justify-center items-center">
+        <div class="bg-gray-100 w-full sm:max-w-md h-[80vh] sm:h-[600px] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 p-4 flex justify-between items-center text-white">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-robot text-xl"></i>
+                    <div>
+                        <h3 class="font-bold text-sm">Gold Advisor AI ✨</h3>
+                        <p class="text-[10px] opacity-80">Ask about gold investing</p>
+                    </div>
+                </div>
+                <button onclick="toggleAIChat(false)" class="text-white opacity-80 hover:opacity-100"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <!-- Chat Area -->
+            <div id="ai-chat-box" class="flex-1 p-4 overflow-y-auto flex flex-col gap-2 bg-slate-50">
+                <div class="ai-msg ai-msg-bot">
+                    Hello! I'm your Gold Rupi AI assistant. Ask me anything about digital gold savings, market trends, or how to use the app! ✨
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
+                <input type="text" id="ai-input" placeholder="Ask about gold..." class="flex-1 bg-gray-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:outline-none">
+                <button id="ai-send-btn" onclick="sendAIMessage()" class="bg-yellow-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:bg-yellow-600 transition">
+                    <i class="fas fa-paper-plane text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTH SECTION -->
+    <div id="auth-section" class="w-full h-full flex flex-col justify-center items-center p-6 hidden fade-in overflow-y-auto">
+        <div class="glass w-full max-w-md p-8 rounded-3xl text-center">
+            <h1 class="text-4xl font-extrabold text-yellow-600 mb-2">Gold Rupi</h1>
+            <p class="text-gray-500 mb-6 text-sm">Secure Gold Investment & Shopping</p>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <input type="email" id="login-email" placeholder="Email Address" class="neu-input w-full" required>
+                <input type="password" id="login-password" placeholder="Password" class="neu-input w-full" required>
+                <button type="submit" class="w-full bg-yellow-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-yellow-600 transition transform hover:scale-[1.01]">LOGIN</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form" class="space-y-4 hidden">
+                <input type="text" id="signup-name" placeholder="Full Name" class="neu-input w-full" required>
+                <input type="tel" id="signup-mobile" placeholder="Mobile Number" class="neu-input w-full" required>
+                <input type="email" id="signup-email" placeholder="Email Address" class="neu-input w-full" required>
+                <input type="password" id="signup-password" placeholder="Create Password" class="neu-input w-full" required>
+                <input type="text" id="signup-refer" placeholder="Refer Code (Optional)" class="neu-input w-full">
+                <button type="submit" class="w-full bg-yellow-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-yellow-600 transition transform hover:scale-[1.01]">CREATE ACCOUNT</button>
+            </form>
+
+            <div class="mt-6 text-sm text-gray-500 cursor-pointer" id="auth-toggle">
+                Don't have an account? <span class="text-yellow-600 font-bold">Sign Up</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP SECTION (User) -->
+    <div id="app-section" class="w-full h-full hidden flex flex-col relative bg-gray-50">
+        
+        <!-- Top Bar -->
+        <div class="glass z-20 px-4 py-3 flex justify-between items-center sticky top-0">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-coins text-yellow-500 text-xl"></i>
+                <h1 class="font-bold text-lg text-gray-800">Gold Rupi</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-xs font-semibold bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full border border-yellow-200">
+                    <i class="fas fa-rupee-sign mr-1"></i><span id="header-wallet-balance">0</span>
+                </div>
+                <button onclick="confirmLogout()" class="text-gray-500 hover:text-red-500 transition"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div id="main-content" class="flex-1 overflow-y-auto pb-24 p-4 no-scrollbar relative">
+            
+            <!-- VIEW: SHOP (Home) -->
+            <div id="view-shop" class="view-section space-y-6">
+                <!-- Banner -->
+                <div class="glass-card bg-gradient-to-r from-yellow-400 to-yellow-600 p-5 text-white rounded-2xl relative overflow-hidden shadow-xl">
+                    <div class="relative z-10">
+                        <h2 class="text-2xl font-bold">Buy 24K Gold</h2>
+                        <p class="text-sm opacity-90 mb-3">Secure investment, instant delivery. Start from just ₹50.</p>
+                        <button onclick="navTo('gold')" class="bg-white text-yellow-600 px-5 py-2 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition">Invest Now</button>
+                    </div>
+                    <i class="fas fa-gem absolute -right-6 -bottom-6 text-9xl text-white opacity-20 transform rotate-12"></i>
+                </div>
+
+                <h3 class="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">Physical Gold Products</h3>
+                <div id="product-grid" class="grid grid-cols-2 gap-4">
+                    <!-- Products injected by JS -->
+                    <p class="text-center text-gray-400 col-span-2 hidden" id="no-products-msg">No products available yet.</p>
+                </div>
+            </div>
+
+            <!-- VIEW: CART -->
+            <div id="view-cart" class="view-section hidden space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Shopping Cart</h2>
+                <div id="cart-items" class="space-y-4">
+                    <!-- Cart Items injected here -->
+                    <div class="text-center text-gray-400 mt-10 text-sm" id="empty-cart-message">Your cart is currently empty.</div>
+                </div>
+                
+                <div id="checkout-section" class="mt-8 pt-4 border-t border-gray-200 space-y-6 hidden">
+                    <div class="flex justify-between font-extrabold text-xl">
+                        <span>Grand Total:</span>
+                        <span class="text-yellow-600"><i class="fas fa-rupee-sign"></i> <span id="cart-total">0</span></span>
+                    </div>
+
+                    <div class="glass-card p-4 space-y-3">
+                        <h3 class="font-semibold text-gray-700">Shipping Address</h3>
+                        <input type="text" id="addr-house" placeholder="House No / Flat / Street" class="neu-input w-full text-sm" required>
+                        <input type="text" id="addr-city" placeholder="City / District" class="neu-input w-full text-sm" required>
+                        <input type="text" id="addr-pin" placeholder="Pincode" class="neu-input w-full text-sm" required>
+                    </div>
+
+                    <div class="glass-card p-4 space-y-3">
+                        <h3 class="font-semibold text-gray-700">UPI Payment (For Admin Verification)</h3>
+                        <p class="text-xs text-gray-500">Scan the QR code below and pay the exact total amount. Then, enter the UTR/Transaction ID.</p>
+                        <div class="flex flex-col items-center">
+                            <!-- Placeholder QR Code for payment (use your actual UPI ID) -->
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=rajputsurendra562@okicici&pn=GoldRupi&cu=INR" alt="UPI QR" class="w-28 h-28 rounded-lg mix-blend-multiply border border-gray-200 p-1">
+                            <p class="text-xs text-gray-600 font-mono mt-2">rajputsurendra562@okicici</p>
+                        </div>
+                        <input type="text" id="order-utr" placeholder="Enter 12-digit UTR/Transaction ID" class="neu-input w-full text-sm" maxlength="12" required>
+                    </div>
+                    
+                    <button onclick="placeOrder()" class="w-full bg-green-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-600 transition transform hover:scale-[1.01]">Place Order & Submit Payment Details</button>
+                </div>
+            </div>
+
+            <!-- VIEW: WALLET -->
+            <div id="view-wallet" class="view-section hidden space-y-6">
+                <div class="glass-card bg-gray-900 text-white p-6 rounded-2xl relative overflow-hidden shadow-xl">
+                    <div class="relative z-10">
+                        <p class="text-sm opacity-70">Wallet Balance (Available Cash)</p>
+                        <h2 class="text-4xl font-extrabold mt-1"><i class="fas fa-rupee-sign mr-1"></i> <span id="wallet-balance-display">0</span></h2>
+                    </div>
+                    <i class="fas fa-wallet absolute -right-6 -top-6 text-9xl text-yellow-500 opacity-20 blur-sm"></i>
+                </div>
+
+                <!-- Tabs for Wallet Actions -->
+                <div class="flex p-1 bg-gray-200 rounded-xl glass-card">
+                    <button id="tab-add" onclick="toggleWalletTab('add')" class="flex-1 py-3 text-sm font-semibold rounded-lg bg-white shadow-md text-gray-800 transition">Add Money</button>
+                    <button id="tab-withdraw" onclick="toggleWalletTab('withdraw')" class="flex-1 py-3 text-sm font-semibold rounded-lg text-gray-500 transition">Withdraw</button>
+                </div>
+
+                <!-- Add Money Form -->
+                <div id="wallet-add-form" class="space-y-4 glass-card p-4">
+                    <h3 class="font-bold text-gray-800">Request Wallet Top-up</h3>
+                    <input type="number" id="add-amount" placeholder="Amount (₹)" class="neu-input w-full" min="10" required>
+                    <p class="text-xs text-gray-500 text-center">Scan QR and pay the amount above.</p>
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=rajputsurendra562@okicici&pn=GoldRupiWallet&cu=INR" class="w-24 h-24 mx-auto mix-blend-multiply my-2 border p-1 rounded-lg">
+                    <input type="text" id="add-utr" placeholder="Enter UTR Number" class="neu-input w-full" maxlength="12" required>
+                    <button onclick="walletTransaction('wallet_add')" class="w-full bg-yellow-500 text-white font-bold py-3 rounded-xl hover:bg-yellow-600 transition">Request Top-up</button>
+                </div>
+
+                <!-- Withdraw Form -->
+                <div id="wallet-withdraw-form" class="space-y-4 glass-card p-4 hidden">
+                    <h3 class="font-bold text-gray-800">Request Withdrawal</h3>
+                    <input type="number" id="withdraw-amount" placeholder="Amount (₹)" class="neu-input w-full" min="100" required>
+                    <input type="text" id="withdraw-upi" placeholder="Your UPI ID (e.g., user@bank)" class="neu-input w-full" required>
+                    <button onclick="walletTransaction('withdraw')" class="w-full bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition">Request Withdrawal</button>
+                </div>
+
+                <h3 class="font-bold text-gray-800 border-b border-gray-200 pb-2">Transaction History</h3>
+                <div id="wallet-history" class="space-y-2 text-sm">
+                    <p class="text-center text-gray-400 mt-4">Loading history...</p>
+                </div>
+            </div>
+
+            <!-- VIEW: GOLD -->
+            <div id="view-gold" class="view-section hidden space-y-6">
+                <!-- AI Assistant Trigger -->
+                <div onclick="toggleAIChat(true)" class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-4 flex items-center justify-between text-white shadow-lg cursor-pointer transform hover:scale-[1.02] transition">
+                    <div>
+                        <h3 class="font-bold text-lg">Ask Gold Advisor ✨</h3>
+                        <p class="text-sm opacity-90">Get AI investment tips & advice</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                        <i class="fas fa-robot text-2xl"></i>
+                    </div>
+                </div>
+
+                <!-- Gold Rate & Locker -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-card p-4 border-yellow-300 border-l-4">
+                        <p class="text-xs text-yellow-800">Current Gold Rate (24K)</p>
+                        <h2 class="text-xl font-bold text-yellow-600 mt-1">₹ 6,450 <span class="text-xs text-gray-500">/ gm</span></h2>
+                    </div>
+                    <div class="glass-card p-4 border-l-4 border-gray-400">
+                        <h3 class="font-bold text-gray-800">My Gold Locker</h3>
+                        <span class="text-xl font-bold text-gray-600"><span id="gold-balance">0.00</span> mg</span>
+                        <p class="text-xs text-gray-400 italic mt-1">* Based on current rate</p>
+                    </div>
+                </div>
+
+                <!-- Buy Gold Form -->
+                <div class="glass-card p-4 space-y-4">
+                    <h3 class="font-bold text-gray-800">Buy Digital Gold</h3>
+                    <input type="number" id="gold-buy-amount" placeholder="Amount in ₹ (Min ₹50)" class="neu-input w-full" min="50" required>
+                    
+                    <div class="text-center">
+                        <p class="text-xs text-gray-500">Scan QR to Pay</p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=upi://pay?pa=rajputsurendra562@okicici&pn=GoldRupiGold&cu=INR" class="w-20 h-20 mx-auto mix-blend-multiply my-2 border p-1 rounded-lg">
+                    </div>
+
+                    <input type="text" id="gold-buy-utr" placeholder="Enter UTR Number" class="neu-input w-full" maxlength="12" required>
+                    <button onclick="buyGold()" class="w-full bg-yellow-600 text-white font-bold py-3 rounded-xl hover:bg-yellow-700 transition">Request Gold Purchase</button>
+                    
+                    <div id="gold-lock-status" class="text-center text-sm font-medium">
+                        <i class="fas fa-lock text-red-500"></i> <span class="text-red-500">Gold is currently locked. Admin verification needed.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: PROFILE & KYC -->
+            <div id="view-profile" class="view-section hidden space-y-6">
+                <div class="flex flex-col items-center glass-card p-6">
+                    <div class="w-28 h-28 rounded-full bg-gray-200 mb-3 overflow-hidden shadow-xl relative border-4 border-white">
+                         <img id="profile-img" src="https://i.ibb.co/hR22GfL/user.png" alt="Profile Photo" class="w-full h-full object-cover">
+                         <label for="profile-upload" class="absolute bottom-0 w-full bg-black bg-opacity-60 text-white text-xs text-center py-1 cursor-pointer hover:bg-opacity-80 transition">
+                            <i class="fas fa-camera mr-1"></i> Edit
+                         </label>
+                         <input type="file" id="profile-upload" class="hidden" accept="image/*" onchange="updateProfilePic(this)">
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800" id="profile-name">User Name</h2>
+                    <p class="text-gray-500 text-sm" id="profile-email">email@example.com</p>
+                    <p class="text-yellow-600 text-sm font-bold mt-2 bg-yellow-100 px-3 py-1 rounded-full">Ref Code: <span id="profile-refer-code" class="font-mono">...</span></p>
+                    <p class="text-gray-500 text-xs mt-1" id="profile-mobile"></p>
+                </div>
+
+                <!-- KYC Section -->
+                <div class="glass-card p-4 space-y-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-gray-800">KYC Verification Status</h3>
+                        <span id="kyc-status" class="text-xs font-bold px-3 py-1 rounded-full bg-gray-200">Pending</span>
+                    </div>
+                    
+                    <div id="kyc-form" class="space-y-3">
+                        <p class="text-sm text-gray-600">Upload Aadhar Card (Front Image)</p>
+                        <input type="file" id="kyc-file" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100" accept="image/*">
+                        <input type="text" id="kyc-name-input" placeholder="Name on Aadhar" class="neu-input w-full text-sm">
+                        <input type="tel" id="kyc-mobile-input" placeholder="Mobile Number" class="neu-input w-full text-sm">
+                        <button onclick="submitKYC()" class="w-full bg-blue-500 text-white text-sm font-bold py-3 rounded-xl hover:bg-blue-600 transition">Submit KYC</button>
+                    </div>
+                </div>
+
+                <!-- Refer & Earn Section -->
+                <div class="glass-card p-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-xl">
+                    <h3 class="font-bold text-lg">Refer & Earn Bonus</h3>
+                    <p class="text-sm opacity-90 mb-3">Earn ₹100 when your friend joins with your code and buys minimum ₹50 Gold.</p>
+                    <div class="bg-white bg-opacity-30 p-2 rounded text-center border border-white border-opacity-40 mb-3">
+                        <span id="refer-display" class="font-mono text-xl font-extrabold tracking-widest">LOADING</span>
+                    </div>
+                    <button onclick="claimReferBonus()" class="w-full bg-white text-purple-600 font-bold py-2.5 rounded-xl shadow-md text-sm hover:bg-gray-50 transition">Request Bonus Check</button>
+                    <p id="refer-claim-status" class="text-center text-xs mt-2 font-medium opacity-90">Status: Pending</p>
+                </div>
+                
+                <!-- Order History -->
+                <div class="glass-card p-4">
+                     <h3 class="font-bold text-gray-800 mb-3 border-b border-gray-200 pb-2">My Orders History</h3>
+                     <div id="order-history" class="text-sm space-y-3">
+                         <p class="text-center text-gray-400 mt-4">No physical orders placed yet.</p>
+                     </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div id="bottom-nav" class="glass fixed bottom-0 w-full h-16 flex justify-around items-center z-30 pt-1 rounded-t-2xl shadow-2xl">
+            <button id="nav-shop" onclick="navTo('shop')" class="nav-btn text-yellow-600 flex flex-col items-center">
+                <i class="fas fa-store text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">Shop</span>
+            </button>
+            <button id="nav-gold" onclick="navTo('gold')" class="nav-btn text-gray-400 flex flex-col items-center">
+                <i class="fas fa-medal text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">Gold</span>
+            </button>
+            <button id="nav-wallet" onclick="navTo('wallet')" class="nav-btn text-gray-400 flex flex-col items-center">
+                <i class="fas fa-wallet text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">Wallet</span>
+            </button>
+            <button id="nav-cart" onclick="navTo('cart')" class="nav-btn text-gray-400 flex flex-col items-center relative">
+                <div class="relative">
+                    <i class="fas fa-shopping-cart text-xl mb-1"></i>
+                    <span id="cart-count" class="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                </div>
+                <span class="text-[10px] font-medium">Cart</span>
+            </button>
+            <button id="nav-profile" onclick="navTo('profile')" class="nav-btn text-gray-400 flex flex-col items-center">
+                <i class="fas fa-user text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">Profile</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL SECTION -->
+    <div id="admin-panel" class="w-full h-full hidden bg-gray-900 text-white flex flex-col">
+        <div class="p-4 bg-gray-800 flex justify-between items-center shadow-md">
+            <h1 class="font-bold text-yellow-500 text-xl">Admin Panel</h1>
+            <button onclick="confirmLogout()" class="text-sm bg-red-600 px-3 py-1 rounded hover:bg-red-700 transition">Logout</button>
+        </div>
+
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Admin Sidebar (Compact on mobile) -->
+            <div id="admin-sidebar" class="w-16 bg-gray-800 flex flex-col items-center py-4 gap-6 border-r border-gray-700">
+                <button onclick="adminTab('dash')" id="adm-nav-dash" class="admin-nav-btn text-white"><i class="fas fa-tachometer-alt text-xl"></i></button>
+                <button onclick="adminTab('products')" id="adm-nav-products" class="admin-nav-btn text-gray-400 hover:text-white"><i class="fas fa-box text-xl"></i></button>
+                <button onclick="adminTab('orders')" id="adm-nav-orders" class="admin-nav-btn text-gray-400 hover:text-white"><i class="fas fa-shopping-bag text-xl"></i></button>
+                <button onclick="adminTab('finance')" id="adm-nav-finance" class="admin-nav-btn text-gray-400 hover:text-white"><i class="fas fa-rupee-sign text-xl"></i></button>
+                <button onclick="adminTab('kyc')" id="adm-nav-kyc" class="admin-nav-btn text-gray-400 hover:text-white"><i class="fas fa-id-card text-xl"></i></button>
+            </div>
+
+            <!-- Admin Content -->
+            <div class="flex-1 overflow-y-auto p-4 bg-gray-900">
+                
+                <!-- Admin: Dashboard -->
+                <div id="adm-dash" class="admin-view space-y-6">
+                    <h2 class="text-2xl font-bold border-b border-gray-700 pb-2">Overview Dashboard</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-lg">
+                            <h3 class="text-gray-400 text-sm">Total Users</h3>
+                            <p class="text-3xl font-extrabold text-blue-400" id="stat-users">0</p>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-lg">
+                            <h3 class="text-gray-400 text-sm">Pending Orders (Shipping)</h3>
+                            <p class="text-3xl font-extrabold text-red-400" id="stat-orders">0</p>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-lg">
+                            <h3 class="text-gray-400 text-sm">Pending Payments / Top-ups</h3>
+                            <p class="text-3xl font-extrabold text-yellow-400" id="stat-money">0</p>
+                        </div>
+                         <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-lg">
+                            <h3 class="text-gray-400 text-sm">Pending KYC Verifications</h3>
+                            <p class="text-3xl font-extrabold text-purple-400" id="stat-kyc">0</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow-lg">
+                        <h3 class="text-gray-400 text-sm">Total Gold Held (mg)</h3>
+                        <p class="text-3xl font-extrabold text-yellow-500" id="stat-gold-total">0</p>
+                    </div>
+                </div>
+
+                <!-- Admin: Products -->
+                <div id="adm-products" class="admin-view hidden space-y-6">
+                    <h2 class="text-2xl font-bold border-b border-gray-700 pb-2">Product Management</h2>
+                    <div class="bg-gray-800 p-4 rounded-lg space-y-3 border border-gray-700">
+                        <h3 class="text-lg font-bold text-yellow-500">Add New Product</h3>
+                        <input type="text" id="prod-name" placeholder="Name" class="w-full bg-gray-700 p-3 rounded text-sm text-white border-none focus:ring-yellow-500 focus:ring-1">
+                        <input type="number" id="prod-price" placeholder="Price (₹)" class="w-full bg-gray-700 p-3 rounded text-sm text-white border-none" min="1">
+                        <textarea id="prod-desc" placeholder="Description" class="w-full bg-gray-700 p-3 rounded text-sm text-white border-none"></textarea>
+                        <select id="prod-stock" class="w-full bg-gray-700 p-3 rounded text-sm text-white border-none">
+                            <option value="in">In Stock</option>
+                            <option value="out">Out of Stock</option>
+                        </select>
+                        <input type="file" id="prod-img-upload" class="text-sm text-gray-400 file:bg-yellow-600 file:border-none file:text-white file:rounded file:py-1.5 file:px-3 hover:file:bg-yellow-500" accept="image/*">
+                        <button onclick="addProduct()" class="w-full bg-blue-600 py-3 rounded font-bold text-sm hover:bg-blue-500 transition">Add Product</button>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-400">Current Products</h3>
+                    <div id="adm-prod-list" class="space-y-3 mt-4">
+                        <!-- Products List -->
+                    </div>
+                </div>
+
+                <!-- Admin: Order Status -->
+                <div id="adm-orders" class="admin-view hidden space-y-6">
+                    <h2 class="text-2xl font-bold border-b border-gray-700 pb-2">Physical Orders Management</h2>
+                    <div id="adm-order-list" class="space-y-4">
+                        <!-- Orders List -->
+                    </div>
+                </div>
+
+                <!-- Admin: Finance Verification -->
+                <div id="adm-finance" class="admin-view hidden space-y-6">
+                    <h2 class="text-2xl font-bold border-b border-gray-700 pb-2">Financial Requests Verification</h2>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button onclick="filterFinance('pending')" id="finance-filter-pending" class="bg-yellow-600 px-3 py-1 rounded text-xs font-bold">Pending</button>
+                        <button onclick="filterFinance('wallet_add')" id="finance-filter-wallet_add" class="bg-gray-700 px-3 py-1 rounded text-xs">Wallet Top-up</button>
+                        <button onclick="filterFinance('gold_buy')" id="finance-filter-gold_buy" class="bg-gray-700 px-3 py-1 rounded text-xs">Gold Purchase</button>
+                        <button onclick="filterFinance('withdraw')" id="finance-filter-withdraw" class="bg-gray-700 px-3 py-1 rounded text-xs">Withdrawal</button>
+                        <button onclick="filterFinance('refer')" id="finance-filter-refer" class="bg-gray-700 px-3 py-1 rounded text-xs">Referral Bonus</button>
+                    </div>
+                    <div id="adm-finance-list" class="space-y-3">
+                        <!-- Transactions -->
+                    </div>
+                </div>
+
+                <!-- Admin: KYC Verification -->
+                <div id="adm-kyc" class="admin-view hidden space-y-6">
+                    <h2 class="text-2xl font-bold border-b border-gray-700 pb-2">KYC Verifications</h2>
+                    <div id="adm-kyc-list" class="space-y-3">
+                        <!-- KYC Requests -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- CONFIGURATION & FIREBASE INITIALIZATION ---
+        
+        // Helper function for DOM selection (Fixes the original ReferenceError)
+        const $ = (id) => document.getElementById(id);
+
+        const ADMIN_EMAIL = "rajputsurendra562@gmail.com";
+        const IMGBB_KEY = "021a2437b889915669b66554687bf17f";
+        const GOLD_RATE_PER_GM = 6450; // Fixed rate for calculation
+        
+        // Canvas Global Variables Check
+        const canvasAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-goldrupi-app';
+        const canvasAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // User-provided Firebase Config (will be used if __firebase_config is unavailable)
+        const providedFirebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            storageBucket: "smbrand-4543a.firebasestorage.app",
+            messagingSenderId: "720775550032",
+            appId: "1:720775550032:web:0622548a007597778bad55",
+            measurementId: "G-3LS5W6F8QW"
+        };
+        
+        const firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : providedFirebaseConfig;
+
+        // Initialize Firebase v8
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.database();
+        const storage = firebase.storage();
+        
+        // Set up the base path for Realtime Database (using app_id for security scope)
+        const DB_BASE = canvasAppId;
+        
+        // Global State
+        let currentUser = null;
+        let userData = {};
+        let cart = {}; // {productId: {quantity: N, price: P, name: N, img: U}}
+        let products = {}; // {productId: {name: N, ...}}
+        let currentView = 'shop';
+        let isAdmin = false;
+
+        // --- UI HELPERS ---
+        const loader = $('loader');
+        const aiModal = $('ai-modal');
+        const mainContent = $('main-content');
+        const adminSidebar = $('admin-sidebar');
+        const toastContainer = $('toast-container');
+        const modal = $('custom-modal');
+        const modalTitle = $('modal-title');
+        const modalMessage = $('modal-message');
+        const modalCancel = $('modal-cancel');
+        const modalConfirm = $('modal-confirm');
+        
+        /**
+         * Generic message box/confirmation dialog replacement for alert/confirm.
+         * @param {string} title - The modal title.
+         * @param {string} message - The modal message.
+         * @param {boolean} isConfirm - If true, shows confirm/cancel buttons, otherwise just shows an OK button.
+         * @returns {Promise<boolean>} Resolves true on confirm, false on cancel (if isConfirm is true).
+         */
+        function showModal(title, message, isConfirm = false) {
+            return new Promise(resolve => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modal.classList.remove('hidden');
+
+                modalConfirm.onclick = () => {
+                    modal.classList.add('hidden');
+                    resolve(true);
+                };
+
+                if (isConfirm) {
+                    modalCancel.classList.remove('hidden');
+                    modalCancel.onclick = () => {
+                        modal.classList.add('hidden');
+                        resolve(false);
+                    };
+                } else {
+                    modalCancel.classList.add('hidden');
+                }
+            });
+        }
+
+        function showLoader(show) {
+            loader.style.display = show ? 'flex' : 'none';
+        }
+
+        function showToast(msg, type = 'info') {
+            const colors = {
+                info: 'bg-blue-500',
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500'
+            };
+            const icons = {
+                info: 'fas fa-info-circle',
+                success: 'fas fa-check-circle',
+                error: 'fas fa-times-circle',
+                warning: 'fas fa-exclamation-triangle'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `${colors[type]} text-white p-3 rounded-lg shadow-xl fade-in flex items-center space-x-2`;
+            toast.style.minWidth = '200px';
+            toast.innerHTML = `<i class="${icons[type]}"></i><span class="text-sm font-medium">${msg}</span>`;
+            
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition', 'duration-500');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 5000);
+        }
+
+        function toggleAIChat(show) {
+            if (show) {
+                aiModal.classList.remove('hidden');
+            } else {
+                aiModal.classList.add('hidden');
+            }
+        }
+
+        function navTo(view) {
+            currentView = view;
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active', 'text-yellow-600'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.add('text-gray-400'));
+
+            $(`view-${view}`).classList.remove('hidden');
+            $(`nav-${view}`).classList.add('active', 'text-yellow-600');
+            $(`nav-${view}`).classList.remove('text-gray-400');
+            mainContent.scrollTop = 0; // Scroll to top on navigation
+            
+            // Re-render data for the new view
+            if (view === 'cart') renderCart();
+            if (view === 'wallet') renderWalletHistory();
+            if (view === 'profile') renderProfile();
+        }
+
+        function adminTab(tab) {
+            document.querySelectorAll('.admin-view').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.admin-nav-btn').forEach(el => el.classList.replace('text-white', 'text-gray-400'));
+            
+            $(`adm-${tab}`).classList.remove('hidden');
+            $(`adm-nav-${tab}`).classList.replace('text-gray-400', 'text-white');
+            
+            // Fetch/render data for the new tab
+            if (tab === 'dash') renderAdminDashboard();
+            if (tab === 'products') renderAdminProducts();
+            if (tab === 'orders') renderAdminOrders();
+            if (tab === 'finance') renderAdminFinance();
+            if (tab === 'kyc') renderAdminKYC();
+        }
+
+        // --- GEMINI AI CHAT LOGIC ---
+        let chatHistory = [{ role: "model", parts: [{ text: "Hello! I'm your Gold Rupi AI assistant. Ask me anything about digital gold savings, market trends, or how to use the app! ✨" }] }];
+        
+        async function sendAIMessage() {
+            const input = $('ai-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // 1. Display user message
+            appendMessage(message, 'user');
+            input.value = '';
+            
+            // 2. Add to history
+            chatHistory.push({ role: "user", parts: [{ text: message }] });
+
+            // 3. Display typing indicator
+            const botMessageId = appendMessage(null, 'bot');
+            const botMsgEl = $(botMessageId);
+            botMsgEl.innerHTML = `
+                <div class="flex items-center space-x-1 p-2">
+                    <span class="typing-dot w-2 h-2 bg-gray-400 rounded-full"></span>
+                    <span class="typing-dot w-2 h-2 bg-gray-400 rounded-full"></span>
+                    <span class="typing-dot w-2 h-2 bg-gray-400 rounded-full"></span>
+                </div>
+            `;
+            
+            $('ai-send-btn').disabled = true;
+
+            // 4. Call Gemini API
+            const model = "gemini-2.5-flash-preview-09-2025";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+
+            const systemPrompt = "You are Gold Advisor AI, a helpful, encouraging, and knowledgeable assistant for the Gold Rupi digital gold savings app. Keep your advice focused on gold, investment, and the app's features. Be concise.";
+
+            const payload = {
+                contents: chatHistory,
+                tools: [{ "google_search": {} }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+            
+            // Exponential backoff retry logic
+            const maxRetries = 3;
+            let response = null;
+            
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) break; 
+                    
+                    if (response.status === 429) { // Rate limit
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                        continue;
+                    }
+                    throw new Error(`API returned status ${response.status}`);
+
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                         console.error("Gemini API call failed after retries:", error);
+                         botMsgEl.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>Sorry, I'm having trouble connecting right now. Try again later.`;
+                         $('ai-send-btn').disabled = false;
+                         return;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                }
+            }
+
+            // 5. Process response
+            try {
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const text = candidate.content.parts[0].text;
+                    chatHistory.push(candidate.content);
+                    
+                    // Render the markdown text
+                    botMsgEl.innerHTML = marked(text);
+                } else {
+                    botMsgEl.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>I couldn't generate a response. Please try rephrasing.`;
+                }
+
+            } catch (error) {
+                console.error("Error processing Gemini response:", error);
+                botMsgEl.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>An error occurred while processing the response.`;
+            }
+            
+            $('ai-send-btn').disabled = false;
+        }
+
+        function appendMessage(text, role) {
+            const chatBox = $('ai-chat-box');
+            const id = 'msg-' + Date.now();
+            const messageEl = document.createElement('div');
+            messageEl.id = id;
+            messageEl.className = `ai-msg fade-in ${role === 'user' ? 'ai-msg-user' : 'ai-msg-bot'}`;
+            if (text) {
+                messageEl.innerHTML = marked(text);
+            }
+            chatBox.appendChild(messageEl);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return id;
+        }
+
+        // --- AUTHENTICATION ---
+
+        async function initAuth() {
+            showLoader(true);
+            
+            // Attempt Custom Token Sign In (Canvas Auth)
+            if (canvasAuthToken) {
+                try {
+                    await auth.signInWithCustomToken(canvasAuthToken);
+                    console.log("Signed in with custom token.");
+                    // onAuthStateChanged will handle routing
+                } catch (e) {
+                    console.error("Custom token sign-in failed, proceeding to standard auth.", e);
+                    // Fallback to anonymous sign-in or standard login flow
+                    auth.signInAnonymously().catch(e => console.error("Anonymous sign-in failed:", e));
+                }
+            } else {
+                 // Fallback to anonymous sign-in or standard login flow
+                auth.signInAnonymously().catch(e => console.error("Anonymous sign-in failed:", e));
+            }
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                isAdmin = user.email === ADMIN_EMAIL;
+                
+                // Set up User or Admin UI
+                $('auth-section').classList.add('hidden');
+                
+                if (isAdmin) {
+                    $('admin-panel').classList.remove('hidden');
+                    $('app-section').classList.add('hidden');
+                    startAdminListeners();
+                    adminTab('dash');
+                } else {
+                    $('app-section').classList.remove('hidden');
+                    $('admin-panel').classList.add('hidden');
+                    startUserListeners(user.uid);
+                    navTo('shop');
+                }
+            } else {
+                currentUser = null;
+                isAdmin = false;
+                $('auth-section').classList.remove('hidden');
+                $('app-section').classList.add('hidden');
+                $('admin-panel').classList.add('hidden');
+                // Stop all listeners (optional, but good practice)
+                stopAllListeners(); 
+            }
+            showLoader(false);
+        });
+        
+        // Toggle between login and signup forms
+        $('auth-toggle').addEventListener('click', () => {
+            const isLogin = $('login-form').classList.contains('hidden');
+            $('login-form').classList.toggle('hidden');
+            $('signup-form').classList.toggle('hidden');
+            $('auth-toggle').innerHTML = isLogin ? 'Already have an account? <span class="text-yellow-600 font-bold">Log In</span>' : 'Don\'t have an account? <span class="text-yellow-600 font-bold">Sign Up</span>';
+        });
+
+        // Login Handler
+        $('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoader(true);
+            const email = $('login-email').value;
+            const password = $('login-password').value;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showToast("Login Successful!", 'success');
+            } catch (error) {
+                showToast(`Login Failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        });
+
+        // Signup Handler
+        $('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoader(true);
+            const email = $('signup-email').value;
+            const password = $('signup-password').value;
+            const name = $('signup-name').value;
+            const mobile = $('signup-mobile').value;
+            const referCode = $('signup-refer').value.trim();
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const userId = userCredential.user.uid;
+                const newReferCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                
+                // 1. Initial User Data
+                const newUserData = {
+                    name,
+                    mobile,
+                    email,
+                    wallet: 100, // Signup Bonus
+                    gold: 0,
+                    referCode: newReferCode,
+                    referralUsed: referCode,
+                    kycStatus: 'Pending',
+                    profilePicUrl: 'https://i.ibb.co/hR22GfL/user.png',
+                    address: { house: '', city: '', pin: '' },
+                    createdAt: Date.now()
+                };
+
+                await db.ref(`${DB_BASE}/users/${userId}`).set(newUserData);
+                
+                // 2. Check and process referral
+                if (referCode) {
+                    // Find the referrer (In a real app, this would be an indexed query, but Realtime DB is limited)
+                    const usersSnapshot = await db.ref(`${DB_BASE}/users`).once('value');
+                    const users = usersSnapshot.val();
+                    let referrerId = null;
+                    
+                    for (const id in users) {
+                        if (users[id].referCode === referCode) {
+                            referrerId = id;
+                            break;
+                        }
+                    }
+
+                    if (referrerId) {
+                         // Add a transaction request for the referrer
+                         const transactionRef = db.ref(`${DB_BASE}/transactions`).push();
+                         await transactionRef.set({
+                             userId: referrerId,
+                             type: 'refer',
+                             amount: 100,
+                             utr: 'N/A',
+                             status: 'Pending', // Requires min gold purchase and admin verification
+                             refereeId: userId,
+                             timestamp: Date.now()
+                         });
+                         showToast(`Welcome! ₹100 added. Your referrer will be notified.`, 'success');
+                    }
+                } else {
+                     showToast("Account Created! ₹100 signup bonus added to your wallet.", 'success');
+                }
+
+            } catch (error) {
+                showToast(`Signup Failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        });
+
+        async function confirmLogout() {
+            const confirmed = await showModal('Confirm Logout', 'Are you sure you want to sign out?', true);
+            if (confirmed) {
+                logout();
+            }
+        }
+
+        async function logout() {
+            showLoader(true);
+            try {
+                await auth.signOut();
+                showToast("Signed out successfully.", 'info');
+                // Cleanup global state
+                currentUser = null;
+                userData = {};
+                cart = {};
+                isAdmin = false;
+                stopAllListeners(); // Stop all listeners upon logout
+            } catch (error) {
+                showToast("Logout failed.", 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+        
+        // --- LISTENERS MANAGEMENT (REALTIME DB) ---
+        let userListeners = [];
+        let adminListeners = [];
+        
+        function stopAllListeners() {
+            userListeners.forEach(listener => db.ref(listener.path).off('value', listener.callback));
+            adminListeners.forEach(listener => db.ref(listener.path).off('value', listener.callback));
+            userListeners = [];
+            adminListeners = [];
+        }
+
+        function startUserListeners(userId) {
+            // User Data Listener
+            const userRef = db.ref(`${DB_BASE}/users/${userId}`);
+            const userCallback = userSnapshot => {
+                if (userSnapshot.exists()) {
+                    userData = userSnapshot.val();
+                    renderUserDetails();
+                    renderCart(); // Re-render cart in case prices changed or data updated
+                }
+            };
+            userRef.on('value', userCallback);
+            userListeners.push({ path: `${DB_BASE}/users/${userId}`, callback: userCallback });
+            
+            // Products Listener
+            const productsRef = db.ref(`${DB_BASE}/products`);
+            const productsCallback = productsSnapshot => {
+                products = productsSnapshot.val() || {};
+                renderProducts();
+            };
+            productsRef.on('value', productsCallback);
+            userListeners.push({ path: `${DB_BASE}/products`, callback: productsCallback });
+            
+            // Cart Listener (using localStorage initially for simplicity, but tracking state)
+            loadCartFromStorage();
+            
+            // Order History Listener
+            const ordersRef = db.ref(`${DB_BASE}/orders`).orderByChild('userId').equalTo(userId);
+            const ordersCallback = ordersSnapshot => {
+                renderUserOrders(ordersSnapshot.val());
+            };
+            ordersRef.on('value', ordersCallback);
+            userListeners.push({ path: `${DB_BASE}/orders`, callback: ordersCallback });
+            
+            // Wallet History Listener (triggered manually in navTo('wallet'))
+        }
+
+        function startAdminListeners() {
+            // Dashboard Listeners
+            const usersRef = db.ref(`${DB_BASE}/users`);
+            const usersCallback = usersSnapshot => {
+                renderAdminDashboard(usersSnapshot.val());
+            };
+            usersRef.on('value', usersCallback);
+            adminListeners.push({ path: `${DB_BASE}/users`, callback: usersCallback });
+            
+            const transactionsRef = db.ref(`${DB_BASE}/transactions`).orderByChild('status').equalTo('Pending');
+            const transactionsCallback = transactionsSnapshot => {
+                renderAdminDashboard(null, transactionsSnapshot.val());
+                renderAdminFinance(transactionsSnapshot.val());
+            };
+            transactionsRef.on('value', transactionsCallback);
+            adminListeners.push({ path: `${DB_BASE}/transactions`, callback: transactionsCallback });
+            
+            const productsRef = db.ref(`${DB_BASE}/products`);
+            const productsCallback = productsSnapshot => {
+                products = productsSnapshot.val() || {};
+                renderAdminProducts();
+            };
+            productsRef.on('value', productsCallback);
+            adminListeners.push({ path: `${DB_BASE}/products`, callback: productsCallback });
+            
+            const ordersRef = db.ref(`${DB_BASE}/orders`).orderByChild('status');
+            const ordersCallback = ordersSnapshot => {
+                renderAdminOrders(ordersSnapshot.val());
+            };
+            ordersRef.on('value', ordersCallback);
+            adminListeners.push({ path: `${DB_BASE}/orders`, callback: ordersCallback });
+
+            const kycRef = db.ref(`${DB_BASE}/kyc`).orderByChild('status').equalTo('Pending');
+            const kycCallback = kycSnapshot => {
+                renderAdminKYC(kycSnapshot.val());
+            };
+            kycRef.on('value', kycCallback);
+            adminListeners.push({ path: `${DB_BASE}/kyc`, callback: kycCallback });
+        }
+
+        // --- USER UI RENDERING ---
+
+        function renderUserDetails() {
+            // Update Header
+            $('header-wallet-balance').textContent = userData.wallet ? userData.wallet.toLocaleString('en-IN') : '0';
+            $('wallet-balance-display').textContent = userData.wallet ? userData.wallet.toLocaleString('en-IN') : '0';
+            $('gold-balance').textContent = (userData.gold / 1000).toFixed(2); // Gold is stored in mg, display in grams
+            
+            // Update Profile
+            $('profile-name').textContent = userData.name || 'User Name';
+            $('profile-email').textContent = userData.email || 'email@example.com';
+            $('profile-mobile').textContent = userData.mobile || 'No Mobile';
+            $('profile-refer-code').textContent = userData.referCode || 'N/A';
+            $('refer-display').textContent = userData.referCode || 'N/A';
+            $('profile-img').src = userData.profilePicUrl || 'https://i.ibb.co/hR22GfL/user.png';
+            
+            // Update KYC Status
+            const kycStatus = userData.kycStatus || 'Pending';
+            const statusEl = $('kyc-status');
+            statusEl.textContent = kycStatus;
+            statusEl.className = `text-xs font-bold px-3 py-1 rounded-full ${
+                kycStatus === 'Verified' ? 'bg-green-100 text-green-700' : 
+                kycStatus === 'Rejected' ? 'bg-red-100 text-red-700' : 
+                'bg-gray-200 text-gray-700'
+            }`;
+            
+            // Update Refer Claim Status
+            const referStatus = userData.referClaimStatus || 'Not Requested';
+            $('refer-claim-status').textContent = `Status: ${referStatus}`;
+
+            // Update Gold Lock Status
+            const goldLockStatus = $('gold-lock-status');
+            if (userData.goldLockStatus === 'Unlocked') {
+                goldLockStatus.innerHTML = `<i class="fas fa-lock-open text-green-500 mr-1"></i> <span class="text-green-500">Gold is unlocked and ready for transactions.</span>`;
+            } else {
+                goldLockStatus.innerHTML = `<i class="fas fa-lock text-red-500 mr-1"></i> <span class="text-red-500">Gold is currently locked. Admin verification needed.</span>`;
+            }
+        }
+
+        function renderProducts() {
+            const grid = $('product-grid');
+            grid.innerHTML = '';
+            const productKeys = Object.keys(products);
+            
+            if (productKeys.length === 0) {
+                 $('no-products-msg').classList.remove('hidden');
+                 return;
+            }
+            $('no-products-msg').classList.add('hidden');
+
+            productKeys.forEach(id => {
+                const prod = products[id];
+                const card = document.createElement('div');
+                card.className = 'glass-card p-3 flex flex-col items-center text-center shadow-lg';
+                card.innerHTML = `
+                    <img src="${prod.imageUrl || 'https://placehold.co/150x150/fde047/white?text=Gold+Item'}" 
+                         alt="${prod.name}" 
+                         class="w-full h-32 object-contain rounded-lg mb-2">
+                    <h4 class="font-semibold text-sm text-gray-800">${prod.name}</h4>
+                    <p class="text-lg font-bold text-yellow-600 my-1"><i class="fas fa-rupee-sign text-base"></i> ${prod.price.toLocaleString('en-IN')}</p>
+                    <p class="text-xs text-gray-500 truncate mb-3">${prod.description}</p>
+                    ${prod.stock === 'in' ? `
+                        <div class="flex space-x-2 w-full">
+                            <button onclick="addToCart('${id}')" class="flex-1 bg-yellow-500 text-white text-xs py-2 rounded-lg font-bold hover:bg-yellow-600 transition">
+                                <i class="fas fa-cart-plus"></i> Cart
+                            </button>
+                            <button onclick="buyNow('${id}')" class="flex-1 bg-green-500 text-white text-xs py-2 rounded-lg font-bold hover:bg-green-600 transition">
+                                <i class="fas fa-bolt"></i> Buy
+                            </button>
+                        </div>
+                    ` : `
+                        <span class="text-xs font-bold text-red-500 bg-red-100 px-3 py-1 rounded-full w-full">Out of Stock</span>
+                    `}
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        // --- CART LOGIC ---
+        
+        function saveCartToStorage() {
+             localStorage.setItem('goldRupiCart', JSON.stringify(cart));
+        }
+
+        function loadCartFromStorage() {
+             const storedCart = localStorage.getItem('goldRupiCart');
+             cart = storedCart ? JSON.parse(storedCart) : {};
+             renderCart();
+        }
+
+        function addToCart(productId) {
+            const product = products[productId];
+            if (!product) return showToast('Product not found.', 'error');
+
+            if (cart[productId]) {
+                cart[productId].quantity++;
+            } else {
+                cart[productId] = {
+                    quantity: 1,
+                    name: product.name,
+                    price: product.price,
+                    imageUrl: product.imageUrl
+                };
+            }
+            saveCartToStorage();
+            renderCart();
+            showToast(`${product.name} added to cart!`, 'success');
+        }
+
+        function updateCartQuantity(productId, change) {
+            if (!cart[productId]) return;
+
+            cart[productId].quantity += change;
+
+            if (cart[productId].quantity <= 0) {
+                delete cart[productId];
+            }
+            saveCartToStorage();
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartItemsEl = $('cart-items');
+            const cartCountEl = $('cart-count');
+            const checkoutSectionEl = $('checkout-section');
+            const cartTotalEl = $('cart-total');
+            let total = 0;
+            let count = 0;
+
+            cartItemsEl.innerHTML = '';
+            const cartKeys = Object.keys(cart);
+
+            if (cartKeys.length === 0) {
+                $('empty-cart-message').classList.remove('hidden');
+                checkoutSectionEl.classList.add('hidden');
+                cartCountEl.textContent = '0';
+                return;
+            }
+            $('empty-cart-message').classList.add('hidden');
+            checkoutSectionEl.classList.remove('hidden');
+            
+            cartKeys.forEach(id => {
+                const item = cart[id];
+                const itemTotal = item.quantity * item.price;
+                total += itemTotal;
+                count += item.quantity;
+
+                const itemHtml = document.createElement('div');
+                itemHtml.className = 'glass-card p-3 flex items-center space-x-3 shadow-md';
+                itemHtml.innerHTML = `
+                    <img src="${item.imageUrl || 'https://placehold.co/60x60/fde047/white?text=Item'}" class="w-14 h-14 object-contain rounded-lg border border-gray-200">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-800 text-sm">${item.name}</h4>
+                        <p class="text-xs text-gray-500"><i class="fas fa-rupee-sign text-xs"></i> ${item.price.toLocaleString('en-IN')} x ${item.quantity}</p>
+                        <p class="font-bold text-yellow-600 text-sm"><i class="fas fa-rupee-sign text-xs"></i> ${itemTotal.toLocaleString('en-IN')}</p>
+                    </div>
+                    <div class="flex items-center space-x-2 text-gray-600">
+                        <button onclick="updateCartQuantity('${id}', -1)" class="bg-gray-200 w-6 h-6 rounded-full hover:bg-gray-300 transition">-</button>
+                        <span class="font-medium">${item.quantity}</span>
+                        <button onclick="updateCartQuantity('${id}', 1)" class="bg-gray-200 w-6 h-6 rounded-full hover:bg-gray-300 transition">+</button>
+                    </div>
+                `;
+                cartItemsEl.appendChild(itemHtml);
+            });
+
+            cartTotalEl.textContent = total.toLocaleString('en-IN');
+            cartCountEl.textContent = count;
+        }
+
+        async function buyNow(productId) {
+            cart = {}; // Clear cart for Buy Now
+            addToCart(productId);
+            navTo('cart');
+        }
+
+        async function placeOrder() {
+            if (!currentUser || !userData.email) {
+                return showModal('Error', 'Please log in to place an order.', false);
+            }
+
+            const totalAmount = Object.values(cart).reduce((sum, item) => sum + item.quantity * item.price, 0);
+            if (totalAmount === 0) return showToast('Cart is empty.', 'error');
+            
+            const house = $('addr-house').value.trim();
+            const city = $('addr-city').value.trim();
+            const pin = $('addr-pin').value.trim();
+            const utr = $('order-utr').value.trim();
+
+            if (!house || !city || !pin) {
+                return showToast('Please fill in the complete shipping address.', 'error');
+            }
+            if (utr.length !== 12 || isNaN(utr)) {
+                return showToast('Please enter a valid 12-digit UTR/Transaction ID.', 'error');
+            }
+            
+            showLoader(true);
+
+            // 1. Save Address (Optional: only if different from saved address)
+            await db.ref(`${DB_BASE}/users/${currentUser.uid}/address`).update({ house, city, pin });
+
+            // 2. Create Order Request (Pending Payment Verification)
+            const orderRef = db.ref(`${DB_BASE}/orders`).push();
+            const orderId = orderRef.key;
+            
+            const orderData = {
+                orderId,
+                userId: currentUser.uid,
+                userName: userData.name,
+                userEmail: userData.email,
+                items: JSON.stringify(cart), // Stringify complex object for RTDB simplicity
+                total: totalAmount,
+                address: { house, city, pin },
+                status: 'Payment Pending', // Initial status
+                utr: utr,
+                timestamp: Date.now()
+            };
+
+            await orderRef.set(orderData);
+            
+            // 3. Create Transaction for Admin Verification
+            const transactionRef = db.ref(`${DB_BASE}/transactions`).push();
+            await transactionRef.set({
+                transactionId: transactionRef.key,
+                userId: currentUser.uid,
+                type: 'order',
+                amount: totalAmount,
+                utr: utr,
+                status: 'Pending',
+                orderId: orderId,
+                timestamp: Date.now()
+            });
+
+            // 4. Clear Cart
+            cart = {};
+            saveCartToStorage();
+            renderCart();
+
+            showModal('Order Placed!', `Your order (ID: ${orderId.substring(0, 8)}) has been placed. Payment is pending admin verification for UTR: ${utr}. You will be notified once confirmed.`, false);
+            showLoader(false);
+            navTo('profile');
+        }
+
+        function renderUserOrders(ordersData) {
+            const orderHistoryEl = $('order-history');
+            orderHistoryEl.innerHTML = '';
+            
+            if (!ordersData) {
+                orderHistoryEl.innerHTML = '<p class="text-center text-gray-400 mt-4">No physical orders placed yet.</p>';
+                return;
+            }
+
+            const orders = Object.values(ordersData).sort((a, b) => b.timestamp - a.timestamp);
+
+            orders.forEach(order => {
+                let statusClass, statusIcon;
+                switch (order.status) {
+                    case 'Payment Pending':
+                        statusClass = 'text-yellow-600 bg-yellow-100';
+                        statusIcon = 'fas fa-hourglass-half';
+                        break;
+                    case 'Shipped':
+                    case 'Out for Delivery':
+                        statusClass = 'text-blue-600 bg-blue-100';
+                        statusIcon = 'fas fa-truck';
+                        break;
+                    case 'Delivered':
+                        statusClass = 'text-green-600 bg-green-100';
+                        statusIcon = 'fas fa-check-circle';
+                        break;
+                    case 'Payment Failed':
+                        statusClass = 'text-red-600 bg-red-100';
+                        statusIcon = 'fas fa-times-circle';
+                        break;
+                    default:
+                        statusClass = 'text-gray-600 bg-gray-100';
+                        statusIcon = 'fas fa-info-circle';
+                }
+
+                const items = JSON.parse(order.items || '{}');
+                const itemSummary = Object.values(items).map(i => `${i.name} (${i.quantity})`).join(', ');
+
+                orderHistoryEl.innerHTML += `
+                    <div class="glass-card p-3 shadow-md space-y-1">
+                        <div class="flex justify-between items-center font-bold text-sm">
+                            <span>Order #${order.orderId.substring(0, 8)}</span>
+                            <span class="text-xs ${statusClass} px-2 py-1 rounded-full"><i class="${statusIcon} mr-1"></i>${order.status}</span>
+                        </div>
+                        <p class="text-xs text-gray-500">${new Date(order.timestamp).toLocaleDateString()}</p>
+                        <p class="text-sm text-gray-700 truncate">Items: ${itemSummary}</p>
+                        <p class="font-extrabold text-md text-yellow-600"><i class="fas fa-rupee-sign"></i> ${order.total.toLocaleString('en-IN')}</p>
+                        <p class="text-xs text-gray-400">Address: ${order.address.city}, ${order.address.pin}</p>
+                    </div>
+                `;
+            });
+        }
+        
+        // --- WALLET/FINANCE LOGIC ---
+        
+        function toggleWalletTab(tab) {
+            $('tab-add').classList.remove('bg-white', 'shadow-md', 'text-gray-800');
+            $('tab-add').classList.add('text-gray-500');
+            $('tab-withdraw').classList.remove('bg-white', 'shadow-md', 'text-gray-800');
+            $('tab-withdraw').classList.add('text-gray-500');
+            
+            $(`tab-${tab}`).classList.add('bg-white', 'shadow-md', 'text-gray-800');
+            $(`tab-${tab}`).classList.remove('text-gray-500');
+
+            $('wallet-add-form').classList.add('hidden');
+            $('wallet-withdraw-form').classList.add('hidden');
+            $(`wallet-${tab}-form`).classList.remove('hidden');
+        }
+
+        async function walletTransaction(type) {
+            if (!currentUser) return showModal('Error', 'Please log in to perform this action.', false);
+
+            let amount, utr, upiId;
+            let path = `${DB_BASE}/transactions`;
+
+            if (type === 'wallet_add') {
+                amount = parseFloat($('add-amount').value);
+                utr = $('add-utr').value.trim();
+                if (isNaN(amount) || amount <= 0 || utr.length !== 12) {
+                    return showToast('Please enter a valid amount and 12-digit UTR.', 'error');
+                }
+            } else if (type === 'withdraw') {
+                amount = parseFloat($('withdraw-amount').value);
+                upiId = $('withdraw-upi').value.trim();
+                if (isNaN(amount) || amount <= 0 || !upiId) {
+                    return showToast('Please enter a valid amount and UPI ID.', 'error');
+                }
+                if (amount > userData.wallet) {
+                    return showToast('Insufficient wallet balance.', 'error');
+                }
+            } else {
+                return; // Should not happen
+            }
+
+            showLoader(true);
+            
+            const transactionRef = db.ref(path).push();
+            const transactionId = transactionRef.key;
+
+            const transactionData = {
+                transactionId,
+                userId: currentUser.uid,
+                userName: userData.name,
+                userEmail: userData.email,
+                type: type,
+                amount: amount,
+                utr: utr || 'N/A',
+                upiId: upiId || 'N/A',
+                status: 'Pending',
+                timestamp: Date.now()
+            };
+
+            try {
+                // For withdrawal, deduct immediately and set goldLockStatus to 'Locked' for safety
+                if (type === 'withdraw') {
+                    // Update wallet balance immediately (optimistic update)
+                    await db.ref(`${DB_BASE}/users/${currentUser.uid}/wallet`).transaction((currentWallet) => {
+                        if (currentWallet === null) return 0; // Should not happen
+                        if (currentWallet >= amount) {
+                            return currentWallet - amount;
+                        } else {
+                            // Cancel transaction if balance is insufficient (server-side check)
+                            showToast('Transaction rejected: Insufficient funds.', 'error');
+                            return; 
+                        }
+                    });
+                     // Lock Gold/other features
+                    await db.ref(`${DB_BASE}/users/${currentUser.uid}/goldLockStatus`).set('Locked');
+                    showModal('Withdrawal Requested', `₹${amount.toLocaleString('en-IN')} withdrawal requested to ${upiId}. Processing will take 1-2 business days.`, false);
+                } else {
+                    showModal('Request Sent', `A ${type === 'wallet_add' ? 'Top-up' : 'Transaction'} request for ₹${amount.toLocaleString('en-IN')} is sent for admin verification.`, false);
+                }
+                
+                await transactionRef.set(transactionData);
+                
+                // Clear inputs
+                $('add-amount').value = '';
+                $('add-utr').value = '';
+                $('withdraw-amount').value = '';
+                $('withdraw-upi').value = '';
+
+            } catch (error) {
+                console.error("Transaction failed:", error);
+                showToast(`Transaction Failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function renderWalletHistory() {
+            if (!currentUser) return;
+            const historyEl = $('wallet-history');
+            historyEl.innerHTML = '<p class="text-center text-gray-400 mt-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading history...</p>';
+
+            db.ref(`${DB_BASE}/transactions`).orderByChild('userId').equalTo(currentUser.uid).once('value', snapshot => {
+                historyEl.innerHTML = '';
+                const transactions = snapshot.val();
+                if (!transactions) {
+                    historyEl.innerHTML = '<p class="text-center text-gray-400 mt-4">No transactions found.</p>';
+                    return;
+                }
+
+                const sortedTransactions = Object.values(transactions).sort((a, b) => b.timestamp - a.timestamp);
+
+                sortedTransactions.forEach(t => {
+                    let typeLabel, icon, color;
+                    switch (t.type) {
+                        case 'wallet_add': typeLabel = 'Wallet Top-up'; icon = 'fas fa-plus-circle'; color = 'text-green-500'; break;
+                        case 'withdraw': typeLabel = 'Withdrawal'; icon = 'fas fa-minus-circle'; color = 'text-red-500'; break;
+                        case 'order': typeLabel = 'Product Order'; icon = 'fas fa-shopping-bag'; color = 'text-blue-500'; break;
+                        case 'gold_buy': typeLabel = 'Gold Purchase'; icon = 'fas fa-medal'; color = 'text-yellow-500'; break;
+                        case 'refer': typeLabel = 'Referral Bonus'; icon = 'fas fa-gift'; color = 'text-purple-500'; break;
+                        default: typeLabel = 'Transaction'; icon = 'fas fa-info-circle'; color = 'text-gray-500';
+                    }
+                    
+                    let statusClass;
+                    switch (t.status) {
+                        case 'Successful': statusClass = 'bg-green-100 text-green-700'; break;
+                        case 'Rejected': statusClass = 'bg-red-100 text-red-700'; break;
+                        default: statusClass = 'bg-yellow-100 text-yellow-700';
+                    }
+
+                    historyEl.innerHTML += `
+                        <div class="glass-card p-3 flex justify-between items-center shadow-md">
+                            <div class="flex items-center space-x-3">
+                                <i class="${icon} ${color} text-xl w-6 text-center"></i>
+                                <div>
+                                    <p class="font-medium text-gray-800">${typeLabel}</p>
+                                    <p class="text-xs text-gray-500">UTR: ${t.utr}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-sm ${color}"><i class="fas fa-rupee-sign"></i> ${t.amount.toLocaleString('en-IN')}</p>
+                                <span class="text-[10px] ${statusClass} px-2 py-0.5 rounded-full font-semibold">${t.status}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+        
+        // --- GOLD LOGIC ---
+        
+        async function buyGold() {
+            if (!currentUser) return showModal('Error', 'Please log in to buy Gold.', false);
+
+            const amount = parseFloat($('gold-buy-amount').value);
+            const utr = $('gold-buy-utr').value.trim();
+
+            if (isNaN(amount) || amount < 50) {
+                return showToast('Minimum purchase amount is ₹50.', 'error');
+            }
+            if (utr.length !== 12 || isNaN(utr)) {
+                return showToast('Please enter a valid 12-digit UTR/Transaction ID.', 'error');
+            }
+
+            showLoader(true);
+            
+            // Create Transaction for Admin Verification
+            const transactionRef = db.ref(`${DB_BASE}/transactions`).push();
+            const transactionId = transactionRef.key;
+
+            const transactionData = {
+                transactionId,
+                userId: currentUser.uid,
+                userName: userData.name,
+                userEmail: userData.email,
+                type: 'gold_buy',
+                amount: amount,
+                utr: utr,
+                status: 'Pending',
+                timestamp: Date.now()
+            };
+
+            try {
+                await transactionRef.set(transactionData);
+                showModal('Gold Purchase Requested', `A Gold purchase request for ₹${amount.toLocaleString('en-IN')} is sent for admin verification. Your gold will be credited once confirmed.`, false);
+                $('gold-buy-amount').value = '';
+                $('gold-buy-utr').value = '';
+            } catch (error) {
+                console.error("Gold Purchase failed:", error);
+                showToast(`Gold Purchase Failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // --- REFER & EARN LOGIC ---
+
+        async function claimReferBonus() {
+             if (!currentUser) return;
+             
+             // Check if already requested
+             if (userData.referClaimStatus === 'Pending' || userData.referClaimStatus === 'Successful') {
+                 return showToast(`Refer bonus status is already ${userData.referClaimStatus}.`, 'warning');
+             }
+
+             showLoader(true);
+
+             try {
+                // Find referrer's transaction request
+                const usersRef = db.ref(`${DB_BASE}/users`);
+                const snapshot = await usersRef.once('value');
+                const users = snapshot.val();
+                
+                let referrerId = null;
+                for (const id in users) {
+                    if (users[id].referCode === userData.referralUsed) {
+                        referrerId = id;
+                        break;
+                    }
+                }
+                
+                if (!referrerId) {
+                     await db.ref(`${DB_BASE}/users/${currentUser.uid}/referClaimStatus`).set('Rejected');
+                     return showToast('Refer code is invalid or no referrer found.', 'error');
+                }
+
+                // Check if the referee (current user) has purchased minimum gold (₹50)
+                const goldBuyRef = db.ref(`${DB_BASE}/transactions`)
+                    .orderByChild('userId')
+                    .equalTo(currentUser.uid)
+                    .once('value');
+                
+                const goldTransactions = (await goldBuyRef).val();
+                let hasMinGoldPurchase = false;
+                
+                for (const key in goldTransactions) {
+                    const t = goldTransactions[key];
+                    // Only check successful gold purchases
+                    if (t.type === 'gold_buy' && t.status === 'Successful' && t.amount >= 50) {
+                        hasMinGoldPurchase = true;
+                        break;
+                    }
+                }
+
+                if (!hasMinGoldPurchase) {
+                     await db.ref(`${DB_BASE}/users/${currentUser.uid}/referClaimStatus`).set('Rejected');
+                     return showToast('Refer bonus requires a minimum successful gold purchase of ₹50.', 'error');
+                }
+
+                // Create (or update existing pending) transaction for the referrer
+                // Since this is a check, we ensure the PENDING transaction for the referrer exists
+                const transactionRef = db.ref(`${DB_BASE}/transactions`).push();
+                await transactionRef.set({
+                    userId: referrerId,
+                    type: 'refer',
+                    amount: 100,
+                    utr: 'N/A',
+                    status: 'Pending', // Admin needs to verify all conditions
+                    refereeId: currentUser.uid,
+                    timestamp: Date.now()
+                });
+                
+                // Update user status
+                await db.ref(`${DB_BASE}/users/${currentUser.uid}/referClaimStatus`).set('Pending');
+
+                showToast('Referral Bonus Check Requested. Admin will verify the conditions.', 'success');
+
+            } catch (error) {
+                console.error("Referral claim failed:", error);
+                showToast(`Referral claim failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+        
+        // --- IMAGE UPLOAD (IMGBB API) ---
+
+        /**
+         * Uploads a file to imgbb and returns the URL.
+         * @param {File} file - The file object to upload.
+         * @returns {Promise<string>} The URL of the uploaded image.
+         */
+        async function uploadToImgBB(file) {
+            if (!file) throw new Error("No file selected.");
+            
+            const formData = new FormData();
+            formData.append("image", file);
+
+            const url = `https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("ImgBB Error:", errorData);
+                throw new Error(`Image upload failed: ${errorData.error?.message || response.statusText}`);
+            }
+
+            const result = await response.json();
+            return result.data.url;
+        }
+
+        // --- PROFILE & KYC LOGIC ---
+        
+        async function updateProfilePic(input) {
+            if (!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            showLoader(true);
+
+            try {
+                const imageUrl = await uploadToImgBB(file);
+                await db.ref(`${DB_BASE}/users/${currentUser.uid}/profilePicUrl`).set(imageUrl);
+                showToast('Profile photo updated!', 'success');
+            } catch (error) {
+                showToast(`Photo Update Failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function submitKYC() {
+            if (!currentUser) return;
+            if (userData.kycStatus === 'Verified') return showToast('KYC is already verified!', 'warning');
+            
+            const fileInput = $('kyc-file');
+            const name = $('kyc-name-input').value.trim();
+            const mobile = $('kyc-mobile-input').value.trim();
+            
+            if (!fileInput.files || fileInput.files.length === 0 || !name || !mobile) {
+                return showToast('Please select the Aadhar file and fill in Name/Mobile.', 'error');
+            }
+            
+            showLoader(true);
+            try {
+                const aadharUrl = await uploadToImgBB(fileInput.files[0]);
+                
+                await db.ref(`${DB_BASE}/kyc/${currentUser.uid}`).set({
+                    userId: currentUser.uid,
+                    userName: userData.name,
+                    userEmail: userData.email,
+                    submittedName: name,
+                    submittedMobile: mobile,
+                    aadharUrl: aadharUrl,
+                    status: 'Pending',
+                    timestamp: Date.now()
+                });
+                
+                // Update user's local status
+                await db.ref(`${DB_BASE}/users/${currentUser.uid}/kycStatus`).set('Pending');
+
+                showToast('KYC submission sent for admin review!', 'success');
+
+            } catch (error) {
+                showToast(`KYC Submission Failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+        
+        // ==========================================================
+        // --- ADMIN PANEL LOGIC ---
+        // ==========================================================
+        
+        let allUsers = {};
+        let allTransactions = {};
+        let allOrders = {};
+        let allKyc = {};
+        let currentFinanceFilter = 'pending';
+
+        function renderAdminDashboard(users, transactions) {
+            if (users) allUsers = users;
+            if (transactions) allTransactions = transactions;
+            
+            const userCount = Object.keys(allUsers).length;
+            
+            // Calculate gold total (stored in mg)
+            let totalGoldMg = 0;
+            for (const uid in allUsers) {
+                totalGoldMg += allUsers[uid].gold || 0;
+            }
+
+            // Count pending requests
+            const pendingPayments = Object.values(allTransactions).filter(t => t.status === 'Pending' && t.type !== 'refer').length;
+            const pendingOrders = Object.values(allOrders).filter(o => o.status === 'Payment Confirmed' || o.status === 'Shipped').length;
+            const pendingKYC = Object.values(allKyc).filter(k => k.status === 'Pending').length;
+
+            $('stat-users').textContent = userCount.toLocaleString('en-IN');
+            $('stat-money').textContent = pendingPayments;
+            $('stat-orders').textContent = pendingOrders;
+            $('stat-kyc').textContent = pendingKYC;
+            $('stat-gold-total').textContent = (totalGoldMg / 1000).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        }
+        
+        // --- ADMIN: PRODUCTS ---
+        
+        async function addProduct() {
+            const name = $('prod-name').value.trim();
+            const price = parseFloat($('prod-price').value);
+            const description = $('prod-desc').value.trim();
+            const stock = $('prod-stock').value;
+            const imgFile = $('prod-img-upload').files[0];
+
+            if (!name || isNaN(price) || price <= 0 || !description || !imgFile) {
+                return showToast('Please fill all product fields and upload an image.', 'error');
+            }
+            
+            showLoader(true);
+            try {
+                // 1. Upload image to imgbb
+                const imageUrl = await uploadToImgBB(imgFile);
+
+                // 2. Save product to Realtime DB
+                await db.ref(`${DB_BASE}/products`).push({
+                    name,
+                    price,
+                    description,
+                    stock,
+                    imageUrl,
+                    timestamp: Date.now()
+                });
+
+                showToast('Product added successfully!', 'success');
+                // Clear inputs
+                $('prod-name').value = '';
+                $('prod-price').value = '';
+                $('prod-desc').value = '';
+                $('prod-img-upload').value = ''; 
+            } catch (error) {
+                showToast(`Product Add Failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+        
+        function renderAdminProducts() {
+            const listEl = $('adm-prod-list');
+            listEl.innerHTML = '';
+            
+            const productKeys = Object.keys(products).sort((a, b) => products[b].timestamp - products[a].timestamp);
+
+            if (productKeys.length === 0) {
+                 listEl.innerHTML = '<p class="text-gray-400">No products have been added yet.</p>';
+                 return;
+            }
+
+            productKeys.forEach(id => {
+                const prod = products[id];
+                const stockColor = prod.stock === 'in' ? 'text-green-400' : 'text-red-400';
+                
+                listEl.innerHTML += `
+                    <div class="bg-gray-800 p-3 rounded-lg flex items-center space-x-3 border border-gray-700">
+                        <img src="${prod.imageUrl}" class="w-12 h-12 object-contain rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-200">${prod.name}</h4>
+                            <p class="text-sm text-yellow-500"><i class="fas fa-rupee-sign text-xs"></i> ${prod.price.toLocaleString('en-IN')}</p>
+                            <p class="text-xs ${stockColor}">Stock: ${prod.stock === 'in' ? 'In Stock' : 'Out of Stock'}</p>
+                        </div>
+                        <button onclick="deleteProduct('${id}')" class="text-red-500 hover:text-red-400 transition" title="Delete Product">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+        
+        async function deleteProduct(productId) {
+            const confirmed = await showModal('Delete Product', 'Are you sure you want to permanently delete this product?', true);
+            if (confirmed) {
+                showLoader(true);
+                try {
+                    await db.ref(`${DB_BASE}/products/${productId}`).remove();
+                    showToast('Product deleted!', 'success');
+                } catch (error) {
+                    showToast(`Deletion Failed: ${error.message}`, 'error');
+                } finally {
+                    showLoader(false);
+                }
+            }
+        }
+        
+        // --- ADMIN: ORDERS ---
+
+        function renderAdminOrders(ordersData) {
+            const listEl = $('adm-order-list');
+            listEl.innerHTML = '';
+            if (ordersData) allOrders = ordersData;
+
+            const orders = Object.values(allOrders)
+                .filter(o => o.status !== 'Payment Pending' && o.status !== 'Payment Failed') // Only show processed orders
+                .sort((a, b) => b.timestamp - a.timestamp);
+
+            if (orders.length === 0) {
+                 listEl.innerHTML = '<p class="text-gray-400">No confirmed orders to manage.</p>';
+                 return;
+            }
+            
+            $('stat-orders').textContent = orders.filter(o => o.status === 'Payment Confirmed' || o.status === 'Shipped').length;
+
+
+            orders.forEach(order => {
+                const isFinal = order.status === 'Delivered';
+                const statusColor = isFinal ? 'bg-green-600' : (order.status === 'Shipped' ? 'bg-blue-600' : 'bg-yellow-600');
+                const items = JSON.parse(order.items || '{}');
+                const itemSummary = Object.values(items).map(i => `${i.name} (${i.quantity})`).join(', ');
+
+                listEl.innerHTML += `
+                    <div class="bg-gray-800 p-4 rounded-lg space-y-2 border border-gray-700">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-lg text-yellow-500">Order #${order.orderId.substring(0, 8)}</h4>
+                            <span class="text-xs font-bold ${statusColor} px-2 py-1 rounded-full">${order.status}</span>
+                        </div>
+                        <p class="text-sm text-gray-400">User: ${order.userName} (${order.userEmail})</p>
+                        <p class="text-sm text-gray-400">Total: <i class="fas fa-rupee-sign"></i> ${order.total.toLocaleString('en-IN')}</p>
+                        <p class="text-xs text-gray-500">Items: ${itemSummary}</p>
+                        <p class="text-xs text-gray-500">Address: ${order.address.house}, ${order.address.city}, PIN: ${order.address.pin}</p>
+                        
+                        <div class="flex space-x-2 pt-2 border-t border-gray-700 mt-2">
+                            <select id="order-status-${order.orderId}" class="flex-1 bg-gray-700 p-2 rounded text-sm text-white border-none">
+                                <option value="Payment Confirmed" ${order.status === 'Payment Confirmed' ? 'selected' : ''}>Confirmed</option>
+                                <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="Out for Delivery" ${order.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+                                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            </select>
+                            <button onclick="updateOrderStatus('${order.orderId}')" class="bg-green-600 px-3 py-2 rounded text-sm font-bold hover:bg-green-500 transition">Update</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        async function updateOrderStatus(orderId) {
+            const newStatus = $(`order-status-${orderId}`).value;
+            showLoader(true);
+            try {
+                await db.ref(`${DB_BASE}/orders/${orderId}/status`).set(newStatus);
+                showToast(`Order #${orderId.substring(0, 8)} status updated to ${newStatus}.`, 'success');
+            } catch (error) {
+                 showToast(`Order Update Failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+        
+        // --- ADMIN: FINANCE VERIFICATION ---
+        
+        function filterFinance(filter) {
+            currentFinanceFilter = filter;
+            document.querySelectorAll('#adm-finance .flex button').forEach(btn => {
+                btn.classList.replace('bg-yellow-600', 'bg-gray-700');
+                btn.classList.replace('text-white', 'text-gray-400');
+            });
+
+            const filterBtn = $(`finance-filter-${filter}`);
+            if (filterBtn) {
+                 filterBtn.classList.replace('bg-gray-700', 'bg-yellow-600');
+                 filterBtn.classList.replace('text-gray-400', 'text-white');
+            }
+
+            renderAdminFinance();
+        }
+
+        function renderAdminFinance(transactionsData) {
+            const listEl = $('adm-finance-list');
+            listEl.innerHTML = '';
+            if (transactionsData) allTransactions = transactionsData;
+
+            const transactions = Object.values(allTransactions)
+                .filter(t => t.status === 'Pending')
+                .filter(t => currentFinanceFilter === 'pending' || t.type === currentFinanceFilter)
+                .sort((a, b) => a.timestamp - b.timestamp); // Oldest first
+
+            if (transactions.length === 0) {
+                 listEl.innerHTML = '<p class="text-gray-400">No pending requests matching this filter.</p>';
+                 return;
+            }
+            
+            $('stat-money').textContent = Object.values(allTransactions).filter(t => t.status === 'Pending' && t.type !== 'refer').length;
+
+            transactions.forEach(t => {
+                let typeLabel, color, details;
+                switch (t.type) {
+                    case 'wallet_add': 
+                        typeLabel = 'Wallet Top-up'; color = 'text-yellow-500'; 
+                        details = `<p class="text-xs text-gray-500">UTR: ${t.utr}</p>`; 
+                        break;
+                    case 'gold_buy': 
+                        typeLabel = 'Gold Purchase'; color = 'text-yellow-500'; 
+                        details = `<p class="text-xs text-gray-500">UTR: ${t.utr}</p>`; 
+                        break;
+                    case 'withdraw': 
+                        typeLabel = 'Withdrawal'; color = 'text-red-500'; 
+                        details = `<p class="text-xs text-gray-500">UPI: ${t.upiId}</p>`; 
+                        break;
+                    case 'order': 
+                        typeLabel = 'Product Order'; color = 'text-blue-500'; 
+                        details = `<p class="text-xs text-gray-500">Order ID: ${t.orderId.substring(0, 8)} | UTR: ${t.utr}</p>`; 
+                        break;
+                    case 'refer':
+                        typeLabel = 'Referral Bonus'; color = 'text-purple-500'; 
+                        details = `<p class="text-xs text-gray-500">Referee: ${t.refereeId.substring(0, 8)}</p>`; 
+                        break;
+                    default: typeLabel = 'Transaction'; color = 'text-gray-400';
+                }
+
+                listEl.innerHTML += `
+                    <div class="bg-gray-800 p-4 rounded-lg space-y-2 border border-gray-700">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-gray-200">${typeLabel}</h4>
+                            <span class="text-sm font-extrabold ${color}"><i class="fas fa-rupee-sign"></i> ${t.amount.toLocaleString('en-IN')}</span>
+                        </div>
+                        <p class="text-xs text-gray-400">User: ${t.userName} (${t.userEmail})</p>
+                        ${details}
+                        <div class="flex space-x-2 pt-2 border-t border-gray-700 mt-2">
+                            <button onclick="verifyTransaction('${t.transactionId}', '${t.type}', ${t.amount}, '${t.userId}', '${t.orderId || 'N/A'}')" class="flex-1 bg-green-600 py-2 rounded text-sm font-bold hover:bg-green-500 transition">Verify</button>
+                            <button onclick="rejectTransaction('${t.transactionId}', '${t.type}', ${t.amount}, '${t.userId}')" class="flex-1 bg-red-600 py-2 rounded text-sm font-bold hover:bg-red-500 transition">Reject</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        async function verifyTransaction(transactionId, type, amount, userId, orderId) {
+            const confirmed = await showModal('Confirm Verification', `Are you sure you want to verify this ${type.replace('_', ' ')} for ₹${amount.toLocaleString('en-IN')}? This action will update the user's account.`, true);
+            if (!confirmed) return;
+
+            showLoader(true);
+            try {
+                // 1. Update Transaction Status
+                await db.ref(`${DB_BASE}/transactions/${transactionId}/status`).set('Successful');
+
+                // 2. Update User Account/Order Status
+                if (type === 'wallet_add' || type === 'refer') {
+                    // Top-up or Credit Bonus
+                    const userRef = db.ref(`${DB_BASE}/users/${userId}/wallet`);
+                    await userRef.transaction(currentWallet => (currentWallet || 0) + amount);
+                } else if (type === 'gold_buy') {
+                    // Calculate Gold in mg (Example: 6450/gm -> 6.45/mg. Amount * 1000 / 6.45)
+                    const goldInMg = Math.round((amount / GOLD_RATE_PER_GM) * 1000);
+                    const userRef = db.ref(`${DB_BASE}/users/${userId}/gold`);
+                    await userRef.transaction(currentGold => (currentGold || 0) + goldInMg);
+                    // Unlock gold for the user
+                    await db.ref(`${DB_BASE}/users/${userId}/goldLockStatus`).set('Unlocked');
+
+                } else if (type === 'order') {
+                    // Update Order Status to confirmed
+                    await db.ref(`${DB_BASE}/orders/${orderId}/status`).set('Payment Confirmed');
+                } else if (type === 'withdraw') {
+                    // Withdrawal is already deducted (optimistic update). Just mark the transaction successful.
+                }
+
+                showToast(`${type.replace('_', ' ')} verified successfully! Account updated.`, 'success');
+
+            } catch (error) {
+                console.error("Verification failed:", error);
+                showToast(`Verification Failed: ${error.message}. Manual check required.`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function rejectTransaction(transactionId, type, amount, userId) {
+            const confirmed = await showModal('Confirm Rejection', `Are you sure you want to reject this ${type.replace('_', ' ')}? This cannot be undone.`, true);
+            if (!confirmed) return;
+
+            showLoader(true);
+            try {
+                // 1. Update Transaction Status
+                await db.ref(`${DB_BASE}/transactions/${transactionId}/status`).set('Rejected');
+                
+                // 2. Rollback for withdrawal (if already deducted)
+                if (type === 'withdraw') {
+                    const userRef = db.ref(`${DB_BASE}/users/${userId}/wallet`);
+                    await userRef.transaction(currentWallet => (currentWallet || 0) + amount); // Add funds back
+                    // Keep goldLockStatus as is
+                }
+
+                showToast(`${type.replace('_', ' ')} rejected successfully.`, 'warning');
+            } catch (error) {
+                console.error("Rejection failed:", error);
+                showToast(`Rejection Failed: ${error.message}. Manual check required.`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+        
+        // --- ADMIN: KYC VERIFICATION ---
+        
+        function renderAdminKYC(kycData) {
+            const listEl = $('adm-kyc-list');
+            listEl.innerHTML = '';
+            if (kycData) allKyc = kycData;
+
+            const pendingKyc = Object.entries(allKyc)
+                .filter(([id, k]) => k.status === 'Pending')
+                .sort(([, a], [, b]) => a.timestamp - b.timestamp);
+
+            if (pendingKyc.length === 0) {
+                 listEl.innerHTML = '<p class="text-gray-400">No pending KYC verifications.</p>';
+                 return;
+            }
+            
+            $('stat-kyc').textContent = pendingKyc.length;
+
+            pendingKyc.forEach(([uid, kyc]) => {
+                listEl.innerHTML += `
+                    <div class="bg-gray-800 p-4 rounded-lg space-y-3 border border-gray-700">
+                        <h4 class="font-bold text-lg text-gray-200">KYC Request: ${kyc.userName}</h4>
+                        <p class="text-sm text-gray-400">Email: ${kyc.userEmail}</p>
+                        <p class="text-sm text-gray-400">Submitted Name: ${kyc.submittedName}</p>
+                        <p class="text-sm text-gray-400">Submitted Mobile: ${kyc.submittedMobile}</p>
+                        
+                        <a href="${kyc.aadharUrl}" target="_blank" class="text-blue-400 text-sm hover:underline flex items-center">
+                            <i class="fas fa-file-image mr-2"></i> View Aadhar Card (Image)
+                        </a>
+                        
+                        <div class="flex space-x-2 pt-2 border-t border-gray-700 mt-2">
+                            <button onclick="verifyKYC('${uid}', 'Verified')" class="flex-1 bg-green-600 py-2 rounded text-sm font-bold hover:bg-green-500 transition">Verify</button>
+                            <button onclick="verifyKYC('${uid}', 'Rejected')" class="flex-1 bg-red-600 py-2 rounded text-sm font-bold hover:bg-red-500 transition">Reject</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        async function verifyKYC(userId, status) {
+            const confirmed = await showModal('Confirm KYC Action', `Are you sure you want to mark this KYC as ${status}?`, true);
+            if (!confirmed) return;
+
+            showLoader(true);
+            try {
+                // 1. Update KYC record
+                await db.ref(`${DB_BASE}/kyc/${userId}/status`).set(status);
+                
+                // 2. Update User's Profile status
+                await db.ref(`${DB_BASE}/users/${userId}/kycStatus`).set(status);
+                
+                showToast(`KYC for user ${userId.substring(0, 8)} marked as ${status}.`, 'success');
+            } catch (error) {
+                showToast(`KYC Update Failed: ${error.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            initAuth();
+            $('ai-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendAIMessage();
+            });
+        };
+
+    </script>
+</body>
+</html>
+
+

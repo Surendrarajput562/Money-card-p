@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 Premium Reader - Ultimate Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* --- Variables --- */
+:root{ 
+    --gold: #d4af37; 
+    --dark-gold: #b4932a;
+    --accent: #1e293b; 
+    --bg: #f8f9fa; 
+    --card: #ffffff; 
+    --text: #334155; 
+    --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+body.dark-mode { 
+    --bg: #0f172a; 
+    --card: #1e293b; 
+    --text: #e2e8f0; 
+    --accent: #0f172a;
+    --shadow-sm: 0 4px 6px rgba(0,0,0,0.5);
+}
+body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text); transition:background 0.3s, color 0.3s;}
+
+/* --- Header & Nav --- */
+header{
+    display:flex;justify-content:space-between;align-items:center;padding:15px 30px;
+    background:var(--card); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 100;
+}
+header h2{
+    margin:0;font-size:22px; font-weight:700; 
+    background: linear-gradient(45deg, var(--gold), #333); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.user-actions { display: flex; align-items: center; gap: 20px; }
+
+/* Notification Bell */
+.notif { position: relative; cursor: pointer; display: flex; align-items: center; }
+.notif img { width: 24px; height: 24px; filter: opacity(0.7); }
+body.dark-mode .notif img { filter: invert(1); }
+.notif .count {
+    position: absolute; top: -8px; right: -8px;
+    background: #ef4444; color: white; border-radius: 50%;
+    width: 18px; height: 18px; font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--card);
+}
+
+.auth-btn { background: var(--gold); color: white; padding: 8px 20px; border-radius: 50px; border:none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.auth-btn:hover { background: var(--dark-gold); transform: translateY(-2px); }
+
+/* --- Layout --- */
+.container{padding:30px; max-width: 1300px; margin: auto;}
+h3{ border-left: 5px solid var(--gold); padding-left: 15px; margin-bottom: 25px; color: var(--text); }
+
+/* Controls */
+.controls{
+    display:flex; gap:10px; margin-bottom:30px; flex-wrap:wrap; 
+    background:var(--card); padding:15px; border-radius:12px; box-shadow: var(--shadow-sm);
+}
+.controls input, .controls select{
+    padding:10px; border:1px solid #e2e8f0; border-radius:8px; 
+    background:var(--bg); color:var(--text); flex-grow: 1; outline: none;
+}
+
+/* Book Grid */
+.book-grid{ 
+    display:grid; 
+    /* Desktop: 200px minimum width */
+    grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); 
+    gap:25px; 
+}
+.book-card{
+    background:var(--card); padding:15px; border-radius:12px; text-align:left;
+    cursor:pointer; transition:all 0.3s ease; box-shadow: var(--shadow-sm);
+    position: relative; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);
+}
+.book-card:hover{ transform:translateY(-5px); box-shadow: var(--shadow-lg); }
+.book-card img{
+    width:100%; height:200px; /* Reduced height for better fit */
+    object-fit:cover; border-radius:8px; margin-bottom: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.book-card strong{display:block; font-size:15px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.book-card .price { color: var(--gold); font-weight: 700; font-size: 14px; }
+
+/* 📱 Mobile Grid Fix (Ensures 3 books per row on mobile) */
+@media (max-width: 650px) {
+    .container {
+        padding: 15px 10px;
+    }
+    
+    .book-grid {
+        /* Sets minimum width to 100px, allowing 3 columns on most phones */
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px; 
+    }
+
+    .book-card {
+        padding: 8px; 
+        border-radius: 8px;
+    }
+    
+    .book-card img {
+        height: 140px; 
+        margin-bottom: 5px;
+    }
+
+    .book-card strong {
+        font-size: 11px; 
+        margin-bottom: 2px;
+    }
+
+    .book-card p, .book-card .price {
+        font-size: 10px; 
+    }
+}
+
+
+/* --- UTILITY MODAL (Notifications/Payment) --- */
+.modal-overlay {
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.8); z-index:2000;
+    display:none; justify-content:center; align-items:center;
+}
+.modal-box {
+    background:var(--card); color:var(--text); padding:30px; border-radius:15px;
+    max-width:500px; width:90%; max-height:85vh; overflow-y:auto; position:relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text); }
+
+/* --- PRO READER (Full Screen) --- */
+.reader-modal {
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background: var(--bg); z-index:1000;
+    display:none; flex-direction: column;
+}
+.reader-header {
+    height: 55px; background: var(--card); border-bottom: 1px solid #ccc;
+    display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10;
+}
+.reader-content {
+    flex-grow: 1; position: relative; overflow: hidden;
+    display: flex; justify-content: center; align-items: center;
+    background: #333; 
+}
+body.dark-mode .reader-content { background: #000; }
+
+/* Pages styling */
+.reader-page { display: none; background: white; transition: transform 0.3s; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+
+/* View Modes */
+.view-single .reader-page.active {
+    display: block; max-height: 95vh; max-width: 100%; object-fit: contain;
+}
+.view-double {
+    display: flex; justify-content: center; align-items: center; gap: 2px; perspective: 1500px;
+}
+.view-double .reader-page.active {
+    display: block; height: 90vh; width: auto; max-width: 48%; object-fit: contain;
+    border: 1px solid #ddd;
+}
+/* Scroll view */
+.view-scroll { overflow-y: auto; display: block; height: 100%; width: 100%; background: var(--bg); }
+.view-scroll .reader-page { display: block !important; margin: 20px auto; max-width: 800px; width: 95%; }
+
+/* Nav Buttons */
+.nav-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(0,0,0,0.6); color: white; border: none;
+    width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 20;
+    font-size: 20px; display: flex; align-items: center; justify-content: center;
+}
+.nav-prev { left: 20px; }
+.nav-next { right: 20px; }
+
+/* GATE OVERLAY */
+.gate-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
+    z-index: 100; display: none;
+    flex-direction: column; justify-content: center; align-items: center; color: white;
+    text-align: center;
+}
+.gate-box {
+    background: var(--card); color: var(--text); padding: 40px; border-radius: 15px;
+    max-width: 450px; width: 90%; border: 2px solid var(--gold);
+}
+
+/* Payment Inputs */
+.pay-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; background: var(--bg); color: var(--text); }
+.coupon-row { display: flex; gap: 5px; margin-bottom: 5px; }
+
+</style>
+</head>
+<body id="app-body">
+
+<header>
+    <h2>📚 Premium Reader</h2>
+    <div class="user-actions">
+        <a href="#library-section" style="text-decoration:none; color:var(--text); font-weight:600; font-size:14px;">📂 My Library</a>
+        
+        <div class="notif" onclick="openNotifications()">
+            <img src="https://img.icons8.com/material-rounded/48/000000/bell.png" alt="Notifs"/>
+            <div class="count" id="notif-count">0</div>
+        </div>
+
+        <div style="text-align:right; line-height:1.2;">
+            <span id="user-display" style="font-size:12px; font-weight:700; display:block;">Guest</span>
+            <button class="auth-btn" id="auth-btn" onclick="handleAuth()" style="font-size:11px; padding:4px 12px;">Login</button>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <section>
+        <h3>🌟 Discover & Read</h3>
+        <div class="controls">
+            <input type="text" id="search-input" placeholder="Search books..." onkeyup="filterBooks()">
+            <select id="category-filter" onchange="filterBooks()"><option value="">All Categories</option></select>
+            <button onclick="toggleDarkMode()" style="background:var(--accent); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;">🌓 Mode</button>
+        </div>
+        <div id="new-books" class="book-grid"></div>
+    </section>
+
+    <section id="library-section" style="margin-top:40px;">
+        <h3>📂 My Premium Collection (Active)</h3>
+        <div id="history-books" class="book-grid"></div>
+    </section>
+</div>
+
+<div class="reader-modal" id="reader-modal">
+    <div class="reader-header">
+        <button onclick="closeReader()" style="background:none; border:none; font-size:18px; color:var(--text); cursor:pointer;">&larr; Back to Library</button>
+        <div style="font-weight:600; font-size:14px;" id="reader-title">Book Title</div>
+        <div style="display:flex; gap:10px;">
+            <select id="view-mode" onchange="renderPages()" style="padding:5px;">
+                <option value="single">📄 Single Page</option>
+                <option value="double">📖 Book View (2 Pages)</option>
+                <option value="scroll">📜 Continuous Scroll</option>
+            </select>
+            <span id="page-status" style="font-size:14px; align-self:center; font-weight:600; min-width:60px; text-align:center;">1/10</span>
+        </div>
+    </div>
+
+    <div class="reader-content view-single" id="reader-canvas">
+        </div>
+
+    <button class="nav-arrow nav-prev" id="btn-prev" onclick="movePage(-1)">&#10094;</button>
+    <button class="nav-arrow nav-next" id="btn-next" onclick="movePage(1)">&#10095;</button>
+
+    <div class="gate-overlay" id="gate-overlay">
+        <div class="gate-box">
+            <div style="font-size:40px; margin-bottom:10px;">🔒</div>
+            <h3>Premium Access Required</h3>
+            <p>You have finished the free preview.</p>
+            <button class="auth-btn" style="width:100%; font-size:16px; padding:12px;" onclick="openPaymentModalFromReader()">Unlock Full Book</button>
+            <p style="margin-top:15px; font-size:12px; cursor:pointer; color:#999;" onclick="closeReader()">No thanks, Exit Reader</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="generic-modal">
+    <div class="modal-box" id="generic-content">
+        <span class="close-btn" onclick="closeGenericModal()">&times;</span>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+// --- CONFIG ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.firebasestorage.app",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597778bad55",
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+let currentUser = null;
+let allBooksCache = [];
+let currentBook = null;
+let currentPages = [];
+let currentPageIdx = 0;
+let isSubscribed = false;
+let maxFreePages = 10;
+
+// --- AUTH ---
+auth.onAuthStateChanged(user => {
+    if(user){
+        currentUser = user;
+        document.getElementById('user-display').innerText = user.email.split('@')[0];
+        document.getElementById('auth-btn').innerText = "Logout";
+        loadData();
+    } else {
+        currentUser = null;
+        document.getElementById('user-display').innerText = "Guest";
+        document.getElementById('auth-btn').innerText = "Login";
+        loadData();
+    }
+});
+
+function handleAuth(){
+    if(currentUser) auth.signOut();
+    else {
+        const email = prompt("Enter Email:");
+        const pass = prompt("Enter Password:");
+        if(email && pass) auth.signInWithEmailAndPassword(email, pass).catch(e => {
+            if(e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password'){
+                if(confirm("User not found. Create account?")) auth.createUserWithEmailAndPassword(email, pass);
+            } else alert(e.message);
+        });
+    }
+}
+
+// --- DATA ---
+function loadData(){
+    db.ref('books').once('value', snap => {
+        allBooksCache = Object.values(snap.val() || {});
+        filterBooks();
+        loadHistory();
+    });
+    loadNotifications();
+}
+
+function filterBooks(){
+    const term = document.getElementById('search-input').value.toLowerCase();
+    const cat = document.getElementById('category-filter').value;
+    
+    // Update Categories
+    const categories = [...new Set(allBooksCache.map(b => b.category))].filter(Boolean);
+    const catSelect = document.getElementById('category-filter');
+    if(catSelect.options.length <= 1){
+        categories.forEach(c => {
+            catSelect.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+    }
+
+    const books = allBooksCache.filter(b => {
+        return (b.title.toLowerCase().includes(term) || b.author.toLowerCase().includes(term)) 
+               && (cat === "" || b.category === cat);
+    });
+
+    const container = document.getElementById('new-books');
+    container.innerHTML = books.length ? books.map(b => `
+        <div class="book-card" onclick="openBook('${b.id}')">
+            <img src="${b.coverUrl}">
+            <strong>${b.title}</strong>
+            <p style="color:#666; font-size:12px;">By ${b.author}</p>
+            <p class="price">₹${b.priceMonthly}/mo</p>
+        </div>
+    `).join('') : '<p>No books found.</p>';
+}
+
+function loadHistory(){
+    const container = document.getElementById('history-books');
+    if(!currentUser) { container.innerHTML = '<p style="color:#e74c3c;">Login to see your subscriptions.</p>'; return; }
+    
+    const safeEmail = currentUser.email.replace(/\./g, '_');
+    db.ref('users/'+safeEmail+'/subscriptions').once('value', snap => {
+        const subs = snap.val() || {};
+        const activeIds = Object.keys(subs).filter(k => subs[k].expiresAt > Date.now() && subs[k].status === 'approved');
+        
+        if(activeIds.length === 0) { container.innerHTML = '<p>No active subscriptions. Go purchase one!</p>'; return; }
+
+        const myBooks = allBooksCache.filter(b => activeIds.includes(b.id));
+        container.innerHTML = myBooks.map(b => `
+            <div class="book-card" onclick="openBook('${b.id}')" style="border:1px solid var(--gold);">
+                <img src="${b.coverUrl}">
+                <strong>${b.title}</strong>
+                <p style="color:green; font-weight:700; font-size:12px;">✅ Active Premium</p>
+            </div>
+        `).join('');
+    });
+}
+
+function toggleDarkMode(){ document.body.classList.toggle('dark-mode'); }
+
+// --- READER LOGIC ---
+function openBook(bookId){
+    currentBook = allBooksCache.find(b => b.id === bookId);
+    if(!currentBook) return;
+
+    // Check Subscription Status
+    isSubscribed = false;
+    if(currentUser){
+        const safeEmail = currentUser.email.replace(/\./g, '_');
+        db.ref(`users/${safeEmail}/subscriptions/${bookId}`).once('value', snap => {
+            const sub = snap.val();
+            if(sub && sub.status === 'approved' && sub.expiresAt > Date.now()) isSubscribed = true;
+            launchReader();
+        });
+    } else {
+        launchReader();
+    }
+}
+
+function launchReader(){
+    const modal = document.getElementById('reader-modal');
+    const canvas = document.getElementById('reader-canvas');
+    const title = document.getElementById('reader-title');
+    
+    title.innerText = currentBook.title;
+    canvas.innerHTML = '';
+    document.getElementById('gate-overlay').style.display = 'none';
+
+    currentPages = currentBook.pages;
+    currentPages.forEach((url, i) => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'reader-page';
+        img.id = `page-${i}`;
+        canvas.appendChild(img);
+    });
+
+    currentPageIdx = 0;
+    document.getElementById('view-mode').value = 'single';
+    modal.style.display = 'flex';
+    renderPages();
+}
+
+function closeReader(){ document.getElementById('reader-modal').style.display = 'none'; }
+
+function renderPages(){
+    const mode = document.getElementById('view-mode').value;
+    const canvas = document.getElementById('reader-canvas');
+    const pages = document.querySelectorAll('.reader-page');
+    const prevBtn = document.getElementById('btn-prev');
+    const nextBtn = document.getElementById('btn-next');
+    const status = document.getElementById('page-status');
+
+    canvas.className = `reader-content view-${mode}`;
+    pages.forEach(p => p.classList.remove('active'));
+
+    if(mode === 'scroll'){
+        if(!isSubscribed){
+             alert("Scroll view is Premium. Switching to Single Page.");
+             document.getElementById('view-mode').value = 'single';
+             renderPages();
+             return;
+        }
+        pages.forEach(p => p.classList.add('active'));
+        prevBtn.style.display = 'none'; nextBtn.style.display = 'none';
+        status.innerText = "Scroll";
+        return;
+    }
+
+    prevBtn.style.display = 'flex'; nextBtn.style.display = 'flex';
+    prevBtn.disabled = currentPageIdx === 0;
+    nextBtn.disabled = currentPageIdx >= currentPages.length - 1;
+
+    if(mode === 'single'){
+        if(pages[currentPageIdx]) pages[currentPageIdx].classList.add('active');
+        status.innerText = `${currentPageIdx + 1}/${currentPages.length}`;
+    } 
+    else if(mode === 'double'){
+        // Logic: Show idx and idx+1
+        const p1 = pages[currentPageIdx];
+        const p2 = pages[currentPageIdx + 1];
+        if(p1) p1.classList.add('active');
+        if(p2) p2.classList.add('active');
+        
+        nextBtn.disabled = currentPageIdx >= currentPages.length - 2;
+
+        status.innerText = `${currentPageIdx + 1}-${Math.min(currentPageIdx+2, currentPages.length)}/${currentPages.length}`;
+    }
+}
+
+function movePage(dir){
+    const mode = document.getElementById('view-mode').value;
+    const increment = (mode === 'double') ? 2 : 1;
+    let nextIdx = currentPageIdx + (dir * increment);
+
+    // GATE LOGIC 🔒
+    if(!isSubscribed && nextIdx >= maxFreePages){
+        document.getElementById('gate-overlay').style.display = 'flex';
+        return;
+    }
+
+    if(nextIdx < 0) nextIdx = 0;
+    if(nextIdx >= currentPages.length) return;
+
+    currentPageIdx = nextIdx;
+    renderPages();
+}
+
+// --- PAYMENTS & COUPONS ---
+function openPaymentModalFromReader(){
+    // Hide gate and show payment modal in generic modal
+    document.getElementById('gate-overlay').style.display = 'none';
+    const body = document.getElementById('modal-body');
+    const modal = document.getElementById('generic-modal');
+    
+    if(!currentUser) return alert("Please Login before proceeding to payment.");
+
+    const mPrice = currentBook.priceMonthly;
+    const yPrice = currentBook.priceYearly;
+
+    body.innerHTML = `
+        <h3 style="color:var(--gold); text-align:center;">Unlock Full Access</h3>
+        <p style="text-align:center;">Book: <strong>${currentBook.title}</strong></p>
+        
+        <div style="background:#f1f1f1; padding:15px; border-radius:10px; text-align:center; margin-bottom:15px;">
+             <p style="margin:5px;">UPI ID: <strong>7649070168@okbizaxis</strong></p>
+             <img src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" style="width:150px; border-radius:10px; margin-top:5px;">
+        </div>
+
+        <label>Select Plan:</label>
+        <select id="pay-plan" class="pay-input" onchange="updatePayAmount(${mPrice}, ${yPrice})">
+            <option value="monthly">Monthly - ₹${mPrice}</option>
+            <option value="yearly">Yearly - ₹${yPrice}</option>
+        </select>
+
+        <div class="coupon-row">
+            <input type="text" id="coupon-code" class="pay-input" placeholder="Coupon Code">
+            <button onclick="applyCoupon(${mPrice}, ${yPrice})" class="auth-btn" style="padding:10px;">Apply</button>
+        </div>
+        <div id="coupon-msg" style="font-size:12px; margin-bottom:10px;"></div>
+
+        <label>Final Amount to Pay:</label>
+        <input type="number" id="final-amount" class="pay-input" value="${mPrice}" readonly style="background:#e9ecef; font-weight:bold;">
+        
+        <input type="text" id="utr-code" class="pay-input" placeholder="Enter 12-digit UPI Ref/UTR No." maxlength="12">
+        
+        <button onclick="submitPayment()" class="auth-btn" style="width:100%; padding:12px; margin-top:10px; background:#22c55e;">Confirm Payment</button>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function updatePayAmount(m, y){
+    const plan = document.getElementById('pay-plan').value;
+    document.getElementById('final-amount').value = (plan === 'monthly' ? m : y);
+    document.getElementById('coupon-msg').innerText = ''; 
+    document.getElementById('coupon-code').value = '';
+}
+
+function applyCoupon(m, y){
+    const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+    const plan = document.getElementById('pay-plan').value;
+    const base = plan === 'monthly' ? m : y;
+    const msg = document.getElementById('coupon-msg');
+    
+    db.ref('coupons/'+code).once('value', snap => {
+        const val = snap.val();
+        if(val && val.discount && val.expiryTimestamp > Date.now()){
+            const disc = (base * val.discount) / 100;
+            const final = base - disc;
+            document.getElementById('final-amount').value = final.toFixed(0);
+            msg.style.color = 'green';
+            msg.innerText = `Coupon Applied! ${val.discount}% Off. Final Amount: ₹${final.toFixed(0)}`;
+        } else {
+            msg.style.color = 'red';
+            msg.innerText = "Invalid or Expired Code";
+            document.getElementById('final-amount').value = base;
+        }
+    });
+}
+
+function submitPayment(){
+    const utr = document.getElementById('utr-code').value;
+    const amt = document.getElementById('final-amount').value;
+    const plan = document.getElementById('pay-plan').value;
+    
+    if(utr.length !== 12) return alert("Enter valid 12-digit UTR.");
+
+    const payId = 'pay_'+Date.now();
+    db.ref('payments/'+payId).set({
+        user: currentUser.email,
+        bookId: currentBook.id,
+        amount: Number(amt),
+        plan: plan,
+        utr: utr,
+        status: 'pending',
+        timestamp: Date.now()
+    }).then(() => {
+        alert("Request Sent! Wait for Admin Approval. You can check status in Notifications.");
+        closeGenericModal();
+        closeReader();
+        loadNotifications();
+    });
+}
+
+// --- NOTIFICATIONS ---
+function loadNotifications(){
+    if(!currentUser) { document.getElementById('notif-count').innerText = "0"; return; }
+    const safeEmail = currentUser.email.replace(/\./g, '_');
+
+    Promise.all([
+        db.ref('notifications').once('value'),
+        db.ref('payments').orderByChild('user').equalTo(currentUser.email).once('value')
+    ]).then(([notifSnap, paySnap]) => {
+        const notifs = Object.values(notifSnap.val() || {});
+        const pays = Object.values(paySnap.val() || {});
+        
+        let count = 0;
+        notifs.forEach(n => {
+            if((n.recipient === 'global' && (!n.read || !n.read[safeEmail])) || (n.recipient === currentUser.email && !n.read)) count++;
+        });
+        document.getElementById('notif-count').innerText = count;
+    });
+}
+
+function openNotifications(){
+    if(!currentUser) return alert("Login to see notifications");
+    const safeEmail = currentUser.email.replace(/\./g, '_');
+    const modal = document.getElementById('generic-modal');
+    const body = document.getElementById('modal-body');
+
+    Promise.all([
+        db.ref('notifications').once('value'),
+        db.ref('payments').orderByChild('user').equalTo(currentUser.email).once('value')
+    ]).then(([notifSnap, paySnap]) => {
+        const allNotifs = Object.values(notifSnap.val() || {});
+        const pays = Object.values(paySnap.val() || {}).sort((a,b) => b.timestamp - a.timestamp);
+        
+        const userNotifs = allNotifs.filter(n => n.recipient === 'global' || n.recipient === currentUser.email).sort((a,b) => b.timestamp - a.timestamp);
+
+        let html = '<h3 style="border-left-color:var(--gold);">🔔 Activity & Status</h3>';
+        
+        // Payments Status
+        html += '<h4>Payment Requests Status</h4>';
+        if(pays.length === 0) html += '<p style="color:#777; font-size:13px;">No payment requests found.</p>';
+        pays.forEach(p => {
+            const color = p.status === 'approved' ? 'green' : (p.status === 'rejected' ? 'red' : 'orange');
+            html += `
+            <div style="background:var(--bg); padding:10px; margin-bottom:8px; border-left:3px solid ${color}; font-size:13px; border-radius:4px;">
+                <strong>${p.bookId}</strong> (${p.plan.toUpperCase()}) - ₹${p.amount}<br>
+                UTR: ${p.utr} | Status: <span style="color:${color}; font-weight:bold;">${p.status.toUpperCase()}</span>
+            </div>`;
+        });
+
+        // Messages
+        html += '<h4 style="margin-top:20px;">System Messages</h4>';
+        if(userNotifs.length === 0) html += '<p style="color:#777; font-size:13px;">No system messages.</p>';
+        userNotifs.forEach(n => {
+            const isRead = n.recipient === 'global' ? (n.read && n.read[safeEmail]) : n.read;
+            const style = isRead ? 'opacity:0.8;' : 'background:#fff3cd; font-weight:600;';
+            html += `
+            <div style="background:var(--card); padding:10px; margin-bottom:8px; border-radius:4px; ${style}">
+                <strong>${n.title}</strong>
+                <p style="margin:2px 0; font-size:13px;">${n.body}</p>
+            </div>`;
+        });
+        
+        body.innerHTML = html;
+        modal.style.display = 'flex';
+        
+        // Mark as Read and Reload Count
+        userNotifs.forEach(n => {
+             if(n.recipient === 'global') db.ref(`notifications/${n.id}/read/${safeEmail}`).set(true);
+             else if(n.recipient === currentUser.email) db.ref(`notifications/${n.id}`).update({ read: true });
+        });
+        loadNotifications();
+    });
+}
+
+function closeGenericModal(){ document.getElementById('generic-modal').style.display = 'none'; }
+
+</script>
+</body>
+</html>
+

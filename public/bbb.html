@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👑 Admin Panel - Premium eBook Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+/* Base Styles */
+body { font-family:'Poppins',sans-serif; margin:0; background:#f4f4f4; color:#1f2937; }
+header { background:#222; color:#fff; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; font-size:20px; font-weight:600; }
+.container { padding:20px; max-width:1200px; margin:auto; }
+/* Section and Card Styles */
+section { margin-bottom:30px; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+h2 { color:#d4af37; margin-top:0; border-bottom:2px solid #eee; padding-bottom:10px; }
+.book-list, .payment-list, .coupon-list, .notification-log { display:flex; flex-direction:column; gap:10px; }
+.book-item, .payment-item, .coupon-item { background:#f9f9f9; padding:15px; border-radius:5px; display:flex; align-items:center; justify-content:space-between; border:1px solid #eee; }
+.book-item img { width:50px; height:70px; object-fit:cover; margin-right:10px; border:1px solid #ccc; }
+/* Button and Form Styles */
+button { padding:8px 15px; margin-left:5px; background:#d4af37; border:none; color:#fff; border-radius:5px; cursor:pointer; font-weight:600; transition:background 0.3s; }
+button:hover { background:#c59b2d; }
+.hidden { opacity:0.6; background:#fff3cd; }
+.flex { display:flex; align-items:center; gap:10px; }
+.flex-col { display:flex; flex-direction:column; align-items:flex-start; gap:5px; }
+.upload-form { display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; }
+.upload-form input, .upload-form textarea, .upload-form select { padding:10px; border:1px solid #ccc; border-radius:5px; width:100%; box-sizing:border-box; }
+.full-width { grid-column:1 / -1; }
+/* Login & Progress */
+#upload-progress { margin-top:10px; padding:10px; background:#e0f7fa; border-left:5px solid #00bcd4; display:none; font-weight:600; }
+.login-form { max-width:400px; margin:50px auto; padding:30px; background:#fff; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+.login-form input { margin-bottom: 15px; }
+.coupon-item strong { color:#007bff; }
+.notif-form { display:flex; flex-direction:column; gap:10px; }
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="login-form">
+    <h2>Admin Login 🔐</h2>
+    <input type="email" id="admin-email" placeholder="Email" value="rajputsurendra562@gmail.com" required>
+    <input type="password" id="admin-password" placeholder="Password (Banna@1712)" required>
+    <button onclick="adminLogin()" class="full-width">Login</button>
+</div>
+
+<div id="admin-panel" style="display:none;">
+    <header>
+        <span>Admin Panel - Premium eBook</span>
+        <button onclick="adminLogout()">Logout</button>
+    </header>
+    <div class="container">
+
+    <section>
+    <h2>➕ Add New Book (Upload & Metadata)</h2>
+    <form id="add-book-form" class="upload-form">
+        <input type="text" id="book-title" placeholder="Book Title" required>
+        <input type="text" id="book-author" placeholder="Author Name" required>
+        <select id="book-category" required>
+            <option value="">Select Category</option>
+            <option value="Novel">Novel</option>
+            <option value="Comic">Comic</option>
+            <option value="Science">Science</option>
+            <option value="Biography">Biography</option>
+            <option value="Fiction">Fiction</option>
+        </select>
+        <input type="number" id="book-price-monthly" placeholder="Price Monthly (₹299)" value="299" required>
+        <input type="number" id="book-price-yearly" placeholder="Price Yearly (₹2999)" value="2999" required>
+        <input type="number" id="book-discount" placeholder="Discount (%)" value="0">
+        <select id="upload-destination" required>
+            <option value="imgbb">Image Hosting: ImgBB (Fast & Simple)</option>
+            <option value="imagekit">Image Hosting: ImageKit (u4rbrw2id)</option>
+            <option value="r2">Cloud Storage: Cloudflare R2 (via Worker)</option>
+        </select>
+        <textarea id="book-desc" class="full-width" placeholder="Book Description"></textarea>
+        <input type="file" id="book-cover" accept="image/*" required>
+        <input type="file" id="book-pages" accept="image/*" multiple required>
+        <div id="upload-progress" class="full-width">Uploading: <span id="progress-status">0/0</span> pages...</div>
+        <button type="submit" class="full-width">🚀 Upload Book</button>
+    </form>
+    </section>
+    
+    <section>
+    <h2>🎁 Coupon Code Management</h2>
+    <div class="flex" style="margin-bottom:15px;">
+        <input type="text" id="coupon-code" placeholder="CODE100" style="width:150px;">
+        <input type="number" id="coupon-discount" placeholder="Discount (%)" style="width:100px;">
+        <input type="date" id="coupon-expiry" title="Expiry Date" style="width:150px;">
+        <button onclick="createCoupon()">Create Coupon</button>
+    </div>
+    <div id="coupon-list" class="coupon-list"></div>
+    </section>
+
+    <section>
+    <h2>📢 Send Notifications (Basic)</h2>
+    <div class="notif-form">
+        <input type="text" id="notif-title" placeholder="Notification Title (e.g., New Coupon Alert!)">
+        <textarea id="notif-body" placeholder="Notification Message (e.g., Use code NEWYEAR for 20% off!)"></textarea>
+        <button onclick="sendNotification()">Send Global Notification</button>
+    </div>
+    </section>
+
+    <section>
+    <h2>📚 All Books / Manage</h2>
+    <div id="book-list" class="book-list"></div>
+    </section>
+
+    <section>
+    <h2>💳 Pending Subscription Requests</h2>
+    <div id="payment-list" class="payment-list"></div>
+    </section>
+
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+// --- Configuration ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.firebasestorage.app",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597778bad55",
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const auth = firebase.auth();
+
+const ADMIN_EMAIL = 'rajputsurendra562@gmail.com'; 
+const DUMMY_ADMIN_PASS = 'Banna@1712'; 
+
+// --- Image Upload Configurations (Sensitive Data) ---
+const IMG_CONFIG = {
+    imgbbKey: '021a2437b889915669b66554687bf17f', // ImgBB API Key
+
+    // ImageKit Configuration (Unsigned Upload needed for client-side use)
+    imagekitPublicKey: 'public_VDwTiP3qA6QayRChmKXlumDsdr4=', 
+    imagekitUrlEndpoint: 'https://ik.imagekit.io/u4rbrw2id/',
+
+    // Cloudflare R2 Worker Configuration (Update URL to your Worker's deployed URL)
+    r2WorkerEndpoint: 'https://ebookandapk-uploader.rajputsurendra562.workers.dev', 
+    r2BucketName: "ebook", 
+};
+
+// --- Authentication (No Change) ---
+auth.onAuthStateChanged(user => {
+    if (user && user.email === ADMIN_EMAIL) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        loadAdminData();
+    } else {
+        document.getElementById('login-screen').style.display = 'block';
+        document.getElementById('admin-panel').style.display = 'none';
+    }
+});
+
+function adminLogin() {
+    const email = document.getElementById('admin-email').value;
+    const password = document.getElementById('admin-password').value; 
+    
+    auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+            db.ref('adminEmail').set(ADMIN_EMAIL)
+                .then(() => console.log("Admin email set in DB root successfully."))
+                .catch(err => alert("Login successful but failed to confirm admin config in database: " + err.message));
+        })
+        .catch(error => {
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                auth.createUserWithEmailAndPassword(ADMIN_EMAIL, DUMMY_ADMIN_PASS)
+                    .then(() => {
+                        alert('Admin account created and logged in. (Please use this password for next login: Banna@1712)');
+                        db.ref('adminEmail').set(ADMIN_EMAIL)
+                            .catch(e => console.error("Error setting admin email after creation:", e));
+                    })
+                    .catch(e => alert('Login Failed: ' + e.message));
+            } else {
+                alert('Login Failed: ' + error.message);
+            }
+        });
+}
+
+function adminLogout() {
+    auth.signOut();
+}
+
+// --- Data Loading & Management (No Change) ---
+function loadAdminData() {
+    loadBooks();
+    loadPayments();
+    loadCoupons();
+}
+
+// --- Upload Logic ---
+
+// Utility to convert File to Base64 (needed for ImgBB)
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+    });
+}
+
+// 1. ImgBB Upload (Client-Side)
+async function uploadImgbb(file, filename) {
+    const base64Image = await fileToBase64(file);
+    const form = new FormData();
+    form.append('image', base64Image); 
+
+    const res = await axios.post(`https://api.imgbb.com/1/upload?key=${IMG_CONFIG.imgbbKey}`, form);
+    return res.data.data.url;
+}
+
+// 2. ImageKit Upload (Client-Side)
+async function uploadImageKit(file, filename) {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('fileName', filename);
+    form.append('publicKey', IMG_CONFIG.imagekitPublicKey);
+    
+    // NOTE: This uses ImageKit's Unsigned Upload API directly from the client.
+    const res = await axios.post('https://upload.imagekit.io/api/v1/files/upload', form);
+    return res.data.url;
+}
+
+// 3. Cloudflare R2 Upload (via Worker - ***FIXED TO USE SIGNED URL***)
+async function uploadR2(file, filename) {
+    
+    // Step 1: Request a Presigned URL from the Worker (GET)
+    // Send Content-Type to the worker so it can be included in the signed URL generation
+    const urlEndpoint = `${IMG_CONFIG.r2WorkerEndpoint}?filename=${encodeURIComponent(filename)}&contentType=${encodeURIComponent(file.type)}`;
+    
+    const signedUrlResponse = await axios.get(urlEndpoint);
+
+    if (!signedUrlResponse.data || !signedUrlResponse.data.uploadURL || !signedUrlResponse.data.publicURL) {
+        throw new Error('Worker failed to provide signed URLs. Check Worker logs.');
+    }
+
+    // uploadURL is the secure, time-limited URL for PUT
+    const { uploadURL, publicURL } = signedUrlResponse.data; 
+
+    // Step 2: Upload the file directly to the Presigned URL (PUT)
+    const uploadRes = await fetch(uploadURL, {
+        method: 'PUT',
+        body: file,
+        headers: {
+            // These headers MUST match what the Worker used to generate the Signed URL
+            'Content-Type': file.type, 
+            'Content-Length': file.size,
+        },
+    });
+
+    if (!uploadRes.ok) {
+        const errorText = await uploadRes.text();
+        // This specific error message helps diagnose CORS issues if the PUT fails
+        throw new Error(`R2 Upload failed. Status: ${uploadRes.status}. Response: ${errorText}. **FIX:** Ensure R2 Bucket CORS Policy allows PUT.`);
+    }
+    
+    // Return the public URL for the database
+    return publicURL; 
+}
+
+
+// Consolidated Upload Function
+async function uploadFile(file, destination, isCover=false) {
+    const extension = file.name.split('.').pop();
+    const timestamp = Date.now();
+    // Using a clean title for the filename prefix
+    const safeTitle = document.getElementById('book-title').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const filename = `ebook-pages/${safeTitle.substring(0, 10)}_${isCover ? 'cover' : 'page'}_${timestamp}.${extension}`;
+
+    if (destination === 'imgbb') return uploadImgbb(file, filename);
+    if (destination === 'imagekit') return uploadImageKit(file, filename);
+    if (destination === 'r2') return uploadR2(file, filename); // Uses SECURE R2 logic
+    
+    throw new Error('Invalid upload destination selected.');
+}
+
+
+// --- Add New Book Handler (UPDATED) ---
+document.getElementById('add-book-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const title = document.getElementById('book-title').value.trim();
+    const author = document.getElementById('book-author').value.trim();
+    const priceMonthly = Number(document.getElementById('book-price-monthly').value);
+    const priceYearly = Number(document.getElementById('book-price-yearly').value);
+    const discount = Number(document.getElementById('book-discount').value);
+    const category = document.getElementById('book-category').value.trim();
+    const desc = document.getElementById('book-desc').value.trim();
+    const destination = document.getElementById('upload-destination').value; 
+    const coverFile = document.getElementById('book-cover').files[0];
+    const pageFiles = Array.from(document.getElementById('book-pages').files);
+
+    if(!title || !author || !priceMonthly || !priceYearly || !coverFile || pageFiles.length===0 || !category) {
+        return alert('Please fill all required fields and select files.');
+    }
+
+    const progressDiv = document.getElementById('upload-progress');
+    const statusSpan = document.getElementById('progress-status');
+    progressDiv.style.display = 'block';
+    
+    try{
+        // 1. Upload cover
+        statusSpan.innerText = `1/1 Cover (${destination})...`;
+        const coverUrl = await uploadFile(coverFile, destination, true);
+
+        // 2. Upload pages with progress
+        const pagesUrls = [];
+        for(let i=0;i<pageFiles.length;i++){
+            statusSpan.innerText = `Uploading Page ${i+1} of ${pageFiles.length} (${destination})...`;
+            const url = await uploadFile(pageFiles[i], destination, false);
+            pagesUrls.push(url);
+        }
+        statusSpan.innerText = `All ${pageFiles.length} Pages Uploaded. Saving to Database...`;
+
+        const bookId = 'b'+Date.now();
+        await db.ref('books/'+bookId).set({
+            id: bookId, title, author, priceMonthly, priceYearly, discount, category, desc, coverUrl,
+            pages: pagesUrls, pageCount: pagesUrls.length, hidden:false, createdAt:Date.now(), uploadedVia: destination
+        });
+        
+        await db.ref('categories/'+category).set(true); 
+
+        alert('Book uploaded successfully! Image URLs saved to Firebase.');
+        document.getElementById('add-book-form').reset();
+        progressDiv.style.display = 'none';
+        loadAdminData();
+    }catch(err){
+        console.error('Upload Error:', err);
+        let errorMsg = err.message || 'Check console';
+        
+        if (err.response && err.response.status === 400 && destination === 'imagekit') {
+            errorMsg = "ImageKit: Request failed (400 Bad Request). **FIX:** Please ensure 'Unsigned Upload' is ENABLED in your ImageKit settings.";
+        } else if (destination === 'r2') {
+            // Updated error message reflects the Presigned URL method issue (CORS/Signature mismatch)
+            errorMsg = "Cloudflare R2 Worker Upload Failed. The Presigned PUT request failed. **FIX:** 1. Ensure R2 Bucket CORS Policy allows PUT. 2. Verify R2 Binding (Read/Write) is correct.";
+        }
+        
+        alert('Error uploading book: ' + errorMsg);
+        progressDiv.style.display = 'none';
+    }
+});
+
+// --- Book Management Functions (No Change) ---
+function loadBooks(){
+    db.ref('books').once('value').then(snap=>{
+        const data = snap.val()||{};
+        const container = document.getElementById('book-list');
+        container.innerHTML='';
+        Object.values(data).sort((a,b)=>b.createdAt - a.createdAt).forEach(book=>{
+            const finalMonthlyPrice = book.priceMonthly * (1 - (book.discount || 0) / 100);
+            const div = document.createElement('div');
+            div.className='book-item '+(book.hidden?'hidden':'');
+            div.innerHTML=`
+            <div class="flex">
+                <img src="${book.coverUrl}" alt="Cover">
+                <div class="flex-col">
+                    <strong>${book.title}</strong> (${book.category})<br>By ${book.author}
+                    <div style="font-size:12px;">₹${finalMonthlyPrice.toFixed(0)}/mo | Discount: ${book.discount || 0}% | Pages: ${book.pageCount}</div>
+                    <span style="color:blue; font-weight:600; font-size:10px;">Uploaded via: ${book.uploadedVia || 'ImgBB'}</span>
+                    <span style="color:${book.hidden?'red':'green'}; font-weight:600; font-size:12px;">Status: ${book.hidden?'Hidden':'Visible'}</span>
+                </div>
+            </div>
+            <div class="flex">
+                <button onclick="previewBook('${book.id}')">Preview</button>
+                <button onclick="editBookDetails('${book.id}')">Edit Details</button>
+                <button onclick="toggleVisibility('${book.id}',${book.hidden})">${book.hidden?'Show':'Hide'}</button>
+                <button onclick="deleteBook('${book.id}')">Delete</button>
+            </div>
+            `;
+            container.appendChild(div);
+        });
+        if (Object.keys(data).length === 0) container.innerHTML = '<p>No books uploaded yet.</p>';
+    });
+}
+function previewBook(id){
+    db.ref('books/'+id).once('value').then(snap=>{
+        const book = snap.val();
+        if(!book) return;
+        let html = `<h3>${book.title} - Admin Preview</h3><p>${book.desc}</p><hr>`;
+        book.pages.forEach((url, index)=>{ html+=`<img src="${url}" style="width:100%; max-width:500px; margin-bottom:15px; border:1px solid #ccc;">`; });
+        const win = window.open('','_blank','width=600,height=700,scrollbars=yes');
+        win.document.write(`<html><head><title>Admin Preview</title></head><body><div style="padding: 20px;">${html}</div></body></html>`);
+    });
+}
+function editBookDetails(id){
+    db.ref('books/'+id).once('value').then(snap => {
+        const book = snap.val();
+        if (!book) return;
+        const newMonthly = prompt(`Enter new Monthly Price (Current: ₹${book.priceMonthly}):`);
+        const newYearly = prompt(`Enter new Yearly Price (Current: ₹${book.priceYearly}):`);
+        const newDiscount = prompt(`Enter new Discount Percentage (Current: ${book.discount || 0}%):`);
+
+        const updates = {};
+        if (newMonthly !== null && !isNaN(newMonthly) && newMonthly >= 0) updates.priceMonthly = Number(newMonthly);
+        if (newYearly !== null && !isNaN(newYearly) && newYearly >= 0) updates.priceYearly = Number(newYearly);
+        if (newDiscount !== null && !isNaN(newDiscount) && newDiscount >= 0 && newDiscount <= 100) updates.discount = Number(newDiscount);
+        
+        if(Object.keys(updates).length > 0) {
+            db.ref('books/'+id).update(updates).then(()=>{ loadBooks(); alert('Book details updated!'); });
+        } else {
+            alert('No valid changes made.');
+        }
+    });
+}
+function toggleVisibility(id,hidden){ db.ref('books/'+id).update({hidden:!hidden}).then(()=>{ loadBooks(); }); }
+function deleteBook(id){ if(confirm('Permanently delete this book?')) db.ref('books/'+id).remove().then(()=>{ loadBooks(); alert('Book deleted.'); }); }
+
+// --- Payment Management Functions (No Change) ---
+function loadPayments(){
+    db.ref('payments').orderByChild('status').equalTo('pending').once('value').then(snap=>{
+        const data = snap.val()||{};
+        const container = document.getElementById('payment-list');
+        container.innerHTML='';
+        Object.values(data).sort((a,b)=>b.timestamp - a.timestamp).forEach(p=>{
+            const div = document.createElement('div');
+            div.className='payment-item';
+            div.innerHTML=`
+            <div class="flex-col">
+                <div><strong>📧 User:</strong> ${p.user}</div>
+                <div><strong>📘 Book ID:</strong> ${p.bookId} (<span style="color:#d4af37;">${p.plan.toUpperCase()}</span>)</div>
+                <div><strong>💰 Amount:</b> ₹${p.amount}</div>
+                <div><strong>🔢 UTR:</strong> <span style="font-weight:bold; color:#0056b3;">**${p.utr}**</span></div>
+                <div><strong>🕒 Date:</strong> ${new Date(p.timestamp).toLocaleString()}</div>
+            </div>
+            <div class="flex">
+                <button onclick="approvePayment('${p.id}', '${p.user}', '${p.bookId}', '${p.plan}')">✅ Approve</button>
+                <button onclick="rejectPayment('${p.id}')">❌ Reject</button>
+            </div>
+            `;
+            container.appendChild(div);
+        });
+        if(Object.keys(data).length === 0) container.innerHTML = '<p style="padding:10px;">🎉 No pending payment requests.</p>';
+    });
+}
+function approvePayment(paymentId, userEmail, bookId, plan){
+    const now = Date.now();
+    let durationDays = (plan === 'monthly') ? 30 : (plan === 'yearly' ? 365 : 0);
+    const expiryDate = now + (durationDays * 24 * 60 * 60 * 1000); 
+    const userKey = userEmail.replace(/[.#$[\]]/g, '_'); 
+
+    db.ref('payments/'+paymentId).update({status:'approved', userEmail: userEmail, bookId: bookId, plan: plan}).then(()=>{
+        db.ref('users/'+userKey+'/subscriptions/'+bookId).set({
+            status:'approved', plan: plan, timestamp: now, expiresAt: expiryDate
+        }).then(()=>{
+            loadPayments();
+            const notifId = 'notif'+Date.now();
+            db.ref('notifications/'+notifId).set({
+                id: notifId, recipient: userEmail, 
+                title: 'Subscription Approved! 🎉',
+                body: `Your ${plan.toUpperCase()} subscription for Book ID ${bookId} has been approved. Expires: ${new Date(expiryDate).toLocaleDateString()}.`,
+                timestamp: Date.now(), read: false
+            });
+            alert(`Payment approved & subscription unlocked for user ${userEmail}! Notification sent.`);
+        });
+    }).catch(err => alert('Error approving payment: ' + err.message));
+}
+function rejectPayment(id){
+    if(confirm('Are you sure you want to reject this payment request?')) {
+        db.ref('payments/'+id).update({status:'rejected'}).then(()=>{ loadPayments(); alert('Payment rejected.'); });
+    }
+}
+
+// --- Coupon Management Functions (No Change) ---
+function createCoupon() {
+    const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+    const discount = Number(document.getElementById('coupon-discount').value);
+    const expiryDate = document.getElementById('coupon-expiry').value;
+
+    if (!code || isNaN(discount) || discount <= 0 || discount > 100 || !expiryDate) {
+        return alert('Enter a valid code, discount (1-100%), and expiry date.');
+    }
+
+    const expiryTimestamp = new Date(expiryDate).getTime();
+    if(expiryTimestamp < Date.now()) return alert('Expiry date must be in the future.');
+
+    db.ref('coupons/' + code).set({
+        code, discount, expiryTimestamp, createdAt: Date.now()
+    }).then(() => {
+        alert(`Coupon ${code} (${discount}% off) created successfully!`);
+        document.getElementById('coupon-code').value = '';
+        document.getElementById('coupon-discount').value = '';
+        document.getElementById('coupon-expiry').value = '';
+        loadCoupons();
+    }).catch(e => alert('Error creating coupon: ' + e.message));
+}
+
+function loadCoupons() {
+    db.ref('coupons').once('value').then(snap => {
+        const data = snap.val() || {};
+        const container = document.getElementById('coupon-list');
+        container.innerHTML = '';
+        
+        Object.values(data).sort((a,b)=>b.createdAt - a.createdAt).forEach(coupon => {
+            const expired = coupon.expiryTimestamp < Date.now();
+            const div = document.createElement('div');
+            div.className = 'coupon-item ' + (expired ? 'hidden' : '');
+            div.innerHTML = `
+            <div class="flex-col">
+                <strong>${coupon.code}</strong>
+                <div>Discount: ${coupon.discount}% Off</div>
+                <div style="font-size:12px; color: ${expired ? 'red' : 'green'};">
+                    Expires: ${new Date(coupon.expiryTimestamp).toLocaleDateString()} (${expired ? 'EXPIRED' : 'ACTIVE'})
+                </div>
+            </div>
+            <button onclick="deleteCoupon('${coupon.code}')">Delete</button>
+            `;
+            container.appendChild(div);
+        });
+        if (Object.keys(data).length === 0) container.innerHTML = '<p>No coupons available.</p>';
+    });
+}
+
+function deleteCoupon(code) {
+    if(confirm(`Delete coupon code ${code}?`)) {
+        db.ref('coupons/' + code).remove().then(() => { loadCoupons(); alert('Coupon deleted.'); });
+    }
+}
+
+// --- Notification Sender (No Change) ---
+function sendNotification() {
+    const title = document.getElementById('notif-title').value.trim();
+    const body = document.getElementById('notif-body').value.trim();
+
+    if (!title || !body) return alert('Enter both title and message body.');
+
+    if(confirm('Send this notification to ALL users?')) {
+        const notifId = 'notif'+Date.now();
+        db.ref('notifications/'+notifId).set({
+            id: notifId, recipient: 'global', // 'global' means all users
+            title, body, timestamp: Date.now(), read: false
+        }).then(() => {
+            alert('Global notification sent successfully!');
+            document.getElementById('notif-title').value = '';
+            document.getElementById('notif-body').value = '';
+        }).catch(e => alert('Error sending notification: ' + e.message));
+    }
+}
+</script>
+</body>
+</html>
+

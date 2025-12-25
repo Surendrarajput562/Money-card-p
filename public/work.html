@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Workie — User Panel (Premium)</title>
+<style>
+  :root{
+    --accent:#2e7d32;
+    --muted:#6b7280;
+    --bg:#eef7ee;
+    --card:#fbfffb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); color:#0b1220}
+  header{background:var(--accent);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  header .brand{font-weight:700}
+  header .controls{display:flex;gap:8px;align-items:center}
+  .container{max-width:1000px;margin:20px auto;padding:18px}
+  /* TABS */
+  .tabs{display:flex;gap:10px;justify-content:center;margin-bottom:18px}
+  .tab-btn{
+    flex:1;max-width:200px;padding:8px 12px;border-radius:10px;border:none;background:#fff;border:1px solid rgba(0,0,0,0.06);
+    cursor:pointer;font-weight:600;color:var(--accent);box-shadow:0 4px 14px rgba(45,106,65,0.06)
+  }
+  .tab-btn.active{background:linear-gradient(90deg,var(--accent),#43a047);color:#fff;box-shadow:0 8px 26px rgba(46,141,61,0.12)}
+  /* toolbar (search + sort) */
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between;margin-bottom:14px}
+  .left-tools{display:flex;gap:8px;align-items:center;flex:1;min-width:260px}
+  .right-tools{display:flex;gap:8px;align-items:center}
+  input.search{padding:10px;border-radius:10px;border:1px solid #dfe7df;min-width:220px}
+  select{padding:10px;border-radius:10px;border:1px solid #dfe7df}
+  /* sections */
+  .section{background:#fff;padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(3,10,6,0.04);margin-bottom:22px}
+  .section h2{margin:0 0 12px 0;color:var(--accent);font-size:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .card{
+    background:var(--card);padding:12px;border-radius:12px;border:1px solid #e6f0e6;display:flex;flex-direction:column;gap:8px;
+    transition:transform .14s, box-shadow .14s;overflow:hidden;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(46,141,61,0.08)}
+  .card img{width:100%;height:160px;object-fit:cover;border-radius:8px;border:1px solid #e9f2e9}
+  .meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .title{font-weight:700;margin:0;color:#103616}
+  .desc{margin:0;color:#123;line-height:1.5;white-space:pre-wrap;max-height:120px;overflow:auto;padding-right:4px}
+  .foot{display:flex;gap:8px;align-items:center;margin-top:6px}
+  .btn{padding:8px 10px;border-radius:10px;border:none;cursor:pointer;font-weight:600;background:var(--accent);color:#fff}
+  .btn.secondary{background:#fff;border:1px solid #dfe7df;color:var(--accent)}
+  .muted{color:var(--muted);font-size:13px}
+  .note{font-size:13px;color:var(--muted);margin-top:8px}
+  @media (max-width:560px){
+    .tabs{padding:0 8px;gap:6px}
+    .tab-btn{font-size:14px;padding:8px}
+    .card img{height:140px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Workie — User Panel</div>
+  <div class="controls">
+    <div id="userLabel" class="muted">Loading…</div>
+    <button class="btn secondary" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TABS (small equal) -->
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" id="tabJobs" onclick="showSection('jobs')">JOBS</button>
+    <button class="tab-btn" id="tabTasks" onclick="showSection('tasks')">TASKS</button>
+    <button class="tab-btn" id="tabInsta" onclick="showSection('insta')">INSTAGRAM</button>
+  </div>
+
+  <!-- toolbar: search + sort + category (category optional) -->
+  <div class="toolbar">
+    <div class="left-tools">
+      <input id="searchInput" class="search" placeholder="Search title or description..." oninput="renderActive()" />
+      <select id="sortSelect" onchange="renderActive()">
+        <option value="latest">Sort: Latest</option>
+        <option value="oldest">Sort: Oldest</option>
+      </select>
+      <select id="categorySelect" onchange="renderActive()">
+        <option value="all">Category: All</option>
+        <!-- dynamic categories can be added later -->
+      </select>
+    </div>
+    <div class="right-tools">
+      <div class="note">Showing: <span id="countLabel">—</span></div>
+    </div>
+  </div>
+
+  <!-- Sections -->
+  <div id="section_jobs" class="section">
+    <h2>🧳 Jobs</h2>
+    <div id="jobsGrid" class="grid"></div>
+    <div id="jobsEmpty" class="note" style="display:none">No jobs found.</div>
+  </div>
+
+  <div id="section_tasks" class="section" style="display:none">
+    <h2>📌 Tasks</h2>
+    <div id="tasksGrid" class="grid"></div>
+    <div id="tasksEmpty" class="note" style="display:none">No tasks found.</div>
+  </div>
+
+  <div id="section_insta" class="section" style="display:none">
+    <h2>📸 Instagram Campaigns</h2>
+    <div id="instaGrid" class="grid"></div>
+    <div id="instaEmpty" class="note" style="display:none">No campaigns found.</div>
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+/* ----------------- CONFIG: paste your Firebase config ----------------- */
+const firebaseConfig = {
+ apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+  authDomain: "smbrand-4543a.firebaseapp.com",
+  databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+  projectId: "smbrand-4543a",
+  storageBucket: "smbrand-4543a.firebasestorage.app",
+  messagingSenderId: "720775550032",
+  appId: "1:720775550032:web:0622548a007597778bad55",
+  measurementId: "G-3LS5W6F8QW"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+/* --------------------------------------------------------------------- */
+
+let currentUser = null;
+let data = { jobs:[], tasks:[], insta:[] };
+let activeSection = 'jobs';
+
+// Auth check (redirect to login if not signed in)
+auth.onAuthStateChanged(u=>{
+  if(!u){
+    location.href = "workie.html";
+    return;
+  }
+  currentUser = u;
+  document.getElementById('userLabel').textContent = u.email || u.displayName || 'User';
+  // initial load after auth
+  loadAll();
+});
+
+// show tab/section
+function showSection(name){
+  activeSection = name;
+  // tabs active class
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  if(name==='jobs') document.getElementById('tabJobs').classList.add('active');
+  if(name==='tasks') document.getElementById('tabTasks').classList.add('active');
+  if(name==='insta') document.getElementById('tabInsta').classList.add('active');
+  // sections
+  document.getElementById('section_jobs').style.display = (name==='jobs') ? '' : 'none';
+  document.getElementById('section_tasks').style.display = (name==='tasks') ? '' : 'none';
+  document.getElementById('section_insta').style.display = (name==='insta') ? '' : 'none';
+  renderActive();
+}
+
+// common whatsapp opener
+function openWhatsApp(number, message){
+  if(!number) return alert('Contact number not provided.');
+  const url = `https://wa.me/${number.replace(/\D/g,'')}?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank');
+}
+
+// load all data once and keep live listeners
+function loadAll(){
+  db.ref('jobs').on('value', snap=>{
+    const arr = [];
+    snap.forEach(ch=>{
+      const v = ch.val(); v._key = ch.key;
+      arr.push(v);
+    });
+    data.jobs = arr;
+    updateCategoryOptions();
+    renderActive();
+  });
+
+  db.ref('tasks').on('value', snap=>{
+    const arr = [];
+    snap.forEach(ch=>{
+      const v = ch.val(); v._key = ch.key;
+      arr.push(v);
+    });
+    data.tasks = arr;
+    updateCategoryOptions();
+    renderActive();
+  });
+
+  db.ref('insta').on('value', snap=>{
+    const arr = [];
+    snap.forEach(ch=>{
+      const v = ch.val(); v._key = ch.key;
+      arr.push(v);
+    });
+    data.insta = arr;
+    updateCategoryOptions();
+    renderActive();
+  });
+}
+
+// update category select (if items include a category field)
+function updateCategoryOptions(){
+  const select = document.getElementById('categorySelect');
+  const categories = new Set();
+  ['jobs','tasks','insta'].forEach(k=>{
+    data[k].forEach(item=>{
+      if(item.category) categories.add(item.category);
+    });
+  });
+  // remove existing dynamic options (keep 'all')
+  Array.from(select.options).slice(1).forEach(o=>o.remove());
+  // add categories
+  categories.forEach(cat=>{
+    const opt = document.createElement('option');
+    opt.value = cat; opt.textContent = cat;
+    select.appendChild(opt);
+  });
+}
+
+// render active section with search & sort
+function renderActive(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const sort = document.getElementById('sortSelect').value; // latest or oldest
+  const category = document.getElementById('categorySelect').value;
+
+  if(activeSection==='jobs') renderList('jobs', 'jobsGrid', 'jobsEmpty', q, sort, category);
+  if(activeSection==='tasks') renderList('tasks', 'tasksGrid', 'tasksEmpty', q, sort, category);
+  if(activeSection==='insta') renderList('insta', 'instaGrid', 'instaEmpty', q, sort, category);
+
+  // update count label
+  const count = (activeSection==='jobs'?data.jobs.length : activeSection==='tasks'?data.tasks.length : data.insta.length);
+  document.getElementById('countLabel').textContent = count;
+}
+
+function renderList(key, containerId, emptyId, query, sortBy, category){
+  const container = document.getElementById(containerId);
+  const empty = document.getElementById(emptyId);
+  container.innerHTML = '';
+
+  // copy & filter
+  let items = (data[key]||[]).slice();
+
+  // filter by category if chosen
+  if(category && category !== 'all'){
+    items = items.filter(it => (it.category||'').toLowerCase() === category.toLowerCase());
+  }
+
+  // search filter (title/desc)
+  if(query){
+    items = items.filter(it=>{
+      const t = (it.title||'').toLowerCase();
+      const d = (it.desc||'').toLowerCase();
+      return t.includes(query) || d.includes(query);
+    });
+  }
+
+  // sort by date (assumes item.date numeric ms)
+  items.sort((a,b)=>{
+    const da = Number(a.date) || 0;
+    const db = Number(b.date) || 0;
+    return (sortBy==='latest') ? db - da : da - db;
+  });
+
+  if(items.length === 0){
+    empty.style.display = '';
+    return;
+  } else empty.style.display = 'none';
+
+  // build cards
+  items.forEach(it=>{
+    const img = it.img || '';
+    const title = it.title || 'Untitled';
+    const desc = it.desc || '';
+    const pay = it.pay || '—';
+    const link = it.link || '';
+    const contact = it.contact || '';
+
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    // image
+    if(img){
+      const elImg = document.createElement('img');
+      elImg.src = img;
+      elImg.alt = title;
+      card.appendChild(elImg);
+    }
+
+    // title
+    const h = document.createElement('h3'); h.className='title'; h.textContent = title;
+    card.appendChild(h);
+
+    // desc
+    const p = document.createElement('p'); p.className='desc';
+    p.innerHTML = sanitizeAndFormat(desc);
+    card.appendChild(p);
+
+    // meta row
+    const meta = document.createElement('div'); meta.className='meta';
+    const dateText = new Date(Number(it.date||0)).toLocaleString();
+    meta.innerHTML = `<div class="muted">Posted: ${dateText}</div><div class="muted">Pay: ₹${pay}</div>`;
+    card.appendChild(meta);
+
+    // foot buttons
+    const foot = document.createElement('div'); foot.className='foot';
+
+    // open link button (if link)
+    const openBtn = document.createElement('button'); openBtn.className='btn secondary';
+    openBtn.textContent = 'Open';
+    if(link) openBtn.onclick = ()=> window.open(link, '_blank');
+    else openBtn.disabled = true;
+    foot.appendChild(openBtn);
+
+    // apply button (WhatsApp)
+    const applyBtn = document.createElement('button'); applyBtn.className='btn';
+    applyBtn.textContent = 'Apply';
+    applyBtn.onclick = ()=>{
+      const msg = `Hello, I (${currentUser.email}) want to apply for: ${title}`;
+      openWhatsApp(contact || '', msg);
+    };
+    foot.appendChild(applyBtn);
+
+    card.appendChild(foot);
+    container.appendChild(card);
+  });
+}
+
+// small sanitize & simple formatting: escape and convert newlines
+function sanitizeAndFormat(txt){
+  if(!txt) return '';
+  const esc = txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return esc.replace(/\n/g,'<br>');
+}
+
+// logout
+function logout(){
+  auth.signOut().then(()=> location.href='workie.html');
+}
+
+/* initial show */
+showSection('jobs');
+</script>
+</body>
+</html>

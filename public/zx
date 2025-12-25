@@ -1,0 +1,14 @@
+// Exact domains bina https:// ke
+const d1 = "moneycard.space";
+const d2 = "moneycard-8f457.web.app";
+
+const current = window.location.hostname;
+
+// Ye check karega ki host sahi hai ya nahi
+if (current === d1 || current === d2 || current.includes("moneycard") || current === "localhost") {
+    console.log("Welcome Boss! Domain Verified.");
+} else {
+    // Sirf hacker ke liye alert aur redirect
+    alert("Unauthorized Domain! Access Denied.");
+    window.location.href = "https://google.com";
+}

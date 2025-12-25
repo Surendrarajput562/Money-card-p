@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Image Editor (Resize, Crop, BG)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { margin-bottom: 10px; color: #818cf8; }
+        p { color: #94a3b8; margin-bottom: 30px; }
+
+        .controls {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+            width: 100%;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label { font-size: 0.9rem; font-weight: bold; color: #cbd5e1; }
+        
+        input[type="number"], input[type="color"] {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background: #334155;
+            color: white;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:hover { background-color: #4338ca; }
+        button:disabled { background-color: #475569; cursor: not-allowed; }
+        
+        #downloadBtn { background-color: #10b981; }
+        #downloadBtn:hover { background-color: #059669; }
+
+        .preview-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 30px;
+        }
+
+        .image-card {
+            background: var(--card);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+        }
+
+        .image-card canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            border: 1px solid #475569;
+        }
+
+        .image-card span {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Custom File Input */
+        .file-upload {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            border: 2px dashed #475569;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .file-upload:hover { border-color: var(--primary); }
+
+    </style>
+</head>
+<body>
+
+    <h1>🚀 Multi-Image Editor Pro</h1>
+    <p>Resize, Auto-Crop, aur Background Change ek sath karein.</p>
+
+    <div class="controls">
+        <div style="width: 100%;">
+            <label for="imageInput" class="file-upload">
+                📂 Click to Upload Images (Select Multiple)
+            </label>
+            <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
+        </div>
+
+        <div class="input-group">
+            <label>Width (px)</label>
+            <input type="number" id="widthInput" value="500">
+        </div>
+
+        <div class="input-group">
+            <label>Height (px)</label>
+            <input type="number" id="heightInput" value="500">
+        </div>
+
+        <div class="input-group">
+            <label>Background Color</label>
+            <input type="color" id="bgColorInput" value="#ffffff">
+        </div>
+
+        <div class="input-group">
+            <label>&nbsp;</label>
+            <button onclick="processImages()">⚡ Process Images</button>
+        </div>
+
+        <div class="input-group">
+            <label>&nbsp;</label>
+            <button id="downloadBtn" onclick="downloadAll()" disabled>💾 Download ZIP</button>
+        </div>
+    </div>
+
+    <div id="previewContainer" class="preview-area"></div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const downloadBtn = document.getElementById('downloadBtn');
+        
+        let processedCanvases = []; // Store processed data
+
+        // Display selected file count
+        imageInput.addEventListener('change', function() {
+            const label = document.querySelector('.file-upload');
+            label.textContent = `✅ ${this.files.length} Files Selected`;
+        });
+
+        async function processImages() {
+            const files = imageInput.files;
+            const targetWidth = parseInt(document.getElementById('widthInput').value);
+            const targetHeight = parseInt(document.getElementById('heightInput').value);
+            const bgColor = document.getElementById('bgColorInput').value;
+
+            if (files.length === 0) {
+                alert("Please select images first!");
+                return;
+            }
+
+            previewContainer.innerHTML = '';
+            processedCanvases = [];
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = "Processing...";
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const canvas = await createImageCanvas(file, targetWidth, targetHeight, bgColor);
+                
+                // Add to preview
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.appendChild(canvas);
+                
+                const name = document.createElement('span');
+                name.textContent = file.name;
+                card.appendChild(name);
+                
+                previewContainer.appendChild(card);
+
+                // Store for download
+                processedCanvases.push({
+                    name: `edited_${file.name.split('.')[0]}.jpg`,
+                    data: canvas.toDataURL('image/jpeg', 0.9)
+                });
+            }
+
+            downloadBtn.disabled = false;
+            downloadBtn.textContent = "💾 Download ZIP";
+        }
+
+        function createImageCanvas(file, tW, tH, color) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        canvas.width = tW;
+                        canvas.height = tH;
+
+                        // 1. Fill Background
+                        ctx.fillStyle = color;
+                        ctx.fillRect(0, 0, tW, tH);
+
+                        // 2. Calculate "Object-Fit: Cover" (Smart Crop)
+                        let renderW, renderH, offsetX, offsetY;
+                        const aspectRadio = img.width / img.height;
+                        const targetRatio = tW / tH;
+
+                        if (aspectRadio > targetRatio) {
+                            // Image is wider than target
+                            renderH = tH;
+                            renderW = img.width * (tH / img.height);
+                            offsetX = (tW - renderW) / 2; // Center horizontally
+                            offsetY = 0;
+                        } else {
+                            // Image is taller than target
+                            renderW = tW;
+                            renderH = img.height * (tW / img.width);
+                            offsetX = 0;
+                            offsetY = (tH - renderH) / 2; // Center vertically
+                        }
+
+                        // 3. Draw Image
+                        ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
+
+                        resolve(canvas);
+                    };
+                };
+            });
+        }
+
+        function downloadAll() {
+            if (processedCanvases.length === 0) return;
+
+            const zip = new JSZip();
+            const folder = zip.folder("edited_images");
+
+            processedCanvases.forEach(img => {
+                // Remove the data:image/jpeg;base64, part
+                const data = img.data.split(',')[1];
+                folder.file(img.name, data, {base64: true});
+            });
+
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                saveAs(content, "processed_images.zip");
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

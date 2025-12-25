@@ -1,0 +1,54 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+echo "👉 Prompt likho (HTML/CSS/JS ke liye):"
+read prompt
+
+clear
+echo ""
+echo "===== AI STYLE GENERATED HTML/CSS/JS CODE ====="
+echo ""
+
+echo "<!DOCTYPE html>
+<html>
+<head>
+<title>Generated Code</title>
+<style>
+body { font-family: Arial; background:#f0f0f0; padding:20px; }
+.box { background:white; padding:20px; border-radius:10px; }
+</style>
+</head>
+<body>
+
+<h2>Prompt: $prompt</h2>
+
+<div class='box'>
+<h3>HTML Output</h3>
+<p>Yaha AI style HTML output aata:</p>
+<pre>
+<div class='container'>
+  <h1>$prompt</h1>
+  <button onclick='run()'>Click</button>
+</div>
+</pre>
+
+<h3>CSS Output</h3>
+<pre>
+.container {
+  padding:20px;
+  background:#222;
+  color:white;
+  border-radius:10px;
+}
+</pre>
+
+<h3>JS Output</h3>
+<pre>
+function run(){
+  alert('Generated for: $prompt');
+}
+</pre>
+
+</div>
+
+</body>
+</html>"

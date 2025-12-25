@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gold Rupi - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root{
+            --gold:#d4af37;
+            --gold-strong:#c59b2d;
+            --bg-color:#f8f9fa;
+            --card-bg: #ffffff;
+            --text-color:#1f2937;
+            --success:#10b981;
+            --danger:#ef4444;
+            --warning:#f59e0b;
+            --info: #007bff; /* Added for the new button */
+        }
+        [data-theme="dark"] {
+             --gold:#ffd76b;
+            --gold-strong:#ffc44a;
+            --bg-color:#111827;
+            --card-bg: #1f2937;
+            --text-color:#f3f4f6;
+        }
+
+        *{box-sizing:border-box}
+        body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg-color);color:var(--text-color);padding:20px;}
+        
+        .header{font-weight:700;font-size:24px;color:var(--gold-strong);margin-bottom:20px;}
+        .card{background:var(--card-bg);border-radius:12px;padding:16px;box-shadow:0 4px 15px rgba(0,0,0,0.05);margin-bottom:15px;}
+        .btn{background:var(--gold);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;transition:background 0.3s;}
+        .btn:hover{background:var(--gold-strong);}
+        input, select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.1);background:var(--bg-color);color:var(--text-color);margin-bottom:10px;font-family:inherit;}
+        .flex-row { display: flex; align-items: center; gap: 10px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:600;color:#fff;}
+        .bg-success{background:var(--success);}
+        .bg-danger{background:var(--danger);}
+        .bg-warning{background:var(--warning);}
+        .bg-info{background:var(--info);} /* Style for the new button */
+        .field-hidden { display: none !important; }
+        .text-center { text-align: center; }
+        
+        #login-error-msg {
+            color: var(--danger);
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+        /* New styles for control fields */
+        .emi-control-row input {
+            flex: 1;
+            margin-bottom: 0;
+            padding: 8px; /* Slightly smaller padding for controls */
+            font-size: 12px;
+        }
+        .emi-control-row {
+            gap: 5px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div id="login-view">
+        <div class="header text-center">Admin Login</div>
+        <div class="card">
+            <input id="admin-email" type="email" placeholder="Admin Email (rajputsurendra562@gmail.com)">
+            <input id="admin-password" type="password" placeholder="Password">
+            <button class="btn" onclick="adminLogin()">Login</button>
+            <div id="login-error-msg"></div>
+        </div>
+        <p style="color:var(--danger); font-size:12px; text-align:center;">
+             **सिर्फ़ rajputsurendra562@gmail.com ही काम करेगा**
+        </p>
+    </div>
+
+    <div id="admin-dashboard" class="field-hidden">
+        <div class="header flex-between">
+            Gold Rupi Admin
+            <button class="btn" style="width:auto; background:var(--danger); color:white;" onclick="adminLogout()">Logout</button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0;"><i class="ri-wallet-line"></i> Update User Wallet Balance</h3>
+            <div class="flex-row">
+                <input id="wallet-user-uid" placeholder="User ID (UID)">
+                <button class="btn" style="width:auto;" onclick="searchUser()">Search</button>
+            </div>
+            <div id="user-info" style="font-size:12px; margin-bottom:10px;"></div>
+            
+            <input id="new-wallet-balance" type="number" placeholder="New Wallet Balance (₹)">
+            <button class="btn" onclick="updateWallet()">Update Balance</button>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-top:0;"><i class="ri-money-rupee-circle-line"></i> Update Loan Details (Total/Outstanding/Status)</h3>
+            <input id="loan-id-details-input" placeholder="Loan ID (e.g. L1715000000000)">
+            <div id="loan-detail-info" style="font-size:12px; margin-bottom:10px;"></div>
+            <div class="flex-row" style="gap:5px;">
+                <input type="number" id="new-total-amount" placeholder="New Total Amount (₹)">
+                <input type="number" id="new-outstanding-amount" placeholder="New Outstanding (₹)">
+            </div>
+            <button class="btn bg-info" style="color:white; margin-bottom:10px;" onclick="updateLoanDetails()">Update Loan Amounts</button>
+            
+            <button class="btn bg-danger" style="color:white;" onclick="markLoanAsClosed()">Mark Loan as CLOSED</button>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-top:0;"><i class="ri-refund-2-line"></i> EMI Payment Status & Control</h3>
+            <div class="flex-row">
+                <input id="loan-id-input" placeholder="Loan ID (e.g. L1715000000000)">
+                <button class="btn" style="width:auto;" onclick="loadEmiData()">Load EMIs</button>
+            </div>
+            
+            <div id="emi-list-admin">
+                <p style="font-size:12px; color:#999;">Load बटन दबाने पर EMI दिखेंगी।</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // CONFIG - USER PANEL में जो CONFIG इस्तेमाल की है, वही इस्तेमाल करें।
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        const ADMIN_EMAIL = "rajputsurendra562@gmail.com";
+
+        // ------------------ AUTHENTICATION LOGIC ------------------
+
+        auth.onAuthStateChanged(user => {
+            const loginView = document.getElementById('login-view');
+            const dashboard = document.getElementById('admin-dashboard');
+
+            if (user && user.email === ADMIN_EMAIL) {
+                loginView.classList.add('field-hidden');
+                dashboard.classList.remove('field-hidden');
+                document.getElementById('login-error-msg').innerText = '';
+            } else {
+                loginView.classList.remove('field-hidden');
+                dashboard.classList.add('field-hidden');
+            }
+        });
+
+        async function adminLogin() {
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const errorMsg = document.getElementById('login-error-msg');
+            errorMsg.innerText = 'Logging in...';
+            
+            if (email !== ADMIN_EMAIL) {
+                 errorMsg.innerText = "❌ Login Failed: This is not the Admin email.";
+                 return;
+            }
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                let message = "Login Failed: Check your password.";
+                if (error.code === 'auth/user-not-found') {
+                    message = "Login Failed: Admin account not found in Firebase. Create it first.";
+                } else if (error.code === 'auth/wrong-password') {
+                    message = "Login Failed: Wrong password.";
+                }
+                errorMsg.innerText = `❌ ${message}`;
+            }
+        }
+
+        function adminLogout() {
+            auth.signOut();
+        }
+
+        // ------------------ WALLET UPDATE LOGIC ------------------
+        let currentUserId = null;
+
+        async function searchUser() {
+            const uid = document.getElementById('wallet-user-uid').value.trim();
+            const userInfoDiv = document.getElementById('user-info');
+            userInfoDiv.innerHTML = 'Searching...';
+            currentUserId = null;
+
+            if(!uid) {
+                userInfoDiv.innerHTML = '<span style="color:red;">Please enter a User ID.</span>';
+                return;
+            }
+
+            const snap = await db.ref('users/' + uid).once('value');
+            if(snap.exists()) {
+                const data = snap.val();
+                currentUserId = uid;
+                userInfoDiv.innerHTML = `
+                    <span style="color:var(--success); font-weight:600;">✅ Found: ${data.name || 'N/A'} (${data.email})</span>
+                    <br>Current Wallet: ₹${data.wallet || 0}
+                `;
+                document.getElementById('new-wallet-balance').value = data.wallet || 0;
+            } else {
+                userInfoDiv.innerHTML = '<span style="color:red;">❌ User ID not found.</span>';
+            }
+        }
+
+        async function updateWallet() {
+            if (!currentUserId) {
+                return alert("Please search and find a user first.");
+            }
+            const newBalance = parseFloat(document.getElementById('new-wallet-balance').value);
+            if (isNaN(newBalance) || newBalance < 0) {
+                return alert("Invalid balance amount.");
+            }
+            
+            try {
+                await db.ref('users/' + currentUserId + '/wallet').set(newBalance);
+                alert(`Wallet for User ${currentUserId} updated to ₹${newBalance}.`);
+                searchUser(); // Refresh info
+            } catch (error) {
+                alert("Error updating wallet: " + error.message);
+            }
+        }
+        
+        // ------------------ LOAN DETAILS UPDATE LOGIC ------------------
+
+        async function updateLoanDetails() {
+            const loanId = document.getElementById('loan-id-details-input').value.trim();
+            const totalAmount = parseFloat(document.getElementById('new-total-amount').value);
+            const outstandingAmount = parseFloat(document.getElementById('new-outstanding-amount').value);
+            const detailInfoDiv = document.getElementById('loan-detail-info');
+            detailInfoDiv.innerHTML = '';
+
+
+            if (!loanId) {
+                detailInfoDiv.innerHTML = '<span style="color:red;">Please enter a Loan ID.</span>';
+                return;
+            }
+            
+            if (isNaN(totalAmount) && isNaN(outstandingAmount)) {
+                detailInfoDiv.innerHTML = '<span style="color:red;">Please enter at least one valid amount (Total or Outstanding).</span>';
+                return;
+            }
+            
+            const updates = {};
+            if (!isNaN(totalAmount)) {
+                updates.total_amount = totalAmount;
+            }
+            if (!isNaN(outstandingAmount)) {
+                updates.outstanding_amount = outstandingAmount;
+            }
+            
+            if (Object.keys(updates).length === 0) {
+                detailInfoDiv.innerHTML = '<span style="color:red;">No valid amounts entered.</span>';
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to update Loan ${loanId} amounts?`)) return;
+
+            try {
+                // Update loan_requests/LoanID/ total_amount and outstanding_amount
+                await db.ref(`loan_requests/${loanId}`).update(updates);
+                
+                let successMsg = `Loan ${loanId} updated: `;
+                if (updates.total_amount !== undefined) successMsg += `Total: ₹${updates.total_amount} `;
+                if (updates.outstanding_amount !== undefined) successMsg += `Outstanding: ₹${updates.outstanding_amount}`;
+                
+                detailInfoDiv.innerHTML = `<span style="color:var(--success); font-weight:600;">✅ ${successMsg}</span>`;
+
+            } catch (error) {
+                detailInfoDiv.innerHTML = `<span style="color:red;">❌ Error updating loan details: ${error.message}</span>`;
+            }
+        }
+        
+        // ------------------ NEW LOAN CLOSE LOGIC ------------------
+
+        async function markLoanAsClosed() {
+            const loanId = document.getElementById('loan-id-details-input').value.trim();
+            const detailInfoDiv = document.getElementById('loan-detail-info');
+            detailInfoDiv.innerHTML = '';
+
+            if (!loanId) {
+                detailInfoDiv.innerHTML = '<span style="color:red;">Please enter a Loan ID.</span>';
+                return;
+            }
+            
+            const snap = await db.ref(`loan_requests/${loanId}`).once('value');
+            if(!snap.exists()) {
+                 detailInfoDiv.innerHTML = '<span style="color:red;">❌ Loan ID not found in database.</span>';
+                 return;
+            }
+
+            if (!confirm(`⚠️ WARNING: Are you sure you want to FORCE mark Loan ${loanId} as CLOSED? This will update the 'status' to 'closed'.`)) return;
+
+            try {
+                // Update loan_requests/LoanID/status to 'closed'
+                await db.ref(`loan_requests/${loanId}`).update({
+                    status: 'closed',
+                    outstanding_amount: 0 // Optional: Set outstanding to 0 for clarity
+                });
+                
+                detailInfoDiv.innerHTML = `<span style="color:var(--success); font-weight:600;">✅ Loan ${loanId} successfully FORCE marked as **CLOSED** and Outstanding set to ₹0.</span>`;
+                document.getElementById('loan-id-input').value = loanId; // Pre-fill EMI section
+            } catch (error) {
+                detailInfoDiv.innerHTML = `<span style="color:red;">❌ Error marking loan as closed: ${error.message}</span>`;
+            }
+        }
+
+        // ------------------ EMI CONTROL FUNCTIONS (Retained from previous version) ------------------
+        
+        async function updateEmiDetails(loanId, emiId) {
+            const newAmount = parseFloat(document.getElementById(`amount-${emiId}`).value);
+            const newDateStr = document.getElementById(`date-${emiId}`).value;
+            
+            if (isNaN(newAmount) || newAmount <= 0) {
+                return alert("Invalid amount entered.");
+            }
+            if (!newDateStr) {
+                return alert("Invalid due date entered.");
+            }
+
+            if(!confirm(`Are you sure you want to update EMI ${emiId} details to Amount: ₹${newAmount} and Due Date: ${newDateStr}?`)) return;
+
+            try {
+                await db.ref(`loan_requests/${loanId}/emis/${emiId}`).update({
+                    amount: newAmount,
+                    due_date: new Date(newDateStr).getTime() 
+                });
+                alert(`EMI ${emiId} details updated successfully!`);
+                loadEmiData(); // Refresh the list
+            } catch(error) {
+                alert("Error updating EMI details: " + error.message);
+            }
+        }
+        
+        async function forceMarkEmiPaid(loanId, emiId) {
+            if(!confirm(`WARNING: Are you sure you want to FORCE mark EMI ${emiId} of Loan ${loanId} as PAID? This will override its current status.`)) return;
+
+            try {
+                // 1. Update EMI Status to 'paid'
+                await db.ref(`loan_requests/${loanId}/emis/${emiId}/status`).set('paid');
+                await db.ref(`loan_requests/${loanId}/emis/${emiId}/paid_at`).set(Date.now());
+                
+                // 2. Mark any associated payment_requests as 'verified_paid'
+                const paymentSnap = await db.ref('payment_requests').orderByChild('emi_id').equalTo(emiId).once('value');
+                if (paymentSnap.exists()) {
+                    const updates = {};
+                    paymentSnap.forEach(child => {
+                        updates[`payment_requests/${child.key}/status`] = 'verified_paid';
+                    });
+                    await db.ref().update(updates);
+                }
+
+                alert(`EMI ${emiId} successfully FORCE marked as PAID!`);
+                loadEmiData(); // Refresh the list
+            } catch(error) {
+                alert("Error marking EMI as paid: " + error.message);
+            }
+        }
+        
+        async function updateEmiStatus(loanId, emiId, status) {
+            if(!confirm(`Are you sure you want to set EMI ${emiId} of Loan ${loanId} status to ${status.toUpperCase()}?`)) return;
+
+            try {
+                const updates = {};
+                updates.status = status;
+                
+                if (status === 'unpaid') {
+                    updates.paid_at = null; 
+                }
+                
+                await db.ref(`loan_requests/${loanId}/emis/${emiId}`).update(updates);
+                
+                alert(`EMI ${emiId} status set to ${status.toUpperCase()}!`);
+                loadEmiData(); // Refresh the list
+            } catch(error) {
+                alert("Error updating EMI status: " + error.message);
+            }
+        }
+
+        async function markEmiPaid(loanId, emiId) {
+            if(!confirm(`Are you sure you want to mark EMI ${emiId} of Loan ${loanId} as PAID?`)) return;
+
+            try {
+                await db.ref(`loan_requests/${loanId}/emis/${emiId}/status`).set('paid');
+                await db.ref(`loan_requests/${loanId}/emis/${emiId}/paid_at`).set(Date.now());
+                
+                const paymentSnap = await db.ref('payment_requests').orderByChild('emi_id').equalTo(emiId).once('value');
+                if (paymentSnap.exists()) {
+                    const updates = {};
+                    paymentSnap.forEach(child => {
+                        updates[`payment_requests/${child.key}/status`] = 'verified_paid';
+                    });
+                    await db.ref().update(updates);
+                }
+
+                alert(`EMI ${emiId} marked as PAID successfully!`);
+                loadEmiData(); 
+            } catch(error) {
+                alert("Error marking EMI as paid: " + error.message);
+            }
+        }
+
+        // ------------------ EMI DISPLAY LOGIC (Retaining your functional structure) ------------------
+
+        function loadEmiData() {
+            const loanId = document.getElementById('loan-id-input').value.trim();
+            const emiListDiv = document.getElementById('emi-list-admin');
+            emiListDiv.innerHTML = 'Loading EMIs...';
+
+            if(!loanId) {
+                emiListDiv.innerHTML = '<span style="color:red;">Please enter a Loan ID.</span>';
+                return;
+            }
+            
+            // Step 1: Fetch EMIs using the original structure (no async/await in this main block for compatibility)
+            db.ref('loan_requests/' + loanId + '/emis').once('value', snap => {
+                const emis = snap.val();
+                
+                if(!emis) {
+                    emiListDiv.innerHTML = '<span style="color:red;">No EMIs found for this Loan ID.</span>';
+                    return;
+                }
+
+                emiListDiv.innerHTML = ''; // Clear loading message
+
+                // Step 2: Loop through EMIs and fetch UTR/Payment info using nested callback
+                Object.keys(emis).forEach(emiId => {
+                    const e = emis[emiId];
+                    const statusColor = e.status === 'paid' ? 'bg-success' : (e.status === 'payment_submitted' ? 'bg-warning' : 'bg-danger');
+                    
+                    // Get the Due Date in YYYY-MM-DD format for the input field
+                    const dueDate = new Date(e.due_date);
+                    const dateString = isNaN(dueDate.getTime()) ? '' : dueDate.toISOString().split('T')[0];
+                    
+                    let paymentRefText = 'N/A';
+                    
+                    // Fetch latest UTR/Ref from payment_requests
+                    db.ref('payment_requests').orderByChild('emi_id').equalTo(emiId).limitToLast(1).once('value', paymentSnap => {
+                        const payments = paymentSnap.val();
+                        if(payments) {
+                            const latestPayment = Object.values(payments)[0];
+                            if (latestPayment && latestPayment.utr_number) {
+                                paymentRefText = latestPayment.utr_number;
+                            }
+                        }
+                        
+                        // Display data and controls
+                        const emiNumDisplay = e.num !== undefined ? `EMI ${e.num}` : 'EMI undefined';
+                        const emiAmountDisplay = e.amount !== undefined ? `₹${e.amount}` : 'undefined';
+                        const dueTextDisplay = isNaN(new Date(e.due_date).getTime()) ? 'Due: Invalid Date' : `Due: ${new Date(e.due_date).toLocaleDateString()}`;
+
+                        const emiCard = document.createElement('div');
+                        emiCard.className = 'card';
+                        emiCard.id = `emi-card-${emiId}`; 
+                        emiCard.style.marginTop = '10px';
+                        emiCard.style.borderLeft = '4px solid var(--gold-strong)';
+                        emiCard.innerHTML = `
+                            <div class="flex-between">
+                                <div>
+                                    <strong>${emiNumDisplay} (${emiAmountDisplay})</strong><br>
+                                    <span style="font-size:12px; color:#666;">${dueTextDisplay}</span>
+                                </div>
+                                <span class="badge ${statusColor}">${e.status.toUpperCase().replace('_', ' ')}</span>
+                            </div>
+                            
+                            <div style="margin-top:10px; border-top:1px dashed #eee; padding-top:10px;">
+                                <div class="flex-between">
+                                    <span style="font-size:12px;">Payment Ref (UTR): <strong>${paymentRefText}</strong></span>
+                                    
+                                    ${e.status === 'payment_submitted' ? 
+                                        `<button class="btn bg-success" style="width:auto; padding: 10px 5px; flex-shrink: 0;" onclick="markEmiPaid('${loanId}', '${emiId}')">Mark as PAID (Submitted)</button>` :
+                                        ''
+                                    }
+                                </div>
+
+                                <div class="flex-row emi-control-row">
+                                    <input type="number" id="amount-${emiId}" value="${e.amount !== undefined ? e.amount : ''}" placeholder="New Amount (₹)">
+                                    <input type="date" id="date-${emiId}" value="${dateString}" title="New Due Date">
+                                    <button class="btn" style="width:auto; background:#007bff; color:white; padding: 10px 5px; flex-shrink: 0;" 
+                                        onclick="updateEmiDetails('${loanId}', '${emiId}')">Update</button>
+                                </div>
+                                
+                                <div class="flex-row emi-control-row" style="gap:5px;">
+                                    ${e.status !== 'paid' ? 
+                                        `<button class="btn bg-success" style="flex:1; width:auto; padding: 10px 5px;" 
+                                            onclick="forceMarkEmiPaid('${loanId}', '${emiId}')">Force Mark PAID</button>` :
+                                        `<button class="btn bg-danger" style="flex:1; width:auto; padding: 10px 5px;" 
+                                            onclick="updateEmiStatus('${loanId}', '${emiId}', 'unpaid')">Mark UNPAID</button>`
+                                    }
+                                </div>
+                            </div>
+                        `;
+                        emiListDiv.appendChild(emiCard);
+                    });
+                });
+            });
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>VPN Connect</title>
+<style>
+body {
+    background:#000;
+    color:#0ff;
+    font-family:Arial;
+    text-align:center;
+    padding:30px;
+}
+.countryBox{
+    margin-top:10px;
+    background:#111;
+    padding:15px;
+    border-radius:10px;
+    width:90%;
+    max-width:600px;
+    margin:auto;
+    font-size:20px;
+    color:#0ff;
+    cursor:pointer;
+    border:1px solid #0ff;
+}
+.countryBox:hover{
+    background:#022;
+}
+#status{
+    margin-top:20px;
+    color:#0f0;
+    font-size:22px;
+}
+</style>
+</head>
+<body>
+
+<h2>VPN Connect</h2>
+<div id="status"></div>
+
+<h3>Available Networks</h3>
+<div id="networkList">Loading...</div>
+
+<script>
+// API KEY
+const API_KEY = "BE7bdpFGVyTp2peZ7ZKZ1p54bxnXGPG6nBvWxDrDnxe3";
+
+// Country Code → Full Name
+const FULL_NAME = {
+    "IN":"India",
+    "US":"United States (America)",
+    "RU":"Russia",
+    "JP":"Japan",
+    "FR":"France",
+    "DE":"Germany",
+    "SG":"Singapore",
+    "BD":"Bangladesh",
+    "TH":"Thailand",
+    "CA":"Canada",
+    "NL":"Netherlands",
+    "GB":"United Kingdom",
+    "HK":"Hong Kong",
+    "TR":"Turkey",
+    "FI":"Finland",
+    "SE":"Sweden",
+    "CZ":"Czech Republic",
+    "CO":"Colombia",
+    "PE":"Peru",
+    "CY":"Cyprus",
+    "EG":"Egypt"
+};
+
+// Backup: All 50 Real IPs
+const REAL_IP_LIST = [
+{"ip":"104.248.191.18","port":"1080","protocol":"socks5","country":"US"},
+{"ip":"51.158.68.68","port":"8811","protocol":"http","country":"FR"},
+{"ip":"144.217.240.185","port":"9300","protocol":"http","country":"CA"},
+{"ip":"167.172.96.117","port":"50000","protocol":"http","country":"US"},
+{"ip":"23.88.34.57","port":"3128","protocol":"http","country":"DE"},
+{"ip":"139.59.1.14","port":"8080","protocol":"http","country":"IN"},
+{"ip":"195.201.90.141","port":"8080","country":"DE"},
+{"ip":"165.22.254.99","port":"8080","country":"US"},
+{"ip":"190.61.90.141","port":"999","country":"CO"},
+{"ip":"115.127.83.194","port":"8080","country":"BD"},
+{"ip":"34.175.101.255","port":"80","country":"NL"},
+{"ip":"202.181.14.23","port":"3128","country":"HK"},
+{"ip":"143.198.168.250","port":"80","country":"US"},
+{"ip":"84.239.12.204","port":"8080","country":"SE"},
+{"ip":"103.55.33.32","port":"8080","country":"IN"},
+{"ip":"216.176.187.99","port":"8118","country":"US"},
+{"ip":"178.62.72.44","port":"8080","country":"GB"},
+{"ip":"80.252.5.34","port":"7001","country":"TR"},
+{"ip":"45.76.176.138","port":"1080","country":"US"},
+{"ip":"103.148.48.162","port":"8080","country":"IN"},
+{"ip":"62.171.166.158","port":"3128","country":"DE"},
+{"ip":"144.76.42.215","port":"8118","country":"DE"},
+{"ip":"41.65.236.46","port":"1981","country":"EG"},
+{"ip":"115.127.80.50","port":"8080","country":"BD"},
+{"ip":"122.155.165.191","port":"3128","country":"TH"},
+{"ip":"51.75.147.52","port":"3128","country":"FR"},
+{"ip":"82.102.11.74","port":"443","country":"NL"},
+{"ip":"103.148.39.38","port":"83","country":"IN"},
+{"ip":"8.219.97.248","port":"80","country":"SG"},
+{"ip":"185.150.130.103","port":"808","country":"CZ"},
+{"ip":"185.223.230.130","port":"80","country":"DE"},
+{"ip":"103.59.44.62","port":"8080","country":"IN"},
+{"ip":"201.220.150.89","port":"3128","country":"PE"},
+{"ip":"89.116.34.154","port":"80","country":"DE"},
+{"ip":"82.146.37.145","port":"80","country":"RU"},
+{"ip":"194.87.188.114","port":"8000","country":"RU"},
+{"ip":"172.104.128.235","port":"80","country":"SG"},
+{"ip":"138.201.125.229","port":"8118","country":"DE"},
+{"ip":"103.165.157.80","port":"8080","country":"IN"},
+{"ip":"103.48.68.36","port":"83","country":"IN"},
+{"ip":"45.146.106.64","port":"80","country":"RU"},
+{"ip":"51.38.50.253","port":"80","country":"FR"},
+{"ip":"51.158.169.52","port":"29976","country":"FR"},
+{"ip":"89.58.38.17","port":"80","country":"FR"},
+{"ip":"103.175.238.106","port":"8082","country":"IN"},
+{"ip":"95.216.230.239","port":"80","country":"FI"},
+{"ip":"178.128.163.157","port":"80","country":"NL"},
+{"ip":"185.200.38.163","port":"8080","country":"CY"},
+{"ip":"167.172.87.24","port":"443","country":"US"}
+];
+
+// Connect function
+async function connectNow(countryCode){
+    const cname = FULL_NAME[countryCode] || countryCode;
+    document.getElementById("status").innerText = "Connecting to "+ cname +" ...";
+
+    try {
+        await fetch("https://api.proxifly.dev/proxy", {
+            headers: { "Authorization": API_KEY }
+        });
+        document.getElementById("status").innerText = "Connected to "+ cname +" ✔";
+    } catch {
+        document.getElementById("status").innerText = "Connection Failed ❌";
+    }
+}
+
+// Load Countries
+function loadCountries(){
+    let uniqueCountries = [];
+    REAL_IP_LIST.forEach(x=>{
+        if(!uniqueCountries.includes(x.country)) uniqueCountries.push(x.country);
+    });
+
+    let html = "";
+    uniqueCountries.forEach(cc=>{
+        const cname = FULL_NAME[cc] || cc;
+        html += `<div class="countryBox" onclick="connectNow('${cc}')">${cname}</div>`;
+    });
+
+    document.getElementById("networkList").innerHTML = html;
+}
+
+loadCountries();
+</script>
+</body>
+</html>

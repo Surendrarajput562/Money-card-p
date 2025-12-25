@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Rupi - Premium Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Base & Global Styles (Improved UI) */
+body{font-family:'Poppins',sans-serif;margin:0;padding:0;background:linear-gradient(135deg,#ffd700,#f0e68c);color:#222;min-height:100vh;}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100;}
+header h1{margin:0;font-size:20px;font-weight:700;color:#111;}
+/* Navigation */
+nav{display:flex;flex-direction:column;width:120px;background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);padding-top:10px;position:fixed;top:0;bottom:0;overflow-y:auto;border-right:1px solid rgba(255,255,255,0.3);}
+nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 0;border:none;background:none;color:#111;cursor:pointer;transition:background 0.3s, color 0.3s;}
+nav button:hover{background:rgba(255,255,255,0.3);}
+nav button img{width:28px;height:28px;margin-bottom:4px;filter:invert(0.1);opacity:0.85;}
+nav button span{font-size:12px;font-weight:600;}
+nav button.active{background:#ffd700;color:#000;box-shadow:0 0 15px rgba(255,215,0,0.5);border-radius:0;}
+
+/* Main Content */
+main{margin-left:130px;padding:20px;}
+section{display:none;}
+section.active{display:block;}
+h2{color:#444;border-bottom:2px solid #ffda47;padding-bottom:5px;margin-top:0;}
+
+/* Form Elements & Cards */
+input,textarea,select{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.98);box-sizing:border-box;}
+button.primary{background:#ffd700;padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s;}
+button.primary:hover{background:#ffc700;}
+
+.card{background:rgba(255,255,255,0.95);padding:15px;margin:12px 0;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.08);border-left:4px solid #ffd700;}
+.small{font-size:13px;color:#555}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+img.thumb{width:100%;height:140px;object-fit:cover;border-radius:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;}
+.badge{display:inline-block;padding:6px 10px;border-radius:15px;background:#fff7e6;border:1px solid #ffda47;font-weight:600;font-size:12px;color:#333;}
+.meta{font-size:13px;color:#666}
+/* Updated style for product images within order list */
+.prod-thumb{width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid rgba(0,0,0,0.06)} 
+
+/* Action Buttons (Approve/Reject) */
+.btn-approve, .btn-reject {padding: 8px 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; font-size: 12px;}
+.btn-approve {background: #4CAF50; color: white;}
+.btn-reject {background: #F44336; color: white; margin-left: 5px;}
+.btn-approve:hover, .btn-reject:hover {opacity: 0.8;}
+
+/* Preloader & Loader */
+#preloader{position:fixed;top:0;left:0;width:100%;height:100%;background:#ffffffdd;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s;}
+.loader{border:6px solid #f3f3f3;border-top:6px solid #ffd700;border-radius:50%;width:50px;height:50px;animation:spin 1.5s linear infinite;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* New Feature Styles */
+.loan-controls, .gold-rate-controls{display:flex;gap:8px;align-items:center;margin-top:8px;}
+.loan-controls input, .gold-rate-controls input{width:100px;margin:0;padding:8px;}
+.chat-message{border-left: 3px solid #ffda47; padding-left: 10px; margin-top: 5px; font-style: italic;}
+.status-badge{background:#e6f7ff; margin-right:5px; font-size:10px; padding:3px 6px; border-radius:10px; font-weight: 500;}
+</style>
+</head>
+<body>
+
+<div id="preloader">
+    <div class="loader"></div>
+</div>
+
+<header>
+<h1>Gold Rupi — Admin Panel</h1>
+<div style="display:flex;gap:12px;align-items:center">
+<div class="small" id="admin-email">admin</div>
+<button onclick="logout()" style="padding:8px 12px;border-radius:8px;border:none;background:#fff8ea;cursor:pointer;font-weight:600;">Logout</button>
+</div>
+</header>
+
+<nav>
+<button data-tab="dashboard" class="active"><img src="https://img.icons8.com/ios-filled/50/000000/dashboard-layout.png"/><span>Dashboard</span></button>
+<button data-tab="users"><img src="https://img.icons8.com/ios-filled/50/000000/collaborator-male.png"/><span>Users</span></button>
+<button data-tab="categories"><img src="https://img.icons8.com/ios-filled/50/000000/categorize.png"/><span>Categories</span></button>
+<button data-tab="products"><img src="https://img.icons8.com/ios-filled/50/000000/shop.png"/><span>Products</span></button>
+<button data-tab="orders"><img src="https://img.icons8.com/ios-filled/50/000000/order-history.png"/><span>Orders</span></button>
+<button data-tab="payments"><img src="https://img.icons8.com/ios-filled/50/000000/card-payment.png"/><span>Payments</span></button>
+<button data-tab="wallet"><img src="https://img.icons8.com/ios-filled/50/000000/wallet.png"/><span>Wallet Req</span></button>
+<button data-tab="gold"><img src="https://img.icons8.com/ios-filled/50/000000/gold-bar.png"/><span>Gold Req</span></button>
+<button data-tab="refer"><img src="https://img.icons8.com/ios-filled/50/000000/referral.png"/><span>Refer Req</span></button>
+<button data-tab="kyc"><img src="https://img.icons8.com/ios-filled/50/000000/id-card.png"/><span>KYC Req</span></button>
+<button data-tab="loan"><img src="https://img.icons8.com/ios-filled/50/000000/receive-cash.png"/><span>Loan Req</span></button>
+<button data-tab="support"><img src="https://img.icons8.com/ios-filled/50/000000/speech-bubble.png"/><span>Support</span></button>
+</nav>
+
+<main>
+<section id="dashboard" class="active">
+<h2>Dashboard Overview</h2>
+<div id="stats" class="card"></div>
+
+<h3>Gold Rate Management (₹/Gram)</h3>
+<div class="card gold-rate-controls">
+    <input type="number" id="gold-rate-input" placeholder="Current Gold Rate (₹)" step="0.01">
+    <button class="primary" onclick="setGoldRate()">Update Gold Rate</button>
+    <div id="current-gold-rate" class="badge">Rate: Loading...</div>
+</div>
+
+<h3>Quick Recent Activity</h3>
+<div id="recent" class="grid"></div>
+</section>
+
+<section id="users">
+    <h2>All Users</h2>
+    <div id="user-list"></div>
+</section>
+
+<section id="categories">
+<h2>Manage Categories</h2>
+<div class="card">
+<input id="cat-name" placeholder="Category Name (eg: men, women, sari, fashion)">
+<input type="file" id="cat-image">
+<button class="primary" onclick="addCategory()">Add / Update Category</button>
+</div>
+<h3>All Categories</h3>
+<div id="category-list" class="grid"></div>
+</section>
+
+<section id="products">
+<h2>Manage Products</h2>
+<div class="card">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<input id="prod-name" placeholder="Product Name">
+<input id="prod-brand" placeholder="Brand">
+<input id="prod-price" placeholder="Price" type="number">
+<input id="prod-discount" placeholder="Discount % (optional)" type="number">
+</div>
+<textarea id="prod-desc" placeholder="Description"></textarea>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px; margin: 8px 0;">
+    <select id="prod-colors" multiple style="min-height:100px;">
+        <option value="" disabled>Select Colors (Hold Ctrl/Cmd to select multiple)</option>
+    </select>
+    <select id="prod-sizes" multiple style="min-height:100px;">
+        <option value="" disabled>Select Sizes (Hold Ctrl/Cmd to select multiple)</option>
+    </select>
+</div>
+<div style="display:flex;gap:8px;align-items:center">
+<select id="prod-category"></select>
+<input type="file" id="prod-images" multiple>
+<button class="primary" onclick="addProduct()">Add Product</button>
+</div>
+</div>
+<h3>All Products</h3>
+<div id="product-list" class="grid"></div>
+</section>
+
+<section id="orders">
+<h2>Orders</h2>
+<div id="orders-list"></div>
+</section>
+
+<section id="payments">
+<h2>Unified Payment Requests</h2>
+<div id="payment-list"></div>
+</section>
+
+<section id="wallet">
+<h2>Wallet Add Requests</h2>
+<div id="wallet-requests"></div>
+</section>
+
+<section id="gold">
+<h2>Gold Buy Requests</h2>
+<div id="gold-requests"></div>
+</section>
+
+<section id="refer">
+<h2>Refer Cash Requests (₹100)</h2>
+<div id="refer-requests"></div>
+</section>
+
+<section id="kyc">
+<h2>KYC Requests</h2>
+<div id="kyc-requests"></div>
+</section>
+
+<section id="loan">
+<h2>Loan Requests</h2>
+<div id="loan-requests-list"></div>
+</section>
+
+<section id="support">
+<h2>Support Messages</h2>
+<div id="support-messages-list"></div>
+</section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+// IMPORTANT: Make sure your Firebase Realtime Database security rules are set up
+// to allow read/write access to 'users', 'orders', 'payment_requests', 'gold_requests',
+// 'loan_requests', 'support_messages', 'kyc_requests', and 'refer_cash_requests'
+// from the admin's authentication scope.
+
+// ---------- CONFIG ----------
+const firebaseConfig = {
+apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+authDomain: "smbrand-4543a.firebaseapp.com",
+databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+projectId: "smbrand-4543a",
+storageBucket: "smbrand-4543a.appspot.com", 
+messagingSenderId: "720775550032",
+appId: "1:720775550032:web:0622548a007597778bad55",
+measurementId: "G-3LS5W6F8QW"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const imgbbKey = '021a2437b889915669b66554687bf17f';
+const adminEmail = 'rajputsurendra562@gmail.com';
+let currentUser = null; 
+
+let productsData = {};
+let categoriesData = {};
+
+// --- NEW: Product Options Data for Multi-Selects ---
+const availableColors = ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Pink', 'Purple', 'Orange', 'Grey', 'Brown', 'Gold', 'Silver', 'Maroon', 'Teal', 'Navy'];
+const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '28', '30', '32', '34', '36', 'Free Size'];
+// --- END NEW ---
+
+db.ref('categories').on('value', snap => {
+    categoriesData = snap.val() || {};
+    populateCategorySelect();
+});
+// ---------- PRELOADER HANDLER --------
+function showPreloader(){
+    document.getElementById('preloader').style.display = 'flex';
+    document.getElementById('preloader').style.opacity = '1';
+}
+function hidePreloader(){
+  const preloader = document.getElementById('preloader');
+  if(preloader){
+    preloader.style.opacity = '0';
+    setTimeout(() => { preloader.style.display = 'none'; }, 500);
+  }
+}
+showPreloader();
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    loadCategories();  
+    loadProducts();   
+    setupProductOptions(); // <-- NEW: Setup color/size dropdowns
+});
+// ---------- TABS ----------
+const tabs = document.querySelectorAll('nav button[data-tab]');
+const sections = document.querySelectorAll('main section');
+tabs.forEach(tab=>tab.addEventListener('click',()=>{
+tabs.forEach(t=>t.classList.remove('active'));
+sections.forEach(s=>s.classList.remove('active'));
+tab.classList.add('active');
+const tabId = tab.dataset.tab;
+document.getElementById(tabId).classList.add('active');
+if (tabId === 'users') loadUsers(); 
+if (tabId === 'categories') loadCategories(); 
+if (tabId === 'products') loadProducts(); 
+if (tabId === 'orders') loadOrders(); 
+if (tabId === 'wallet') loadWalletRequests(); 
+if (tabId === 'gold') loadGoldRequests(); 
+if (tabId === 'refer') loadReferRequests(); 
+if (tabId === 'kyc') loadKYCRequests(); 
+if (tabId === 'loan') loadLoanRequests(); 
+if (tabId === 'support') loadSupportMessages(); 
+
+}));
+
+// ---------- AUTH ----------
+auth.onAuthStateChanged(user=>{
+if(!user) return window.location.href='rupe.html';
+if(user.email !== adminEmail) return window.location.href='rupe.html';
+
+currentUser = user;
+document.getElementById('admin-email').innerText = user.email;
+
+// Load all data on successful login
+loadStats(); loadCategories(); loadProducts();
+loadOrders(); loadPayments(); loadWalletRequests(); loadGoldRequests(); loadReferRequests(); loadKYCRequests();
+loadLoanRequests(); 
+loadSupportMessages(); 
+loadGoldRate(); // Load initial gold rate
+
+listenRealtimeChanges();
+hidePreloader(); 
+});
+
+function logout(){ auth.signOut().then(()=>window.location.href='rupe.html'); }
+
+
+/* -------- GOLD RATE MANAGEMENT -------- */
+function loadGoldRate() {
+    db.ref('gold_settings/current_rate').once('value').then(snap => {
+        const rate = snap.val() || 0;
+        document.getElementById('current-gold-rate').innerText = `Rate: ₹${rate.toFixed(2)}/g`;
+        document.getElementById('gold-rate-input').value = rate;
+    }).catch(e => console.error("Error loading gold rate:", e));
+}
+
+function setGoldRate() {
+    const rateInput = document.getElementById('gold-rate-input');
+    const newRate = parseFloat(rateInput.value);
+
+    if (isNaN(newRate) || newRate <= 0) {
+        return alert('Please enter a valid gold rate.');
+    }
+
+    if (!confirm(`Confirm new Gold Rate: ₹${newRate.toFixed(2)}/Gram?`)) return;
+
+    db.ref('gold_settings').update({ current_rate: newRate, last_updated: Date.now() })
+        .then(() => {
+            alert('Gold Rate updated successfully!');
+            loadGoldRate();
+        })
+        .catch(error => {
+            console.error("Error updating gold rate:", error);
+            alert('Failed to update Gold Rate.');
+        });
+}
+
+/* -------- STATS & RECENT (Using once() to prevent continuous re-renders) -------- */
+function loadStats(){
+  Promise.all([
+    db.ref('users').once('value'),
+    db.ref('orders').once('value'),
+    db.ref('payment_requests').once('value'),
+    db.ref('products').once('value'),
+    db.ref('categories').once('value'),
+    db.ref('loan_requests').once('value'), 
+    db.ref('support_messages').once('value') 
+  ]).then(([u,o,p,prods,cats,loan,support])=>{
+    const statsDiv = document.getElementById('stats');
+    statsDiv.innerHTML = `
+      <div class="row">
+        <div class="card"><div class="small">Users</div><div class="badge">${u.numChildren()}</div></div>
+        <div class="card"><div class="small">Orders</div><div class="badge">${o.numChildren()}</div></div>
+        <div class="card"><div class="small">Payment Reqs</div><div class="badge">${p.numChildren()}</div></div>
+        <div class="card"><div class="small">Loan Reqs</div><div class="badge">${loan.numChildren()}</div></div>
+        <div class="card"><div class="small">Support Msgs</div><div class="badge">${support.numChildren()}</div></div>
+        <div class="card"><div class="small">Products</div><div class="badge">${prods.numChildren()}</div></div>
+      </div>
+    `;
+  }).catch(e=>console.warn('stats load error', e));
+  // recent small list
+  const recent = document.getElementById('recent'); recent.innerHTML = '';
+  db.ref('payment_requests').limitToLast(6).once('value').then(snap=>{
+    const data = snap.val()||{};
+    Object.keys(data).reverse().forEach(k=>{
+      const r = data[k];
+      const el = document.createElement('div'); el.className='card';
+      el.innerHTML = `<div class="meta">Payment • ${r.type} • ₹${r.amount || r.total || 0}</div><div class="small">user: ${r.user}</div>`;
+      recent.appendChild(el);
+    });
+  });
+}
+
+/* -------- USER LISTING (Load on tab click) -------- */
+function loadUsers() {
+    db.ref('users').once('value').then(snap => {
+        const data = snap.val() || {};
+        const list = document.getElementById('user-list');
+        list.innerHTML = '';
+
+        Object.keys(data).reverse().forEach(uid => {
+            const u = data[uid];
+            const kycStatus = u.kyc && u.kyc.status === 'verified' ? 'Verified' : (u.kyc && u.kyc.status === 'rejected' ? 'Rejected' : 'Pending/N/A');
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong>${u.name || 'User ' + uid.substring(0, 5)}</strong><br>
+                        <small>Email: ${u.email || 'N/A'}</small><br>
+                        <small>Mobile: ${u.mobile || 'N/A'}</small><br>
+                        <small>Wallet: ₹${(u.wallet || 0).toFixed(2)} | Gold: ${u.gold_balance || 0} g</small>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="badge" style="background:${kycStatus === 'Verified' ? '#d0f0d0' : '#ffe0e0'}">KYC: ${kycStatus}</span>
+                        <a href="https://wa.me/91${u.mobile}" target="_blank" class="badge" style="background:#25d366; color:white; margin-top:5px;">WhatsApp</a>
+                    </div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }).catch(e => console.error('Error loading users:', e));
+}
+
+
+/* -------- IMAGE UPLOAD HELPER (imgbb) -------- */
+function uploadImg(file){
+  return new Promise((resolve,reject)=>{
+    const form = new FormData(); form.append('image', file);
+    axios.post('https://api.imgbb.com/1/upload?key='+imgbbKey, form).then(res=>{
+      resolve(res.data.data.url);
+    }).catch(err=>reject(err));
+  });
+}
+
+/* -------- CATEGORIES (FIXED Logic Added) -------- */
+async function addCategory(){
+    const nameInput = document.getElementById('cat-name');
+    const imageInput = document.getElementById('cat-image');
+    const name = nameInput.value.trim();
+    const imageFile = imageInput.files[0];
+
+    if(!name){
+        return alert('Please enter a Category Name.');
+    }
+
+    if(!imageFile){
+        return alert('Please select a Category Image.');
+    }
+    
+    showPreloader();
+    try {
+        const imageUrl = await uploadImg(imageFile);
+        const newCatRef = db.ref('categories').push();
+        
+        await newCatRef.set({
+            name: name,
+            image: imageUrl,
+            createdAt: Date.now()
+        });
+
+        alert(`Category "${name}" added successfully!`);
+        nameInput.value = '';
+        imageInput.value = '';
+        loadCategories(); // Reload categories to update the list and dropdown
+        populateCategorySelect();
+
+    } catch(e) {
+        console.error('Error adding category:', e);
+        alert('Failed to add category. Image upload or database write failed.');
+    } finally {
+        hidePreloader();
+    }
+}
+
+function loadCategories(){ 
+    db.ref('categories').on('value', snap=>{
+        const data = snap.val()||{};
+        const list = document.getElementById('category-list');
+        list.innerHTML = '';
+        Object.keys(data).reverse().forEach(k=>{
+            const cat = data[k];
+            const card = document.createElement('div'); card.className = 'card';
+            card.innerHTML = `
+                <img src="${cat.image}" class="thumb" alt="${cat.name} Category"/>
+                <div style="margin-top:8px">
+                    <strong>${cat.name}</strong>
+                    <div class="row">
+                        <button onclick="viewCategoryItems('${k}')" class="primary" style="padding:5px 8px; font-size:12px; margin-top:5px;">View Items</button>
+                        <button onclick="deleteCategory('${k}')" class="btn-reject" style="padding:5px 8px; font-size:12px; margin-left:0; margin-top:5px;">Delete</button>
+                    </div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    });
+    populateCategorySelect();
+}
+
+function viewCategoryItems(catId){ 
+    alert('Functionality to view category items (products) not fully implemented yet. Category ID: ' + catId);
+    // TODO: Implement filtering of products by category ID
+}
+
+function deleteCategory(catId){ 
+    if(!confirm('Are you sure you want to delete this category? All related products will lose their category link.')) return;
+    db.ref('categories/' + catId).remove().then(()=>{
+        alert('Category deleted successfully.');
+        loadCategories();
+    }).catch(e=>console.error('Error deleting category:', e));
+}
+
+
+// -------- NEW: Setup Color and Size Multi-Selects --------
+function setupProductOptions() {
+    const colorSelect = document.getElementById('prod-colors');
+    const sizeSelect = document.getElementById('prod-sizes');
+
+    if (colorSelect) {
+        colorSelect.innerHTML = '<option value="" disabled>Select Colors (Hold Ctrl/Cmd to select multiple)</option>';
+        availableColors.forEach(color => {
+            const option = document.createElement('option');
+            option.value = color;
+            option.textContent = color;
+            colorSelect.appendChild(option);
+        });
+    }
+
+    if (sizeSelect) {
+        sizeSelect.innerHTML = '<option value="" disabled>Select Sizes (Hold Ctrl/Cmd to select multiple)</option>';
+        availableSizes.forEach(size => {
+            const option = document.createElement('option');
+            option.value = size;
+            option.textContent = size;
+            sizeSelect.appendChild(option);
+        });
+    }
+}
+// --------------------------------------------------------
+
+/* -------- PRODUCTS (Updated to handle multi-selects) -------- */
+async function addProduct(){ 
+    const name = document.getElementById('prod-name').value.trim();
+    const brand = document.getElementById('prod-brand').value.trim();
+    const price = parseFloat(document.getElementById('prod-price').value);
+    
+    // --- UPDATED: Get selected values from multi-selects ---
+    const colors = Array.from(document.getElementById('prod-colors').selectedOptions).map(option => option.value).join(', ');
+    const sizes = Array.from(document.getElementById('prod-sizes').selectedOptions).map(option => option.value).join(', ');
+    // --- END UPDATED ---
+    
+    const discount = parseFloat(document.getElementById('prod-discount').value) || 0;
+    const desc = document.getElementById('prod-desc').value.trim();
+    const categoryId = document.getElementById('prod-category').value;
+    const imageFiles = document.getElementById('prod-images').files;
+
+    if (!name || !brand || isNaN(price) || price <= 0 || !desc || !categoryId || imageFiles.length === 0) {
+        return alert('Please fill all required fields (Name, Brand, Price, Description, Category, Images).');
+    }
+
+    showPreloader();
+    try {
+        const uploadPromises = Array.from(imageFiles).map(file => uploadImg(file));
+        const imageUrls = await Promise.all(uploadPromises);
+        const imagesString = imageUrls.join(',');
+
+        const newProdRef = db.ref('products').push();
+        await newProdRef.set({
+            name: name,
+            brand: brand,
+            price: price,
+            // --- UPDATED: Save comma-separated string ---
+            color: colors,
+            size: sizes,
+            // --- END UPDATED ---
+            discount: discount,
+            description: desc,
+            category: categoryId,
+            images: imagesString,
+            createdAt: Date.now()
+        });
+
+        alert(`Product "${name}" added successfully!`);
+        // Clear form
+        document.getElementById('products').querySelectorAll('input, textarea').forEach(el => {
+            if (el.type !== 'file' && el.id !== 'prod-category') el.value = '';
+            if (el.id === 'prod-discount') el.value = '';
+        });
+        document.getElementById('prod-category').value = '';
+        document.getElementById('prod-images').value = '';
+        // Clear multi-selects
+        Array.from(document.getElementById('prod-colors').options).forEach(opt => opt.selected = false);
+        Array.from(document.getElementById('prod-sizes').options).forEach(opt => opt.selected = false);
+
+        loadProducts(); 
+
+    } catch(e) {
+        console.error('Error adding product:', e);
+        alert('Failed to add product. Please check image size/format or network.');
+    } finally {
+        hidePreloader();
+    }
+}
+
+function loadProducts(){
+    db.ref('products').on('value', snap=>{
+        const data = snap.val() || {};
+        const list = document.getElementById('product-list');
+        list.innerHTML = '';
+
+        Object.keys(data).reverse().forEach(k=>{
+            const p = data[k];
+            const firstImage = (p.images && p.images.split(',')[0]) || 'https://via.placeholder.com/100x140?text=No+Image';
+            const statusText = p.stock && p.stock > 0 ? 'In Stock' : 'Out of Stock';
+            const statusColor = p.stock && p.stock > 0 ? 'green' : 'red';
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <img src="${firstImage}" class="thumb" alt="${p.name}">
+                <div style="margin-top:8px">
+                    <strong>${p.name}</strong>
+                    <div class="meta">Brand: ${p.brand || 'N/A'}</div>
+                    <div class="meta">Price: ₹${p.price || 0} ${p.discount ? `(${p.discount}% off)` : ''}</div>
+                    <div class="meta">Category: ${categoriesData[p.category] ? categoriesData[p.category].name : 'N/A'}</div>
+                    <div class="meta" style="color:${statusColor}; font-weight:bold;">Status: ${statusText}</div>
+
+                    <div class="row" style="margin-top:6px; display:flex; gap:6px;">
+                        <button onclick="editProduct('${k}')" class="primary" style="padding:5px 8px; font-size:12px;">Edit</button>
+                        <button onclick="deleteProduct('${k}')" class="btn-reject" style="padding:5px 8px; font-size:12px;">Delete</button>
+                    </div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    });
+}
+
+function editProduct(pid){ 
+    alert('Edit functionality for product ' + pid + ' not implemented.');
+    // TODO: Implement product editing logic
+}
+
+function deleteProduct(pid){ 
+    if(!confirm('Are you sure you want to delete this product?')) return;
+    db.ref('products/' + pid).remove().then(()=>{
+        alert('Product deleted successfully.');
+        loadProducts();
+    }).catch(e=>console.error('Error deleting product:', e));
+}
+
+function viewProductPublic(pid){ 
+    alert('View product public link for ' + pid + ' not implemented.');
+    // TODO: Implement viewing product on the public site
+}
+
+function populateCategorySelect(){ 
+    db.ref('categories').once('value').then(snap=>{
+        const data = snap.val()||{};
+        const select = document.getElementById('prod-category');
+        select.innerHTML = '<option value="">Select Category</option>';
+        Object.keys(data).forEach(k=>{
+            const cat = data[k];
+            const option = document.createElement('option');
+            option.value = k;
+            option.textContent = cat.name;
+            select.appendChild(option);
+        });
+    }).catch(e=>console.error('Error populating categories:', e));
+}
+
+
+/* -------- ORDERS MANAGEMENT (UPDATED for product details) -------- */
+async function loadOrders(){
+  const ordersList = document.getElementById('orders-list'); 
+  ordersList.innerHTML=''; 
+
+  // Use on() for live updates but manage list clearing carefully
+  db.ref('orders').on('value', async snap=>{
+    const data = snap.val()||{};
+    ordersList.innerHTML=''; // Clear again for fresh data (necessary with on('value'))
+
+    const orderKeys = Object.keys(data).reverse();
+    
+    for(const oid of orderKeys) {
+        const o = data[oid];
+        
+        // Fetch user details
+        const uSnap = await db.ref('users/'+o.user).once('value');
+        const u = uSnap.val()||{};
+
+        // Fetch product details for the order  
+        const productDetailsPromises = o.products  
+            ? Object.keys(o.products).map(pid =>
+                db.ref('products/' + pid)
+                    .once('value')
+                    .then(pSnap => {
+                        const pdata = pSnap.val() || {};
+                        let imgs = [];
+
+                        if (typeof pdata.images === "string") {
+                            imgs = pdata.images.split(',');
+                        } else if (Array.isArray(pdata.images)) {
+                            imgs = pdata.images;
+                        }
+
+                        // --- IMPROVED: Include description and selected options ---
+                        return {
+                            name: pdata.name || 'Product Not Found',
+                            price: pdata.price || 0,
+                            description: pdata.description || 'No description provided.',
+                            images: imgs,
+                            quantity: o.products[pid].quantity,
+                            selected_size: o.products[pid].size, // Size user selected
+                            selected_color: o.products[pid].color, // Color user selected
+                        };
+                        // --- END IMPROVED ---
+                    })
+            )
+            : [];
+
+        const orderedProducts = await Promise.all(productDetailsPromises);
+
+        // PRODUCT HTML - Shows full product details
+        const productsHTML = orderedProducts
+            .map(p => {
+                const firstImage =
+                    (p.images && p.images[0]) ||
+                    'https://via.placeholder.com/60x60?text=No+Image';
+
+                return `
+                <div style="display:flex; gap:10px; margin-top:8px; border-bottom:1px dashed #eee; padding-bottom:8px;">
+                    <img src="${firstImage}" class="prod-thumb" alt="Product Image" style="object-fit:contain; width:60px; height:60px;"/>
+                    <div style="flex-grow:1;">
+                        <strong>${p.name} (x${p.quantity})</strong><br>
+                        <span class="small">Price: ₹${p.price} | **Selected:** Size: ${p.selected_size || 'N/A'} | Color: ${p.selected_color || 'N/A'}</span><br>
+                        <span class="small" style="color: #888;">**Description:** ${p.description.substring(0, 100)}...</span> 
+                    </div>
+                </div>`;
+            })
+            .join('');
+
+
+        // Get Status History
+        const history = o.status_history ? Object.values(o.status_history).sort((a,b) => a.at - b.at) : [];
+        const historyHTML = history.map(h => {
+            const time = new Date(h.at).toLocaleDateString('en-IN', {day:'2-digit', month:'short', hour: '2-digit', minute:'2-digit'});
+            return `<span class="badge status-badge" style="background:#e6f7ff; margin-right:5px;">${h.status.toUpperCase()} (${time})</span>`;
+        }).join('');
+
+        const wrapper = document.createElement('div'); wrapper.className='card';
+        wrapper.innerHTML = `
+            <div style="display:flex;gap:12px;margin-bottom:10px;border-bottom:1px solid #f0f0f0;padding-bottom:10px;">
+                <div style="flex:1">
+                    <strong>Order #${oid} • Total: ₹${o.total || 0}</strong><br>
+                    <small>User: ${u.name || 'unknown'} • ${u.email || 'N/A'} • ${u.mobile || 'N/A'}</small><br>
+                    <small>Address: ${o.shipping_address ? (o.shipping_address.street || 'N/A') : 'N/A'}</small><br>
+                    <small>Payment: ${o.payment_method || 'N/A'} | Current Status: <strong>${(o.status || 'pending').toUpperCase()}</strong></small>
+                </div>
+                <div>
+                    <select id="order-status-${oid}" onchange="updateOrderStatus('${oid}')">
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                        <option value="packed">Packed</option>
+                        <option value="out_for_delivery">Out for Delivery</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <strong class="small" style="display:block; margin-bottom:5px;">Order Items:</strong>
+                ${productsHTML || '<small>No products found for this order.</small>'}
+            </div>
+            
+            <div style="border-top:1px solid #f0f0f0; padding-top:10px;">
+                <strong class="small" style="display:block; margin-bottom:5px;">Process Flow:</strong>
+                ${historyHTML || '<span class="small">No process history recorded.</span>'}
+            </div>
+        `;
+        ordersList.appendChild(wrapper);
+        // Set the current status
+        const sel = document.getElementById('order-status-'+oid); 
+        if(sel) sel.value = o.status || 'pending';
+    }
+  });
+}
+
+function updateOrderStatus(oid){
+  const newStatus = document.getElementById('order-status-'+oid).value;
+
+  db.ref('orders/'+oid).once('value').then(snap=>{
+    const order = snap.val();
+
+    if(!order) return alert('Order not found!');
+    
+    if (order.status === newStatus) {
+        alert(`Order status is already set to "${newStatus.toUpperCase()}".`);
+        document.getElementById('order-status-'+oid).value = order.status; 
+        return; 
+    }
+
+    if(!confirm(`Confirm update status of Order #${oid} to "${newStatus.toUpperCase()}"?`)) {
+        document.getElementById('order-status-'+oid).value = order.status;
+        return; 
+    }
+
+    const historyEntry = {
+        status: newStatus,
+        at: Date.now(),
+        updated_by: currentUser.email || 'Admin'
+    };
+    
+    db.ref('orders/'+oid+'/status').set(newStatus).then(()=>{
+        db.ref('orders/'+oid+'/status_history').push(historyEntry);
+        
+        if(order.user){
+          db.ref('users/'+order.user+'/order_history/'+oid+'/status').set(newStatus);
+          db.ref('users/'+order.user+'/orders/'+oid+'/status').set(newStatus); 
+        }
+        
+        alert(`Order status updated to ${newStatus.toUpperCase()}.`);
+    }).catch(error => {
+        console.error("Error updating order status:", error);
+        alert('Failed to update order status.');
+        document.getElementById('order-status-'+oid).value = order.status;
+    });
+  });
+}
+
+function loadPayments(){ 
+    db.ref('payment_requests').once('value', snap=>{ 
+        const data = snap.val()||{};
+        const list = document.getElementById('payment-list');
+        list.innerHTML=''; 
+        
+        Object.keys(data).reverse().forEach(k=>{
+            const r = data[k];
+            const statusColor = r.status === 'completed' ? '#d0f0d0' : r.status === 'pending' ? '#fff7e6' : '#ffe0e0';
+            const card = document.createElement('div'); card.className = 'card';
+            card.innerHTML = `
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <strong>${(r.type || 'Payment').toUpperCase()} • ₹${r.amount || r.total || 0}</strong><br>
+                  <small>User ID: ${r.user} • UTR: ${r.utr || 'N/A'}</small><br>
+                  <small>Method: ${r.payment_method || 'N/A'}</small>
+                </div>
+                <span class="badge" style="background:${statusColor}">${(r.status || 'N/A').toUpperCase()}</span>
+              </div>
+            `;
+            list.appendChild(card);
+        });
+    });
+}
+
+function setPaymentStatus(key){ 
+    alert('Payment status change from this unified view is not recommended. Use Wallet/Gold requests instead.');
+}
+
+
+/* -------- WALLET REQUESTS (FIXED for duplicates and user details) -------- */
+function loadWalletRequests(){
+  db.ref('wallet_requests').once('value', snap=>{ 
+    const data = snap.val()||{};
+    const list = document.getElementById('wallet-requests');
+    list.innerHTML=''; 
+    Object.keys(data).reverse().forEach(k=>{
+      const r = data[k];
+      db.ref('users/'+r.user).once('value').then(uSnap=>{
+        const u = uSnap.val()||{};
+        const statusText = r.status==='pending' ? 'Payment Pending' : r.status==='completed' ? 'Payment Done' : r.status==='failed' ? 'Rejected' : r.status;
+        const card = document.createElement('div'); card.className = 'card';
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <strong>Wallet Add • ₹${r.amount}</strong><br>
+              <small>User: ${u.name || 'unknown'} • ${u.email || 'N/A'}</small><br>
+              <small>Mobile: ${u.mobile || 'N/A'}</small><br>
+              <small>UTR: ${r.utr || 'N/A'}</small><br>
+              <small>Status: ${statusText}</small>
+            </div>
+            ${r.status==='pending'
+              ? `<div style="display:flex;gap:5px;">
+                 <button onclick="approveWallet('${k}', '${r.user}', ${r.amount})" class="btn-approve">Approve</button>
+                 <button onclick="rejectWallet('${k}', '${r.user}')" class="btn-reject">Reject</button>
+                 </div>`
+              : `<span class="badge" style="background:${r.status==='completed' ? '#d0f0d0' : '#ffe0e0'}">${statusText}</span>`}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    });
+  });
+}
+
+function approveWallet(rid, uid, amount){
+  if(!confirm(`Approve ₹${amount} for user ${uid}?`)) return;
+
+  db.ref('wallet_requests/'+rid+'/status').once('value').then(snap => {
+    if (snap.val() !== 'pending') return alert('Request already processed. Refresh the page.');
+
+    db.ref('wallet_requests/'+rid+'/status').set('completed');
+    db.ref('payment_requests/'+rid+'/status').set('completed');
+    db.ref('users/'+uid+'/wallet_history/'+rid+'/status').set('completed');
+    db.ref('users/'+uid+'/wallet').transaction(curr => Number(curr||0) + Number(amount));
+    alert('Wallet request approved and balance updated');
+    loadWalletRequests(); 
+  });
+}
+
+function rejectWallet(rid, uid){
+  if(!confirm('Reject wallet request?')) return;
+
+  db.ref('wallet_requests/'+rid+'/status').once('value').then(snap => {
+    if (snap.val() !== 'pending') return alert('Request already processed. Refresh the page.');
+
+    db.ref('wallet_requests/'+rid+'/status').set('failed');
+    db.ref('payment_requests/'+rid+'/status').set('failed');
+    db.ref('users/'+uid+'/wallet_history/'+rid+'/status').set('failed');
+    alert('Wallet request rejected');
+    loadWalletRequests(); 
+  });
+}
+
+
+/* -------- GOLD REQUESTS (FIXED for duplicates and user details) -------- */
+function loadGoldRequests(){
+  db.ref('gold_requests').once('value', snap=>{ 
+    const data = snap.val()||{};
+    const list = document.getElementById('gold-requests'); list.innerHTML=''; 
+    Object.keys(data).reverse().forEach(k=>{
+      const r = data[k];
+      db.ref('users/'+r.user).once('value').then(uSnap=>{
+        const u = uSnap.val()||{};
+        const statusText = r.status==='pending' ? 'Payment Pending' : r.status==='completed' ? 'Payment Done' : r.status==='failed' ? 'Rejected' : r.status;
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <strong>Gold Buy • ₹${r.amount} • ${r.grams} g</strong><br>
+              <small>User: ${u.name || 'unknown'} • ${u.email || 'N/A'}</small><br>
+              <small>Mobile: ${u.mobile || 'N/A'}</small><br>
+              <small>UTR: ${r.utr || 'N/A'}</small><br>
+              <small>Status: ${statusText}</small>
+            </div>
+            ${r.status==='pending'
+              ? `<div style="display:flex;gap:5px;">
+                 <button onclick="approveGold('${k}', '${r.user}', ${r.grams})" class="btn-approve">Approve</button>
+                 <button onclick="rejectGold('${k}', '${r.user}')" class="btn-reject">Reject</button>
+                 </div>`
+              : `<span class="badge" style="background:${r.status==='completed' ? '#d0f0d0' : '#ffe0e0'}">${statusText}</span>`}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    });
+  });
+}
+function approveGold(rid, uid, grams){
+  if(!confirm(`Approve ${grams} grams gold for user ${uid}?`)) return;
+
+  db.ref('gold_requests/'+rid+'/status').once('value').then(snap => {
+    if (snap.val() !== 'pending') return alert('Request already processed. Refresh the page.');
+
+    db.ref('gold_requests/'+rid+'/status').set('completed');
+    db.ref('payment_requests/'+rid+'/status').set('completed');
+    db.ref('users/'+uid+'/gold_history/'+rid+'/status').set('completed');
+    db.ref('users/'+uid+'/gold_balance').transaction(curr => Number(curr||0) + Number(grams));
+    alert('Gold request approved and balance updated');
+    loadGoldRequests(); 
+  });
+}
+
+function rejectGold(rid, uid){
+  if(!confirm('Reject gold request?')) return;
+
+  db.ref('gold_requests/'+rid+'/status').once('value').then(snap => {
+    if (snap.val() !== 'pending') return alert('Request already processed. Refresh the page.');
+
+    db.ref('gold_requests/'+rid+'/status').set('failed');
+    db.ref('payment_requests/'+rid+'/status').set('failed');
+    db.ref('users/'+uid+'/gold_history/'+rid+'/status').set('failed');
+    alert('Gold request rejected');
+    loadGoldRequests(); 
+  });
+}
+
+
+/* -------- REFER REQUESTS (FIXED for duplicates and user details) -------- */
+function loadReferRequests(){
+  db.ref('refer_cash_requests').once('value',snap=>{ 
+    const data = snap.val()||{};
+    const list = document.getElementById('refer-requests'); list.innerHTML=''; 
+    Object.keys(data).reverse().forEach(k=>{
+      const r = data[k];
+      db.ref('users/'+r.user).once('value').then(uSnap=>{
+        const u = uSnap.val()||{};
+        const statusText = r.status==='pending' ? 'Pending' : r.status==='success' ? 'Credited' : r.status;
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div><strong>Referral Bonus Request (₹100)</strong></div>
+        <div class="small">User: ${u.name || 'unknown'} • ${u.email || 'N/A'} • ${u.mobile || ''}</div>
+        <div class="small">Status: ${statusText}</div></div>
+        ${r.status==='pending'
+          ? `<div style="display:flex;gap:5px;"><button onclick="verifyRefer('${k}', '${r.user}')" class="btn-approve">Verify & Credit ₹100</button><button onclick="rejectRefer('${k}')" class="btn-reject">Reject</button></div>`
+          : `<span class="badge" style="background:${r.status==='success' ? '#d0f0d0' : '#ffe0e0'}">${statusText}</span>`}
+        </div>`;
+        list.appendChild(card);
+      });
+    });
+  });
+}
+function verifyRefer(rid, uid){
+  if(!confirm('Approve ₹100 referral bonus?')) return;
+  db.ref('refer_cash_requests/'+rid+'/status').once('value').then(snap => {
+    const currentStatus = snap.val();
+    if (currentStatus !== 'pending') return alert('Request already processed. Refresh the page.');
+
+    db.ref('refer_cash_requests/'+rid+'/status').set('success').then(()=>{
+      db.ref('users/'+uid+'/wallet').transaction(curr => Number(curr||0) + 100);
+      db.ref('users/'+uid+'/wallet_history/'+('ref'+rid)).set({id:rid, amount:100, status:'completed', type:'refer_bonus', at:Date.now()});
+      db.ref('users/'+uid+'/refer_history/'+rid).set({status:'success'}); 
+      alert('Referral approved and ₹100 credited');
+      loadReferRequests();
+    });
+  });
+}
+function rejectRefer(rid){ 
+  if(!confirm('Reject referral request?')) return;
+  db.ref('refer_cash_requests/'+rid+'/status').once('value').then(snap => {
+    if (snap.val() !== 'pending') return alert('Request already processed. Refresh the page.');
+    
+    db.ref('refer_cash_requests/'+rid+'/status').set('rejected'); 
+    alert('Referral request rejected');
+    loadReferRequests();
+  });
+}
+
+
+/* -------- KYC REQUESTS (FIXED for duplicates and user details) -------- */
+function loadKYCRequests(){
+  db.ref('kyc_requests').once('value',snap=>{ 
+    const data = snap.val()||{};
+    const list = document.getElementById('kyc-requests'); list.innerHTML=''; 
+    Object.keys(data).reverse().forEach(k=>{
+      const r = data[k];
+      db.ref('users/'+r.user).once('value').then(uSnap=>{
+        const u = uSnap.val()||{};
+        const statusText = r.status==='pending' ? 'Pending' : r.status==='verified' ? 'Verified' : r.status;
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `
+          <div style="display:flex;gap:12px">
+            <div style="flex:1">
+              <div><strong>KYC for: ${r.name || 'N/A'}</strong> • PAN: ${r.number || 'N/A'}</div>
+              <div class="small">User: ${u.name || 'unknown'} • ${u.email || 'N/A'} • ${u.mobile || ''}</div>
+              <div style="margin-top:10px;">
+                <a href="${r.pan_photo || '#'}" target="_blank" class="badge">View PAN Photo</a>
+                <span class="badge">Status: ${statusText}</span>
+              </div>
+            </div>
+            ${r.status==='pending' 
+              ? `<div style="display:flex;flex-direction:column;gap:5px;">
+                 <button onclick="verifyKYC('${k}', '${r.user}', '${r.number}')" class="btn-approve">Verify</button>
+                 <button onclick="rejectKYC('${k}', '${r.user}')" class="btn-reject">Reject</button>
+                 </div>`
+              : ''}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    });
+  });
+}
+function verifyKYC(rid, uid, panNumber){
+  if(!confirm('Verify KYC for this user? (One time only)')) return;
+  db.ref('kyc_requests/'+rid+'/status').once('value').then(snap => {
+    if (snap.val() !== 'pending') return alert('Request already processed. Refresh the page.');
+
+    db.ref('kyc_requests/'+rid+'/status').set('verified').then(()=>{
+      db.ref('users/'+uid+'/kyc').set({status:'verified', number:panNumber, verified_at:Date.now(), kyc_id:rid});
+      alert('KYC verified for user');
+      loadKYCRequests();
+    });
+  });
+}
+function rejectKYC(rid, uid){
+  if(!confirm('Reject KYC for this user?')) return;
+  db.ref('kyc_requests/'+rid+'/status').once('value').then(snap => {
+    if (snap.val() !== 'pending') return alert('Request already processed. Refresh the page.');
+
+    db.ref('kyc_requests/'+rid+'/status').set('rejected').then(()=>{
+      db.ref('users/'+uid+'/kyc').set({status:'rejected', kyc_id:rid, rejected_at:Date.now()});
+      alert('KYC rejected for user');
+      loadKYCRequests();
+    });
+  });
+}
+
+/* -------- LOAN REQUESTS (FIXED for duplicates and user details) -------- */
+function loadLoanRequests(){
+  db.ref('loan_requests').once('value', snap=>{ 
+    const data = snap.val()||{};
+    const list = document.getElementById('loan-requests-list');
+    list.innerHTML=''; 
+    Object.keys(data).reverse().forEach(k=>{
+      const r = data[k];
+      db.ref('users/'+r.user).once('value').then(uSnap=>{
+        const u = uSnap.val()||{};
+        
+        const statusText = r.status==='pending' ? 'Pending Review' : r.status==='approved' ? 'Approved' : r.status==='rejected' ? 'Rejected' : r.status;
+
+        const card = document.createElement('div'); card.className = 'card';
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <strong>Loan Request: ₹${r.requested_amount || 0}</strong><br>
+              <small>User: ${u.name || 'unknown'} • ${u.email || 'N/A'}</small><br>
+              <small>Mobile: ${u.mobile || 'N/A'} | PAN: ${r.pan_number || 'N/A'}</small><br>
+              <small>Profession: ${r.profession || 'N/A'} | Income: ${r.income || 'N/A'}</small><br>
+              <a href="${r.pan_photo_url || '#'}" target="_blank" class="badge">View PAN Proof</a>
+              <small class="meta">Status: ${statusText}</small>
+            </div>
+            ${r.status==='pending'
+              ? `<div class="loan-controls">
+                   <input type="number" id="loan-amt-${k}" placeholder="Amt to Approve" value="${r.requested_amount || 0}">
+                   <button onclick="approveLoan('${k}', '${r.user}')" class="btn-approve">Approve</button>
+                   <button onclick="rejectLoan('${k}', '${r.user}')" class="btn-reject">Reject</button>
+                 </div>`
+              : `<span class="badge" style="background:${r.status==='approved' ? '#d0f0d0' : '#ffe0e0'}">${statusText}</span>`}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    });
+  });
+}
+
+function approveLoan(rid, uid){
+  const newAmount = document.getElementById(`loan-amt-${rid}`).value;
+  if(!newAmount || newAmount <= 0) return alert('Enter a valid approval amount.');
+  if(!confirm(`Approve loan ₹${newAmount} for user ${uid}?`)) return;
+
+  db.ref('loan_requests/'+rid+'/status').once('value').then(snap => {
+    if (snap.val() !== 'pending') return alert('Request already processed. Refresh the page.');
+
+    // 1. Update Loan Request Status
+    db.ref('loan_requests/'+rid+'/status').set('approved');
+    db.ref('loan_requests/'+rid+'/approved_amount').set(Number(newAmount));
+    
+    // 2. Add Active Loan to User Profile
+    db.ref('users/'+uid+'/active_loan').set({
+      loan_id: rid,
+      amount: Number(newAmount),
+      paid_amount: 0,
+      status: 'pending_acceptance', 
+      disbursed_at: Date.now()
+    });
+
+    alert(`Loan request ${rid} approved for ₹${newAmount}. Awaiting user acceptance.`);
+    loadLoanRequests();
+  });
+}
+
+function rejectLoan(rid, uid){
+  if(!confirm('Reject loan request?')) return;
+
+  db.ref('loan_requests/'+rid+'/status').once('value').then(snap => {
+    if (snap.val() !== 'pending') return alert('Request already processed. Refresh the page.');
+
+    db.ref('loan_requests/'+rid+'/status').set('rejected');
+    db.ref('users/'+uid+'/active_loan').set(null); 
+    alert(`Loan request ${rid} rejected.`);
+    loadLoanRequests();
+  });
+}
+
+/* -------- SUPPORT/CHAT MESSAGES (FIXED for duplicates and user details) -------- */
+function loadSupportMessages(){
+  db.ref('support_messages').once('value', snap=>{ 
+    const data = snap.val()||{};
+    const list = document.getElementById('support-messages-list');
+    list.innerHTML=''; 
+
+    Object.keys(data).reverse().forEach(k=>{
+      const r = data[k];
+      db.ref('users/'+r.user).once('value').then(uSnap=>{
+        const u = uSnap.val()||{};
+        
+        const statusText = r.status==='new' ? 'NEW' : r.status==='resolved' ? 'RESOLVED' : r.status;
+        
+        const card = document.createElement('div'); card.className = 'card';
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <strong>${r.subject || 'No Subject'}</strong><br>
+              <div class="small">User: ${u.name || 'unknown'} • ${u.email || 'N/A'} • ${u.mobile || ''}</div>
+              <div class="chat-message">${r.message}</div>
+              <small class="meta">Status: ${statusText}</small>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">
+              ${r.status!=='resolved'
+                ? `<button onclick="markSupportResolved('${k}')" class="btn-approve">Mark Resolved</button>`
+                : `<span class="badge" style="background:#e8f5e9">Resolved ✓</span>`}
+              <a href="https://wa.me/91${u.mobile}" target="_blank" style="text-align:center;text-decoration:none;padding:5px 8px;border-radius:8px;background:#25d366;color:white;font-size:12px;font-weight:600;">Reply (WhatsApp)</a>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    });
+  });
+}
+
+function markSupportResolved(mid){
+  if(!confirm('Mark this support message as resolved?')) return;
+  db.ref('support_messages/'+mid+'/status').set('resolved').then(()=>{
+    alert('Message marked as resolved');
+    loadSupportMessages();
+  });
+}
+
+/* -------- REALTIME LISTENERS (to refresh stats etc) -------- */
+function listenRealtimeChanges(){
+  // Only listen to Orders and Gold Rate for continuous updates (Status change/Rate change)
+  // Note: We use the listener here, but the loadOrders function clears the list on every change.
+  db.ref('orders').on('value', ()=> { loadOrders(); }); 
+  db.ref('gold_settings/current_rate').on('value', ()=> { loadGoldRate(); });
+  // All other lists (requests) are reloaded explicitly on tab change or action.
+}
+
+/* -------- INITIAL calls to populate UI (safe) -------- */
+populateCategorySelect();
+
+</script>
+</body>
+</html>
+

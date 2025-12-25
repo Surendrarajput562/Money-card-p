@@ -1,0 +1,1716 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')                                                                                   .then(reg => console.log('Service Worker Registered', reg))
+          .catch(err => console.log('Service Worker Registration Failed', err));                                                             });
+    }
+  </script>
+</head>
+<body>
+  <!-- Page intentionally left empty, no images or text -->
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11380267758"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'AW'-11380267758');
+    </script>
+
+</head>
+<body>
+
+    <h1></h1>
+
+    <!-- Event snippet for Sign-up conversion page -->
+    <script>
+      gtag('event', 'conversion', { 'send_to': 'AW-11380267758/7ERoCNPK-OIaEO61xLIq' });
+    </script>
+
+    <p></p>
+
+</body>
+</html>
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+
+    <!-- Google AdSense Code -->
+    <script async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7356424946387381"
+        crossorigin="anonymous">
+    </script>
+</head>
+
+<body>
+    <h1></h1>
+    <p></p>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gold Rupi -</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        /* [आपके पुराने CSS स्टाइल्स यहाँ अपरिवर्तित रहेंगे] */
+        :root{
+            --gold:#d4af37;
+            --gold-strong:#c59b2d;
+            --glass: rgba(255,255,255,0.95);
+            --card-bg: #ffffff;
+            --bg-color:#f8f9fa;
+            --text-color:#1f2937;
+            --accent:#111827;
+            --success:#10b981;
+            --danger:#ef4444;
+            --warning:#f59e0b;
+        }
+        [data-theme="dark"] {
+            --gold:#ffd76b;
+            --gold-strong:#ffc44a;
+            --glass: rgba(31, 41, 55, 0.95);
+            --card-bg: #1f2937;
+            --bg-color:#111827;
+            --text-color:#f3f4f6;
+            --accent:#f9fafb;
+        }
+
+        *{box-sizing:border-box}
+        body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg-color);color:var(--text-color);padding-bottom:80px;}
+        
+        /* Utility */
+        .field-hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .flex-row { display: flex; align-items: center; gap: 10px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .full-width { width: 100%; }
+        
+        /* Header & Nav */
+        .header{position:sticky;top:0;z-index:100;background:var(--glass);backdrop-filter:blur(10px);padding:15px;box-shadow:0 2px 10px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;}
+        .logo{font-weight:800;font-size:20px;color:var(--gold-strong);letter-spacing:-1px;}
+        
+        .icon-btn { position: relative; font-size: 24px; margin-left: 10px; cursor: pointer; color: var(--text-color); }
+        .badge-count { position: absolute; top: -5px; right: -5px; background: red; color: white; font-size: 10px; border-radius: 50%; width: 16px; height: 16px; display: flex; justify-content: center; align-items: center; }
+
+        .bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:var(--glass);display:flex;justify-content:space-around;padding:12px;border-top:1px solid rgba(0,0,0,0.05);z-index:100;}
+        .nav-item{text-align:center;font-size:10px;opacity:0.6;cursor:pointer;}
+        .nav-item.active{opacity:1;color:var(--gold-strong);font-weight:600;}
+        .nav-item i{font-size:22px;display:block;margin-bottom:2px;}
+
+        /* Cards & Inputs */
+        .container{padding:15px;}
+        .card{background:var(--card-bg);border-radius:16px;padding:16px;box-shadow:0 4px 20px rgba(0,0,0,0.04);margin-bottom:15px;}
+        .gold-card{background:linear-gradient(135deg, var(--gold), var(--gold-strong));color:#fff;border:none;}
+        .btn{background:var(--gold);color:#000;border:none;padding:12px 20px;border-radius:12px;font-weight:600;width:100%;font-size:14px;cursor:pointer;}
+        .btn.secondary{background:transparent;border:1px solid rgba(0,0,0,0.1);color:var(--text-color);}
+        [data-theme="dark"] .btn.secondary{border-color:rgba(255,255,255,0.2);}
+        input, select{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:var(--bg-color);color:var(--text-color);margin-bottom:10px;font-family:inherit;}
+        
+        /* Badges & Coupons */
+        .badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;color:#fff;}
+        .bg-pending{background:var(--warning);}
+        .bg-success{background:var(--success);}
+        .bg-danger{background:var(--danger);}
+        
+        .coupon-ticket { border: 2px dashed var(--gold); background: rgba(212, 175, 55, 0.1); padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .coupon-code { font-family: monospace; font-weight: 700; letter-spacing: 1px; color: var(--gold-strong); font-size: 16px; }
+
+        /* Notification Item */
+        .notif-item { padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-title { font-weight: 600; font-size: 14px; }
+        .notif-body { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+        /* --- LOAN DASHBOARD STYLES --- */
+        .step-wizard { display: flex; justify-content: space-between; margin-bottom: 20px; position: relative; }
+        .step-wizard::before { content: ''; position: absolute; top: 14px; left: 0; right: 0; height: 2px; background: #e5e7eb; z-index: 0; }
+        .step-item { position: relative; z-index: 1; text-align: center; width: 20%; }
+        .step-circle { width: 30px; height: 30px; background: #e5e7eb; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #666; transition: all 0.3s; border: 2px solid var(--card-bg); }
+        .step-item.active .step-circle { background: var(--gold); color: #000; box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2); }
+        .step-item.completed .step-circle { background: var(--success); color: #fff; }
+        .step-label { font-size: 9px; color: #888; font-weight: 600; text-transform: uppercase; }
+
+        .loan-offer-card { border: 2px solid var(--gold); background: rgba(212, 175, 55, 0.05); }
+        .loan-detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(0,0,0,0.1); font-size: 13px; }
+        .loan-detail-row:last-child { border: none; }
+        
+        .progress-container { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+        .progress-bar { height: 100%; background: var(--success); width: 0%; transition: width 0.5s; }
+
+        /* Modal Overlay */
+        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter: blur(5px);}
+        .modal{background:var(--card-bg);width:95%;max-width:500px;border-radius:20px;padding:20px;max-height:90vh;overflow-y:auto;position: relative;}
+        .close-modal{position:absolute;top:15px;right:15px;background:none;border:none;font-size:24px;color:var(--text-color);cursor:pointer;}
+
+        .file-upload-box { border: 2px dashed rgba(0,0,0,0.2); padding: 15px; text-align: center; border-radius: 10px; margin-bottom: 10px; cursor: pointer; }
+        .file-upload-box i { font-size: 24px; color: var(--gold-strong); }
+        
+        .timer-badge { background: #fee2e2; color: #991b1b; padding: 5px 10px; border-radius: 6px; font-weight: 700; display: inline-block; }
+        /* Spin animation for pending */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* NEW: Auth Modal Styles */
+        #auth-overlay .modal { padding-top: 50px; }
+        .auth-tab { display: flex; margin-bottom: 20px; }
+        .auth-tab button { flex: 1; padding: 10px; background: none; border: none; font-size: 16px; font-weight: 600; color: #aaa; border-bottom: 2px solid #eee; cursor: pointer; }
+        .auth-tab button.active { color: var(--gold-strong); border-bottom: 2px solid var(--gold-strong); }
+    </style>
+</head>
+<body data-theme="light">
+<meta name="google-adsense-account" content="ca-pub-7356424946387381">
+    <div id="auth-overlay" class="overlay" style="display:flex;">
+        <div class="modal">
+            <div class="text-center">
+                <div class="logo" style="font-size:30px;">gold rupi</div>
+                <p style="font-size:12px; color:#666;">Your Trusted Digital Finance Partner</p>
+            </div>
+
+            <div class="auth-tab">
+                <button id="login-tab-btn" class="active" onclick="showAuthTab('login')">Login</button>
+                <button id="signup-tab-btn" onclick="showAuthTab('signup')">Sign Up</button>
+            </div>
+
+            <div id="login-form">
+                <input id="login-email" type="email" placeholder="Email Address">
+                <input id="login-password" type="password" placeholder="Password">
+                <button class="btn" onclick="loginUser()">Login</button>
+                <p class="text-center" style="font-size:12px; margin-top:15px;">
+                    <a href="#" style="color:var(--gold-strong);">Forgot Password?</a>
+                </p>
+            </div>
+
+            <div id="signup-form" class="field-hidden">
+                <input id="signup-name" placeholder="Full Name">
+                <input id="signup-mobile" placeholder="Mobile Number (10 Digits)" maxlength="10">
+                <input id="signup-email" type="email" placeholder="Email Address">
+                <input id="signup-password" type="password" placeholder="Password (Min 6 Characters)">
+                <button class="btn" onclick="signupUser()">Create Account</button>
+            </div>
+
+            <hr style="border:none; border-top:1px solid #eee; margin:20px 0;">
+
+            <button class="btn secondary" onclick="loginAsGuest()">Continue as Guest (Limited Access)</button>
+        </div>
+    </div>
+    
+    <div id="main-app-content" class="field-hidden">
+        
+        <div class="header">
+            <div class="logo">gold rupi</div>
+            <div class="flex-row">
+                <button class="btn secondary" style="padding:6px 10px;" onclick="toggleTheme()"><i class="ri-moon-line"></i></button>
+                <div style="font-size:12px;font-weight:600; margin-right:10px;">Wallet: ₹<span id="header-wallet">0</span></div>
+                
+                <div class="icon-btn" onclick="openNotifications()">
+                    <i class="ri-notification-3-line"></i>
+                    <div id="notif-badge" class="badge-count" style="display:none;">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            
+            <div id="section-home" class="page-section">
+                <h2 style="margin-top:0;">Hello, <span id="user-name-display">Guest</span> 👋</h2>
+                
+                <div class="card" style="background: linear-gradient(to right, #1f2937, #111827); color: white;">
+                    <div class="flex-between">
+                        <div>
+                            <div style="font-size:12px; opacity:0.8; margin-bottom:5px;">Need Funds Instantly?</div>
+                            <h2 style="margin:0; color:var(--gold);">Quick Personal Loan</h2>
+                            <div style="font-size:11px; opacity:0.7; margin-top:5px;">Up to ₹50,000 • Approval in 5 mins</div>
+                        </div>
+                        <button onclick="openLoanDashboard()" class="btn" style="width:auto; padding:8px 16px; font-size:12px;">Check Status</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Latest Products</h3>
+                    <div id="latest-products-list">Loading products...</div>
+                </div>
+            </div>
+
+            <div id="section-shop" class="page-section field-hidden">
+                <h2>Shop</h2>
+                <div class="card product-card-inner">
+                    <img src="https://via.placeholder.com/300x150" style="width:100%; border-radius:10px;">
+                    <h4>Gold Coin (24k) - 1g</h4>
+                    <div class="flex-between">
+                        <span class="pprice">₹6500</span>
+                        <button class="btn" style="width:auto;" onclick="openCheckout(6500, 'Gold Coin 1g')">Buy Now</button>
+                    </div>
+                </div>
+                <div class="card product-card-inner">
+                    <img src="https://via.placeholder.com/300x150" style="width:100%; border-radius:10px;">
+                    <h4>Silver Bar - 10g</h4>
+                    <div class="flex-between">
+                        <span class="pprice">₹900</span>
+                        <button class="btn" style="width:auto;" onclick="openCheckout(900, 'Silver Bar 10g')">Buy Now</button>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h3>🔥 Special Offers</h3>
+                    <p id="lo-loading-msg" style="font-size:12px; color:#666;">Loading content...</p>
+                    <iframe 
+                        id="lo-iframe-content" 
+                        src="about:blank" 
+                        style="width: 100%; height: 350px; border: 1px solid #ccc; border-radius: 10px;"
+                        title="lo.html content"
+                    ></iframe>
+                </div>
+                </div>
+            <div id="section-profile" class="page-section field-hidden">
+                <h2>Profile</h2>
+                <div id="profile-card" class="card">
+                    <input id="profile-name" placeholder="Full Name">
+                    <input id="profile-mobile" placeholder="Mobile" disabled>
+                    <button class="btn" onclick="saveProfile()">Update Profile</button>
+                </div>
+                
+                <div id="manual-pay-card" class="card" style="border-left: 4px solid var(--gold-strong); padding:10px 16px;">
+                    <h3 style="margin-top:0; display:flex; align-items:center; gap:5px; color:var(--gold-strong);">
+                        <i class="ri-upload-cloud-line"></i> Manual Payment Proof
+                    </h3>
+                    <p style="font-size:12px; color:#666; margin-top: -10px;">
+                        Use this to submit proof if your EMI payment is not automatically updated.
+                    </p>
+                    <label style="font-size:12px;">UTR / Reference Number (12 Digits)</label>
+                    <input id="manual-pay-utr" placeholder="123456789012" maxlength="12">
+                    
+                    <div class="file-upload-box" onclick="document.getElementById('file-payscreen').click()">
+                        <i class="ri-image-line"></i><br><span id="manual-file-status" style="font-size:10px;">Upload Payment Screenshot (JPG/PNG)</span>
+                        <input type="file" id="file-payscreen" accept="image/jpeg,image/png" hidden onchange="updateFileName(this, 'manual-file-status')">
+                    </div>
+                    
+                    <button id="manual-pay-btn" class="btn" onclick="submitManualPaymentProof()">Submit Payment Proof</button>
+                    <div id="manual-submission-message" style="font-size:12px; color:var(--success); margin-top:10px;" class="field-hidden">
+                        <i class="ri-check-line"></i> Submission Successful. We will review your payment shortly.
+                    </div>
+                </div>
+                <button class="btn secondary" onclick="logout()" style="margin-top:20px; color:var(--danger); border-color:var(--danger);">Logout</button>
+            </div>
+
+        </div>
+
+        <div id="notif-overlay" class="overlay">
+            <div class="modal">
+                <button class="close-modal" onclick="document.getElementById('notif-overlay').style.display='none'">&times;</button>
+                <h3 style="margin-top:0;">Notifications</h3>
+                
+                <div class="card" style="background:var(--bg-color);">
+                    <h4 style="margin-top:0; display:flex; align-items:center; gap:5px;"><i class="ri-coupon-3-fill" style="color:var(--gold-strong);"></i> Active Coupons</h4>
+                    <div id="coupon-list-container">
+                        <div class="text-center small-muted">Loading coupons...</div>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom:10px;">Updates</h4>
+                <div id="notification-list" style="max-height:300px; overflow-y:auto;">
+                    </div>
+            </div>
+        </div>
+
+        <div id="checkout-overlay" class="overlay">
+            <div class="modal">
+                <button class="close-modal" onclick="document.getElementById('checkout-overlay').style.display='none'">&times;</button>
+                <h3>Checkout</h3>
+                
+                <div class="card" style="background:#f9fafb;">
+                    <div class="flex-between">
+                        <strong id="checkout-item-name">Product</strong>
+                        <span>₹<span id="checkout-item-price">0</span></span>
+                    </div>
+                </div>
+
+                <label style="font-size:12px;">Have a Coupon Code?</label>
+                <div class="flex-row" style="margin-bottom:10px;">
+                    <input id="checkout-coupon-input" placeholder="Enter Code (e.g. WELCOME50)" style="margin-bottom:0;">
+                    <button class="btn secondary" style="width:auto;" onclick="applyCoupon()">Apply</button>
+                </div>
+                <div id="coupon-msg" style="font-size:11px; margin-bottom:10px;"></div>
+
+                <div class="flex-between" style="border-top:1px solid #ddd; padding-top:10px; margin-top:10px;">
+                    <strong>Total To Pay:</strong>
+                    <strong style="font-size:18px; color:var(--gold-strong);">₹<span id="checkout-total">0</span></strong>
+                </div>
+
+                <button class="btn" style="margin-top:15px;" onclick="confirmOrder()">Pay & Confirm</button>
+            </div>
+        </div>
+
+        <div id="loan-dashboard" class="overlay">
+            <div class="modal">
+                <button class="close-modal" onclick="closeLoanDashboard()">&times;</button>
+                <h3 style="margin-top:0; color:var(--gold-strong);">Loan Dashboard</h3>
+
+                <div id="loan-wizard-header" class="step-wizard">
+                    <div class="step-item" id="step-1"><div class="step-circle">1</div><div class="step-label">Basic</div></div>
+                    <div class="step-item" id="step-2"><div class="step-circle">2</div><div class="step-label">KYC</div></div>
+                    <div class="step-item" id="step-3"><div class="step-circle">3</div><div class="step-label">Bank</div></div>
+                    <div class="step-item" id="step-4"><div class="step-circle">4</div><div class="step-label">Work</div></div>
+                    <div class="step-item" id="step-5"><div class="step-circle">5</div><div class="step-label">Addr</div></div>
+                </div>
+
+                <div id="view-verification">
+                    
+                    <div id="form-step-1" class="step-content">
+                        <h4>Step 1: Basic Information</h4>
+                        <label style="font-size:12px;">Full Name</label>
+                        <input id="loan-fname" placeholder="As per PAN Card">
+                        <label style="font-size:12px;">Date of Birth</label>
+                        <input id="loan-dob" type="date">
+                        <label style="font-size:12px;">Email ID</label>
+                        <input id="loan-email" type="email" placeholder="example@mail.com">
+                        <button class="btn" onclick="saveStep(1)">Save & Continue</button>
+                    </div>
+
+                    <div id="form-step-2" class="step-content field-hidden">
+                        <h4>Step 2: Identity Verification</h4>
+                        <label style="font-size:12px;">PAN Number</label>
+                        <input id="loan-pan" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase;">
+                        
+                        <div class="flex-row">
+                            <div class="file-upload-box" style="flex:1" onclick="document.getElementById('file-aadhaar-f').click()">
+                                <i class="ri-id-card-line"></i><br><span style="font-size:10px;">Aadhaar Front</span>
+                                <input type="file" id="file-aadhaar-f" accept="image/*,.pdf" hidden onchange="updateFileName(this)">
+                            </div>
+                            <div class="file-upload-box" style="flex:1" onclick="document.getElementById('file-aadhaar-b').click()">
+                                <i class="ri-id-card-line"></i><br><span style="font-size:10px;">Aadhaar Back</span>
+                                <input type="file" id="file-aadhaar-b" accept="image/*,.pdf" hidden onchange="updateFileName(this)">
+                            </div>
+                        </div>
+                        <div class="file-upload-box" onclick="document.getElementById('file-pan').click()">
+                            <i class="ri-file-user-line"></i><br><span style="font-size:10px;">Upload PAN Card Photo</span>
+                            <input type="file" id="file-pan" accept="image/*,.pdf" hidden onchange="updateFileName(this)">
+                        </div>
+                        <button class="btn" onclick="saveStep(2)">Verify Identity</button>
+                    </div>
+
+                    <div id="form-step-3" class="step-content field-hidden">
+                        <h4>Step 3: Bank Details</h4>
+                        <input id="loan-bank-name" placeholder="Bank Name">
+                        <input id="loan-acc-num" placeholder="Account Number">
+                        <input id="loan-ifsc" placeholder="IFSC Code">
+                        <div class="file-upload-box" onclick="document.getElementById('file-passbook').click()">
+                            <i class="ri-bank-card-2-line"></i><br><span style="font-size:10px;">Upload Passbook/Cheque</span>
+                            <input type="file" id="file-passbook" accept="image/*,.pdf" hidden onchange="updateFileName(this)">
+                        </div>
+                        <button class="btn" onclick="saveStep(3)">Submit Bank KYC</button>
+                    </div>
+
+                    <div id="form-step-4" class="step-content field-hidden">
+                        <h4>Step 4: Work Details</h4>
+                        <select id="loan-occupation">
+                            <option value="job">Salaried</option>
+                            <option value="business">Self Employed</option>
+                            <option value="student">Student</option>
+                        </select>
+                        <input id="loan-salary" type="number" placeholder="Monthly Income (₹)">
+                        <div class="file-upload-box" onclick="document.getElementById('file-salary').click()">
+                            <i class="ri-file-list-3-line"></i><br><span style="font-size:10px;">Upload 3 Months Salary Slip</span>
+                            <input type="file" id="file-salary" accept="image/*,.pdf" hidden onchange="updateFileName(this)">
+                        </div>
+                        <button class="btn" onclick="saveStep(4)">Submit Work Details</button>
+                    </div>
+
+                    <div id="form-step-5" class="step-content field-hidden">
+                        <h4>Step 5: Address</h4>
+                        <input id="loan-addr-perm" placeholder="Permanent Address">
+                        <input id="loan-addr-curr" placeholder="Current Address">
+                        <button class="btn" onclick="saveStep(5)">Save Address & Finish</button>
+                    </div>
+                </div>
+
+                <div id="view-calculator" class="field-hidden">
+                    <div class="card" style="background:#f9fafb; border:1px solid #ddd;">
+                        <div class="flex-between">
+                            <span>Status:</span>
+                            <span class="badge bg-success"><i class="ri-check-double-line"></i> Profile Verified</span>
+                        </div>
+                    </div>
+                    
+                    <h4>Select Loan Amount</h4>
+                    <div style="margin-bottom:20px;">
+                        <div class="flex-between">
+                            <span style="font-size:12px;">₹5,000</span>
+                            <h2 style="margin:0; color:var(--gold-strong);">₹<span id="calc-amt-display">10000</span></h2>
+                            <span style="font-size:12px;">₹50,000</span>
+                        </div>
+                        <input type="range" id="calc-amt" min="5000" max="50000" step="1000" value="10000" oninput="updateCalc()">
+                    </div>
+
+                    <h4>Select Tenure (Months)</h4>
+                    <div style="margin-bottom:20px;">
+                        <div class="flex-between">
+                            <span style="font-size:12px;">3M</span>
+                            <h3 style="margin:0;"><span id="calc-tenure-display">6</span> Months</h3>
+                            <span style="font-size:12px;">24M</span>
+                        </div>
+                        <input type="range" id="calc-tenure" min="3" max="24" step="1" value="6" oninput="updateCalc()">
+                    </div>
+
+                    <div class="card loan-offer-card">
+                        <div class="loan-detail-row"><span>Interest Rate:</span> <span>0% / month</span></div>
+                        <div class="loan-detail-row"><span>Monthly EMI:</span> <strong id="calc-emi-display">₹1,667</strong></div>
+                        <div class="loan-detail-row"><span>Total Repayment (Principal):</span> <strong id="calc-total-display">₹10,000</strong></div>
+                    </div>
+
+                    <button class="btn" onclick="submitLoanApplication()">Apply for Loan</button>
+                </div>
+
+                <div id="view-pending" class="field-hidden text-center" style="padding:40px 0;">
+                    <i class="ri-loader-4-line" style="font-size:50px; color:var(--gold); animation: spin 1s linear infinite;"></i>
+                    <h3>Application Submitted</h3>
+                    <p style="font-size:12px; color:#666;">Your request ID: <span id="pending-id">...</span><br>The admin is reviewing your KYC and documents now.</p>
+                    <button class="btn secondary" onclick="closeLoanDashboard()">Check Later</button>
+                </div>
+
+                <div id="view-offer" class="field-hidden">
+                    <div style="text-align:center; margin-bottom:15px;">
+                        <i class="ri-checkbox-circle-fill" style="color:var(--success); font-size:40px;"></i>
+                        <h3 style="margin:5px 0;">Loan Approved!</h3>
+                        <p style="font-size:12px;">Congratulations! Here is your final offer.</p>
+                    </div>
+
+                    <div class="card loan-offer-card">
+                        <div class="loan-detail-row"><span>Approved Amount (Disbursal)</span> <strong style="font-size:16px;">₹<span id="offer-amt">0</span></strong></div>
+                        <div class="loan-detail-row"><span>Tenure</span> <span id="offer-tenure">0</span> Months</div>
+                        <div class="loan-detail-row"><span>Interest Rate</span> <span id="offer-roi">0</span>% p.m.</div>
+                        <div class="loan-detail-row"><span>Processing Fee</span> <span style="color:red;">- ₹<span id="offer-fee">0</span></span></div>
+                        <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px;" class="loan-detail-row">
+                            <span>Total Repayment (EMI Amt. x Tenure)</span> <strong style="color:var(--gold-strong); font-size:16px;">₹<span id="offer-total">0</span></strong>
+                        </div>
+                    </div>
+
+                    <div class="card" style="padding:10px;">
+                        <h5 style="margin:0 0 10px 0;">Digital Agreement & KYC</h5>
+                        <div class="flex-row">
+                            <input type="checkbox" id="agree-chk" style="width:20px; margin:0;">
+                            <span style="font-size:11px;">I accept terms & conditions.</span>
+                        </div>
+                        <div style="border:1px dashed #ccc; padding:10px; margin-top:10px; text-align:center; border-radius:8px;">
+                            <i class="ri-camera-lens-line"></i><br>
+                            <span style="font-size:10px;">Liveness Check (Selfie) verified automatically</span>
+                        </div>
+                        <input id="signature" placeholder="Type Full Name to Sign" style="margin-top:10px;">
+                    </div>
+
+                    <div class="flex-row">
+                        <button class="btn secondary" style="color:red; border-color:red;" onclick="rejectOffer()">Reject</button>
+                        <button class="btn" onclick="acceptOffer()">Sign & Accept Loan</button>
+                    </div>
+                </div>
+
+                <div id="view-disbursement" class="field-hidden text-center" style="padding:40px 0;">
+                    <i class="ri-time-line" style="font-size:50px; color:var(--warning);"></i>
+                    <h3>Disbursal in Review</h3>
+                    <p style="font-size:12px; color:#666;">You have successfully signed the loan agreement.<br>
+                    The Admin is now **reviewing the agreement** and will initiate the fund transfer shortly.</p>
+                    <div class="card" style="font-size:12px; background:#fef3c7; color:#b45309;">
+                        Net Disbursal Amount: <strong>₹<span id="disburse-amt">0</span></strong>
+                    </div>
+                    <button class="btn secondary" onclick="closeLoanDashboard()">I Understand / Check Later</button>
+                </div>
+
+                <div id="view-active" class="field-hidden">
+                    <div class="card gold-card">
+                        <div style="font-size:12px; opacity:0.9;">Total Outstanding</div>
+                        <div style="font-size:24px; font-weight:700;">₹<span id="track-balance">0</span></div>
+                        <div class="progress-container"><div id="track-progress" class="progress-bar" style="width:0%"></div></div>
+                        <div class="flex-between" style="font-size:11px;">
+                            <span>Paid: ₹<span id="track-paid">0</span></span>
+                            <span>Total Repayment: ₹<span id="track-total">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border-left:4px solid var(--danger);">
+                        <div class="flex-between">
+                            <div>
+                                <div style="font-size:11px; color:#666;">Next EMI Due</div>
+                                <div style="font-weight:700; font-size:16px;"><span id="track-next-date">...</span></div>
+                            </div>
+                            <div class="timer-badge">
+                                <i class="ri-alarm-warning-line"></i> <span id="track-timer">00d 00h</span>
+                            </div>
+                        </div>
+                        <div class="flex-between" style="margin-top:10px;">
+                            <strong>₹<span id="track-next-amt">0</span></strong>
+                            <button class="btn" style="width:auto; padding:6px 15px; font-size:12px;" onclick="openPayModal()">Pay Now</button>
+                        </div>
+                    </div>
+
+                    <div class="flex-row" style="margin-bottom:15px; overflow-x:auto;">
+                        <button class="btn secondary" style="font-size:11px; white-space:nowrap;" onclick="requestForeclosure()">Request Foreclosure</button>
+                        <button class="btn secondary" style="font-size:11px; white-space:nowrap;">Download Statement</button>
+                        <button class="btn secondary" style="font-size:11px; white-space:nowrap;">Support Chat</button>
+                    </div>
+
+                    <h4>EMI History</h4>
+                    <div id="emi-list">
+                        </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="pay-modal" class="overlay">
+            <div class="modal">
+                <button class="close-modal" onclick="document.getElementById('pay-modal').style.display='none'">&times;</button>
+                <h3>Pay EMI</h3>
+                <p>Paying: ₹<span id="pay-amount-display"></span></p>
+                
+                <div style="text-align:center; margin:20px 0;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=7649070168@okbizaxis&pn=GoldRupi&am=100" style="width:150px; border-radius:10px; border:1px solid #ddd;">
+                    <p style="font-size:11px;">Scan with GPay / Paytm / PhonePe</p>
+                </div>
+                
+                <button class="btn" style="background:#4CAF50; color:#fff; margin-bottom:10px;" onclick="launchUPI()"> <i class="ri-smartphone-line"></i> Open UPI App</button>
+                
+                <div style="margin-top:15px;">
+                    <label style="font-size:12px;">Enter UTR / Ref Number (12 Digits)</label>
+                    <input id="pay-utr" placeholder="123456789012" maxlength="12">
+                    <button class="btn" onclick="submitPayment()">Submit Payment</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('section-home', this)"><i class="ri-home-line"></i>Home</div>
+            <div class="nav-item" onclick="switchTab('section-shop', this)"><i class="ri-store-2-line"></i>Shop</div>
+            <div id="loan-nav-item" class="nav-item" onclick="openLoanDashboard()"><i class="ri-refund-2-line"></i>Loan</div>
+            <div class="nav-item" onclick="switchTab('section-profile', this)"><i class="ri-user-line"></i>Profile</div>
+        </div>
+        
+    </div> <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        // CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        // 🎯 UPDATED CONFIG: Cloudflare Worker URL (आपके द्वारा प्रदान किया गया)
+        const CLOUDFLARE_WORKER_URL = 'https://ebookandapk-uploder.rajputsurendra562.workers.dev';
+        const MERCHANT_UPI_ID = '7649070168@okbizaxis'; 
+
+        let currentUser = null;
+        let currentLoanId = null;
+        let isGuest = false;
+        
+        // --- UI UTILITY ---
+        function updateFileName(input, statusElementId) {
+            const span = statusElementId ? document.getElementById(statusElementId) : input.closest('.file-upload-box').querySelector('span');
+            if (input.files.length > 0) {
+                span.innerText = input.files[0].name.substring(0, 20) + '...';
+                span.style.color = 'var(--success)';
+            } else {
+                // Revert to original text logic needs adjustment for dynamic file upload boxes
+                span.innerText = span.dataset.originalText || 'Upload Document';
+                span.style.color = '';
+            }
+        }
+        document.querySelectorAll('.file-upload-box span').forEach(span => {
+            span.dataset.originalText = span.innerText; // Store original text
+        });
+
+        // ------------------ AUTHENTICATION LOGIC ------------------
+
+        function showAuthTab(tab) {
+            document.getElementById('login-form').classList.add('field-hidden');
+            document.getElementById('signup-form').classList.add('field-hidden');
+            document.getElementById('login-tab-btn').classList.remove('active');
+            document.getElementById('signup-tab-btn').classList.remove('active');
+            
+            if(tab === 'login') {
+                document.getElementById('login-form').classList.remove('field-hidden');
+                document.getElementById('login-tab-btn').classList.add('active');
+            } else {
+                document.getElementById('signup-form').classList.remove('field-hidden');
+                document.getElementById('signup-tab-btn').classList.add('active');
+            }
+        }
+
+        async function loginUser() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            if(!email || !password) return alert("Enter email and password.");
+            
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                alert("Login Failed: " + error.message);
+            }
+        }
+
+        async function signupUser() {
+            const name = document.getElementById('signup-name').value;
+            const mobile = document.getElementById('signup-mobile').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            if(!name || !mobile || mobile.length !== 10 || !email || password.length < 6) {
+                return alert("Please fill all fields correctly (Mobile must be 10 digits, Password min 6 chars).");
+            }
+            
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const uid = userCredential.user.uid;
+
+                await db.ref('users/'+uid).set({
+                    name: name,
+                    mobile: mobile,
+                    email: email,
+                    wallet: 0,
+                    created_at: Date.now()
+                });
+
+                alert("Account Created! You are now logged in.");
+            } catch (error) {
+                alert("Sign Up Failed: " + error.message);
+            }
+        }
+        
+        function loginAsGuest() {
+            isGuest = true;
+            currentUser = { uid: 'GUEST_USER', email: 'guest@goldrupi.com' };
+            initializeAppUI();
+            alert("Continuing as Guest. Loan and Profile features are disabled.");
+        }
+
+        // AUTH CHECK
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                currentUser = user;
+                isGuest = false;
+                initializeAppUI();
+            } else if (!isGuest) {
+                document.getElementById('auth-overlay').style.display = 'flex';
+                document.getElementById('main-app-content').classList.add('field-hidden');
+            }
+        });
+        
+        function initializeAppUI() {
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('main-app-content').classList.remove('field-hidden');
+            
+            if(isGuest) {
+                document.getElementById('user-name-display').innerText = 'Guest';
+                document.getElementById('header-wallet').innerText = 'N/A';
+                document.getElementById('loan-nav-item').onclick = () => alert("Please Login/Sign Up to access Loan services.");
+                document.getElementById('loan-nav-item').style.opacity = '0.4';
+                document.getElementById('profile-card').innerHTML = '<p class="text-center" style="color:red;">Login to manage profile.</p>';
+                document.getElementById('manual-pay-card').classList.add('field-hidden'); // Hide new card for guest
+            } else {
+                document.getElementById('loan-nav-item').onclick = openLoanDashboard;
+                document.getElementById('loan-nav-item').style.opacity = '1';
+                document.getElementById('manual-pay-card').classList.remove('field-hidden'); // Show new card for logged in
+                loadUserData();
+                listenForLoanStatus();
+                listenForNotifications();
+                loadCoupons();
+            }
+            document.getElementById('latest-products-list').innerHTML = `<p class="small-muted">Products loading enabled.</p>`;
+        }
+
+
+        // ------------------ CORE APP LOGIC ------------------
+
+        function loadUserData(){
+            db.ref('users/'+currentUser.uid).on('value', snap => {
+                const data = snap.val() || {};
+                document.getElementById('user-name-display').innerText = (data.name || 'User').split(' ')[0];
+                document.getElementById('profile-name').value = data.name || '';
+                document.getElementById('profile-mobile').value = data.mobile || '';
+                document.getElementById('header-wallet').innerText = (data.wallet || 0).toFixed(2);
+            });
+        }
+
+        // ************************************************
+        // ********** UPDATED switchTab FUNCTION **********
+        // ************************************************
+        let loContentLoaded = false; 
+
+        function switchTab(sectionId, el) {
+            document.querySelectorAll('.page-section').forEach(d => d.classList.add('field-hidden'));
+            document.getElementById(sectionId).classList.remove('field-hidden');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            if(el) el.classList.add('active');
+            
+            // नया लॉजिक: लो.एचटीएमएल को लोड करना
+            if (sectionId === 'section-shop') {
+                const loIframe = document.getElementById('lo-iframe-content');
+                const loadingMsg = document.getElementById('lo-loading-msg');
+                
+                if (loIframe && !loContentLoaded) {
+                    // Check if it's currently blank, then load
+                    if (loIframe.src.indexOf('about:blank') !== -1) {
+                         loIframe.src = 'urupe.html'; 
+                    }
+                    loContentLoaded = true; // Set to true after trying to load
+                }
+                // Hide the loading message once the iframe has received content (or attempted)
+                if (loadingMsg) {
+                    loadingMsg.style.display = 'none'; 
+                }
+            }
+        }
+        // ************************************************
+        // ********** END UPDATED switchTab FUNCTION **********
+        // ************************************************
+        
+        function saveProfile() {
+            if(isGuest) return alert("Login to save profile.");
+            const name = document.getElementById('profile-name').value;
+            db.ref('users/'+currentUser.uid).update({name: name});
+            alert("Profile Saved");
+        }
+
+        function logout(){
+            if(isGuest) {
+                isGuest = false;
+                currentUser = null;
+                document.getElementById('main-app-content').classList.add('field-hidden');
+                document.getElementById('auth-overlay').style.display = 'flex';
+                return;
+            }
+            auth.signOut().then(() => {
+                currentUser = null;
+                document.getElementById('main-app-content').classList.add('field-hidden');
+                document.getElementById('auth-overlay').style.display = 'flex';
+            });
+        }
+        
+        function openNotifications() {
+            document.getElementById('notif-overlay').style.display = 'flex';
+            document.getElementById('notif-badge').style.display = 'none';
+        }
+
+        function listenForNotifications() {
+            db.ref('admin_notifications').limitToLast(10).on('child_added', snap => {
+                const n = snap.val();
+                if(!n) return;
+                
+                const html = `
+                    <div class="notif-item">
+                        <div class="notif-title">${n.title}</div>
+                        <div class="notif-body">${n.message}</div>
+                        <div style="font-size:10px; color:#999; margin-top:2px;">${new Date(n.timestamp).toLocaleTimeString()}</div>
+                    </div>
+                `;
+                document.getElementById('notification-list').insertAdjacentHTML('afterbegin', html);
+                
+                document.getElementById('notif-badge').style.display = 'flex';
+                document.getElementById('notif-badge').innerText = '!';
+            });
+        }
+
+        function loadCoupons() {
+            if(isGuest) {
+                document.getElementById('coupon-list-container').innerHTML = '<div class="small-muted text-center">Login to see coupons.</div>';
+                return;
+            }
+            db.ref('coupons').on('value', snap => {
+                const coupons = snap.val();
+                const container = document.getElementById('coupon-list-container');
+                container.innerHTML = '';
+                
+                if(!coupons) {
+                    container.innerHTML = '<div class="small-muted text-center">No active coupons.</div>';
+                    return;
+                }
+
+                Object.keys(coupons).forEach(key => {
+                    const c = coupons[key];
+                    if(c.active) {
+                        const div = document.createElement('div');
+                        div.className = 'coupon-ticket';
+                        div.innerHTML = `
+                            <div>
+                                <div class="coupon-code">${key}</div>
+                                <div style="font-size:11px;">${c.description}</div>
+                            </div>
+                            <button class="btn secondary" style="padding:4px 8px; font-size:10px;" onclick="copyCode('${key}')">COPY</button>
+                        `;
+                        container.appendChild(div);
+                    }
+                });
+            });
+        }
+
+        function copyCode(code) {
+            navigator.clipboard.writeText(code);
+            alert("Code " + code + " copied!");
+        }
+
+        let currentCheckoutPrice = 0;
+        let appliedDiscount = 0;
+        let checkoutItemName = "";
+
+        function openCheckout(price, name) {
+            currentCheckoutPrice = price;
+            checkoutItemName = name;
+            appliedDiscount = 0;
+            
+            document.getElementById('checkout-item-name').innerText = name;
+            document.getElementById('checkout-item-price').innerText = price;
+            document.getElementById('checkout-total').innerText = price;
+            document.getElementById('checkout-coupon-input').value = "";
+            document.getElementById('coupon-msg').innerText = "";
+            document.getElementById('checkout-overlay').style.display = 'flex';
+        }
+
+        async function applyCoupon() {
+            const code = document.getElementById('checkout-coupon-input').value.toUpperCase().trim();
+            if(!code) return;
+
+            const snap = await db.ref('coupons/' + code).once('value');
+            if(snap.exists() && snap.val().active) {
+                const data = snap.val();
+                if(data.type === 'flat') {
+                    appliedDiscount = data.value;
+                } else if (data.type === 'percent') {
+                    appliedDiscount = Math.round((currentCheckoutPrice * data.value) / 100);
+                }
+                
+                const finalTotal = currentCheckoutPrice - appliedDiscount;
+                document.getElementById('checkout-total').innerText = finalTotal > 0 ? finalTotal : 0;
+                document.getElementById('coupon-msg').innerHTML = `<span style="color:green">Applied! Saved ₹${appliedDiscount}</span>`;
+            } else {
+                document.getElementById('checkout-total').innerText = currentCheckoutPrice;
+                document.getElementById('coupon-msg').innerHTML = `<span style="color:red">Invalid or Expired Code</span>`;
+                appliedDiscount = 0;
+            }
+        }
+
+        function confirmOrder() {
+            alert(`Order Placed for ${checkoutItemName}! Total Paid: ₹${document.getElementById('checkout-total').innerText}`);
+            document.getElementById('checkout-overlay').style.display = 'none';
+        }
+
+        function setStep(num) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('field-hidden'));
+            document.getElementById(`form-step-${num}`).classList.remove('field-hidden');
+            
+            document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`#step-${num}`).classList.add('active');
+        }
+
+        function showView(id) {
+            document.querySelectorAll('#loan-dashboard > .modal > div[id^="view-"]').forEach(el => el.classList.add('field-hidden'));
+            document.getElementById(id).classList.remove('field-hidden');
+        }
+        
+        function openLoanDashboard(){
+            if(isGuest) return alert("Please Login/Sign Up to access Loan services.");
+            document.getElementById('loan-dashboard').style.display = 'flex';
+            checkLoanStep(); 
+        }
+
+        function closeLoanDashboard(){
+            document.getElementById('loan-dashboard').style.display = 'none';
+        }
+        
+        // ------------------ LOAN DASHBOARD LOGIC ------------------
+
+        function checkLoanStep(targetStep = 0){ 
+            if(isGuest) {
+                document.getElementById('loan-wizard-header').classList.add('field-hidden');
+                showView('view-pending');
+                document.getElementById('pending-id').innerText = 'GUEST_MODE';
+                document.querySelector('#view-pending h3').innerText = 'Login Required';
+                document.querySelector('#view-pending p').innerText = 'Please sign up or login to apply for a loan.';
+                return;
+            }
+            
+            ['view-verification','view-calculator','view-pending','view-offer','view-disbursement','view-active'].forEach(id => {
+                document.getElementById(id).classList.add('field-hidden');
+            });
+            document.getElementById('loan-wizard-header').classList.remove('field-hidden');
+
+            // Use once('value') here to check initial status, then rely on listenForLoanStatus for changes
+            db.ref('users/'+currentUser.uid+'/loan_app').once('value').then(snap => {
+                const app = snap.val() || {};
+                
+                // 1. ACTIVE Loan (Final Stage - Admin must change status to 'active')
+                if(app.status === 'active') {
+                    showView('view-active');
+                    loadActiveLoanData(app.loan_id); 
+                    document.getElementById('loan-wizard-header').classList.add('field-hidden'); 
+                    return;
+                }
+                
+                // 2. USER ACCEPTED OFFER (Disbursal in Review)
+                if(app.status === 'accepted') { 
+                    showView('view-disbursement');
+                    loadDisbursementData(app.loan_id); 
+                    document.getElementById('loan-wizard-header').classList.add('field-hidden');
+                    return;
+                }
+                
+                // 3. REVIEWED (Admin sent an offer, User sees 'Review & Sign' Screen)
+                if(app.status === 'reviewed') {
+                    showView('view-offer');
+                    loadOfferData(app.loan_id);
+                    document.getElementById('loan-wizard-header').classList.add('field-hidden');
+                    return;
+                }
+                
+                // 4. PENDING (User applied, waiting for admin review)
+                if(app.status === 'pending') {
+                    showView('view-pending');
+                    document.getElementById('pending-id').innerText = app.loan_id;
+                    document.getElementById('loan-wizard-header').classList.add('field-hidden');
+                    return;
+                }
+                
+                // 5. LOAN CLOSED/REJECTED/REJECTED_BY_USER: Show Calculator or Verification
+                if (['closed', 'rejected', 'rejected_by_user'].includes(app.status)) {
+                    // Check if all steps are completed for a re-apply (Step 5)
+                    db.ref('users/'+currentUser.uid+'/loan_verification').once('value').then(vSnap => {
+                        const v = vSnap.val() || {};
+                        if(v.step5_completed) {
+                            document.getElementById('loan-wizard-header').classList.add('field-hidden');
+                            showView('view-calculator');
+                            updateCalc();
+                        } else {
+                            // If steps are not complete, go to the last completed step
+                            document.querySelector('#view-pending h3').innerText = 'Loan Application Closed';
+                            document.querySelector('#view-pending p').innerText = 'You can apply for a new loan once you complete all verification steps.';
+                            showView('view-pending'); 
+                        }
+                    });
+                    return;
+                }
+
+                // 6. VERIFICATION STEPS (Initial Application)
+                db.ref('users/'+currentUser.uid+'/loan_verification').once('value').then(vSnap => {
+                    const v = vSnap.val() || {};
+                    document.querySelectorAll('.step-item').forEach(el => el.classList.remove('completed', 'active'));
+
+                    let stepToShow = 1;
+
+                    if(v.step1_completed) { 
+                        document.querySelector('#step-1').classList.add('completed');
+                        stepToShow = 2;
+                    }
+                    
+                    if(v.step2_completed) { 
+                        document.querySelector('#step-2').classList.add('completed');
+                        stepToShow = 3;
+                    }
+
+                    if(v.step3_completed) { 
+                        document.querySelector('#step-3').classList.add('completed');
+                        stepToShow = 4;
+                    }
+                    
+                    if(v.step4_completed) { 
+                        document.querySelector('#step-4').classList.add('completed');
+                        stepToShow = 5;
+                    }
+                    
+                    if(v.step5_completed) { 
+                        document.querySelector('#step-5').classList.add('completed');
+                        
+                        document.getElementById('loan-wizard-header').classList.add('field-hidden');
+                        showView('view-calculator');
+                        updateCalc();
+                        return;
+                    }
+                    
+                    const finalStep = targetStep > 0 ? targetStep : stepToShow;
+
+                    setStep(finalStep); 
+                    showView('view-verification');
+                });
+            });
+        }
+        
+        async function acceptOffer() {
+            if(!document.getElementById('agree-chk').checked) return alert("Accept T&C first");
+            const sig = document.getElementById('signature').value;
+            if(!sig) return alert("Digital Signature required (Type your full name)");
+
+            const updates = {};
+            // STATUS CHANGE: User accepts, sets to 'accepted' which is now the Disbursal Review state for Admin.
+            updates['loan_requests/'+currentLoanId+'/status'] = 'accepted';
+            updates['loan_requests/'+currentLoanId+'/signature'] = sig;
+            // User app status is also updated
+            updates['users/'+currentUser.uid+'/loan_app/status'] = 'accepted';
+            updates['users/'+currentUser.uid+'/loan_app/accepted_at'] = Date.now();
+
+            db.ref().update(updates).then(() => {
+                alert("Loan Agreement Signed and Offer Accepted! Funds are now pending Admin review for disbursal.");
+                checkLoanStep(); 
+            });
+        }
+        
+        // ------------------ FILE UPLOAD & STEP SAVE LOGIC (अंतिम और सही) ------------------
+
+        async function uploadFile(fileInputId) {
+            const fileInput = document.getElementById(fileInputId);
+            const file = fileInput.files[0];
+
+            if (!file || file.size === 0) return { url: null, error: "No file selected or file is empty." };
+            
+            // Note: The Worker uses the filename provided by the browser, no 'key' parameter is needed in this version.
+            let formData = new FormData();
+            formData.append('file', file);
+
+            const spanElement = fileInput.parentNode.querySelector('span');
+            
+            try {
+                // Store original text for manual payment submission upload
+                const originalText = spanElement.innerText;
+
+                spanElement.innerText = 'Uploading...';
+                spanElement.style.color = 'var(--warning)';
+
+                // 🎯 Worker Endpoint पर POST Request
+                const res = await fetch(CLOUDFLARE_WORKER_URL, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(`Cloudflare Upload Failed: HTTP ${res.status} - ${errorText.substring(0, 100)}`);
+                }
+                
+                const data = await res.json();
+                
+                // Worker response check: { ok: true, key: filename, publicURL }
+                if (data.publicURL) {
+                    spanElement.innerText = 'Uploaded!'; 
+                    spanElement.style.color = 'var(--success)';
+                    return { url: data.publicURL, error: null };
+                } else {
+                    throw new Error("Worker did not return a valid publicURL in response: " + JSON.stringify(data));
+                }
+
+            } catch(e) {
+                console.error("Cloudflare Image upload failed:", e);
+                spanElement.innerText = originalText; // Revert text on failure
+                spanElement.style.color = 'var(--danger)';
+                // Return original file name for debugging if needed, but error message is key
+                return { url: "UPLOAD_FAILED_PLACEHOLDER", error: e.message }; 
+            }
+        }
+        // Helper function to handle failed uploads and revert button state
+        function handleUploadFail(btn, originalBtnText, msg) {
+            btn.disabled = false;
+            btn.innerText = originalBtnText;
+            alert(msg);
+        }
+
+        async function saveStep(stepNum) {
+            const uid = currentUser.uid;
+            let data = {};
+            let isComplete = false;
+            let nextStep = stepNum + 1;
+
+            const btn = document.querySelector(`#form-step-${stepNum} .btn`);
+            const originalBtnText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = 'Saving... Please Wait';
+            
+            const fail = (msg) => handleUploadFail(btn, originalBtnText, msg);
+
+            if(stepNum === 1) {
+                const email = document.getElementById('loan-email').value;
+                const dob = document.getElementById('loan-dob').value;
+                const fname = document.getElementById('loan-fname').value;
+                if(!email || !dob || !fname) { return fail("Step 1: Fill all fields."); }
+                data = { email, dob, fname, saved_at: Date.now() };
+                isComplete = true;
+            }
+            else if(stepNum === 2) {
+                const panNum = document.getElementById('loan-pan').value.toUpperCase().trim();
+                const aadhaarF_file = document.getElementById('file-aadhaar-f').files[0];
+                const aadhaarB_file = document.getElementById('file-aadhaar-b').files[0];
+                const panFile_file = document.getElementById('file-pan').files[0];
+                
+                if(!panNum || !aadhaarF_file || !aadhaarB_file || !panFile_file) { return fail("Step 2: Enter PAN Number and upload all three documents."); }
+                
+                // --- UPLOAD LOGIC ---
+                btn.innerText = 'Uploading documents (1/3)...';
+                const result1 = await uploadFile('file-aadhaar-f');
+                if(result1.error) { return fail("Aadhaar Front upload failed: " + result1.error); }
+                
+                btn.innerText = 'Uploading documents (2/3)...';
+                const result2 = await uploadFile('file-aadhaar-b');
+                if(result2.error) { return fail("Aadhaar Back upload failed: " + result2.error); }
+
+                btn.innerText = 'Uploading documents (3/3)...';
+                const result3 = await uploadFile('file-pan');
+                if(result3.error) { return fail("PAN File upload failed: " + result3.error); }
+                // --- UPLOAD LOGIC END ---
+
+                data = { 
+                    pan: panNum, 
+                    aadhaar_front_url: result1.url, 
+                    aadhaar_back_url: result2.url, 
+                    pan_img_url: result3.url, 
+                    saved_at: Date.now() 
+                };
+                isComplete = true;
+            }
+            else if(stepNum === 3) {
+                const bank = document.getElementById('loan-bank-name').value;
+                const acc = document.getElementById('loan-acc-num').value;
+                const ifsc = document.getElementById('loan-ifsc').value;
+                const passbookFile = document.getElementById('file-passbook').files[0];
+                
+                if(!bank || !acc || !ifsc || !passbookFile) { return fail("Step 3: Fill bank details and upload passbook/cheque."); }
+                
+                // --- UPLOAD LOGIC ---
+                btn.innerText = 'Uploading document...';
+                const result = await uploadFile('file-passbook');
+                if(result.error) { return fail("Passbook/Cheque upload failed: " + result.error); }
+                // --- UPLOAD LOGIC END ---
+
+                data = { bank_name: bank, account_number: acc, ifsc_code: ifsc, passbook_url: result.url, saved_at: Date.now() };
+                isComplete = true;
+            }
+            else if(stepNum === 4) {
+                const salary = document.getElementById('loan-salary').value;
+                const occ = document.getElementById('loan-occupation').value;
+                const salaryFile = document.getElementById('file-salary').files[0];
+
+                if(!salary || !occ || !salaryFile) { return fail("Step 4: Enter salary and upload salary slip."); }
+                
+                // --- UPLOAD LOGIC ---
+                btn.innerText = 'Uploading document...';
+                const result = await uploadFile('file-salary');
+                if(result.error) { return fail("Salary Slip upload failed: " + result.error); }
+                // --- UPLOAD LOGIC END ---
+
+                data = { monthly_income: salary, occupation: occ, salary_slip_url: result.url, saved_at: Date.now() };
+                isComplete = true;
+            }
+            else if(stepNum === 5) {
+                const addr = document.getElementById('loan-addr-perm').value;
+                const curr = document.getElementById('loan-addr-curr').value;
+                if(!addr || !curr) { return fail("Step 5: Enter both permanent and current addresses."); }
+                
+                data = { permanent_address: addr, current_address: curr, saved_at: Date.now() };
+                isComplete = true;
+                nextStep = 0; // Moves to calculator view
+            }
+
+            if(isComplete) {
+                try {
+                    await db.ref(`users/${uid}/loan_verification/step${stepNum}_data`).set(data);
+                    await db.ref(`users/${uid}/loan_verification/step${stepNum}_completed`).set(true);
+
+                    checkLoanStep(nextStep); 
+                } catch (error) {
+                    fail("Error saving data to Firebase: " + error.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = originalBtnText;
+                }
+            } else {
+                btn.disabled = false;
+                btn.innerText = originalBtnText;
+            }
+        }
+
+
+        function updateCalc() {
+            const amt = parseInt(document.getElementById('calc-amt').value);
+            const tenure = parseInt(document.getElementById('calc-tenure').value);
+            
+            // 🎯 LOGIC: Approved amount is the total repayment amount
+            const total = amt; 
+            const emi = total / tenure;
+            const roi = 0; 
+
+            document.getElementById('calc-amt-display').innerText = amt.toLocaleString();
+            document.getElementById('calc-tenure-display').innerText = tenure;
+            document.getElementById('calc-emi-display').innerText = '₹' + Math.round(emi).toLocaleString();
+            document.getElementById('calc-total-display').innerText = '₹' + Math.round(total).toLocaleString();
+            document.querySelector('.loan-detail-row:first-child span:last-child').innerText = roi + '% / month';
+        }
+
+        async function submitLoanApplication() {
+            const btn = document.querySelector('#view-calculator .btn');
+            btn.disabled = true;
+            btn.innerText = 'Submitting...';
+
+            const amt = document.getElementById('calc-amt').value;
+            const tenure = document.getElementById('calc-tenure').value;
+            const lid = 'L' + Date.now();
+
+            const vSnap = await db.ref(`users/${currentUser.uid}/loan_verification`).once('value');
+            const v = vSnap.val();
+
+            if(!v || !v.step5_completed) { 
+                btn.disabled = false; btn.innerText = 'Apply for Loan';
+                return alert("Error: All 5 verification steps must be completed before applying.");
+            }
+            
+            const monthlyEMI = Math.round(parseInt(amt) / parseInt(tenure));
+
+            const payload = {
+                id: lid,
+                user_id: currentUser.uid,
+                mobile: document.getElementById('profile-mobile').value, 
+                amount_req: amt,
+                tenure_req: tenure,
+                status: 'pending',
+                created_at: Date.now(),
+                approved_amount: parseInt(amt), 
+                approved_tenure: parseInt(tenure),
+                processing_fee: 0, 
+                net_disbursal: parseInt(amt),
+                emi_amount: monthlyEMI,
+                total_repayment: parseInt(amt),
+                verification_data: {
+                    basic: v.step1_data,
+                    identity: v.step2_data,
+                    bank: v.step3_data,
+                    work: v.step4_data,
+                    address: v.step5_data
+                },
+                emis: {} 
+            };
+
+            for(let i = 1; i <= parseInt(tenure); i++) {
+                const dueDate = new Date();
+                dueDate.setMonth(dueDate.getMonth() + i);
+                dueDate.setDate(5); 
+                
+                payload.emis['emi_' + i] = {
+                    id: 'emi_' + i,
+                    num: i,
+                    amount: monthlyEMI,
+                    due_date: dueDate.getTime(),
+                    status: 'pending' 
+                };
+            }
+
+
+            try {
+                await db.ref('loan_requests/'+lid).set(payload);
+                await db.ref('users/'+currentUser.uid+'/loan_app').set({loan_id: lid, status: 'pending', applied_at: Date.now()});
+
+                alert("Application Submitted! Admin has received your documents and request.");
+                checkLoanStep();
+            } catch (error) {
+                alert("Submission failed: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Apply for Loan';
+            }
+        }
+
+        function listenForLoanStatus() {
+            if(isGuest) return;
+            db.ref('users/'+currentUser.uid+'/loan_app').on('value', snap => {
+                const val = snap.val();
+                if(val) { 
+                    checkLoanStep(); 
+                }
+            });
+        }
+
+        async function loadOfferData(lid) {
+            const snap = await db.ref('loan_requests/'+lid).once('value');
+            const data = snap.val();
+            
+            currentLoanId = lid;
+            
+            const amt = data.approved_amount || data.amount_req; 
+            const tenure = data.approved_tenure || data.tenure_req;
+            const fee = data.processing_fee || 0;
+            const net = data.net_disbursal || amt;
+            const roi = 0;
+
+            document.getElementById('offer-amt').innerText = parseInt(net).toLocaleString(); 
+            document.getElementById('offer-tenure').innerText = tenure;
+            document.getElementById('offer-roi').innerText = roi;
+            document.getElementById('offer-fee').innerText = fee;
+            document.getElementById('offer-total').innerText = parseInt(amt).toLocaleString(); 
+        }
+        
+        async function loadDisbursementData(lid) {
+            const snap = await db.ref('loan_requests/'+lid).once('value');
+            const data = snap.val();
+            const net = data.net_disbursal || 0;
+            document.getElementById('disburse-amt').innerText = parseInt(net).toLocaleString();
+        }
+        
+        function rejectOffer() {
+            if(confirm("Are you sure you want to reject this loan offer?")) {
+                db.ref('users/'+currentUser.uid+'/loan_app/status').set('rejected_by_user');
+                db.ref('loan_requests/'+currentLoanId+'/status').set('rejected_by_user');
+                alert("Loan offer rejected. You can re-apply.");
+                checkLoanStep(); 
+            }
+        }
+
+        function loadActiveLoanData(lid) {
+            currentLoanId = lid;
+            
+            db.ref('loan_requests/'+lid).on('value', snap => {
+                const data = snap.val();
+                if (!data) return; 
+                
+                const emis = data.emis || {};
+                const totalRepayment = data.total_repayment ? parseInt(data.total_repayment) : 0; 
+
+                let totalPaid = 0;
+                let nextEmi = null;
+
+                const listDiv = document.getElementById('emi-list');
+                listDiv.innerHTML = ''; 
+
+                const sortedEmis = Object.values(emis).sort((a,b) => a.num - b.num);
+                
+                let calculatedTotalRepayment = 0;
+                
+                sortedEmis.forEach(e => {
+                    const emiAmount = parseInt(e.amount) || 0;
+                    calculatedTotalRepayment += emiAmount; 
+                    
+                    if(e.status === 'paid') {
+                        totalPaid += emiAmount;
+                    }
+                    
+                    const dueDate = new Date(e.due_date).getTime();
+                    const isOverdue = dueDate < Date.now() && e.status === 'pending';
+
+                    if((e.status !== 'paid') && (!nextEmi || e.num < nextEmi.num)) {
+                        nextEmi = e;
+                    }
+                    
+                    if (e.id && e.num && e.amount) {
+                        const item = document.createElement('div');
+                        item.className = 'card';
+                        item.style.padding = '10px';
+                        let statusColor = 'var(--warning)';
+                        let statusBadge = e.status.toUpperCase().replace('_', ' ');
+                        
+                        if(e.status === 'paid') {
+                            statusColor = 'var(--success)';
+                            statusBadge = 'PAID';
+                        } else if(e.status === 'payment_submitted') {
+                            statusColor = 'var(--gold)';
+                            statusBadge = 'VERIFYING UTR';
+                        } else if (isOverdue) {
+                            statusColor = 'var(--danger)';
+                            statusBadge = 'OVERDUE (DEFAULT)';
+                        } else {
+                            statusColor = 'var(--warning)';
+                            statusBadge = 'PENDING';
+                        }
+
+                        item.style.borderLeft = `4px solid ${statusColor}`;
+                        item.innerHTML = `
+                            <div class="flex-between">
+                                <div>
+                                    <strong>EMI ${e.num}</strong> <span style="font-size:12px; color:#666;">${new Date(e.due_date).toLocaleDateString()}</span>
+                                </div>
+                                <div style="text-align:right;">
+                                    <strong>₹${emiAmount.toLocaleString()}</strong><br>
+                                    <span class="badge ${e.status==='paid'?'bg-success':(e.status==='payment_submitted'?'bg-pending':'bg-danger')}">${statusBadge}</span>
+                                </div>
+                            </div>
+                            ${(e.status !== 'paid' && e.status !== 'payment_submitted') ? `<button onclick="openPayModal(${emiAmount}, '${e.id}')" class="btn secondary" style="margin-top:5px; padding:4px 8px; font-size:11px;">Pay Now</button>` : ''}
+                        `;
+                        listDiv.appendChild(item);
+                    }
+                });
+
+                const finalTotalRepayment = totalRepayment > 0 ? totalRepayment : calculatedTotalRepayment;
+                
+                const remaining = finalTotalRepayment - totalPaid;
+                const progress = finalTotalRepayment > 0 ? (totalPaid / finalTotalRepayment) * 100 : 0;
+                
+                document.getElementById('track-balance').innerText = Math.round(remaining).toLocaleString();
+                document.getElementById('track-paid').innerText = Math.round(totalPaid).toLocaleString();
+                document.getElementById('track-total').innerText = Math.round(finalTotalRepayment).toLocaleString(); 
+                document.getElementById('track-progress').style.width = progress + '%';
+
+                if(nextEmi) {
+                    const nextEmiAmount = parseInt(nextEmi.amount) || 0;
+                    document.getElementById('track-next-date').innerText = new Date(nextEmi.due_date).toDateString();
+                    document.getElementById('track-next-amt').innerText = nextEmiAmount.toLocaleString();
+                    const diff = nextEmi.due_date - Date.now();
+                    const days = Math.floor(diff / (1000*60*60*24));
+                    
+                    const isOverdue = nextEmi.status === 'pending' && days < 0;
+
+                    const timerBadge = document.getElementById('track-timer').parentElement;
+                    const mainCard = document.querySelector('#view-active .card:nth-child(2)');
+
+                    if(days >= 0) {
+                        document.getElementById('track-timer').innerText = days + 'd remaining';
+                        mainCard.style.borderLeftColor = days < 7 ? 'var(--warning)' : 'var(--success)';
+                        timerBadge.style.backgroundColor = '#ecfdf5'; 
+                        timerBadge.style.color = '#065f46'; 
+                    } else {
+                        document.getElementById('track-timer').innerText = Math.abs(days) + 'd overdue';
+                        mainCard.style.borderLeftColor = 'var(--danger)';
+                        timerBadge.style.backgroundColor = '#fee2e2'; 
+                        timerBadge.style.color = '#991b1b'; 
+                    }
+                    
+                    const mainPayBtn = document.querySelector('#view-active .card:nth-child(2) button');
+                    if (nextEmi.status !== 'paid' && nextEmi.status !== 'payment_submitted') {
+                        mainPayBtn.onclick = () => openPayModal(nextEmiAmount, nextEmi.id);
+                        mainPayBtn.style.display = 'block';
+                    } else {
+                        mainPayBtn.style.display = 'none';
+                    }
+
+
+                } else {
+                    document.getElementById('track-next-date').innerText = "Loan Closed";
+                    document.getElementById('track-timer').innerText = "0d 00h";
+                    document.querySelector('#view-active .card:nth-child(2)').style.borderLeftColor = 'var(--success)';
+                    document.querySelector('#view-active .card:nth-child(2) button').style.display = 'none';
+                    document.getElementById('track-next-amt').innerText = '0';
+                    
+                    const timerBadge = document.getElementById('track-timer').parentElement;
+                    timerBadge.style.backgroundColor = '#ecfdf5';
+                    timerBadge.style.color = '#065f46';
+                }
+            });
+        }
+
+        let selectedEmiId = null;
+        function openPayModal(amt, eid) {
+            if(!amt || !eid) {
+                db.ref('loan_requests/'+currentLoanId+'/emis').once('value').then(snap => {
+                    const emis = snap.val() || {};
+                    const nextEmi = Object.values(emis).sort((a,b) => a.num - b.num).find(e => e.status !== 'paid' && e.status !== 'payment_submitted');
+                    
+                    if(nextEmi) {
+                         selectedEmiId = nextEmi.id;
+                         document.getElementById('pay-amount-display').innerText = nextEmi.amount;
+                         document.getElementById('pay-modal').style.display = 'flex';
+                         document.querySelector('#pay-modal img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${MERCHANT_UPI_ID}&pn=GoldRupi&am=${nextEmi.amount}&cu=INR`;
+                    } else {
+                        alert("No pending EMI found to pay.");
+                    }
+                });
+                return;
+            }
+            
+            selectedEmiId = eid;
+            document.getElementById('pay-amount-display').innerText = amt;
+            document.getElementById('pay-modal').style.display = 'flex';
+            
+            document.querySelector('#pay-modal img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${MERCHANT_UPI_ID}&pn=GoldRupi&am=${amt}&cu=INR`;
+        }
+
+        function launchUPI() {
+            const amt = document.getElementById('pay-amount-display').innerText;
+            window.location.href = `upi://pay?pa=${MERCHANT_UPI_ID}&pn=GoldRupi&am=${amt}&tn=EMI Payment&cu=INR`;
+        }
+
+        function submitPayment() {
+            const utr = document.getElementById('pay-utr').value;
+            const payAmount = document.getElementById('pay-amount-display').innerText;
+
+            if (!utr || utr.length !== 12) return alert("Invalid UTR (Must be 12 Digits)");
+            if (!currentLoanId || !selectedEmiId) return alert("Error: Loan or EMI ID missing. Please reload dashboard.");
+
+            const newPaymentReqId = 'P' + Date.now();
+            
+            const paymentPayload = {
+                id: newPaymentReqId,
+                loan_id: currentLoanId, 
+                emi_id: selectedEmiId,
+                user_id: currentUser.uid,
+                amount: parseInt(payAmount),
+                utr_number: utr,
+                timestamp: Date.now(),
+                status: 'verification_pending' 
+            };
+            
+            // This set() will trigger the allowed rule for payment_requests (create new record with user_id and status: verification_pending)
+            db.ref('payment_requests/' + newPaymentReqId).set(paymentPayload)
+                .then(() => {
+                    // This set() will trigger the allowed rule for loan_requests/$id/emis/$emi_id (update status to payment_submitted)
+                    return db.ref(`loan_requests/${currentLoanId}/emis/${selectedEmiId}/status`).set('payment_submitted');
+                })
+                .then(() => {
+                    alert("Payment Submitted! Admin will verify your UTR shortly. (You can submit up to 3 UTRs per EMI.)");
+                    
+                    document.getElementById('pay-modal').style.display = 'none';
+                    document.getElementById('pay-utr').value = '';
+                    checkLoanStep(); 
+                })
+                .catch(error => {
+                    console.error("Payment Submission Error:", error);
+                    alert("Error submitting payment: " + error.message);
+                });
+        }
+
+        function requestForeclosure() {
+            alert("Foreclosure Request Sent to Admin. They will contact you with the final settlement amount.");
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.setAttribute('data-theme', body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+        }
+
+// ------------------ NEW MANUAL PAYMENT PROOF LOGIC (आपके अनुरोध पर) ------------------
+
+        async function submitManualPaymentProof() {
+            if(isGuest) return alert("Please Login/Sign Up to submit payment proof.");
+
+            const utr = document.getElementById('manual-pay-utr').value.trim();
+            const screenshotFile = document.getElementById('file-payscreen').files[0];
+            const btn = document.getElementById('manual-pay-btn');
+            const statusMsg = document.getElementById('manual-submission-message');
+            const originalBtnText = btn.innerText;
+
+            if (!utr || utr.length !== 12) {
+                return alert("कृपया 12 अंकों का UTR / रेफरेंस नंबर दर्ज करें।");
+            }
+            if (!screenshotFile) {
+                return alert("कृपया भुगतान का स्क्रीनशॉट अपलोड करें।");
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Uploading...';
+            statusMsg.classList.add('field-hidden');
+
+            // 1. Upload Screenshot to Cloudflare
+            // सुनिश्चित करें कि uploadFile फंक्शन उपलब्ध है
+            const uploadResult = await uploadFile('file-payscreen');
+
+            if (uploadResult.error) {
+                btn.disabled = false;
+                btn.innerText = originalBtnText;
+                return alert("स्क्रीनशॉट अपलोड विफल रहा: " + uploadResult.error);
+            }
+
+            // 2. Save Submission to Firebase
+            const newSubmissionId = 'MANUAL_' + Date.now();
+            
+            // 🔥🔥🔥 FIX APPLIED HERE: Keys modified to match Firebase Rules (userId, utr, screenshotUrl) 🔥🔥🔥
+            const payload = {
+                id: newSubmissionId,
+                userId: currentUser.uid,             // <-- FIXED: Changed from user_id to userId
+                utr: utr,                          // <-- FIXED: Changed from utr_number to utr
+                screenshotUrl: uploadResult.url,   // <-- FIXED: Changed from screenshot_url to screenshotUrl
+                timestamp: Date.now(),
+                status: 'pending_admin_review'     // Firebase rule requires 'status'
+            };
+            // 🔥🔥🔥 END FIX 🔥🔥🔥
+
+            try {
+                btn.innerText = 'Saving Data...';
+                await db.ref('manual_payment_submissions/' + newSubmissionId).set(payload);
+
+                // 3. Success Feedback
+                statusMsg.style.color = 'var(--success)';
+                statusMsg.innerHTML = '<i class="ri-check-line"></i> Submission Successful. We will review your payment shortly.';
+                statusMsg.classList.remove('field-hidden');
+
+                // Clear inputs for next submission
+                document.getElementById('manual-pay-utr').value = '';
+                document.getElementById('file-payscreen').value = '';
+                document.getElementById('manual-file-status').innerText = 'Upload Payment Screenshot (JPG/PNG)';
+                document.getElementById('manual-file-status').style.color = '';
+
+            } catch (error) {
+                statusMsg.style.color = 'var(--danger)';
+                // Log the full error to the console for debugging
+                console.error("Firebase Submission Error:", error); 
+                statusMsg.innerHTML = '<i class="ri-error-warning-line"></i> Error saving submission: ' + error.message;
+                statusMsg.classList.remove('field-hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalBtnText;
+            }
+        }
+        // ------------------ END NEW MANUAL PAYMENT PROOF LOGIC ------------------
+    </script>
+</body>
+</html>
+

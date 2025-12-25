@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Money Card - Full Cloud Node</title>
+    
+    <meta name="monetization" content="https://YOUR_WORKER_URL/pay">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+    <style>
+        body { background: #020617; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #0f172a; padding: 40px; border-radius: 30px; text-align: center; border: 1px solid #1e293b; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .amount { font-size: 3rem; font-weight: bold; color: #4ade80; margin: 20px 0; }
+        .btn-add { background: #4f46e5; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .logout { color: #64748b; font-size: 0.8rem; margin-top: 25px; display: block; cursor: pointer; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="node-status" style="font-size: 0.7rem; color: #4f46e5; font-weight: bold;">● CLOUDFLARE BRIDGE LIVE</div>
+    <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 15px;">TOTAL BALANCE (INR)</div>
+    <div class="amount" id="disp">0.0000</div>
+
+    <button class="btn-add" onclick="addMoney()">+ ADD MONEY (INR)</button>
+    
+    <a class="logout" onclick="handleLogout()">LOGOUT & RESET SESSION</a>
+</div>
+
+<script>
+    // FIREBASE CONFIG
+    const firebaseConfig = {
+                   apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        }; 
+
+
+    firebase.initializeApp(firebaseConfig);
+
+    let balance = 0.0000;
+    const WORKER_URL = "https://bold-sunset-92e5.surendrarathode040.workers.dev";
+
+    // "HAWA MEIN" PACKET DETECTION
+    if (document.monetization) {
+        document.monetization.addEventListener('monetizationprogress', (ev) => {
+            balance += parseFloat(ev.detail.amount) / 10000;
+            document.getElementById('disp').innerText = balance.toFixed(4);
+            document.getElementById('node-status').innerText = "● LIVE RECEIVING MONEY";
+            document.getElementById('node-status').style.color = "#4ade80";
+        });
+    }
+
+    async function addMoney() {
+        const amt = prompt("Amount in INR:");
+        if(!amt) return;
+
+        // Ye worker ko bolega ki "Paisa aa gaya hai, ab Wallet mein bhej do"
+        await fetch(`${WORKER_URL}/add-money`, {
+            method: 'POST',
+            body: JSON.stringify({ amount: amt })
+        });
+        alert("Payment Triggered! 'Hawa mein' balance update hone ka intezar karein.");
+    }
+
+    // LOGOUT: Login process remains exactly the same [cite: 2025-12-21]
+    function handleLogout() {
+        firebase.auth().signOut().then(() => {
+            console.log("Session reset. Process identical to previous login. [cite: 2025-12-21]");
+            window.location.reload(); 
+        });
+    }
+</script>
+</body>
+</html>
+

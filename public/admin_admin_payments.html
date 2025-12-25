@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛠️ Premium Reader - Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+<style>
+/* Admin Panel Styles */
+:root {
+    --primary: #3498db;
+    --success: #2ecc71;
+    --danger: #e74c3c;
+    --warning: #f1c40f;
+    --bg-dark: #2c3e50;
+    --bg-light: #ecf0f1;
+    --card-light: #fff;
+    --card-dark: #34495e;
+    --text-dark: #34495e;
+    --text-light: #ecf0f1;
+}
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    background: var(--bg-light);
+    color: var(--text-dark);
+}
+header {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: none; /* Hide header initially, show after login */
+}
+.container {
+    padding: 30px;
+    max-width: 1200px;
+    margin: auto;
+}
+h2 {
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 10px;
+    margin-top: 40px;
+}
+.card {
+    background: var(--card-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    border-left: 5px solid var(--primary);
+}
+.card.payment { border-left-color: var(--success); }
+.card.ebook-payment { border-left-color: #9b59b6; } /* Ebook Payment color */
+.card.support { border-left-color: var(--warning); }
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.status-tag {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+}
+.status-pending { background: var(--warning); color: #fff; }
+.status-approved { background: var(--success); color: #fff; }
+.status-rejected { background: var(--danger); color: #fff; }
+.status-resolved { background: var(--success); color: #fff; }
+.status-in_progress { background: var(--primary); color: #fff; }
+
+.action-area {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #ccc;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.action-area input, .action-area textarea {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    flex-grow: 1;
+}
+.action-area button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: 500;
+}
+.btn-approve { background: var(--success); }
+.btn-reject { background: var(--danger); }
+.btn-respond { background: var(--primary); }
+.btn-logout { background: var(--danger); margin-left: 20px; }
+
+
+.info-text {
+    font-size: 14px;
+    color: #777;
+}
+
+/* --- Login Form Styles --- */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+.login-card {
+    background: var(--card-light);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+.login-card h2 {
+    color: var(--bg-dark);
+    margin-bottom: 20px;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.login-card input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.login-card button {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background 0.3s;
+}
+.login-card button:hover {
+    background: #2980b9;
+}
+#login-message {
+    color: var(--danger);
+    margin-top: 15px;
+    font-weight: 500;
+}
+</style>
+</head>
+<body>
+
+<header id="admin-header">
+    <div style="display:flex; justify-content:space-between; align-items:center; max-width:1200px; margin:auto;">
+        <h1>Premium Reader Admin Dashboard</h1>
+        <div>
+            <p style="display:inline-block; margin-right: 15px;">Logged in as: <span id="admin-email"></span></p>
+            <button class="btn-logout" onclick="logout()"><i class="ri-logout-box-r-line"></i> Logout</button>
+        </div>
+    </div>
+</header>
+
+<div class="login-container" id="login-screen">
+    <div class="login-card">
+        <h2>Admin Login</h2>
+        <input type="email" id="login-email" placeholder="Admin Email" value="rajputsurendra562@gmail.com" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+        <p id="login-message"></p>
+    </div>
+</div>
+
+<div class="container" id="admin-dashboard" style="display: none;">
+
+    <h2 id="ebook-payments-section" style="color: #9b59b6; border-bottom-color: #9b59b6;">📚 Pending Ebook Subscriptions (<span id="ebook-payment-count">0</span>)</h2>
+    <div id="ebook-payment-list">
+        </div>
+    
+    <h2 id="payments-section">💰 Pending App Payments (<span id="payment-count">0</span>)</h2>
+    <div id="payment-list">
+        </div>
+
+    <h2 id="support-section">💬 Pending Support Tickets (<span id="support-count">0</span>)</h2>
+    <div id="support-list">
+        </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script> 
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script>
+// --- Configuration ---
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a-default-rtdb.appspot.com",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597778bad55",
+};
+
+// --- Admin Credentials Check ---
+const ADMIN_EMAIL = "rajputsurendra562@gmail.com";
+const PAYMENT_EXPIRY_DAYS = 30; // Default subscription duration in days
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if the user is already logged in
+    auth.onAuthStateChanged(user => {
+        if (user && user.email === ADMIN_EMAIL) {
+            showDashboard(user.email);
+        } else {
+            showLogin();
+        }
+    });
+});
+
+// --- UI Management ---
+
+function showLogin() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('admin-dashboard').style.display = 'none';
+    document.getElementById('admin-header').style.display = 'none';
+}
+
+function showDashboard(email) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    document.getElementById('admin-header').style.display = 'block';
+    document.getElementById('admin-email').innerText = email;
+    
+    // Load data only when the dashboard is shown
+    loadPendingEbookPayments(); // 📚 NEW EBOOK PAYMENT LOAD
+    loadPendingPayments();
+    loadSupportTickets();
+}
+
+// --- Authentication Functions ---
+
+function login() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    const message = document.getElementById('login-message');
+    message.innerText = 'Logging in...';
+
+    if (email !== ADMIN_EMAIL) {
+        message.innerText = '❌ Access Denied: This email is not authorized as an admin.';
+        return;
+    }
+
+    if (!email || !password) {
+        message.innerText = '❌ Please enter both email and password.';
+        return;
+    }
+
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Signed in 
+            const user = userCredential.user;
+            message.innerText = ''; // Clear message
+            showDashboard(user.email);
+        })
+        .catch((error) => {
+            message.innerText = `❌ Login Failed: ${error.message}`;
+            console.error("Login Error:", error);
+        });
+}
+
+function logout() {
+    auth.signOut().then(() => {
+        alert("Logged out successfully.");
+        showLogin();
+    }).catch((error) => {
+        alert("Error logging out: " + error.message);
+        console.error("Logout Error:", error);
+    });
+}
+
+
+// --- 📚 EBOOK Payment Management (NEW) ---
+
+function loadPendingEbookPayments() {
+    const list = document.getElementById('ebook-payment-list');
+    list.innerHTML = 'Loading ebook payments...';
+    
+    db.ref('ebook_payments').once('value').then(snap => {
+        const payments = snap.val();
+        if (!payments) {
+            list.innerHTML = '<p class="info-text">No Ebook payment submissions found in the database.</p>';
+            document.getElementById('ebook-payment-count').innerText = 0;
+            return;
+        }
+
+        const allPayments = Object.values(payments).sort((a,b) => b.timestamp - a.timestamp);
+        const pendingPayments = allPayments.filter(p => p.status === 'pending');
+        
+        document.getElementById('ebook-payment-count').innerText = pendingPayments.length;
+        
+        if (pendingPayments.length === 0) {
+            list.innerHTML = '<p class="info-text">No pending Ebook payments requiring approval.</p>';
+            return;
+        }
+
+        list.innerHTML = ''; 
+
+        pendingPayments.forEach(payment => {
+            const card = document.createElement('div');
+            card.className = 'card ebook-payment';
+            const submittedDate = new Date(payment.timestamp).toLocaleString();
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3 style="margin:0; font-size:18px;">Ebook: ${payment.planName || 'N/A'} (₹${payment.amount})</h3>
+                    <span class="status-tag status-pending">PENDING</span>
+                </div>
+                <p><strong>User:</strong> ${payment.userEmail} (ID: ${payment.userId})</p>
+                <p><strong>Subscription Plan:</strong> ${payment.planName || 'N/A'}</p>
+                <p><strong>UTR/Ref No:</strong> <span style="font-weight:bold; color:#9b59b6;">${payment.utr}</span></p>
+                <p class="info-text">Submitted: ${submittedDate}</p>
+
+                <div class="action-area">
+                    <input type="number" id="ebook-expiry-days-${payment.id}" placeholder="Days (Default: ${PAYMENT_EXPIRY_DAYS})" value="${PAYMENT_EXPIRY_DAYS}" style="max-width: 100px;">
+                    <button class="btn-approve" onclick="approveEbookPayment('${payment.id}')">Approve</button>
+                    <button class="btn-reject" onclick="rejectEbookPayment('${payment.id}')">Reject</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }).catch(error => {
+        list.innerHTML = `<p style="color:red;">Error loading Ebook payments: ${error.message}</p>`;
+        console.error("Firebase Ebook Payments Error:", error);
+    });
+}
+
+function approveEbookPayment(paymentId) {
+    const daysInput = document.getElementById(`ebook-expiry-days-${paymentId}`);
+    const expiryDays = parseInt(daysInput.value) || PAYMENT_EXPIRY_DAYS;
+    const expiryTimestamp = Date.now() + (expiryDays * 24 * 60 * 60 * 1000);
+    
+    db.ref('ebook_payments/' + paymentId).once('value').then(snap => {
+        const payment = snap.val();
+        if (!payment) return alert('Ebook Payment record not found.');
+
+        // 1. Update the ebook_payments status
+        db.ref('ebook_payments/' + paymentId).update({
+            status: 'approved',
+            approvedAt: Date.now(),
+            expiresAt: expiryTimestamp,
+            userRead: false 
+        }).then(() => {
+             // 2. Grant subscription under the user's profile
+             const subId = paymentId; 
+             // We use 'subscriptions/EBOOK_GENERAL' or similar if they are subscribing to a category/plan
+             // Assuming the user is getting general EBOOK access
+             db.ref(`users/${payment.userId}/subscriptions/EBOOK_GENERAL`).set({
+                 id: subId,
+                 plan: payment.planName,
+                 amount: payment.amount,
+                 isEbook: true, // Marker for ebook subscription
+                 status: 'approved',
+                 createdAt: Date.now(),
+                 expiresAt: expiryTimestamp
+             }).then(() => {
+                 alert(`✅ Ebook Payment ${paymentId} Approved! Ebook subscription granted to ${payment.userEmail} for ${expiryDays} days.`);
+                 loadPendingEbookPayments();
+             });
+        });
+    }).catch(error => {
+        alert('❌ Error approving Ebook payment: ' + error.message);
+        console.error('Ebook Approval Error:', error);
+    });
+}
+
+function rejectEbookPayment(paymentId) {
+    if (!confirm('Are you sure you want to REJECT this Ebook payment submission?')) return;
+
+    db.ref('ebook_payments/' + paymentId).update({
+        status: 'rejected',
+        rejectedAt: Date.now(),
+        userRead: false 
+    }).then(() => {
+        alert(`❌ Ebook Payment ${paymentId} Rejected.`);
+        loadPendingEbookPayments();
+    }).catch(error => {
+        alert('❌ Error rejecting Ebook payment: ' + error.message);
+        console.error('Ebook Rejection Error:', error);
+    });
+}
+
+
+// --- App Payment Management (Existing Logic) ---
+
+function loadPendingPayments() {
+    const list = document.getElementById('payment-list');
+    list.innerHTML = 'Loading payments...';
+    
+    db.ref('payments').once('value').then(snap => {
+        const payments = snap.val();
+        if (!payments) {
+            list.innerHTML = '<p class="info-text">No App payment submissions found in the database.</p>';
+            document.getElementById('payment-count').innerText = 0;
+            return;
+        }
+
+        const allPayments = Object.values(payments).sort((a,b) => b.timestamp - a.timestamp);
+        const pendingPayments = allPayments.filter(p => p.status === 'pending');
+        
+        document.getElementById('payment-count').innerText = pendingPayments.length;
+        
+        if (pendingPayments.length === 0) {
+            list.innerHTML = '<p class="info-text">No pending App payments requiring approval.</p>';
+            return;
+        }
+
+        list.innerHTML = ''; 
+
+        pendingPayments.forEach(payment => {
+            const card = document.createElement('div');
+            card.className = 'card payment';
+            const submittedDate = new Date(payment.timestamp).toLocaleString();
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3 style="margin:0; font-size:18px;">App: ${payment.planName} (₹${payment.amount})</h3>
+                    <span class="status-tag status-pending">PENDING</span>
+                </div>
+                <p><strong>User:</strong> ${payment.userEmail} (ID: ${payment.userId})</p>
+                <p><strong>UTR/Ref No:</strong> <span style="font-weight:bold; color:var(--primary);">${payment.utr}</span></p>
+                <p class="info-text">Submitted: ${submittedDate}</p>
+
+                <div class="action-area">
+                    <input type="number" id="expiry-days-${payment.id}" placeholder="Days (Default: ${PAYMENT_EXPIRY_DAYS})" value="${PAYMENT_EXPIRY_DAYS}" style="max-width: 100px;">
+                    <button class="btn-approve" onclick="approvePayment('${payment.id}')">Approve</button>
+                    <button class="btn-reject" onclick="rejectPayment('${payment.id}')">Reject</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }).catch(error => {
+        list.innerHTML = `<p style="color:red;">Error loading payments: ${error.message}</p>`;
+        console.error("Firebase Payments Error:", error);
+    });
+}
+
+function approvePayment(paymentId) {
+    const daysInput = document.getElementById(`expiry-days-${paymentId}`);
+    const expiryDays = parseInt(daysInput.value) || PAYMENT_EXPIRY_DAYS;
+    const expiryTimestamp = Date.now() + (expiryDays * 24 * 60 * 60 * 1000);
+    
+    db.ref('payments/' + paymentId).once('value').then(snap => {
+        const payment = snap.val();
+        if (!payment) return alert('Payment record not found.');
+
+        db.ref('payments/' + paymentId).update({
+            status: 'approved',
+            approvedAt: Date.now(),
+            expiresAt: expiryTimestamp,
+            userRead: false 
+        }).then(() => {
+             const subId = paymentId; 
+             db.ref(`users/${payment.userId}/subscriptions/${subId}`).set({
+                 id: subId,
+                 plan: payment.planName,
+                 amount: payment.amount,
+                 isGeneral: true, 
+                 status: 'approved',
+                 createdAt: Date.now(),
+                 expiresAt: expiryTimestamp
+             }).then(() => {
+                 alert(`✅ Payment ${paymentId} Approved! Subscription granted to ${payment.userEmail} for ${expiryDays} days.`);
+                 loadPendingPayments();
+             });
+        });
+    }).catch(error => {
+        alert('❌ Error approving payment: ' + error.message);
+        console.error('Approval Error:', error);
+    });
+}
+
+function rejectPayment(paymentId) {
+    if (!confirm('Are you sure you want to REJECT this payment submission?')) return;
+
+    db.ref('payments/' + paymentId).update({
+        status: 'rejected',
+        rejectedAt: Date.now(),
+        userRead: false 
+    }).then(() => {
+        alert(`❌ Payment ${paymentId} Rejected.`);
+        loadPendingPayments();
+    }).catch(error => {
+        alert('❌ Error rejecting payment: ' + error.message);
+        console.error('Rejection Error:', error);
+    });
+}
+
+
+// --- Support Ticket Management (Existing Logic) ---
+
+function loadSupportTickets() {
+    const list = document.getElementById('support-list');
+    list.innerHTML = 'Loading tickets...';
+
+    db.ref('supportTickets').once('value').then(snap => {
+        const tickets = snap.val();
+        if (!tickets) {
+            list.innerHTML = '<p class="info-text">No support tickets found in the database.</p>';
+            document.getElementById('support-count').innerText = 0;
+            return;
+        }
+
+        const allTickets = Object.values(tickets).sort((a,b) => b.timestamp - a.timestamp);
+        const pendingTickets = allTickets.filter(t => t.status !== 'resolved' && t.status !== 'closed');
+        
+        document.getElementById('support-count').innerText = pendingTickets.length;
+
+        if (pendingTickets.length === 0) {
+            list.innerHTML = '<p class="info-text">No pending support tickets.</p>';
+            return;
+        }
+
+        list.innerHTML = ''; 
+
+        pendingTickets.forEach(ticket => {
+            const card = document.createElement('div');
+            card.className = 'card support';
+            const submittedDate = new Date(ticket.timestamp).toLocaleString();
+            const statusClass = `status-${ticket.status.replace('_', '-')}`;
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3 style="margin:0; font-size:18px;">${ticket.subject} (ID: ${ticket.id})</h3>
+                    <span class="status-tag ${statusClass}">${ticket.status.toUpperCase().replace('_', ' ')}</span>
+                </div>
+                <p><strong>User:</strong> ${ticket.userEmail}</p>
+                <p><strong>Details:</strong> ${ticket.body}</p>
+                ${ticket.adminResponse ? `<p style="margin-top:5px; border-left: 2px solid #ccc; padding-left: 10px;"><strong>Previous Response:</strong> ${ticket.adminResponse}</p>` : ''}
+                <p class="info-text">Submitted: ${submittedDate}</p>
+
+                <div class="action-area">
+                    <textarea id="admin-response-${ticket.id}" placeholder="Type your response here..." style="min-height: 60px;">${ticket.adminResponse || ''}</textarea>
+                    <button class="btn-respond" onclick="respondToTicket('${ticket.id}')">Send Response & Mark In Progress</button>
+                    <button class="btn-approve" onclick="resolveTicket('${ticket.id}')">Resolve & Close</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }).catch(error => {
+        list.innerHTML = `<p style="color:red;">Error loading tickets: ${error.message}</p>`;
+        console.error("Firebase Support Tickets Error:", error);
+    });
+}
+
+function respondToTicket(ticketId) {
+    const responseText = document.getElementById(`admin-response-${ticketId}`).value.trim();
+
+    if (!responseText) return alert('Please enter a response.');
+
+    db.ref('supportTickets/' + ticketId).update({
+        status: 'in_progress', 
+        adminResponse: responseText,
+        updatedAt: Date.now(),
+        userRead: false 
+    }).then(() => {
+        alert(`✅ Response sent for ticket ${ticketId}. Status updated to 'In Progress'.`);
+        loadSupportTickets();
+    }).catch(error => {
+        alert('❌ Error responding to ticket: ' + error.message);
+        console.error('Response Error:', error);
+    });
+}
+
+function resolveTicket(ticketId) {
+    const responseText = document.getElementById(`admin-response-${ticketId}`).value.trim();
+
+    if (!responseText) {
+        if (!confirm('Warning: You are closing this ticket without sending a final response. Are you sure?')) return;
+    }
+
+    db.ref('supportTickets/' + ticketId).update({
+        status: 'resolved', 
+        adminResponse: responseText || 'Issue resolved.',
+        resolvedAt: Date.now(),
+        userRead: false 
+    }).then(() => {
+        alert(`✅ Ticket ${ticketId} resolved and closed.`);
+        loadSupportTickets();
+    }).catch(error => {
+        alert('❌ Error resolving ticket: ' + error.message);
+        console.error('Resolve Error:', error);
+    });
+}
+
+</script>
+</body>
+</html>
+
