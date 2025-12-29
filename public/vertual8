@@ -10,58 +10,90 @@
         .step-card { display: none; }
         .step-active { display: block; animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .loader { border-top-color: #3498db; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-    <nav class="p-4 bg-white shadow-sm border-b flex justify-between items-center">
-        <h1 class="text-xl font-black text-blue-600 italic">MONEYCARD</h1>
-        <div id="statusTag" class="text-[10px] font-bold bg-gray-100 px-3 py-1 rounded-full uppercase tracking-widest">Loading...</div>
+    <nav class="p-4 bg-white shadow-sm border-b flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-xl font-black text-blue-600 italic tracking-tighter">MONEYCARD</h1>
+        <div id="statusTag" class="text-[10px] font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase tracking-widest border border-blue-100">Syncing...</div>
     </nav>
 
-    <div class="max-w-md mx-auto py-12 px-4">
+    <div class="max-w-md mx-auto py-10 px-4">
         
         <div id="step-LANDING" class="step-card text-center">
-            <h2 class="text-3xl font-bold mb-4">Activate Merchant</h2>
-            <p class="text-gray-500 mb-8">Bhai, setup start karo aur account active karo.</p>
-            <button onclick="changeStep('BASICS')" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">Get Started</button>
+            <div class="mb-6 flex justify-center">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-store text-3xl text-blue-600"></i>
+                </div>
+            </div>
+            <h2 class="text-3xl font-black mb-4 text-gray-800">Merchant Activation</h2>
+            <p class="text-gray-500 mb-8 px-4">Bhai, apna merchant account activate karne ke liye KYC process complete karein.</p>
+            <button onclick="changeStep('BASICS')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg transition-all">Start Onboarding</button>
         </div>
 
-        <div id="step-BASICS" class="step-card bg-white p-6 rounded-3xl shadow-md border">
-            <h3 class="text-xl font-bold mb-4 text-center">Step 1: Basic Info</h3>
+        <div id="step-BASICS" class="step-card bg-white p-6 rounded-3xl shadow-xl border">
+            <h3 class="text-xl font-bold mb-6 flex items-center"><i class="fas fa-user-circle mr-2 text-blue-600"></i> Basic Details</h3>
             <div class="space-y-4">
-                <input type="text" id="inName" placeholder="Full Name (as on PAN)" class="w-full p-4 border rounded-xl outline-none focus:border-blue-500">
-                <input type="email" id="inEmail" class="w-full p-4 border rounded-xl bg-gray-50" readonly>
-                <input type="text" id="inPhone" placeholder="Phone Number" class="w-full p-4 border rounded-xl outline-none">
-                <button onclick="saveBasics()" class="w-full bg-black text-white py-4 rounded-xl font-bold">Next</button>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Full Name (PAN)</label>
+                    <input type="text" id="inName" placeholder="Enter Full Name" class="w-full p-4 border rounded-xl outline-none focus:border-blue-500 bg-gray-50">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Phone Number</label>
+                    <input type="tel" id="inPhone" placeholder="+91 00000 00000" class="w-full p-4 border rounded-xl outline-none focus:border-blue-500 bg-gray-50">
+                </div>
+                <button onclick="saveBasics()" class="w-full bg-black text-white py-4 rounded-xl font-bold shadow-lg hover:opacity-90 transition-all">Continue to PAN</button>
             </div>
         </div>
 
-        <div id="step-PAN" class="step-card bg-white p-6 rounded-3xl shadow-md border text-center">
-            <h3 class="text-xl font-bold mb-2">Step 2: PAN Verify</h3>
-            <p class="text-xs text-gray-400 mb-6 uppercase tracking-widest tracking-widest">Secure Gateway</p>
-            <input type="text" id="inPan" placeholder="ABCDE1234F" class="w-full p-4 border-2 rounded-xl mb-4 text-center font-bold text-xl uppercase tracking-widest outline-none focus:border-blue-600">
+        <div id="step-PAN" class="step-card bg-white p-6 rounded-3xl shadow-xl border text-center">
+            <div class="mb-4 inline-block p-3 bg-orange-50 rounded-2xl text-orange-500">
+                <i class="fas fa-id-card text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">PAN Verification</h3>
+            <p class="text-xs text-gray-400 mb-6 uppercase tracking-widest font-bold">Safe & Secure Gateway</p>
             
-            <div id="panResult" class="hidden mb-4 p-4 bg-green-50 text-green-700 rounded-xl font-bold text-sm"></div>
+            <input type="text" id="inPan" maxlength="10" placeholder="ABCDE1234F" class="w-full p-4 border-2 border-dashed rounded-xl mb-4 text-center font-black text-2xl uppercase tracking-[0.3em] outline-none focus:border-blue-600 focus:border-solid">
             
-            <button onclick="verifyPAN()" id="btnPan" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold transition-all shadow-lg">Verify & Continue</button>
+            <div id="panResult" class="hidden mb-4 p-4 bg-green-50 text-green-700 rounded-xl font-bold text-sm border border-green-100"></div>
+            
+            <button onclick="verifyPAN()" id="btnPan" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold transition-all shadow-lg flex items-center justify-center">
+                <span>Verify PAN Details</span>
+            </button>
+            <p class="mt-4 text-[10px] text-gray-400">Powered by Cashfree Verification Service</p>
         </div>
 
-        <div id="step-DIGILOCKER" class="step-card bg-white p-6 rounded-3xl shadow-md border text-center">
-            <i class="fas fa-shield-alt text-4xl text-blue-500 mb-4"></i>
-            <h3 class="text-xl font-bold mb-2">Step 3: Aadhaar KYC</h3>
-            <p class="text-sm text-gray-500 mb-6 font-medium">Verify via DigiLocker (Government Secure)</p>
-            <button onclick="openDigi()" id="btnDigi" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700">Open DigiLocker</button>
+        <div id="step-DIGILOCKER" class="step-card bg-white p-8 rounded-3xl shadow-xl border text-center">
+            <div class="relative mb-6">
+                <i class="fas fa-shield-check text-6xl text-blue-500"></i>
+                <div class="absolute -bottom-2 -right-2 bg-green-500 text-white text-[10px] px-2 py-1 rounded-md font-bold">GOVT SECURE</div>
+            </div>
+            <h3 class="text-2xl font-black mb-2 text-gray-800">Aadhaar KYC</h3>
+            <p class="text-sm text-gray-500 mb-8 leading-relaxed">PAN verify ho gaya hai! Ab DigiLocker se Aadhaar verify karein authentication ke liye.</p>
+            <button onclick="openDigi()" id="btnDigi" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-xl hover:bg-blue-700 flex items-center justify-center gap-3">
+                <i class="fas fa-external-link-alt"></i>
+                Open DigiLocker
+            </button>
         </div>
 
         <div id="step-COMPLETED" class="step-card text-center">
-            <div class="bg-white p-10 rounded-3xl shadow-xl border-t-8 border-green-500">
-                <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
-                <h3 class="text-2xl font-bold text-gray-800">Account Active!</h3>
-                <div class="mt-6 p-4 bg-gray-50 rounded-xl border">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Verified Name</p>
-                    <p id="finalName" class="text-lg font-black text-blue-600">---</p>
+            <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl border-t-[12px] border-green-500 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <i class="fas fa-check-double text-9xl"></i>
                 </div>
+                <i class="fas fa-check-circle text-7xl text-green-500 mb-6 animate-bounce"></i>
+                <h3 class="text-3xl font-black text-gray-800">Account Active!</h3>
+                <p class="text-gray-500 mt-2">Bhai, aapka merchant dashboard ab ready hai.</p>
+                
+                <div class="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-100 text-left">
+                    <p class="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-1">Merchant Identity</p>
+                    <p id="finalName" class="text-xl font-black text-blue-900 leading-tight">---</p>
+                </div>
+                
+                <button onclick="window.location.href='dashboard.html'" class="mt-8 w-full bg-black text-white py-4 rounded-xl font-bold">Go to Dashboard</button>
             </div>
         </div>
 
@@ -72,9 +104,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
-        // --- APNA VERCEL URL YAHA DALO ---
+        // CONFIGURATION
         const VERCEL_URL = "https://money-card-p.vercel.app";
-        
         const firebaseConfig = { 
             apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
             authDomain: "smbrand-4543a.firebaseapp.com",
@@ -87,30 +118,46 @@
         let userUID = "";
 
         firebase.auth().onAuthStateChanged(user => {
-            if(user) { userUID = user.uid; syncFlow(); } 
-            else { window.location.href = "index.html"; }
+            if(user) { 
+                userUID = user.uid; 
+                syncFlow(); 
+            } else { 
+                window.location.href = "login.html"; 
+            }
         });
 
+        // Backend aur Frontend ko jodne wala logic
         function syncFlow() {
             db.ref(`users/${userUID}/profile`).on('value', snap => {
                 const data = snap.val() || {};
                 const currentStep = data.step || 'LANDING';
                 
+                // Fields auto-fill
                 if(data.name) document.getElementById('inName').value = data.name;
+                if(data.phone) document.getElementById('inPhone').value = data.phone;
                 if(data.registered_name) document.getElementById('finalName').innerText = data.registered_name;
                 
+                // Step switching logic
                 document.querySelectorAll('.step-card').forEach(c => c.classList.remove('step-active'));
                 const el = document.getElementById('step-' + currentStep);
                 if(el) el.classList.add('step-active');
-                document.getElementById('statusTag').innerText = currentStep;
+                
+                // Status tag UI
+                const statusTag = document.getElementById('statusTag');
+                statusTag.innerText = currentStep === 'COMPLETED' ? 'Verified' : 'Step: ' + currentStep;
             });
         }
 
         async function saveBasics() {
             const name = document.getElementById('inName').value;
             const phone = document.getElementById('inPhone').value;
-            if(!name || !phone) return alert("Bhai sab fill kar!");
-            await db.ref(`users/${userUID}/profile`).update({ name, phone, step: 'PAN' });
+            if(!name || !phone) return alert("Bhai, details to dalo!");
+            
+            await db.ref(`users/${userUID}/profile`).update({ 
+                name: name, 
+                phone: phone, 
+                step: 'PAN' 
+            });
         }
 
         async function verifyPAN() {
@@ -119,45 +166,61 @@
             const btn = document.getElementById('btnPan');
             const resultBox = document.getElementById('panResult');
             
-            if(!pan) return alert("PAN Number dalo!");
-            btn.innerText = "Connecting Vercel...";
+            if(pan.length !== 10) return alert("Sahi PAN Number dalo (10 digits)!");
+            
+            btn.innerHTML = `<i class="fas fa-circle-notch animate-spin mr-2"></i> Verifying...`;
             btn.disabled = true;
 
             try {
-                // Connecting Firebase to Vercel
+                // YE LINE BACKEND (INDEX.JS) SE CONNECT KARTI HAI
                 const res = await fetch(`${VERCEL_URL}/api/verify-pan`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ pan, userId: userUID, name })
                 });
+                
                 const data = await res.json();
                 
                 if(data.success) {
-                    btn.innerText = "VERIFIED ✅";
-                    btn.style.backgroundColor = "#10b981";
-                    resultBox.innerHTML = `Name on PAN: <br><b>${data.registered_name}</b>`;
+                    btn.innerHTML = "VERIFIED ✅";
+                    btn.className = "w-full bg-green-500 text-white py-4 rounded-xl font-bold shadow-lg";
+                    resultBox.innerHTML = `<i class="fas fa-user-check mr-2"></i> Matches: ${data.registered_name}`;
                     resultBox.classList.remove('hidden');
-                    // Realtime sync handles the step change
+                    // SyncFlow apne aap next step (DIGILOCKER) par le jayega
                 } else {
-                    alert(data.message || "Invalid PAN");
+                    alert("PAN Verification Failed: " + data.message);
                     btn.disabled = false;
-                    btn.innerText = "Verify & Continue";
+                    btn.innerHTML = "Try Again";
                 }
             } catch (e) {
-                alert("Backend Sync Error! Vercel Check Karo.");
+                console.error(e);
+                alert("Vercel Backend Error! Server check karo.");
                 btn.disabled = false;
+                btn.innerHTML = "Verify & Continue";
             }
         }
 
         async function openDigi() {
-            const res = await fetch(`${VERCEL_URL}/api/create-digilocker-url`, { 
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId: userUID })
-            });
-            const data = await res.json();
-            if(data.url) window.location.href = data.url;
-            else alert("Could not open DigiLocker");
+            const btn = document.getElementById('btnDigi');
+            btn.innerHTML = `<i class="fas fa-circle-notch animate-spin mr-2"></i> Generating URL...`;
+            
+            try {
+                const res = await fetch(`${VERCEL_URL}/api/create-digilocker-url`, { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userId: userUID })
+                });
+                const data = await res.json();
+                if(data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert("DigiLocker URL generate nahi hui.");
+                    btn.innerText = "Try Again";
+                }
+            } catch (e) {
+                alert("Backend Connection Error!");
+                btn.innerText = "Open DigiLocker";
+            }
         }
 
         function changeStep(s) {
@@ -166,4 +229,3 @@
     </script>
 </body>
 </html>
-
