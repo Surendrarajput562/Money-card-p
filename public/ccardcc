@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payout & Balance Check</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { background: #0b0e11; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
+        .card { background: #1e2329; border-radius: 12px; padding: 25px; max-width: 380px; margin: auto; border: 1px solid #333; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #2b3139; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #f0b90b; color: #000; font-weight: bold; cursor: pointer; }
+        #status { margin-top: 20px; padding: 10px; border-radius: 8px; display: none; font-size: 14px; }
+        .err { background: #f6465d22; color: #f6465d; border: 1px solid #f6465d; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h3>Instant Payout System</h3>
+    <input type="file" id="qr-input" accept="image/*">
+    <input type="text" id="upi-display" readonly placeholder="Scan QR to fetch UPI">
+    <input type="number" id="amount" placeholder="Amount (INR)">
+    <button onclick="startProcess()">SEND MONEY</button>
+    <div id="status"></div>
+</div>
+
+<div id="reader" style="display:none;"></div>
+
+<script>
+    let upiId = "";
+    const statusBox = document.getElementById('status');
+
+    document.getElementById('qr-input').onchange = e => {
+        const file = e.target.files[0];
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.scanFile(file, true).then(res => {
+            const match = res.match(/pa=([^&]+)/);
+            upiId = match ? decodeURIComponent(match[1]) : res;
+            document.getElementById('upi-display').value = upiId;
+        }).catch(() => alert("QR read nahi ho paya!"));
+    };
+
+    async function startProcess() {
+        const amt = document.getElementById('amount').value;
+        if(!upiId || !amt) return alert("Pehle QR scan karo aur amount dalo!");
+
+        statusBox.style.display = "block";
+        statusBox.className = "";
+        statusBox.innerText = "Checking Wallet Balance...";
+
+        try {
+            const res = await fetch('https://payoutcucoin.surendrarathode040.workers.dev/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ upi: upiId, amount: amt })
+            });
+            const data = await res.json();
+
+            if(data.status === "SUCCESS") {
+                statusBox.style.color = "#0ecb81";
+                statusBox.innerText = "✅ SUCCESS! Redirecting...";
+                setTimeout(() => { window.location.href = data.redirect; }, 2000);
+            } else {
+                statusBox.className = "err";
+                statusBox.innerText = "❌ ERROR: " + data.msg;
+            }
+        } catch (e) {
+            statusBox.innerText = "Connection Fail!";
+        }
+    }
+</script>
+</body>
+</html>

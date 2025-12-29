@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Pro Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0b0e11] text-white flex items-center justify-center min-h-screen">
+    <div class="p-8 bg-[#161a1e] rounded-3xl border border-gray-800 shadow-2xl w-full max-w-sm text-center">
+        <h1 class="text-xl font-black text-yellow-500 mb-6 italic italic">SPEED CHECKOUT</h1>
+        
+        <div class="mb-6 text-left">
+            <label class="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Amount in INR</label>
+            <input type="number" id="inrAmt" value="1000" class="w-full bg-[#0b0e11] p-4 rounded-xl border border-gray-700 text-xl font-bold outline-none focus:border-yellow-500 transition">
+        </div>
+
+        <button onclick="startCheckout()" id="btn" class="w-full bg-yellow-500 text-black font-black py-4 rounded-xl shadow-lg hover:bg-yellow-400 transition transform active:scale-95">
+            GENERATE QR & LINK
+        </button>
+        
+        <p id="msg" class="mt-4 text-[10px] text-red-500 font-bold uppercase"></p>
+    </div>
+
+    <script>
+        // APNA ASLI VERCEL BACKEND LINK YAHAN DAALO
+        const BACKEND_URL = "https://money-card-p.vercel.app/api/checkout";
+
+        async function startCheckout() {
+            const btn = document.getElementById('btn');
+            const msg = document.getElementById('msg');
+            const inr = document.getElementById('inrAmt').value;
+
+            msg.innerText = "";
+            btn.innerText = "CONNECTING BACKEND...";
+            btn.disabled = true;
+
+            try {
+                // INR to USD Calculation
+                const usdAmount = (parseFloat(inr) / 85).toFixed(2);
+
+                const res = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: usdAmount })
+                });
+
+                const data = await res.json();
+
+                if (data.url) {
+                    // Seedha hosted checkout page khulega
+                    window.location.href = data.url;
+                } else {
+                    msg.innerText = "ERROR: " + data.error;
+                    btn.disabled = false;
+                    btn.innerText = "GENERATE QR & LINK";
+                }
+            } catch (e) {
+                console.error(e);
+                msg.innerText = "NETWORK ERROR! CHECK VERCEL LOGS.";
+                btn.disabled = false;
+                btn.innerText = "GENERATE QR & LINK";
+            }
+        }
+    </script>
+</body>
+</html>
+

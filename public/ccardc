@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instant UPI Payout</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { background: #0b0e11; color: #ffffff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; }
+        .payout-card { background: #1e2329; border-radius: 15px; padding: 25px; max-width: 400px; margin: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; color: #848e9c; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #474d57; background: #2b3139; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #f0b90b; color: #000; font-weight: bold; cursor: pointer; font-size: 16px; }
+        #status { margin-top: 20px; padding: 10px; border-radius: 8px; display: none; }
+        .success { background: #0ecb8122; color: #0ecb81; border: 1px solid #0ecb81; }
+        .error { background: #f6465d22; color: #f6465d; border: 1px solid #f6465d; }
+    </style>
+</head>
+<body>
+
+<div class="payout-card">
+    <h2>P2P Instant Payout</h2>
+    
+    <div class="input-group">
+        <label>Upload QR Code (Gallery)</label>
+        <input type="file" id="qr-input" accept="image/*">
+    </div>
+
+    <div class="input-group">
+        <label>Detected UPI ID</label>
+        <input type="text" id="upi-display" readonly placeholder="Scan QR to fetch UPI">
+    </div>
+
+    <div class="input-group">
+        <label>Amount (INR)</label>
+        <input type="number" id="amount" placeholder="Enter amount">
+    </div>
+
+    <button id="pay-btn" onclick="triggerPayout()">SEND MONEY</button>
+    <div id="status"></div>
+</div>
+
+<div id="reader" style="display:none;"></div>
+
+<script>
+    let upiId = "";
+    const statusBox = document.getElementById('status');
+
+    // QR Code Scanning Logic
+    document.getElementById('qr-input').onchange = e => {
+        const file = e.target.files[0];
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.scanFile(file, true).then(res => {
+            // Extract UPI (pa) from QR URL
+            const match = res.match(/pa=([^&]+)/);
+            upiId = match ? decodeURIComponent(match[1]) : res;
+            document.getElementById('upi-display').value = upiId;
+        }).catch(err => alert("QR Error: QR sahi se nahi dikh raha!"));
+    };
+
+    // API Call Logic
+    async function triggerPayout() {
+        const amt = document.getElementById('amount').value;
+        if(!upiId || !amt) return alert("UPI ID ya Amount missing hai!");
+
+        statusBox.style.display = "block";
+        statusBox.innerText = "Processing Transaction...";
+        statusBox.className = "";
+
+        try {
+            const response = await fetch('https://payoutcucoin.surendrarathode040.workers.dev/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ upi: upiId, amount: amt })
+            });
+            
+            const data = await response.json();
+
+            if (data.status === "SUCCESS") {
+                statusBox.className = "success";
+                statusBox.innerText = "✅ Success! Redirecting...";
+                setTimeout(() => { window.location.href = data.redirect; }, 2000);
+            } else {
+                statusBox.className = "error";
+                statusBox.innerText = "❌ FAILED: " + data.msg;
+            }
+        } catch (err) {
+            statusBox.className = "error";
+            statusBox.innerText = "❌ Network Error! Please try again.";
+        }
+    }
+</script>
+</body>
+</html>

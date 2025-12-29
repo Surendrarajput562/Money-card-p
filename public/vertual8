@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyCard | Merchant Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .step-card { display: none; }
+        .step-active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <nav class="p-4 bg-white shadow-sm border-b flex justify-between items-center">
+        <h1 class="text-xl font-black text-blue-600 italic">MONEYCARD</h1>
+        <div id="statusTag" class="text-[10px] font-bold bg-gray-100 px-3 py-1 rounded-full uppercase tracking-widest">Loading...</div>
+    </nav>
+
+    <div class="max-w-md mx-auto py-12 px-4">
+        
+        <div id="step-LANDING" class="step-card text-center">
+            <h2 class="text-3xl font-bold mb-4">Activate Merchant</h2>
+            <p class="text-gray-500 mb-8">Bhai, setup start karo aur account active karo.</p>
+            <button onclick="changeStep('BASICS')" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">Get Started</button>
+        </div>
+
+        <div id="step-BASICS" class="step-card bg-white p-6 rounded-3xl shadow-md border">
+            <h3 class="text-xl font-bold mb-4 text-center">Step 1: Basic Info</h3>
+            <div class="space-y-4">
+                <input type="text" id="inName" placeholder="Full Name (as on PAN)" class="w-full p-4 border rounded-xl outline-none focus:border-blue-500">
+                <input type="email" id="inEmail" class="w-full p-4 border rounded-xl bg-gray-50" readonly>
+                <input type="text" id="inPhone" placeholder="Phone Number" class="w-full p-4 border rounded-xl outline-none">
+                <button onclick="saveBasics()" class="w-full bg-black text-white py-4 rounded-xl font-bold">Next</button>
+            </div>
+        </div>
+
+        <div id="step-PAN" class="step-card bg-white p-6 rounded-3xl shadow-md border text-center">
+            <h3 class="text-xl font-bold mb-2">Step 2: PAN Verify</h3>
+            <p class="text-xs text-gray-400 mb-6 uppercase tracking-widest tracking-widest">Secure Gateway</p>
+            <input type="text" id="inPan" placeholder="ABCDE1234F" class="w-full p-4 border-2 rounded-xl mb-4 text-center font-bold text-xl uppercase tracking-widest outline-none focus:border-blue-600">
+            
+            <div id="panResult" class="hidden mb-4 p-4 bg-green-50 text-green-700 rounded-xl font-bold text-sm"></div>
+            
+            <button onclick="verifyPAN()" id="btnPan" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold transition-all shadow-lg">Verify & Continue</button>
+        </div>
+
+        <div id="step-DIGILOCKER" class="step-card bg-white p-6 rounded-3xl shadow-md border text-center">
+            <i class="fas fa-shield-alt text-4xl text-blue-500 mb-4"></i>
+            <h3 class="text-xl font-bold mb-2">Step 3: Aadhaar KYC</h3>
+            <p class="text-sm text-gray-500 mb-6 font-medium">Verify via DigiLocker (Government Secure)</p>
+            <button onclick="openDigi()" id="btnDigi" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700">Open DigiLocker</button>
+        </div>
+
+        <div id="step-COMPLETED" class="step-card text-center">
+            <div class="bg-white p-10 rounded-3xl shadow-xl border-t-8 border-green-500">
+                <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-800">Account Active!</h3>
+                <div class="mt-6 p-4 bg-gray-50 rounded-xl border">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Verified Name</p>
+                    <p id="finalName" class="text-lg font-black text-blue-600">---</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // --- APNA VERCEL URL YAHA DALO ---
+        const VERCEL_URL = "https://money-card-p.vercel.app";
+        
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let userUID = "";
+
+        firebase.auth().onAuthStateChanged(user => {
+            if(user) { userUID = user.uid; syncFlow(); } 
+            else { window.location.href = "index.html"; }
+        });
+
+        function syncFlow() {
+            db.ref(`users/${userUID}/profile`).on('value', snap => {
+                const data = snap.val() || {};
+                const currentStep = data.step || 'LANDING';
+                
+                if(data.name) document.getElementById('inName').value = data.name;
+                if(data.registered_name) document.getElementById('finalName').innerText = data.registered_name;
+                
+                document.querySelectorAll('.step-card').forEach(c => c.classList.remove('step-active'));
+                const el = document.getElementById('step-' + currentStep);
+                if(el) el.classList.add('step-active');
+                document.getElementById('statusTag').innerText = currentStep;
+            });
+        }
+
+        async function saveBasics() {
+            const name = document.getElementById('inName').value;
+            const phone = document.getElementById('inPhone').value;
+            if(!name || !phone) return alert("Bhai sab fill kar!");
+            await db.ref(`users/${userUID}/profile`).update({ name, phone, step: 'PAN' });
+        }
+
+        async function verifyPAN() {
+            const pan = document.getElementById('inPan').value.trim();
+            const name = document.getElementById('inName').value;
+            const btn = document.getElementById('btnPan');
+            const resultBox = document.getElementById('panResult');
+            
+            if(!pan) return alert("PAN Number dalo!");
+            btn.innerText = "Connecting Vercel...";
+            btn.disabled = true;
+
+            try {
+                // Connecting Firebase to Vercel
+                const res = await fetch(`${VERCEL_URL}/api/verify-pan`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pan, userId: userUID, name })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    btn.innerText = "VERIFIED ✅";
+                    btn.style.backgroundColor = "#10b981";
+                    resultBox.innerHTML = `Name on PAN: <br><b>${data.registered_name}</b>`;
+                    resultBox.classList.remove('hidden');
+                    // Realtime sync handles the step change
+                } else {
+                    alert(data.message || "Invalid PAN");
+                    btn.disabled = false;
+                    btn.innerText = "Verify & Continue";
+                }
+            } catch (e) {
+                alert("Backend Sync Error! Vercel Check Karo.");
+                btn.disabled = false;
+            }
+        }
+
+        async function openDigi() {
+            const res = await fetch(`${VERCEL_URL}/api/create-digilocker-url`, { 
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: userUID })
+            });
+            const data = await res.json();
+            if(data.url) window.location.href = data.url;
+            else alert("Could not open DigiLocker");
+        }
+
+        function changeStep(s) {
+            db.ref(`users/${userUID}/profile`).update({ step: s });
+        }
+    </script>
+</body>
+</html>
+

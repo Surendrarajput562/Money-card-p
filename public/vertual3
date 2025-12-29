@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0f172a] text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-[#1e293b] p-6 rounded-3xl shadow-2xl w-full max-w-md border border-gray-700">
+        <h2 class="text-2xl font-black text-center text-blue-500 mb-6 tracking-tight">ADD MONEY</h2>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 ml-1">FULL NAME</label>
+                <input type="text" id="cust_name" placeholder="Surendra Rathode" class="w-full bg-black/40 border border-gray-700 p-3 rounded-xl outline-none focus:border-blue-500 transition-all">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 ml-1">EMAIL ADDRESS</label>
+                <input type="email" id="cust_email" placeholder="example@mail.com" class="w-full bg-black/40 border border-gray-700 p-3 rounded-xl outline-none focus:border-blue-500 transition-all">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 ml-1">MOBILE NUMBER</label>
+                <input type="number" id="cust_mobile" placeholder="9988776655" class="w-full bg-black/40 border border-gray-700 p-3 rounded-xl outline-none focus:border-blue-500 transition-all">
+            </div>
+
+            <div class="bg-black/60 p-4 rounded-2xl border border-dashed border-gray-600">
+                <label class="block text-center text-[10px] font-bold text-gray-500 mb-1">AMOUNT (INR)</label>
+                <input type="number" id="cust_amt" value="1" class="w-full bg-transparent text-3xl font-black text-center text-green-500 outline-none">
+            </div>
+
+            <button onclick="processPayment()" id="payBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all">
+                PAY NOW
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function processPayment() {
+            const btn = document.getElementById('payBtn');
+            const data = {
+                name: document.getElementById('cust_name').value,
+                email: document.getElementById('cust_email').value,
+                mobile: document.getElementById('cust_mobile').value,
+                amount: document.getElementById('cust_amt').value
+            };
+
+            if(!data.name || !data.email || !data.mobile) {
+                return alert("Bhai saari details sahi se bharo!");
+            }
+
+            btn.innerText = "Creating Order...";
+            btn.disabled = true;
+
+            try {
+                // APNE WORKER KA URL YAHA DALO
+                const res = await fetch("https://dawn-scene-b6f2.surendrarathode040.workers.dev", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if(result.status) {
+                    // Seedha AllAPI ke payment page par redirect
+                    window.location.href = result.results.payment_url;
+                } else {
+                    alert("AllAPI Error: " + result.message);
+                }
+            } catch (e) {
+                alert("Worker Not Responding!");
+            } finally {
+                btn.innerText = "PAY NOW";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

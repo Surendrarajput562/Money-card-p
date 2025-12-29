@@ -202,7 +202,7 @@ const DUMMY_ADMIN_PASS = 'Banna@1712';
 const R2_WORKER_URL = 'https://cold-snow-e955.surendrarathode040.workers.dev';
 
 // 🚨🚨 CRITICAL: GEMINI API KEY 🚨🚨
-const GEMINI_API_KEY = ''; 
+const GEMINI_API_KEY = 'AIzaSyDXa2TrpZVak2fqau_jSfMTK3lf4VJYU5Y'; 
 
 // Global variable to hold generated content and description
 let generatedBookContent = {
@@ -660,7 +660,7 @@ document.getElementById('upload-final-btn').addEventListener('click', async () =
         await db.ref('books/'+bookId).set({
             id: bookId, 
             title: generatedBookContent.title, 
-            author: 'Gemini AI', 
+            author: 'Money card', 
             priceMonthly, priceYearly, discount, 
             category: generatedBookContent.category, // Store combined category string
             desc: finalDescription, 

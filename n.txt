@@ -1,0 +1,15 @@
+HTTP/1.1 200 OK
+Date: Fri, 26 Dec 2025 17:43:15 GMT
+Content-Length: 70
+Connection: keep-alive
+CF-RAY: 9b426121eddf48da-BOM
+Set-Cookie: JSESSIONID=B52CC77F3B20D898A8C289A5629B8F67; secure
+Set-Cookie: __cf_bm=VC5izKKKb9ptieoAC4vnIbqJxAMpq1wqWXojHDtQONE-1766770995-1.0.1.1-1KgSY4A9SUTBSG.znPO.Jgk3yEXNmN5TgmKNydH0Bu0mD1dsFpc2IY2m1YfeUUzND2yP_pUwUvOwYm.tiPzik9uL.4S.DjShaQLAbe3u6IUs2RqfXYbW1UisNT.4goug; path=/; expires=Fri, 26-Dec-25 18:13:15 GMT; domain=.mobikwik.com; HttpOnly; Secure; SameSite=None
+Set-Cookie: _cfuvid=Hj2_Bi8FCRjtnA.BFdxvnCBeIkIGVNJlac5NP87hgrQ-1766770995522-0.0.1.1-604800000; path=/; domain=.mobikwik.com; HttpOnly; Secure; SameSite=None
+request-id: 4e5a17a1-4241-4cbf-bd92-088a939e6946
+strict-transport-security: max-age=15552000; includeSubDomains; preload
+cf-cache-status: DYNAMIC
+X-Content-Type-Options: nosniff
+Server: cloudflare
+
+{"success":false,"message":{"code":"E107","text":"Invalid client ID"}}

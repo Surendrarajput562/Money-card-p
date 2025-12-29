@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bank Master Admin - Realtime Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .slide-over { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .row-update { animation: highlight 1.5s ease-out; }
+        @keyframes highlight {
+            0% { background-color: rgba(234, 179, 8, 0.2); }
+            100% { background-color: transparent; }
+        }
+        body::-webkit-scrollbar { width: 6px; }
+        body::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-[#0b0e11] text-gray-200 font-sans selection:bg-yellow-500/30">
+
+<div id="toast" class="fixed top-5 right-5 z-[100] transform translate-x-full transition-all duration-300 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl font-bold flex items-center gap-3">
+    <i class="fas fa-check-circle"></i> <span id="toast-msg">Success</span>
+</div>
+
+<div id="main-panel" class="min-h-screen">
+    <nav class="bg-[#1e2329]/80 backdrop-blur-md p-4 border-b border-gray-800 flex justify-between items-center sticky top-0 z-40">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center text-black">
+                <i class="fas fa-university"></i>
+            </div>
+            <h1 class="text-xl font-black text-white tracking-tighter uppercase">Bank<span class="text-yellow-500">Master</span></h1>
+            <span class="ml-4 text-[10px] bg-green-500/10 text-green-500 border border-green-500/20 px-2 py-0.5 rounded-full font-bold animate-pulse">● LIVE CONNECTION</span>
+        </div>
+        <button onclick="auth.signOut()" class="text-red-500 text-xs font-bold bg-red-500/10 px-4 py-2 rounded-xl border border-red-500/20 hover:bg-red-500 hover:text-white transition-all uppercase font-black">LOGOUT</button>
+    </nav>
+
+    <div class="p-6 max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-[#1e2329] p-5 rounded-2xl border border-gray-800 relative overflow-hidden group">
+                <p class="text-gray-500 text-[10px] font-bold tracking-widest uppercase">Total Accounts</p>
+                <h3 id="stat-users" class="text-3xl font-black mt-1 text-white">0</h3>
+                <i class="fas fa-users absolute -right-4 -bottom-4 text-5xl text-gray-800 group-hover:text-yellow-500/10 transition-all"></i>
+            </div>
+            <div class="bg-[#1e2329] p-5 rounded-2xl border border-gray-800 border-l-4 border-l-yellow-500">
+                <p class="text-yellow-500 text-[10px] font-bold tracking-widest uppercase">Pending Requests</p>
+                <h3 id="stat-pending" class="text-3xl font-black mt-1">0</h3>
+            </div>
+            <div class="bg-[#1e2329] p-5 rounded-2xl border border-gray-800">
+                <p class="text-green-500 text-[10px] font-bold tracking-widest uppercase">Total Load (In)</p>
+                <h3 id="stat-in" class="text-3xl font-black mt-1 text-white">₹0</h3>
+            </div>
+            <div class="bg-[#1e2329] p-5 rounded-2xl border border-gray-800">
+                <p class="text-red-500 text-[10px] font-bold tracking-widest uppercase">Total Pay (Out)</p>
+                <h3 id="stat-out" class="text-3xl font-black mt-1 text-white">₹0</h3>
+            </div>
+        </div>
+
+        <div class="bg-[#1e2329] rounded-2xl border border-gray-800 shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 bg-black/20">
+                <h2 class="font-bold text-lg flex items-center gap-3"><i class="fas fa-bolt text-yellow-500"></i> Active Queue</h2>
+                <div class="relative w-full md:w-96">
+                    <i class="fas fa-search absolute left-4 top-3.5 text-gray-500 text-sm"></i>
+                    <input type="text" id="userSearch" onkeyup="searchUser()" placeholder="Search Name, Phone..." class="w-full bg-black border border-gray-700 pl-11 pr-4 py-3 rounded-2xl text-sm outline-none focus:border-yellow-500 transition-all">
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-black/40 text-gray-500 uppercase text-[10px] tracking-[2px] font-bold">
+                        <tr>
+                            <th class="p-5">Client Identity</th>
+                            <th class="p-5">Card Terminal</th>
+                            <th class="p-5 text-right">Ledger Balance</th>
+                            <th class="p-5">Status</th>
+                            <th class="p-5 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-rows" class="divide-y divide-gray-800"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="side-panel" class="fixed top-0 right-0 w-full md:w-[480px] h-full bg-[#1e2329] z-50 shadow-[-20px_0_50px_rgba(0,0,0,0.5)] transform translate-x-full slide-over border-l border-gray-800">
+    <div class="p-8 flex flex-col h-full overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-tighter">Manage Account</h2>
+                <p id="panel-uid" class="text-[10px] text-gray-500 font-mono mt-1"></p>
+            </div>
+            <button onclick="closePanel()" class="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center hover:bg-red-500/20 hover:text-red-500 transition-all text-xl">&times;</button>
+        </div>
+        <div id="panel-body" class="space-y-6"></div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+        authDomain: "smbrand-4543a.firebaseapp.com",
+        databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+        projectId: "smbrand-4543a",
+        appId: "1:720775550032:web:0622548a007597778bad55"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+    let currentSelectedUser = null;
+
+    function startRealtimeSync() {
+        db.ref('users').on('value', snap => {
+            const container = document.getElementById('user-rows');
+            let pCount = 0;
+            const users = [];
+            snap.forEach(child => {
+                const u = child.val();
+                u.id = child.key;
+                users.push(u);
+                if(u.status?.includes('pending')) pCount++;
+            });
+
+            container.innerHTML = users.reverse().map(u => `
+                <tr id="row-${u.id}" class="hover:bg-white/[0.02] transition-all group">
+                    <td class="p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-800 to-black flex items-center justify-center font-bold text-yellow-500 border border-gray-700">
+                                ${u.fullName ? u.fullName[0] : 'U'}
+                            </div>
+                            <div>
+                                <p class="font-bold text-white text-base leading-none">${u.fullName || 'Anonymous'}</p>
+                                <p class="text-[11px] text-gray-500 mt-1 font-mono">${u.mobile || u.id}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-5">
+                        <p class="font-mono text-xs text-gray-300 tracking-wider">${u.cardNo ? '**** **** **** ' + u.cardNo.slice(-4) : '💳 NOT ASSIGNED'}</p>
+                        <div class="flex gap-3 mt-1 text-[9px] text-gray-500 font-bold">
+                            <span>EXP: ${u.expiry || '--/--'}</span>
+                        </div>
+                    </td>
+                    <td class="p-5 text-right font-black text-green-500">₹${(u.balance || 0).toLocaleString('en-IN')}</td>
+                    <td class="p-5">
+                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyle(u.status)}">
+                            ${u.status || 'NEW'}
+                        </span>
+                    </td>
+                    <td class="p-5 text-center">
+                        <button onclick="openControlPanel('${u.id}')" class="bg-white text-black text-[10px] font-black px-4 py-2 rounded-xl hover:bg-yellow-500 transition-all uppercase">MANAGE</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('stat-users').innerText = snap.numChildren();
+            document.getElementById('stat-pending').innerText = pCount;
+        });
+    }
+
+    function getStatusStyle(s) {
+        if(s === 'active') return 'text-green-500 border-green-500/20 bg-green-500/5';
+        if(s === 'blocked') return 'text-red-500 border-red-500/20 bg-red-500/5';
+        return 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5';
+    }
+
+    async function openControlPanel(uid) {
+        currentSelectedUser = uid;
+        const snap = await db.ref(`users/${uid}`).get();
+        const u = snap.val();
+        
+        document.getElementById('panel-uid').innerText = "ACCOUNT ID: " + uid;
+        document.getElementById('panel-body').innerHTML = `
+            <div class="bg-black/30 p-5 rounded-2xl border border-gray-800 space-y-4">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Client Profile</h4>
+                <input type="text" id="edit-name" value="${u.fullName || ''}" class="w-full bg-black border border-gray-700 p-3 rounded-xl text-sm">
+                <input type="text" id="edit-mobile" value="${u.mobile || ''}" class="w-full bg-black border border-gray-700 p-3 rounded-xl text-sm">
+            </div>
+
+            <div class="bg-yellow-500/5 p-5 rounded-2xl border border-yellow-500/20 space-y-4">
+                <h4 class="text-xs font-bold text-yellow-500 uppercase tracking-widest">Force Card Issuance</h4>
+                <input type="text" id="edit-card" value="${u.cardNo || ''}" placeholder="16-Digit Card Number" class="w-full bg-black border border-gray-700 p-3 rounded-xl text-sm font-mono tracking-widest">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="edit-exp" value="${u.expiry || '12/28'}" placeholder="MM/YY" class="bg-black border border-gray-700 p-3 rounded-xl text-sm">
+                    <input type="text" id="edit-cvv" value="${u.cvv || '***'}" placeholder="CVV" class="bg-black border border-gray-700 p-3 rounded-xl text-sm">
+                </div>
+                <button type="button" onclick="forceIssueCard(event)" class="w-full bg-yellow-500 text-black font-black py-4 rounded-2xl text-[10px] uppercase shadow-lg hover:scale-[0.98] transition-all">Issue & Bypass Payment</button>
+            </div>
+
+            <div class="bg-green-500/5 p-5 rounded-2xl border border-gray-800 flex gap-2">
+                <input type="number" id="adj-amt" placeholder="Amt" class="flex-1 bg-black border border-gray-700 p-3 rounded-xl text-sm">
+                <button onclick="adjustBalance()" class="bg-green-600 px-4 rounded-xl font-black text-[10px] uppercase">Add Balance</button>
+            </div>
+
+            <button onclick="changeStatus('blocked')" class="w-full bg-red-500/10 text-red-500 border border-red-500/20 py-4 rounded-2xl text-[10px] font-black uppercase">Block Account</button>
+        `;
+        document.getElementById('side-panel').classList.remove('translate-x-full');
+    }
+
+    // --- ⚡ BYPASS & FORCE ENGINE ---
+    async function forceIssueCard(e) {
+        if(e) e.preventDefault();
+        
+        const btn = e.target;
+        btn.innerText = "BYPASSING PERMISSIONS...";
+        btn.disabled = true;
+
+        const uid = currentSelectedUser;
+        const updates = {};
+        
+        // Multi-path update se permission errors kam aate hain
+        updates[`/users/${uid}/status`] = 'active';
+        updates[`/users/${uid}/cardNo`] = document.getElementById('edit-card').value;
+        updates[`/users/${uid}/expiry`] = document.getElementById('edit-exp').value;
+        updates[`/users/${uid}/cvv`] = document.getElementById('edit-cvv').value;
+        updates[`/users/${uid}/isIssued`] = true;
+        updates[`/users/${uid}/paymentStatus`] = 'verified';
+
+        try {
+            // Seedha root se update
+            await db.ref().update(updates);
+            showToast("✅ ACCOUNT ACTIVATED & CARD ISSUED!");
+            closePanel();
+        } catch (err) {
+            console.error(err);
+            alert("Permission Error: Bhai aapka Admin Email rules me matched nahi hai!");
+        } finally {
+            btn.innerText = "Issue & Bypass Payment";
+            btn.disabled = false;
+        }
+    }
+
+    async function adjustBalance() {
+        const amt = parseFloat(document.getElementById('adj-amt').value);
+        if(!amt) return;
+        await db.ref(`users/${currentSelectedUser}/balance`).transaction(c => (c || 0) + amt);
+        showToast("Balance Updated!");
+    }
+
+    async function changeStatus(s) {
+        await db.ref(`users/${currentSelectedUser}`).update({ status: s });
+        showToast(`Account: ${s}`);
+        closePanel();
+    }
+
+    function closePanel() { document.getElementById('side-panel').classList.add('translate-x-full'); }
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-msg').innerText = msg;
+        t.classList.remove('translate-x-full');
+        setTimeout(() => t.classList.add('translate-x-full'), 3000);
+    }
+    function searchUser() {
+        const val = document.getElementById('userSearch').value.toLowerCase();
+        document.querySelectorAll('#user-rows tr').forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? '' : 'none');
+    }
+
+    auth.onAuthStateChanged(u => u ? startRealtimeSync() : null);
+</script>
+</body>
+</html>

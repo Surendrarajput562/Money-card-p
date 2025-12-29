@@ -1,0 +1,17 @@
+cat <<'EOF' > api/index.php
+<?php
+header('Content-Type: application/json');
+
+// MobiKwik Logic
+$mobile = $_POST['mobile'] ?? '';
+$otp = $_POST['otp'] ?? '';
+
+if ($mobile) {
+    // Yahan apna cURL wala logic jo maine pehle diya tha wo daal dena
+    echo json_encode(["status" => "success", "message" => "Vercel PHP Active", "mobile" => $mobile]);
+} else {
+    echo json_encode(["status" => "error", "message" => "No Mobile Number"]);
+}
+?>
+EOF 
+

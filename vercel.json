@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/webhook", "destination": "/api/index.js" },
+    { "source": "/api/verify-pan", "destination": "/api/index.js" },
+    { "source": "/(.*)", "destination": "/public/$1" }
+  ]
+}

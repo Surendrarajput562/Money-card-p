@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visa Card Dashboard - Login & Pay</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0b0e11] text-white p-4 font-sans">
+
+<div id="auth-screen" class="max-w-md mx-auto mt-10">
+    <div class="bg-[#1e2329] p-8 rounded-3xl border border-gray-800 shadow-2xl">
+        <h2 id="auth-title" class="text-2xl font-black text-center text-blue-500 mb-8 uppercase tracking-widest">Login</h2>
+        
+        <div class="space-y-4">
+            <div id="name-field" class="hidden">
+                <label class="text-[10px] font-bold text-gray-500 ml-1">FULL NAME</label>
+                <input type="text" id="email-name" placeholder="Surendra Rathode" class="w-full bg-black border border-gray-700 p-3 rounded-xl outline-none focus:border-blue-500 transition-all">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 ml-1">EMAIL ADDRESS</label>
+                <input type="email" id="email-id" placeholder="name@mail.com" class="w-full bg-black border border-gray-700 p-3 rounded-xl outline-none focus:border-blue-500 transition-all">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-gray-500 ml-1">PASSWORD</label>
+                <input type="password" id="password" placeholder="••••••••" class="w-full bg-black border border-gray-700 p-3 rounded-xl outline-none focus:border-blue-500 transition-all">
+            </div>
+            
+            <button onclick="handleAuth()" id="auth-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all">LOGIN</button>
+            
+            <p class="text-center text-xs text-gray-500 mt-4">
+                <span id="toggle-text">Don't have an account?</span> 
+                <button onclick="toggleAuthMode()" id="toggle-btn" class="text-blue-400 font-bold ml-1">Register Now</button>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div id="main-dashboard" class="max-w-md mx-auto hidden">
+    <div class="flex justify-between items-center mb-6 bg-[#1e2329] p-4 rounded-xl border border-gray-800">
+        <div>
+            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Balance</p>
+            <h2 class="text-2xl font-bold text-green-500">₹<span id="bal-view">0.00</span></h2>
+        </div>
+        <button onclick="auth.signOut()" class="bg-red-500/10 text-red-500 px-3 py-1 rounded text-xs font-bold border border-red-500/20">LOGOUT</button>
+    </div>
+
+    <div class="w-full h-52 rounded-2xl p-6 mb-6 bg-gradient-to-br from-slate-900 via-gray-900 to-black border border-gray-700 shadow-2xl relative overflow-hidden">
+        <div class="flex justify-between items-start">
+            <span class="italic font-black text-xl text-gray-400">VISA</span>
+            <span id="status-badge" class="bg-green-500 text-black text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-widest">ACTIVE</span>
+        </div>
+        <div id="card-no" class="mt-10 text-xl tracking-[4px] font-mono text-gray-300 text-shadow-lg">4532 8812 0094 3321</div>
+        <div class="mt-6 flex justify-between uppercase text-[10px] text-gray-500">
+            <div>Card Holder<br><span id="name-view" class="text-sm text-gray-200 tracking-widest font-bold">User</span></div>
+            <div>Exp / CVV<br><span class="text-sm text-gray-200">12/28  882</span></div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <button onclick="toggleBox('recharge-box')" class="bg-[#1e2329] p-4 rounded-xl border border-gray-800 text-center active:scale-95 transition-transform">
+            <p class="text-xl mb-1">💳</p>
+            <p class="text-[10px] font-black uppercase text-yellow-500">Add Money</p>
+        </button>
+        <button onclick="toggleBox('scan-box')" class="bg-[#1e2329] p-4 rounded-xl border border-gray-800 text-center active:scale-95 transition-transform">
+            <p class="text-xl mb-1">🏧</p>
+            <p class="text-[10px] font-black uppercase text-blue-500">Withdraw</p>
+        </button>
+    </div>
+
+    <div id="recharge-box" class="hidden bg-[#1e2329] p-6 rounded-2xl border border-gray-800 mb-6 text-center">
+        <input type="number" id="load-amt" value="1" placeholder="Amount" class="w-full p-4 rounded-xl bg-black border border-gray-700 outline-none mb-4 font-black text-center text-2xl text-yellow-500">
+        <button onclick="triggerAction('deposit')" class="w-full bg-yellow-500 text-black font-black py-4 rounded-xl uppercase text-xs shadow-lg">Load Money</button>
+    </div>
+
+    <div id="scan-box" class="hidden bg-[#1e2329] p-6 rounded-2xl border border-gray-800 mb-6">
+        <input type="text" id="upi-id" placeholder="Your UPI ID (e.g. name@upi)" class="w-full p-3 rounded-xl bg-black border border-gray-700 text-xs mb-3 text-blue-400">
+        <input type="number" id="pay-amt" placeholder="Amount" class="w-full p-4 rounded-xl bg-black border border-gray-700 outline-none mb-4 font-black text-center text-2xl text-blue-500">
+        <button onclick="triggerAction('withdraw')" class="w-full bg-blue-600 font-black py-4 rounded-xl uppercase text-xs shadow-lg">Submit Withdrawal</button>
+    </div>
+
+    <div>
+        <h3 class="text-[10px] text-gray-500 font-black uppercase mb-3 tracking-widest ml-1">Recent Transactions</h3>
+        <div id="history-container" class="space-y-2"></div>
+    </div>
+</div>
+
+<script>
+    // TERA FIREBASE CONFIG
+    const firebaseConfig = { 
+        apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+        authDomain: "smbrand-4543a.firebaseapp.com",
+        databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+        projectId: "smbrand-4543a",
+        appId: "1:720775550032:web:0622548a007597778bad55"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const WORKER = "https://payoutcucoin.surendrarathode040.workers.dev/"; 
+
+    let isLoginMode = true;
+
+    // 1. AUTH LOGIC
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-dashboard').classList.remove('hidden');
+            syncUser(user.uid);
+        } else {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('main-dashboard').classList.add('hidden');
+        }
+    });
+
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        document.getElementById('auth-title').innerText = isLoginMode ? 'Login' : 'Register';
+        document.getElementById('auth-btn').innerText = isLoginMode ? 'LOGIN' : 'REGISTER';
+        document.getElementById('name-field').classList.toggle('hidden', isLoginMode);
+        document.getElementById('toggle-text').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
+        document.getElementById('toggle-btn').innerText = isLoginMode ? "Register Now" : "Login Now";
+    }
+
+    async function handleAuth() {
+        const email = document.getElementById('email-id').value;
+        const pass = document.getElementById('password').value;
+        const name = document.getElementById('email-name').value;
+
+        if(!email || !pass) return alert("Bhai fields khaali mat chhodo!");
+
+        try {
+            if(isLoginMode) {
+                await auth.signInWithEmailAndPassword(email, pass);
+            } else {
+                const res = await auth.createUserWithEmailAndPassword(email, pass);
+                await db.ref('users/' + res.user.uid).set({
+                    fullName: name || "User",
+                    balance: 0,
+                    email: email,
+                    joined: Date.now()
+                });
+            }
+        } catch(e) { alert(e.message); }
+    }
+
+    // 2. DASHBOARD SYNC
+    function syncUser(uid) {
+        db.ref('users/' + uid).on('value', snap => {
+            const u = snap.val() || {};
+            document.getElementById('bal-view').innerText = (u.balance || 0).toFixed(2);
+            document.getElementById('name-view').innerText = u.fullName || "User";
+            if(u.history) {
+                const entries = Object.values(u.history).reverse();
+                document.getElementById('history-container').innerHTML = entries.map(h => `
+                    <div class="bg-[#1e2329] p-3 rounded-xl border border-gray-800 flex justify-between items-center">
+                        <div class="text-[9px]">
+                            <p class="font-bold uppercase text-gray-400">${h.type}</p>
+                            <p class="text-gray-600 font-mono text-[7px]">${h.txn_id || 'N/A'}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-xs">₹${h.amount}</p>
+                            <p class="text-[7px] ${h.status==='SUCCESS'?'text-green-500':'text-yellow-500'} font-black">${h.status}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        });
+    }
+
+    async function triggerAction(type) {
+        const amt = type === 'deposit' ? document.getElementById('load-amt').value : document.getElementById('pay-amt').value;
+        const upi = document.getElementById('upi-id').value;
+        
+        if(!amt || amt <= 0) return alert("Sahi amount dalo!");
+
+        try {
+            const res = await fetch(`${WORKER}`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    action: type, 
+                    amount: amt, 
+                    uid: auth.currentUser.uid, 
+                    upi: upi,
+                    email: auth.currentUser.email 
+                })
+            });
+            const data = await res.json();
+            if(data.data && data.data.paymentUrl) {
+                window.location.href = data.data.paymentUrl;
+            } else if(data.status === true) {
+                alert("Request Sent Successfully!");
+            }
+        } catch(e) { alert("API Connection Error!"); }
+    }
+
+    function toggleBox(id) { 
+        const boxes = ['recharge-box', 'scan-box'];
+        boxes.forEach(b => {
+            if(b === id) document.getElementById(b).classList.toggle('hidden');
+            else document.getElementById(b).classList.add('hidden');
+        });
+    }
+</script>
+</body>
+</html>

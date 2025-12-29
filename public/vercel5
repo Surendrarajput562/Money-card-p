@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KuCoin Clone - Buy & Sell</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-[#0b0e11] text-gray-200 font-sans">
+
+    <nav class="flex items-center justify-between p-4 border-b border-gray-800 bg-[#161a1e]">
+        <div class="flex items-center gap-6">
+            <h1 class="text-2xl font-bold text-[#2ebd85]">KuSwap</h1>
+            <div class="hidden md:flex gap-4 text-sm font-medium">
+                <span class="text-yellow-500 cursor-pointer">Fast Trade</span>
+                <span class="hover:text-yellow-500 cursor-pointer">P2P</span>
+                <span class="hover:text-yellow-500 cursor-pointer">Fiat Deposit</span>
+                <span class="hover:text-yellow-500 cursor-pointer">KuCard</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <i class="fa-solid fa-ticket text-yellow-500"></i>
+            <span class="text-xs">Coupons (0)</span>
+            <div class="bg-gray-700 px-3 py-1 rounded text-xs">My Orders</div>
+        </div>
+    </nav>
+
+    <main class="max-w-[1200px] mx-auto mt-10 flex flex-col items-center">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-white mb-2">Buy & Sell Crypto Instantly</h2>
+            <p class="text-gray-400 text-sm">Visa, Mastercard, Bank Transfer, and 70+ methods supported.</p>
+        </div>
+
+        <div class="w-full max-w-[480px] bg-[#1e2329] rounded-2xl shadow-2xl p-6 border border-gray-800">
+            <div class="flex gap-6 mb-6 border-b border-gray-700 pb-2">
+                <button class="text-xl font-bold border-b-2 border-yellow-500 pb-1 text-white">Buy</button>
+                <button class="text-xl font-bold text-gray-500 hover:text-white pb-1">Sell</button>
+            </div>
+
+            <div class="bg-[#2b3139] p-4 rounded-xl mb-4 border border-transparent focus-within:border-yellow-500">
+                <p class="text-xs text-gray-400 mb-1">I Want to Spend</p>
+                <div class="flex justify-between items-center">
+                    <input type="number" id="spend-input" value="100" class="bg-transparent text-2xl font-bold outline-none w-full text-white">
+                    <div class="flex items-center gap-2 bg-gray-700 px-2 py-1 rounded cursor-pointer">
+                        <span class="font-bold">USD</span>
+                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[#2b3139] p-4 rounded-xl mb-6">
+                <p class="text-xs text-gray-400 mb-1">I Will Receive</p>
+                <div class="flex justify-between items-center">
+                    <input type="number" id="receive-input" readonly class="bg-transparent text-2xl font-bold outline-none w-full text-gray-400">
+                    <div class="flex items-center gap-2 bg-gray-700 px-2 py-1 rounded cursor-pointer text-yellow-500">
+                        <span id="target-coin" class="font-bold">BTC</span>
+                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-xs text-gray-400 mb-2 font-bold uppercase">Pay With</p>
+                <div class="flex items-center justify-between bg-gray-800 p-4 rounded-xl border border-gray-700 cursor-pointer hover:border-yellow-500">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-building-columns text-yellow-500"></i>
+                        <div>
+                            <p class="text-sm font-bold">3rd Party Payment</p>
+                            <p class="text-[10px] text-gray-500 italic">Banxa, Simplex, Onramp...</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-gray-500"></i>
+                </div>
+            </div>
+
+            <button onclick="startPurchase()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-[#0b0e11] font-black py-4 rounded-xl text-lg uppercase shadow-lg">
+                Buy BTC
+            </button>
+
+            <p class="text-center text-[10px] text-gray-500 mt-4">
+                Reference Price: 1 BTC ≈ <span id="ref-price">Loading...</span> USD
+            </p>
+        </div>
+    </main>
+
+    <script>
+        const BACKEND = 'https://money-card-p.vercel.app';
+        let btcPrice = 0;
+
+        async function fetchLivePrice() {
+            try {
+                const res = await fetch(`${BACKEND}/api/price?symbol=BTC`);
+                const data = await res.json();
+                btcPrice = parseFloat(data.price);
+                document.getElementById('ref-price').innerText = btcPrice.toLocaleString();
+                updateCalculations();
+            } catch (e) { console.log("Price Error"); }
+        }
+
+        function updateCalculations() {
+            const spend = document.getElementById('spend-input').value;
+            if(btcPrice > 0 && spend > 0) {
+                document.getElementById('receive-input').value = (spend / btcPrice).toFixed(8);
+            }
+        }
+
+        async function startPurchase() {
+            // Yahan tu redirect karega P2P ya 3rd party link par
+            alert("Redirecting to Secure Payment Gateway...");
+            window.location.href = "https://simplex.com"; 
+        }
+
+        document.getElementById('spend-input').addEventListener('input', updateCalculations);
+        setInterval(fetchLivePrice, 5000); fetchLivePrice();
+    </script>
+</body>
+</html>

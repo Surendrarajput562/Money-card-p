@@ -9,15 +9,21 @@
     ]
   },
   "dependencies": {
+    "@api/transak": "file:.api/apis/transak",
+    "axios": "^1.13.2",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "express": "^4.22.1",
     "firebase": "^11.1.0",
     "firebase-admin": "^13.0.2",
+    "https-proxy-agent": "^7.0.6",
+    "kucoin-node-sdk": "^1.1.1",
     "next": "^15.6.0-canary.58",
     "puppeteer-core": "^24.34.0",
     "qrcode": "^1.5.4",
-    "razorpay": "^2.9.5"
+    "razorpay": "^2.9.5",
+    "speakeasy": "^2.0.0"
   },
   "scripts": {
     "start": "node app.js"

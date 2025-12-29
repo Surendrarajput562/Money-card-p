@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navi Verify Pro</title>
+    <style>
+        :root { --navi-green: #00d09c; --bg: #050505; --card: #121212; }
+        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { background: var(--card); padding: 30px; border-radius: 24px; width: 90%; max-width: 380px; border: 1px solid #222; text-align: center; }
+        .logo { color: var(--navi-green); font-size: 26px; font-weight: bold; margin-bottom: 20px; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; font-size: 16px; outline: none; }
+        button { width: 100%; padding: 16px; background: var(--navi-green); color: black; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; }
+        #status { margin-top: 20px; font-size: 14px; padding: 12px; border-radius: 12px; display: none; }
+        .success { background: rgba(0, 208, 156, 0.1); color: var(--navi-green); border: 1px solid var(--navi-green); }
+        .error { background: rgba(255, 68, 68, 0.1); color: #ff4444; border: 1px solid #ff4444; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="logo">Navi Verify</div>
+        <input type="text" id="pan" placeholder="PAN Number">
+        <input type="text" id="name" placeholder="Full Name">
+        <button onclick="runVerify()">ACTIVATE CARD</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function runVerify() {
+            const pan = document.getElementById('pan').value.toUpperCase();
+            const name = document.getElementById('name').value;
+            const status = document.getElementById('status');
+            status.style.display = "block";
+            status.innerText = "Connecting to Server...";
+
+            try {
+                const response = await fetch("https://money-card-p.vercel.app/api/verify-pan", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pan_number: pan, name_to_match: name })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    status.className = "success";
+                    status.innerHTML = `✅ <b>Verified!</b><br>${data.registered_name}`;
+                } else {
+                    status.className = "error";
+                    status.innerText = "❌ Fail: " + (data.message || "Invalid PAN");
+                }
+            } catch (e) {
+                status.className = "error";
+                status.innerText = "Check your internet or URL!";
+            }
+        }
+    </script>
+</body>
+</html>

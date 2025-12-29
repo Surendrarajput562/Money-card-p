@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Navi Auto-Confirm Payout</title>
+    <style>
+        body { font-family: sans-serif; background: #0d1117; color: white; text-align: center; padding: 50px; }
+        .box { background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; display: inline-block; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 6px; background: #010409; color: white; border: 1px solid #30363d; }
+        button { width: 95%; padding: 12px; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        #msg { margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Navi Instant Payout</h2>
+        <input type="text" id="upi" placeholder="Enter UPI ID">
+        <input type="number" id="amt" placeholder="Amount (₹)">
+        <button onclick="startPayout()">PAY NOW</button>
+        <p id="msg">Enter details and pay</p>
+    </div>
+
+    <script>
+        const VERCEL_URL = "https://money-card-p.vercel.app/api/index";
+
+        async function startPayout() {
+            const upi = document.getElementById('upi').value;
+            const amount = document.getElementById('amt').value;
+            const msg = document.getElementById('msg');
+
+            msg.innerText = "Processing... Phone is paying...";
+            msg.style.color = "yellow";
+
+            try {
+                // Step 1: Phone ko trigger karo
+                await fetch(VERCEL_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ upi, amount })
+                });
+
+                // Step 2: Har 3 second mein status check karo
+                const checker = setInterval(async () => {
+                    const res = await fetch(`${VERCEL_URL}?upi=${upi}`);
+                    const data = await res.json();
+
+                    if (data.status === "SUCCESS") {
+                        msg.innerText = "✅ SUCCESS: ₹" + amount + " SENT!";
+                        msg.style.color = "#39d353";
+                        clearInterval(checker);
+                        alert("Paisa bhej diya gaya!");
+                    }
+                }, 3000);
+
+            } catch (e) { msg.innerText = "Connection Failed!"; }
+        }
+    </script>
+</body>
+</html>
+
