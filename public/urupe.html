@@ -1,85 +1,16 @@
-
-
-
-
-
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title></title>
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11380267758"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'AW'-11380267758');
-    </script>
-
-</head>
-<body>
-
-    <h1></h1>
-
-    <!-- Event snippet for Sign-up conversion page -->
-    <script>
-      gtag('event', 'conversion', { 'send_to': 'AW-11380267758/7ERoCNPK-OIaEO61xLIq' });
-    </script>
-
-    <p></p>
-
-</body>
-</html>
-
-
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-
-    <!-- Google AdSense Code -->
-    <script async
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7356424946387381"
-        crossorigin="anonymous">
-    </script>
-</head>
-
-<body>
-    <h1></h1>
-    <p></p>
-
-</body>
-</html>
-
-
-
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>gold rupi - user (fixed & enhanced)</title>
+    <title>gold rupi - user</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <style>
+        /* ========================================= */
+        /* --- THEME & BASE STYLES --- */
+        /* ========================================= */
         :root{
             --gold:#d4af37;
             --gold-strong:#c59b2d;
@@ -133,6 +64,7 @@
             box-shadow:0 6px 20px rgba(197,155,45,0.18);
         }
         .h1{font-weight:700;font-size:18px;color:var(--text-color)}
+        .small{font-size:12px;color:var(--text-color);opacity:0.8;line-height: 1.2;}
         .top-right{display:flex;gap:10px;align-items:center}
         .search-bar{padding:10px;border-radius:12px;border:none;width:100%;background:var(--card-bg);margin:12px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.05)}
         [data-theme="dark"] .search-bar{background:rgba(255,255,255,0.1); box-shadow:none;}
@@ -214,7 +146,7 @@
 
         /* Order Status Badge */
         .badge{padding:4px 8px;border-radius:6px;font-weight:600;font-size:12px;display:inline-block;text-transform:capitalize;color:#fff;}
-        .badge-pending{background-color:#f59e0b;}
+        .badge-pending, .badge-allapi_pending{background-color:#f59e0b;} /* Added allapi_pending */
         .badge-paid{background-color:#06b6d4;}
         .badge-processing{background-color:#6366f1;}
         .badge-delivered{background-color:#10b981;}
@@ -222,7 +154,10 @@
         .badge-completed{background-color:#10b981;}
         .badge-withdraw{background-color:#f97316;}
         .badge-add{background-color:#059669;}
+        .badge-bonus{background-color:#059669;} /* Added for bonus */
         .badge-loan{background-color:#3b82f6;}
+        .badge-eligible_for_bonus{background-color:#3b82f6;} /* Added for refer */
+
 
         /* Specific style for home latest products images (Fixed) */
         #latest-products .product-img {
@@ -274,88 +209,82 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        .grid-services{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            padding: 10px 0;
+        }
+        .grid-services .service-button {
+            width: 100%;
+            padding: 10px;
+            font-size: 13px;
+            text-align: center;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            border: 1px solid rgba(0,0,0,0.1);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        [data-theme="dark"] .grid-services .service-button {
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+        }
+        .grid-services .service-button:hover {
+            background-color: var(--gold);
+            color: var(--accent);
+            border-color: var(--gold);
+        }
 
-/* 1. Main Container */
-.profile-menu-container {
-    /* कंटेनर को रिलेटिव (relative) रखें ताकि ड्रॉपडाउन (absolute) सही जगह पर खुले */
-    position: relative;
-    display: inline-block;
-    /* इसे दाएं कोने में रखने के लिए, इसे parent div के अंदर float/flexbox से सेट करें */
+
+
+
+
+/* Legal Compliance Section */
+.legal-container {
+    margin-top: 30px;
+    padding-bottom: 20px;
 }
-
-/* 2. Profile Trigger Button (The clickable part) */
-.profile-trigger {
-    background-color: #3b82f6; /* Blue 500 */
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 6px;
+.legal-footer-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+.legal-card {
+    background: var(--card-bg);
+    padding: 18px 10px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid rgba(212, 175, 55, 0.3);
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
 }
+.legal-card:active { transform: scale(0.95); }
+.legal-card i { font-size: 26px; color: var(--gold-strong); margin-bottom: 8px; display: block; }
+.legal-card span { font-size: 13px; font-weight: 700; color: var(--text-color); display: block; }
+.legal-card small { font-size: 10px; opacity: 0.6; }
 
-.profile-trigger:hover {
-    background-color: #2563eb; /* Blue 600 */
-}
+/* Policy Modal Styling */
+.policy-modal-wrap { width: 92% !important; max-width: 550px !important; border-radius: 20px !important; padding: 0 !important; overflow: hidden; border: none; }
+.policy-header { background: var(--gold); padding: 18px; color: #000; display: flex; justify-content: space-between; align-items: center; }
+.policy-header h3 { margin: 0; font-size: 16px; font-weight: 800; text-transform: uppercase; }
+.policy-body { padding: 20px; max-height: 450px; overflow-y: auto; font-size: 13px; line-height: 1.7; color: var(--text-color); }
+.policy-body h4 { color: var(--gold-strong); margin: 20px 0 8px 0; border-left: 3px solid var(--gold); padding-left: 10px; font-size: 15px; }
+.policy-body p { margin-bottom: 15px; text-align: justify; }
+.policy-body hr { border: none; border-top: 1px solid rgba(212, 175, 55, 0.2); margin: 20px 0; }
 
-/* 3. Dropdown Menu Content */
-.profile-dropdown {
-    /* 🔑 महत्वपूर्ण: Absolute position से यह ज़्यादा जगह नहीं लेगा */
-    position: absolute;
-    /* इसे ट्रिगर बटन के नीचे और दाईं ओर सेट करें */
-    top: 100%; /* बटन के ठीक नीचे शुरू करें */
-    right: 0; 
-    
-    background-color: #ffffff;
-    min-width: 160px; /* मेन्यू की न्यूनतम चौड़ाई */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-radius: 8px;
-    z-index: 1000; /* सुनिश्चित करें कि यह अन्य चीज़ों के ऊपर दिखाई दे */
-    padding: 5px 0;
-    
-    /* 🔑 डिफ़ॉल्ट रूप से बंद (hidden) */
-    display: none; 
-    
-    /* स्मूथ ओपनिंग/क्लोजिंग के लिए ट्रांज़िशन (Transition) */
-    opacity: 0;
-    transform: translateY(5px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-}
 
-/* 4. Dropdown Menu Items */
-.dropdown-item {
-    color: #1f2937; /* Dark text */
-    padding: 10px 16px;
-    text-decoration: none;
-    display: block;
-    font-size: 14px;
-    transition: background-color 0.2s, color 0.2s;
-}
 
-.dropdown-item:hover {
-    background-color: #f3f4f6; /* Light gray hover */
-    color: #3b82f6; /* Blue text on hover */
-}
 
-.dropdown-item.logout {
-    color: #ef4444; /* Red color for logout */
-}
 
-.divider {
-    height: 1px;
-    background-color: #e5e7eb;
-    margin: 5px 0;
-}
 
-/* 5. JavaScript Activated State */
-/* 🔑 जब JavaScript से .open क्लास जोड़ी जाती है, तो मेन्यू दिखाई देता है */
-.profile-dropdown.open {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-}
+
+
+
+
+
+
 
 
 
@@ -370,38 +299,41 @@
                 <div class="small">buy gold • shop • wallet</div>
             </div>
         </div>
-        <div class="top-right" style="display:flex;align-items:center;gap:12px">
-            <div class="small" id="goldrate-display">rate: ₹6500 / g</div>
-            <div class="small" id="wallet-mini">wallet: ₹0</div>
-            <button class="btn secondary" onclick="toggleTheme()" style="padding: 6px 8px;"><i id="theme-icon" class="ri-moon-line"></i></button>
-            <div class="cart-icon" onclick="showTab('cart')" title="Cart">
-                <i class="ri-shopping-cart-line" style="font-size:24px;"></i>
-                <div id="cart-count" class="cart-count" style="display:none">0</div>
-            </div>
-            <button class="btn secondary" onclick="logout()" style="padding: 6px 8px;" title="Logout"><i class="ri-logout-box-r-line"></i></button>
-        </div>
-    </div>
+
+
+<div class="top-right" style="display:flex;align-items:center;gap:12px">
+    <div class="small" id="goldrate-display">rate: ₹6500 / g</div>
+    <div class="small" id="wallet-mini">wallet: ₹0</div>
+    <button class="btn secondary" onclick="toggleTheme()" style="padding: 6px 8px;"><i id="theme-icon" class="ri-moon-line"></i></button>
     
+    <div class="cart-icon" onclick="showTab('cart')" title="Cart">
+        <i class="ri-shopping-cart-line" style="font-size:24px;"></i>
+        <div id="cart-count" class="cart-count" style="display:none">0</div>
+    </div>
 
+    <button id="login-btn-nav" class="btn" onclick="window.location.href='rupe.html'" style="display:none; background:#eab308; color:#000; padding: 6px 12px; font-weight: bold;">Login</button>
 
-<div class="search-bar">
-    <input id="search-input" placeholder="search products, brand, color, category..." />
-
-    <select id="category-filter">
-        <option value="">all categories</option>
-    </select>
-
-    <select id="cat-shop">
-        <option value="">all categories</option>
-    </select>
-
-    <button class="btn secondary" onclick="applyFilter()">filter</button>
+    <button class="btn secondary" onclick="logout()" style="padding: 6px 8px;" title="Logout"><i class="ri-logout-box-r-line"></i></button>
 </div>
 
 
+    </div>
+    
+    <div class="search-bar">
+        <input id="search-input" placeholder="search products, brand, color, category..." />
 
+        <!-- category-filter for home page search. Keep it synchronized with cat-shop-filter. -->
+        <select id="category-filter" onchange="applyFilter()">
+            <option value="">all categories</option>
+        </select>
 
+        <!-- cat-shop is removed as it was redundant, cat-shop-filter is used for actual shop page filtering -->
+        <!-- <select id="cat-shop">
+            <option value="">all categories</option>
+        </select> -->
 
+        <button class="btn secondary" onclick="applyFilter()">filter</button>
+    </div>
 
     <div class="container">
         <div id="home" class="section active">
@@ -428,10 +360,53 @@
             
             <h3 style="margin-top:16px">shop categories</h3>
             <div id="category-scroll-container">
-                </div>
+                <!-- Categories will be rendered here -->
+            </div>
 
             <h3 style="margin-top:16px">latest products</h3>
             <div id="latest-products" class="grid"></div>
+
+<div class="legal-container">
+    <h3 style="margin-bottom:15px; font-size:16px;">Legal & Trust Compliance</h3>
+    <div class="legal-footer-grid">
+        <div class="legal-card" onclick="openPolicy('delivery')">
+            <i class="ri-truck-fill"></i>
+            <span>Delivery Policy</span>
+            <small>Shipping Protocols</small>
+        </div>
+        <div class="legal-card" onclick="openPolicy('returns')">
+            <i class="ri-shield-user-fill"></i>
+            <span>No-Refund Policy</span>
+            <small>Final Sale Clause</small>
+        </div>
+        <div class="legal-card" onclick="openPolicy('terms')">
+            <i class="ri-scales-3-fill"></i>
+            <span>Terms of Service</span>
+            <small>Legal Agreement</small>
+        </div>
+        <div class="legal-card" onclick="openPolicy('contact')">
+            <i class="ri-mail-send-fill"></i>
+            <span>Contact Support</span>
+            <small>Official Channels</small>
+        </div>
+    </div>
+</div>
+
+<div id="policy-overlay" class="overlay" onclick="if(event.target == this) closePolicy()">
+    <div class="modal policy-modal-wrap">
+        <div class="policy-header">
+            <h3 id="policy-title">Policy Detail</h3>
+            <i class="ri-close-circle-fill" onclick="closePolicy()" style="font-size:26px; cursor:pointer;"></i>
+        </div>
+        <div id="policy-content" class="policy-body">
+            </div>
+        <div style="padding:15px; background:var(--card-bg);">
+            <button class="btn" onclick="closePolicy()" style="width:100%; letter-spacing:1px;">I AGREE & UNDERSTAND</button>
+        </div>
+    </div>
+</div>
+
+
         </div>
 
         <div id="shop" class="section">
@@ -439,8 +414,8 @@
             <div class="card">
                 <div style="display:flex;gap:8px;align-items:center">
                     <input id="search-shop" placeholder="search in shop..." style="flex:1">
-                    <select id="cat-shop-filter" style="min-width:140px"><option value="">all categories</option></select>
-                    <button class="btn" onclick="searchShop()">search</button>
+                    <select id="cat-shop-filter" style="min-width:140px" onchange="searchShop(true)"><option value="">all categories</option></select>
+                    <button class="btn" onclick="searchShop(true)">search</button>
                 </div>
             </div>
             <div id="product-list" class="grid" style="margin-top:12px"></div>
@@ -458,7 +433,7 @@
                             <button class="btn" onclick="openCheckoutModal()">buy / checkout</button>
                         </div>
                     </div>
-                    <div style="margin-top:8px" class="small-muted">Delivery address and UTR will be confirmed at checkout.</div>
+                    <div style="margin-top:8px" class="small-muted">Delivery address will be confirmed at checkout.</div>
                 </div>
             </div>
         </div>
@@ -472,24 +447,16 @@
             </div>
             <div class="card" style="margin-top:12px;">
                 <h4 style="margin-top:0;">purchase gold</h4>
-                <div style="display:flex;gap:10px;align-items:flex-start">
-                    <div style="flex:1">
-                        <label class="small">enter amount (₹, min 50)</label>
-                        <input id="gold-amount" type="number" placeholder="amount in ₹">
-                        <div class="note small" style="margin-bottom:8px;">will get: <strong id="gold-grams-calc">0.0000 g</strong></div>
-                        <label class="small">enter utr (12 digits)</label>
-                        <input id="gold-utr" type="text" placeholder="12 digit utr">
-                        <div style="margin-top:8px" class="small-muted">scan the upi qr and paste utr then submit.</div>
-                    </div>
-                    <div style="width:160px;text-align:center;flex-shrink:0;">
-                        <img id="gold-qr-img" src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" style="width:140px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);">
-                        <div class="small" style="margin-top:6px">scan & pay</div>
-                    </div>
+                <div style="flex:1">
+                    <label class="small">enter amount (₹, min 50)</label>
+                    <input id="gold-amount" type="number" placeholder="amount in ₹">
+                    <div class="note small" style="margin-bottom:8px;">will get: <strong id="gold-grams-calc">0.0000 g</strong></div>
                 </div>
                 <div style="margin-top:12px;display:flex;gap:8px">
-                    <button class="btn" onclick="buyGold()">submit request</button>
+                    <button class="btn" onclick="buyGold()">Pay Now</button>
                     <button class="btn secondary" onclick="showHistory('gold')">my gold history</button>
                 </div>
+                <div class="small-muted" style="margin-top:10px;">Click "Pay Now" to proceed with payment via UPI/Netbanking.</div>
             </div>
             <h4 style="margin-top:16px;">my gold history</h4>
             <div id="gold-status-list" class="history"></div>
@@ -503,21 +470,14 @@
             </div>
             <div class="card" style="margin-top:12px">
                 <h4 style="margin-top:0;">add money</h4>
-                <div style="display:flex;gap:12px;align-items:flex-start">
-                    <div style="flex:1">
-                        <label class="small">add amount</label>
-                        <input id="wallet-add-amount" type="number" placeholder="amount">
-                        <label class="small">enter utr (12 digits)</label>
-                        <input id="wallet-utr" type="text" placeholder="12 digit utr">
-                        <div style="display:flex;gap:8px;margin-top:8px">
-                            <button class="btn" onclick="addWallet()">request add</button>
-                            <button class="btn secondary" onclick="openWithdrawModal()"><i class="ri-bank-card-line"></i> withdraw</button>
-                        </div>
+                <div style="flex:1">
+                    <label class="small">add amount</label>
+                    <input id="wallet-add-amount" type="number" placeholder="amount">
+                    <div style="display:flex;gap:8px;margin-top:8px">
+                        <button class="btn" onclick="addWallet()">Pay to Add Money</button>
+                        <button class="btn secondary" onclick="openWithdrawModal()"><i class="ri-bank-card-line"></i> withdraw</button>
                     </div>
-                    <div style="min-width:140px;text-align:center;">
-                        <img id="wallet-qr" src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" style="width:100px;border-radius:8px;border:1px solid rgba(0,0,0,0.1);">
-                        <div class="small-muted" style="margin-top:4px;">scan to pay</div>
-                    </div>
+                    <div class="small-muted" style="margin-top:10px;">Click "Pay to Add Money" to proceed with payment via UPI/Netbanking.</div>
                 </div>
             </div>
             <h4 style="margin-top:16px;">wallet history</h4>
@@ -539,6 +499,7 @@
                             <div style="flex:1">
                                 <div id="profile-name-display" style="font-weight:700">Name</div>
                                 <div id="profile-mobile-display" class="small-muted">Mobile</div>
+                                <div id="profile-email-display" class="small-muted">Email</div>
                             </div>
                             <div>
                                 <button class="btn secondary" onclick="toggleProfileEdit()">edit</button>
@@ -548,6 +509,7 @@
                     <div id="profile-edit" class="field-hidden" style="margin-top:8px">
                         <input id="profile-name" placeholder="name">
                         <input id="profile-mobile" placeholder="mobile">
+                        <input id="profile-email" placeholder="email">
                         <div style="margin-top:6px;display:flex;gap:8px;align-items:center;">
                             <input type="file" id="profile-upload" style="flex:1">
                             <button class="btn secondary" onclick="uploadProfile()" style="min-width:100px;">upload</button>
@@ -560,68 +522,59 @@
                 </div>
             </div>
 
+            <h1 class="text-3xl font-extrabold text-center mb-8 text-gray-800">उपलब्ध सेवाएँ (Available Services)</h1>
 
+            <!-- ALL SERVICES START -->
+            <div class="card">
+                <button
+                    onclick="toggleServices()"
+                    id="toggleButton"
+                    style="
+                        width:100%;
+                        padding:12px;
+                        font-size:16px;
+                        font-weight:600;
+                        border:none;
+                        background:#e5e7eb; /* Gray 200 */
+                        border-radius:6px;
+                        cursor:pointer;
+                    ">
+                    सभी सेवाएँ ▼
+                </button>
 
+                <div id="servicesBox" style="display:none; margin-top:12px;">
+                    <div id="loader"></div>
+                    <div id="serviceGrid" class="grid-services">
+                        <!-- Buttons now use data-href instead of inline onclick -->
+                        <button id="service1" class="btn secondary service-button" data-href="loan.html">My loan</button>
+                        <button id="service2" class="btn secondary service-button" data-href="ebook.html">E Books </button>
+                        <button id="service3" class="btn secondary service-button" data-href="uapp.html">Gold app Store</button>
+                        <button id="service4" class="btn secondary service-button" data-href="example.html">4</button>
 
-<h1 class="text-3xl font-extrabold text-center mb-8 text-gray-800">उपलब्ध सेवाएँ (Available Services)</h1>
+                        <button id="service5" class="btn secondary service-button" data-href="example.html">5</button>
+                        <button id="service6" class="btn secondary service-button" data-href="example.html">6</button>
+                        <button id="service7" class="btn secondary service-button" data-href="example.html">7</button>
+                        <button id="service8" class="btn secondary service-button" data-href="example.html">8</button>
 
-<!-- ALL SERVICES START -->
-<div class="card">
+                        <button id="service9" class="btn secondary service-button" data-href="example.html">9</button>
+                        <button id="service10" class="btn secondary service-button" data-href="example.html">10</button>
+                        <button id="service11" class="btn secondary service-button" data-href="example.html">11</button>
+                        <button id="service12" class="btn secondary service-button" data-href="example.html">12</button>
 
-    <button
-        onclick="toggleServices()"
-        id="toggleButton"
-        style="
-            width:100%;
-            padding:12px;
-            font-size:16px;
-            font-weight:600;
-            border:none;
-            background:#e5e7eb; /* Gray 200 */
-            border-radius:6px;
-            cursor:pointer;
-        ">
-        सभी सेवाएँ ▼
-    </button>
+                        <button id="service13" class="btn secondary service-button" data-href="example.html">13</button>
+                        <button id="service14" class="btn secondary service-button" data-href="example.html">14</button>
+                        <button id="service15" class="btn secondary service-button" data-href="example.html">15</button>
+                        <button id="service16" class="btn secondary service-button" data-href="example.html">16</button>
 
-    <div id="servicesBox" style="display:none; margin-top:12px;">
-        <div id="loader"></div>
-        <div id="serviceGrid" class="grid-services">
-            <!-- Buttons now use data-href instead of inline onclick -->
-            <button id="service1" class="btn secondary service-button" data-href="loan.html">My loan</button>
-            <button id="service2" class="btn secondary service-button" data-href="ebook.html">E Books </button>
-            <button id="service3" class="btn secondary service-button" data-href="uapp.html">Gold app Store</button>
-            <button id="service4" class="btn secondary service-button" data-href="example.html">4</button>
+                        <button id="service17" class="btn secondary service-button" data-href="example.html">17</button>
+                        <button id="service18" class="btn secondary service-button" data-href="example.html">18</button>
+                        <button id="service19" class="btn secondary service-button" data-href="example.html">19</button>
+                        <button id="service20" class="btn secondary service-button" data-href="example.html">20</button>
+                    </div>
 
-            <button id="service5" class="btn secondary service-button" data-href="example.html">5</button>
-            <button id="service6" class="btn secondary service-button" data-href="example.html">6</button>
-            <button id="service7" class="btn secondary service-button" data-href="example.html">7</button>
-            <button id="service8" class="btn secondary service-button" data-href="example.html">8</button>
-
-            <button id="service9" class="btn secondary service-button" data-href="example.html">9</button>
-            <button id="service10" class="btn secondary service-button" data-href="example.html">10</button>
-            <button id="service11" class="btn secondary service-button" data-href="example.html">11</button>
-            <button id="service12" class="btn secondary service-button" data-href="example.html">12</button>
-
-            <button id="service13" class="btn secondary service-button" data-href="example.html">13</button>
-            <button id="service14" class="btn secondary service-button" data-href="example.html">14</button>
-            <button id="service15" class="btn secondary service-button" data-href="example.html">15</button>
-            <button id="service16" class="btn secondary service-button" data-href="example.html">16</button>
-
-            <button id="service17" class="btn secondary service-button" data-href="example.html">17</button>
-            <button id="service18" class="btn secondary service-button" data-href="example.html">18</button>
-            <button id="service19" class="btn secondary service-button" data-href="example.html">19</button>
-            <button id="service20" class="btn secondary service-button" data-href="example.html">20</button>
-        </div>
-
-    </div>
-</div>
-<!-- ALL SERVICES END -->
-
-
-
-
-
+                </div>
+            </div>
+            <!-- ALL SERVICES END -->
 
             <div class="card" style="margin-top:12px">
                 <h3 style="margin-top:0;">delivery address</h3>
@@ -645,7 +598,8 @@
             <div class="card" style="margin-top:12px">
                 <h3 style="margin-top:0;">kyc (aadhaar)</h3>
                 <div id="kyc-block">
-                    </div>
+                    <!-- KYC form or status will be rendered here -->
+                </div>
             </div>
 
             <div class="card" style="margin-top:12px">
@@ -697,9 +651,14 @@
             </div>
 
             <div id="orders-full-list" style="margin-top:16px;">
+                <!-- Full order list will be rendered here -->
                 </div>
         </div>
     </div>
+
+    <!-- ========================================= -->
+    <!-- --- MODALS & OVERLAYS --- -->
+    <!-- ========================================= -->
 
     <div id="overlay" class="overlay" onclick="overlayClicked(event)">
         <div class="modal" id="overlay-modal">
@@ -737,33 +696,50 @@
 
     <div id="order-detail-overlay" class="overlay">
         <div class="modal" id="order-detail-modal-content">
-            <h3>Order Details</h3>
+            <!-- Order details will be dynamically loaded here -->
             </div>
     </div>
 
-    <div id="checkout-overlay" class="overlay">
-        <div class="modal">
-            <h3>Checkout Confirmation</h3>
-            <div id="checkout-items" style="max-height:200px;overflow:auto;margin-bottom:12px;padding:8px;border:1px solid rgba(0,0,0,0.1);border-radius:8px;"></div>
-            <div style="margin-top:8px;">
-                <h4 style="margin:0 0 6px 0;">Delivery address</h4>
-                <div id="checkout-address-form">
-                    <input id="co-addr-house" placeholder="house / street">
-                    <input id="co-addr-city" placeholder="city">
-                    <input id="co-addr-district" placeholder="district">
-                    <input id="co-addr-country" placeholder="country">
+
+<div id="checkout-overlay" class="overlay">
+    <div class="modal">
+        <h3>Checkout Confirmation</h3>
+        <div id="checkout-items" style="max-height:180px;overflow:auto;margin-bottom:12px;padding:8px;border:1px solid rgba(0,0,0,0.1);border-radius:8px;"></div>
+        <div style="margin-top:8px;">
+            <h4 style="margin:0 0 6px 0;">Delivery address</h4>
+            <div id="checkout-address-form">
+                <input id="co-addr-mobile" type="tel" placeholder="10-digit Mobile Number" maxlength="10" style="width:100%; margin-bottom:8px;">
+                <input id="co-addr-house" placeholder="House No / Street / Landmark (Detailed)" style="width:100%; margin-bottom:8px;">
+                
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <input id="co-addr-city" placeholder="City" style="flex:1;">
+                    <input id="co-addr-pincode" type="tel" placeholder="Pincode" maxlength="6" style="flex:1;">
                 </div>
-            </div>
-            <div style="margin-top:8px">
-                <label class="small">Enter UTR (12 digits)</label>
-                <input id="checkout-utr" placeholder="UTR">
-            </div>
-            <div style="display:flex;gap:8px;margin-top:16px">
-                <button class="btn" onclick="confirmCheckout()"><i class="ri-check-line"></i> Submit Order</button>
-                <button class="btn secondary" onclick="closeCheckoutModal()">Cancel</button>
+                
+                <div style="display:flex; gap:8px;">
+                    <input id="co-addr-district" placeholder="District" style="flex:1;">
+                    <input id="co-addr-state" placeholder="State" style="flex:1;">
+                </div>
+                <input id="co-addr-country" value="India" readonly style="width:100%; margin-top:8px; background:#f0f0f0;">
             </div>
         </div>
+
+
+
+
+        <div style="display:flex;gap:8px;margin-top:16px">
+            <button class="btn" onclick="confirmCheckout()"><i class="ri-check-line"></i> Proceed to Pay</button>
+            <button class="btn secondary" onclick="closeCheckoutModal()">Cancel</button>
+        </div>
+        <div class="small-muted" style="margin-top:10px; color: #d32f2f;">* Pincode, Mobile & Detailed Address are mandatory.</div>
     </div>
+</div>
+
+
+
+
+
+
 
     <div id="withdraw-overlay" class="overlay">
         <div class="modal">
@@ -808,6 +784,7 @@
 
     <div id="loan-action-overlay" class="overlay">
         <div class="modal" id="loan-action-modal">
+            <!-- Loan action content will be dynamically loaded here -->
             </div>
     </div>
 
@@ -822,6 +799,9 @@
         </div>
     </div>
 
+    <!-- ========================================= -->
+    <!-- --- BOTTOM NAVIGATION --- -->
+    <!-- ========================================= -->
     <div class="bottom-nav">
         <div class="navbtn active" data-target="home" onclick="navClick(event)">
             <i class="ri-home-4-fill"></i><div>home</div>
@@ -840,10 +820,45 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   <!-- ========================================= -->
+    <!-- --- JAVASCRIPT --- -->
+    <!-- ========================================= -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-11380267758"></script>
+
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+
+
     <script>
         // ---------- config ----------
         const firebaseConfig = {
@@ -859,127 +874,227 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-        const paymentRequestsRef = db.ref('payment_requests');
+        const paymentRequestsRef = db.ref('payment_requests'); // Firebase node for all payment requests
         const imgbbKey = '021a2437b889915669b66554687bf17f';
+
+        // ALLAPI.IN Backend Integration Configuration
+        // यह आपके VERCEL BACKEND का URL है जो allapi.in को कॉल करेगा।
+        // **महत्वपूर्ण**: 'Network Error' अक्सर यहीं से आती है, अगर आपका Backend `HttpsProxyAgent` का उपयोग नहीं कर रहा है।
+        const CREATE_ORDER_BACKEND_URL = "https://money-card-p.vercel.app/api/create-order"; 
+        
+        // यह आपके Frontend पेज का URL है।
+        // allapi.in भुगतान के बाद उपयोगकर्ता को यहाँ Redirect करेगा।
+        const ALLAPI_REDIRECT_URL = "https://moneycard-8f457.web.app/chak"; // The URL where this user UI runs.
 
         // ---------- state ----------
         let currentUser = null;
         let productsData = {};
-        let cart = {}; // cart structure: {productId: {qty: 1, color: 'Red', size: 'L'}}
+        let cart = {}; // cart structure: {productId_color_size: {qty: 1, color: 'Red', size: 'L', productId: 'p123'}}
         let modalProductId = null;
         const GOLD_RATE = 6500;
         const SIGNUP_BONUS = 100;
         const REFERRAL_GOLD_MIN = 50;
-        let categoriesData = {}; // Stores all categories from the 'categories' node
+        let categoriesData = {}; // Stores all categories from the 'categories' node (legacy, mostly replaced by E_COMMERCE_CATEGORIES)
         let ecommerceCategories = {}; // Stores categories from 'E_COMMERCE_CATEGORIES'
         let categoryImages = {}; // Stores images from 'category_images'
+        let availableColors = {}; // Stores global available colors
+        let availableSizes = {}; // Stores global available sizes
 
-        // NEW: Color and Size nodes from Firebase
-        let availableColors = {};
-        let availableSizes = {};
-
-
-
-
-
-
-
-
-// Toggles the visibility of the services box
-  function toggleServices() {
-    let box = document.getElementById("servicesBox");
-    box.style.display = box.style.display === "none" || box.style.display === "" ? "block" : "none";
-  }
-
-  /**
-   * Handles the navigation when a service button is clicked.
-   * @param {string} href - The URL to navigate to.
-   */
-  function handleServiceClick(href) {
-    if (href && href !== '#') {
-        console.log(`Navigating to: ${href}`);
-        // This is the core navigation fix
-        window.location.href = href;
-    }
-  }
-
-  /**
-   * sets up a realtime listener for a single service button (User UI)
-   * This shows the button ONLY if the admin set it to "on".
-   */
-  function setupServiceVisibility(i) {
-    const sid = "service" + i;
-    const btn = document.getElementById(sid);
-    if (!btn) return;
-
-    // Realtime Listener
-    db.ref("services/" + sid).on('value', (snapshot) => {
-        const status = snapshot.val();
-
-        // Visibility Check: Only show if status is explicitly "on"
-        if (status === "on") {
-            btn.style.display = 'inline-block'; // Show the button
-        } else {                                                                                                                                   btn.style.display = 'none'; // Hide the button
+        // Toggles the visibility of the services box
+        function toggleServices() {
+            let box = document.getElementById("servicesBox");
+            box.style.display = box.style.display === "none" || box.style.display === "" ? "block" : "none";
+            // Update button text/icon
+            const toggleBtn = document.getElementById('toggleButton');
+            if (box.style.display === 'block') {
+                toggleBtn.innerHTML = 'सभी सेवाएँ ▲';
+            } else {
+                toggleBtn.innerHTML = 'सभी सेवाएँ ▼';
+            }
         }
-    }, (error) => {
-        console.error("Firebase Listener Error for " + sid + ":", error);
-    });
-  }
 
-  /**
-   * Attaches the click listener and starts visibility monitoring after auth.
-   */
-  function loadServiceVisibilityListeners() {
-      document.getElementById('loader').style.display = 'none';
-      for (let i = 1; i <= 20; i++) {
-          const sid = "service" + i;
-          const btn = document.getElementById(sid);
+        /**
+         * Handles the navigation when a service button is clicked.
+         * @param {string} href - The URL to navigate to.
+         */
+        function handleServiceClick(href) {
+            if (href && href !== '#') {
+                console.log(`Navigating to: ${href}`);
+                window.location.href = href;
+            }
+        }
 
-          if (btn) {
-              const href = btn.getAttribute('data-href');
-              // 1. Attach the click handler (This is the fix for click not working)
-              btn.addEventListener('click', () => handleServiceClick(href));
+        /**
+         * sets up a realtime listener for a single service button (User UI)
+         * This shows the button ONLY if the admin set it to "on".
+         */
+        function setupServiceVisibility(i) {
+            const sid = "service" + i;
+            const btn = document.getElementById(sid);
+            if (!btn) return;
 
-              // 2. Start the visibility listener
-              setupServiceVisibility(i);
-          }
-      }
-  }
+            // Realtime Listener
+            db.ref("services/" + sid).on('value', (snapshot) => {
+                const status = snapshot.val();
 
- // --- Core Authentication Flow (Ensures Read Permission) ---
-  auth.onAuthStateChanged(user => {
-      if (user) {
-          loadServiceVisibilityListeners(user.uid);
-      } else {
-          // Sign in anonymously if not already authenticated
-          auth.signInAnonymously()
-              .then((result) => {
-                  if (result && result.user) {
-                      loadServiceVisibilityListeners(result.user.uid);
-                  }
-              })
-              .catch(error => {                                                                                                                          console.error("ERROR: Could not sign in anonymously:", error);
-                  const loader = document.getElementById('loader');
-                  if (loader) loader.textContent = 'सेवाएं लोड नहीं हो सकीं। कृपया नेटवर्क जांचें।';
-              });
-      }
-  });                                                                                                                                  
+                // Visibility Check: Only show if status is explicitly "on"
+                if (status === "on") {
+                    btn.style.display = 'inline-block'; // Show the button
+                } else {                                                                                                                                   
+                    btn.style.display = 'none'; // Hide the button
+                }
+            }, (error) => {
+                console.error("Firebase Listener Error for " + sid + ":", error);
+            });
+        }
+
+        /**
+         * Attaches the click listener and starts visibility monitoring after auth.
+         */
+        function loadServiceVisibilityListeners() {
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none'; // Hide loader once listeners are loaded
+            for (let i = 1; i <= 20; i++) {
+                const sid = "service" + i;
+                const btn = document.getElementById(sid);
+
+                if (btn) {
+                    const href = btn.getAttribute('data-href');
+                    // 1. Attach the click handler
+                    btn.addEventListener('click', () => handleServiceClick(href));
+
+                    // 2. Start the visibility listener
+                    setupServiceVisibility(i);
+                }
+            }
+        }
+
+
+// --- Core Authentication Flow ---
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user; 
+        loadServiceVisibilityListeners();
+
+        // 1. LOGIN WALE USER KE LIYE YAHAN CHIPKA DE
+        handleSharedProductLink(); 
+
+    } else {
+        auth.signInAnonymously()
+            .then((result) => {
+                if (result && result.user) {
+                    currentUser = result.user; 
+                    loadServiceVisibilityListeners();
+
+                    // 2. ANONYMOUS USER KE LIYE BHI YAHAN CHIPKA DE (Taaki link sabke liye kaam kare)
+                    handleSharedProductLink(); 
+                }
+            })
+            .catch(error => {                                                                                                                    
+                console.error("ERROR: Could not sign in anonymously:", error);
+                const loader = document.getElementById('loader');
+                if (loader) loader.textContent = 'सेवाएं लोड नहीं हो सकीं। कृपया नेटवर्क जांचें।';
+            });
+    }
+});
+
+
+const policyData = {
+    delivery: {
+        title: "Shipping & Delivery Protocol",
+        html: `
+            <h4>EN: Standard Logistics Timeline</h4>
+            <p>Every order is subjected to a mandatory 48-hour "Pre-Dispatch Quality Audit". Our standard delivery window is <b>7 to 10 working days</b>. Actual delivery may vary based on courier availability or regional constraints. We do not offer express shipping.</p>
+            <h4>HI: मानक वितरण समय सीमा</h4>
+            <p>प्रत्येक ऑर्डर शिपिंग से पहले 48 घंटे के अनिवार्य "गुणवत्ता ऑडिट" से गुजरता है। मानक डिलीवरी समय <b>7 से 10 कार्य दिवस</b> है। कूरियर उपलब्धता या क्षेत्रीय बाधाओं के आधार पर वास्तविक डिलीवरी भिन्न हो सकती है।</p>
+            <hr>
+            <h4>EN: Transit Liability</h4>
+            <p>Once products are handed over to third-party logistics (Delhivery/BlueDart), the risk passes to the customer. We are not liable for transit delays or carrier-side damages.</p>
+            <h4>HI: ट्रांजिट जिम्मेदारी</h4>
+            <p>कूरियर पार्टनर्स को सामान सौंपने के बाद, जोखिम ग्राहक का होता है। ट्रांजिट देरी या कूरियर कंपनी की गलती के लिए हम उत्तरदायी नहीं हैं।</p>
+        `
+    },
+    returns: {
+        title: "Strict No-Refund & No-Return",
+        html: `
+            <h4>EN: Irrevocable Final Sale</h4>
+            <p>All transactions on Gold Rupi are <b>Final Sales</b>. Due to the high value and sensitive nature of our inventory, we operate a strict <b>NO-RETURN</b> mandate. No exchanges will be entertained.</p>
+            <h4>HI: अपरिवर्तनीय अंतिम बिक्री</h4>
+            <p>Gold Rupi पर सभी लेन-देन <b>Final Sale</b> हैं। उच्च-मूल्य वाली वस्तुओं की संवेदनशीलता के कारण, हम सख्त <b>नो-रिटर्न</b> नीति का पालन करते हैं। कोई विनिमय स्वीकार नहीं किया जाएगा।</p>
+            <hr>
+            <h4>EN: Zero Refund Clause</h4>
+            <p>No monetary refunds—either to original payment source or wallet—will be processed under any circumstances, including dissatisfaction or change of mind.</p>
+            <h4>HI: शून्य रिफंड क्लॉज</h4>
+            <p>किसी भी परिस्थिति में (असंतुष्टि या मन बदलने सहित) मूल भुगतान स्रोत या वॉलेट में कोई नकद रिफंड जारी नहीं किया जाएगा।</p>
+        `
+    },
+    terms: {
+        title: "Binding Legal Terms",
+        html: `
+            <h4>EN: Under-Payment & Compliance</h4>
+            <p>Orders will only ship if the payment matches the exact listing price. Any under-payment will result in order suspension until the balance is cleared.</p>
+            <h4>HI: भुगतान अनुपालन</h4>
+            <p>ऑर्डर तभी शिप किए जाएंगे जब भुगतान लिस्टिंग मूल्य से मेल खाता हो। कम भुगतान के मामले में बैलेंस क्लियर होने तक ऑर्डर निलंबित रहेगा।</p>
+            <hr>
+            <h4>EN: Mandatory Unboxing Evidence</h4>
+            <p>To report any damage, a continuous, unedited <b>Unboxing Video</b> starting from the shipping label is <b>MANDATORY</b>. Without this evidence, no claims will be reviewed.</p>
+            <h4>HI: अनबॉक्सिंग वीडियो की अनिवार्यता</h4>
+            <p>किसी भी क्षति की रिपोर्ट करने के लिए, शिपिंग लेबल से शुरू होने वाला एक निरंतर, बिना एडिट किया हुआ <b>अनबॉक्सिंग वीडियो</b> अनिवार्य है। इसके बिना कोई दावा स्वीकार नहीं होगा।</p>
+        `
+    },
+    contact: {
+        title: "Official Contact Support",
+        html: `
+            <h4>EN: Official Communication</h4>
+            <p>For all queries, please reach us only via official channels. Verbal commitments are not legally binding.</p>
+            <h4>HI: आधिकारिक संचार</h4>
+            <p>सभी पूछताछ के लिए, कृपया केवल आधिकारिक चैनलों के माध्यम से हमसे संपर्क करें।</p>
+            <hr>
+            <p><b>Official Email:</b> moneycard@zohomail.in</p>
+            <p><b>Support:</b> Available via App Chat 24/7</p>
+            <p><b>Response Time:</b> 24-48 Business Hours</p>
+        `
+    }
+};
+
+function openPolicy(type) {
+    const data = policyData[type];
+    if(!data) return;
+    document.getElementById('policy-title').innerText = data.title;
+    document.getElementById('policy-content').innerHTML = data.html;
+    document.getElementById('policy-overlay').style.display = 'flex';
+}
+
+function closePolicy() {
+    document.getElementById('policy-overlay').style.display = 'none';
+}
 
 
 
 
 
 
-        // Categories load
+
+
+
+
+
+
+
+
+
+
+        // Categories load (for general categories node, if still in use)
         db.ref('categories').on('value', snap => {
             categoriesData = snap.val() || {};
-            populateCategories(); 
+            populateCategoriesDropdowns(); // Renamed to avoid confusion with rendering scroll
         });
 
         // NEW: Load E_COMMERCE_CATEGORIES and Images
         db.ref('E_COMMERCE_CATEGORIES').on('value', snap => {
             ecommerceCategories = snap.val() || {};
             renderCategoriesScroll();
+            populateCategoriesDropdowns(); // Also update dropdowns from ecommerce categories
         });
         db.ref('category_images').on('value', snap => {
             categoryImages = snap.val() || {};
@@ -1013,10 +1128,11 @@
         function closeCheckoutModal(){ document.getElementById('checkout-overlay').style.display = 'none'; }
         function closeOrderDetailModal(){ document.getElementById('order-detail-overlay').style.display = 'none'; } // New
         function openWithdrawModal(){ 
+            if (!currentUser) return alert('Please login to withdraw.');
             db.ref('users/'+currentUser.uid+'/wallet').once('value').then(snap=>{
                 document.getElementById('withdraw-balance').innerText = (snap.val() || 0).toFixed(2);
                 document.getElementById('withdraw-overlay').style.display = 'flex'; 
-            });
+            }).catch(e => console.error("Error fetching wallet balance:", e));
         }
         function closeWithdrawModal(){ document.getElementById('withdraw-overlay').style.display = 'none'; }
         function openLoanModal(){ document.getElementById('loan-overlay').style.display = 'flex'; }
@@ -1053,36 +1169,74 @@
 
         // Logout
         function logout(){
-            auth.signOut().then(()=> location.href='rupe.html');
+            auth.signOut().then(()=> location.href='rupe.html').catch(e => console.error("Logout failed:", e));
         }
 
-        // ---------- auth check / initial setup ----------
-        auth.onAuthStateChanged(async user=>{
-            if(!user) return window.location.href='rupe.html';
-            currentUser = user;
 
-            await initialDataSetup(user);
-            
-            document.getElementById('gold-rate').innerText = GOLD_RATE;
-            document.getElementById('goldrate-display').innerText = `rate: ₹${GOLD_RATE} / g`;
+auth.onAuthStateChanged(async user => {
+    if (!user) {
+        return auth.signInAnonymously().catch(e => console.error(e));
+    }
+    currentUser = user;
 
-            loadUserProfile();
-            loadProducts(); // This calls updateLatestPreview inside its listener
-            loadCartFromDb();
-            loadQuickHistory();
-            loadReferHistory();
-            loadWalletHistory();
-            loadGoldHistory();
-            loadOrderHistory();
-            loadChatHistory();
-            checkAndLoadActiveLoan();
-            
-            listenPaymentRequests();
-            
-            // Re-render KYC block on startup
-            renderKYCBlock();
-            renderCategoriesScroll(); // Initial call
-        });
+    const loginBtn = document.getElementById('login-btn-nav');
+    const logoutBtn = document.querySelector('button[onclick="logout()"]');
+
+    if (user.isAnonymous) {
+        // GUEST MODE
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        document.getElementById('welcome-name').innerText = "Guest 👋";
+    } else {
+        // REAL USER MODE
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
+
+        await initialDataSetup(user);
+        loadUserProfile();
+        loadCartFromDb();
+        loadQuickHistory();
+        loadReferHistory();
+        loadWalletHistory();
+        loadGoldHistory();
+        loadOrderHistory();
+        loadChatHistory();
+        checkAndLoadActiveLoan();
+        listenPaymentRequests();
+        renderKYCBlock();
+    }
+
+    // Rate update aur products load
+    document.getElementById('gold-rate').innerText = GOLD_RATE;
+    document.getElementById('goldrate-display').innerText = `rate: ₹${GOLD_RATE} / g`;
+    loadProducts(); 
+    renderCategoriesScroll(); 
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         async function initialDataSetup(user) {
             try {
@@ -1102,6 +1256,7 @@
                     document.getElementById('signup-bonus-note').innerText = `₹${SIGNUP_BONUS} signup bonus added`;
                     setTimeout(()=>document.getElementById('signup-bonus-note').innerText = '', 5000);
                 } else if (!userData.refer) {
+                    // If user exists but somehow refer code is missing
                     await db.ref('users/'+user.uid+'/refer').set(generateReferCode());
                 }
 
@@ -1111,17 +1266,22 @@
         }
 
         // ---------- user profile & listeners ----------
+        let currentProfileData = {}; // Store current user profile for payment functions
         function loadUserProfile(){
+            if (!currentUser) return; // Ensure currentUser is not null for listener setup
             db.ref('users/'+currentUser.uid).on('value',snap=>{
                 const d = snap.val()||{};
-                
+                currentProfileData = d; // Update global profile data
+
                 // UI View Updates
                 const name = d.name || 'Unnamed';
                 document.getElementById('welcome-name').innerText = name.split(' ')[0] + ' 👋';
                 document.getElementById('profile-name-display').innerText = name;
                 document.getElementById('profile-mobile-display').innerText = d.mobile || 'Add Mobile Number';
+                document.getElementById('profile-email-display').innerText = d.email || 'Add Email'; // NEW: Display email
                 document.getElementById('profile-name').value = d.name||'';
                 document.getElementById('profile-mobile').value = d.mobile||'';
+                document.getElementById('profile-email').value = d.email||''; // NEW: For edit field
                 document.getElementById('profile-photo').src = d.photo||'https://via.placeholder.com/84';
                 document.getElementById('my-refer').innerText = d.refer||'N/A';
 
@@ -1156,12 +1316,12 @@
         }
 
         function renderKYCBlock(userData = {}){
-            const d = userData.kyc || {};
+            const d = userData.profile?.kyc || {}; // Correct path for kyc status
             const kycStatus = d.status || 'not submitted';
             const kycBlock = document.getElementById('kyc-block');
 
             if(kycStatus === 'verified'){
-                kycBlock.innerHTML = `<div class="small badge badge-completed" style="margin-bottom:8px;">KYC Verified</div><div class="small-muted">Aadhaar: ${d.number}</div>`;
+                kycBlock.innerHTML = `<div class="small badge badge-completed" style="margin-bottom:8px;">KYC Verified</div><div class="small-muted">Aadhaar: ${d.number || 'N/A'}</div>`;
             } else if (kycStatus === 'pending') {
                 kycBlock.innerHTML = `<div class="small badge badge-pending" style="margin-bottom:8px;">KYC Submitted (Pending Admin Review)</div><div class="small-muted">You will be notified upon verification.</div><button class="btn secondary" style="margin-top:10px;" onclick="showKYCStatus()">view status</button>`;
             } else {
@@ -1191,7 +1351,9 @@
         function saveProfile(){
             const name = document.getElementById('profile-name').value.trim();
             const mobile = document.getElementById('profile-mobile').value.trim();
-            db.ref('users/'+currentUser.uid).update({name,mobile}).then(()=>{
+            const email = document.getElementById('profile-email').value.trim(); // NEW
+            if (!currentUser) return alert('User not logged in.');
+            db.ref('users/'+currentUser.uid).update({name,mobile,email}).then(()=>{ // NEW: save email
                 alert('profile saved');
                 toggleProfileEdit(true);
             }).catch(e=>alert('save failed: ' + e.message));
@@ -1200,6 +1362,8 @@
         async function uploadProfile(){
             const file = document.getElementById('profile-upload').files[0];
             if(!file){ alert('select photo'); return; }
+            if (!currentUser) return alert('User not logged in.');
+
             const form = new FormData(); form.append('image', file);
             try {
                 const res = await axios.post('https://api.imgbb.com/1/upload?key='+imgbbKey, form);
@@ -1210,6 +1374,16 @@
                 alert('upload failed');
                 console.error('Image upload failed:', e);
             }
+        }
+
+        // Helper to get customer profile details for allapi.in
+        function getUserProfileForPayment() {
+            const user = currentProfileData; // Use the globally updated profile data
+            return {
+                customer_name: user.name || 'Gold Rupi Customer',
+                customer_mobile: user.mobile || '9999999999', // Placeholder if not available
+                customer_email: user.email || 'customer@example.com' // Placeholder if not available
+            };
         }
 
         // ---------- address (Fixed) ----------
@@ -1227,6 +1401,7 @@
             const district = document.getElementById('addr-district').value.trim();
             const country = document.getElementById('addr-country').value.trim();
             if(!house || !city || !district || !country) return alert('fill all address fields');
+            if (!currentUser) return alert('User not logged in.');
             
             const addr = {house,city,district,country};
             
@@ -1256,7 +1431,7 @@
                     const p = productsData[id];
                     if (typeof p.images === "string") {
                         p.images = p.images.split(',').map(x => x.trim()).filter(x => x);
-                    } else if (!Array.isArray(p.images) && typeof p.images === 'object') {
+                    } else if (!Array.isArray(p.images) && typeof p.images === 'object' && p.images !== null) {
                          p.images = Object.values(p.images).filter(x => x);
                     } else if (!Array.isArray(p.images)) {
                         p.images = [];
@@ -1268,7 +1443,7 @@
 
                 const keys = Object.keys(productsData || {});
                 renderProducts(keys.reverse());
-                populateCategories();
+                populateCategoriesDropdowns(); // Update dropdowns
                 updateLatestPreview();
             });
         }
@@ -1280,12 +1455,13 @@
             
             // Render main categories from E_COMMERCE_CATEGORIES
             for (const mainCatKey in ecommerceCategories) {
-                if (mainCatKey !== 'General' && typeof ecommerceCategories[mainCatKey] === 'object' && ecommerceCategories[mainCatKey] !== null) {
+                // Check if it's a valid object and not 'General'
+                if (mainCatKey !== 'General' && typeof ecommerceCategories[mainCatKey] === 'object' && ecommerceCategories[mainCatKey] !== null && Object.keys(ecommerceCategories[mainCatKey]).length > 0) {
                     const mainCatDiv = document.createElement('div');
                     mainCatDiv.className = 'cat-item';
                     mainCatDiv.onclick = () => filterByCategory(mainCatKey);
                     
-                    const imgUrl = categoryImages[mainCatKey] || 'https://via.placeholder.com/80?text=' + mainCatKey.substring(0,4);
+                    const imgUrl = categoryImages[mainCatKey] || `https://via.placeholder.com/80?text=${mainCatKey.substring(0,4)}`;
                     
                     mainCatDiv.innerHTML = `
                         <img src="${imgUrl}" class="cat-img" alt="${mainCatKey}">
@@ -1293,20 +1469,23 @@
                     `;
                     container.appendChild(mainCatDiv);
 
-                    // Render subcategories
-                    for (const subCatKey in ecommerceCategories[mainCatKey]) {
-                        if (ecommerceCategories[mainCatKey][subCatKey] === true) {
-                            const subCatDiv = document.createElement('div');
-                            subCatDiv.className = 'cat-item subcat-item';
-                            subCatDiv.onclick = () => filterByCategory(subCatKey); // Filter by subcategory key
-                            
-                            const subImgUrl = categoryImages[subCatKey] || 'https://via.placeholder.com/50?text=' + subCatKey.substring(0,4);
-                            
-                            subCatDiv.innerHTML = `
-                                <img src="${subImgUrl}" class="subcat-img" alt="${subCatKey}">
-                                <div class="cat-name">${subCatKey.replace(/_/g, ' ')}</div>
-                            `;
-                            container.appendChild(subCatDiv);
+                    // Render subcategories only if it's a valid object with subcategories
+                    if (typeof ecommerceCategories[mainCatKey] === 'object' && ecommerceCategories[mainCatKey] !== null) {
+                        for (const subCatKey in ecommerceCategories[mainCatKey]) {
+                            // Ensure it's a subcategory flag, not other properties
+                            if (ecommerceCategories[mainCatKey][subCatKey] === true) {
+                                const subCatDiv = document.createElement('div');
+                                subCatDiv.className = 'cat-item subcat-item';
+                                subCatDiv.onclick = () => filterByCategory(subCatKey); // Filter by subcategory key
+                                
+                                const subImgUrl = categoryImages[subCatKey] || `https://via.placeholder.com/50?text=${subCatKey.substring(0,4)}`;
+                                
+                                subCatDiv.innerHTML = `
+                                    <img src="${subImgUrl}" class="subcat-img" alt="${subCatKey}">
+                                    <div class="cat-name">${subCatKey.replace(/_/g, ' ')}</div>
+                                `;
+                                container.appendChild(subCatDiv);
+                            }
                         }
                     }
                 }
@@ -1319,6 +1498,12 @@
                 const data = snap.val()||{};
                 const keys = Object.keys(data||{}).reverse();
                 const cont = document.getElementById('latest-products'); cont.innerHTML='';
+                
+                if (keys.length === 0) {
+                    cont.innerHTML = '<div class="card" style="grid-column: 1 / -1; text-align:center;">No latest products.</div>';
+                    return;
+                }
+
                 keys.forEach(k=>{
                     const p = productsData[k]; // Use fixed productsData
                     if(!p) return;
@@ -1333,14 +1518,25 @@
                     const div = document.createElement('div'); div.className='card';
                     div.innerHTML = `<img class="product-img" src="${(p.images && p.images[0])||'https://via.placeholder.com/300'}" alt="${p.name}">
                         <div class="pmeta"><div class="pname">${p.name}</div>${priceHtml}</div>
-                        <div class="small">${p.brand || ''} • ${p.colors_list.length > 0 ? p.colors_list[0] : '—'} • ${p.sizes_list.length > 0 ? p.sizes_list[0] : '—'}</div>
+                        <div class="small">${p.brand || ''} • ${p.colors_list.length > 0 && p.colors_list[0] !== 'N/A' ? p.colors_list[0] : '—'} • ${p.sizes_list.length > 0 && p.sizes_list[0] !== 'N/A' ? p.sizes_list[0] : '—'}</div>
                         <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
                             <button class="btn" onclick="openProductModal('${k}')" style="flex:1;"><i class="ri-add-line"></i> Add</button>
                             <button class="btn secondary" onclick="openProductModal('${k}')" style="min-width:70px;"><i class="ri-eye-line"></i> view</button>
+
+<button class="btn secondary" onclick="event.stopPropagation(); shareProduct('${k}', \`${p.name}\`)" style="min-width:40px;">
+    <i class="ri-share-line"></i>
+</button>
+
+
+
+
                         </div>
                         `;
                     cont.appendChild(div);
                 });
+            }).catch(e => {
+                console.error("Error loading latest products:", e);
+                document.getElementById('latest-products').innerHTML = '<div class="card" style="grid-column: 1 / -1; text-align:center; color:red;">Error loading products.</div>';
             });
         }
 
@@ -1369,8 +1565,8 @@
                 card.className='card';
 
                 // FIX: Ensure color/size are not N/A, use dash if undefined
-                const colorDisplay = p.colors_list.length > 0 ? p.colors_list[0] : '—';
-                const sizeDisplay = p.sizes_list.length > 0 ? p.sizes_list[0] : '—';
+                const colorDisplay = p.colors_list.length > 0 && p.colors_list[0] !== 'N/A' ? p.colors_list[0] : '—';
+                const sizeDisplay = p.sizes_list.length > 0 && p.sizes_list[0] !== 'N/A' ? p.sizes_list[0] : '—';
 
                 card.innerHTML = `
                     <img class="product-img" src="${(p.images && p.images[0])||'https://via.placeholder.com/300'}" alt="${p.name}" />
@@ -1385,6 +1581,14 @@
                             <i class="ri-add-line"></i> Add
                         </button>
                         <button class="btn secondary" onclick="openProductModal('${k}')" style="min-width:70px;"><i class="ri-eye-line"></i> view</button>
+<button class="btn secondary" onclick="event.stopPropagation(); shareProduct('${k}', \`${p.name}\`)" style="min-width:40px;">
+    <i class="ri-share-line"></i>
+</button>
+
+
+
+
+
                     </div>
                 `;
 
@@ -1392,79 +1596,121 @@
             });
         }   
 
-        function openProductModal(id){
-            const p = productsData[id];
-            if(!p) return alert('product not found');
 
-            modalProductId = id;
+function openProductModal(id) {
+    const p = productsData[id]; 
+    if (!p) return alert('Product not found');
 
-            document.getElementById('modal-title').innerText = p.name;
-            document.getElementById('modal-price').innerText = 
-                `₹${calcDiscountPrice(p.price,p.discount)} ${p.discount ? '(was ₹'+p.price+')':''}`;
+    modalProductId = id;
 
-            const imgs = document.getElementById('modal-images'); 
-            imgs.innerHTML='';
-            (p.images||[]).forEach(url=>{
-                const img = document.createElement('img'); 
-                img.src = url; 
-                imgs.appendChild(img);
-            });
+    document.getElementById('modal-title').innerText = p.name;
+    document.getElementById('modal-price').innerText =
+        `₹${calcDiscountPrice(p.price, p.discount)} ${p.discount ? '(was ₹' + p.price + ')' : ''}`;
 
-            document.getElementById('modal-desc').innerText = p.description || '';
-            
-            // FIX: Color/Size display
-            document.getElementById('modal-meta').innerText = 
-                `category: ${p.category||'N/A'} • brand: ${p.brand||'N/A'}`;
+    const imgsContainer = document.getElementById('modal-images');
+    imgsContainer.innerHTML = '';
+    imgsContainer.style.textAlign = 'center';
 
-            // NEW: Populate Color/Size Dropdowns
-            const colorSelect = document.getElementById('modal-color-select');
-            const sizeSelect = document.getElementById('modal-size-select');
-            const addToCartBtn = document.getElementById('modal-add-to-cart-btn');
-
-            colorSelect.innerHTML = '<option value="">Select Color</option>';
-            sizeSelect.innerHTML = '<option value="">Select Size</option>';
-            addToCartBtn.disabled = true;
-
-            // Only show colors/sizes that the admin saved on the product
-            p.colors_list.forEach(color => {
-                if (availableColors[color]) { // Check if the color is in the global colors node (for consistency)
-                    const opt = document.createElement('option');
-                    opt.value = color;
-                    opt.innerText = color.toUpperCase();
-                    colorSelect.appendChild(opt);
-                }
-            });
-            p.sizes_list.forEach(size => {
-                if (availableSizes[size]) { // Check if the size is in the global sizes node
-                    const opt = document.createElement('option');
-                    opt.value = size;
-                    opt.innerText = size.toUpperCase();
-                    sizeSelect.appendChild(opt);
-                }
-            });
-            
-            // If the product has no colors/sizes, enable button but inform user
-            if (p.colors_list.length === 0 && p.sizes_list.length === 0) {
-                colorSelect.innerHTML = '<option value="N/A">N/A</option>';
-                sizeSelect.innerHTML = '<option value="N/A">N/A</option>';
-                addToCartBtn.disabled = false;
-            } else if (p.colors_list.length === 1 && p.sizes_list.length === 0) {
-                colorSelect.querySelector('option:nth-child(2)').selected = true; // Auto-select single option
-                sizeSelect.innerHTML = '<option value="N/A">N/A</option>';
-                checkModalSelections();
-            } else if (p.colors_list.length === 0 && p.sizes_list.length === 1) {
-                colorSelect.innerHTML = '<option value="N/A">N/A</option>';
-                sizeSelect.querySelector('option:nth-child(2)').selected = true; // Auto-select single option
-                checkModalSelections();
-            } else if (p.colors_list.length === 1 && p.sizes_list.length === 1) {
-                colorSelect.querySelector('option:nth-child(2)').selected = true;
-                sizeSelect.querySelector('option:nth-child(2)').selected = true;
-                checkModalSelections();
-            }
-
-            openOverlay();
-        }
+    // --- 🎬 1. VIDEO PLAYER (If exists) ---
+    if (p.video_url) {
+        const videoDiv = document.createElement('div');
+        videoDiv.style.marginBottom = '15px';
         
+        const vid = document.createElement('video');
+        vid.src = p.video_url;
+        vid.controls = true; // User play/pause kar sake
+        vid.autoplay = false; // User ki marzi se chale
+        vid.muted = false; 
+        vid.style.width = '100%'; 
+        vid.style.borderRadius = '12px';
+        vid.style.maxHeight = '300px';
+        vid.style.background = '#000';
+        
+        videoDiv.appendChild(vid);
+        imgsContainer.appendChild(videoDiv);
+    } else if (p.video_status === 'processing') {
+        const statusDiv = document.createElement('div');
+        statusDiv.style.fontSize = '12px';
+        statusDiv.style.color = '#ff9800';
+        statusDiv.innerText = `🎬 Video rendering: ${p.video_progress || '0%'}`;
+        imgsContainer.appendChild(statusDiv);
+    }
+
+    // --- 🖼️ 2. IMAGES (Click to Zoom functionality) ---
+    const imageScroll = document.createElement('div');
+    imageScroll.style.display = 'flex';
+    imageScroll.style.overflowX = 'auto';
+    imageScroll.style.gap = '10px';
+    imageScroll.style.padding = '10px 0';
+
+    (p.images || []).forEach(url => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.style.width = '100%'; // Full width jaisa pehle tha
+        img.style.maxWidth = '300px'; 
+        img.style.borderRadius = '8px';
+        img.style.cursor = 'zoom-in'; // Batao ki click ho sakta hai
+        
+        // --- CLICK TO ZOOM ---
+        img.onclick = () => {
+            window.open(url, '_blank'); // Naye tab me puri badi photo dikhegi
+        };
+        
+        imageScroll.appendChild(img);
+    });
+    
+    imgsContainer.appendChild(imageScroll);
+
+    // --- REST OF THE CODE (Meta, Colors, Sizes) ---
+    document.getElementById('modal-desc').innerText = p.description || '';
+    document.getElementById('modal-meta').innerText = `Category: ${p.category || 'N/A'} • Brand: ${p.brand || 'N/A'}`;
+
+    const colorSelect = document.getElementById('modal-color-select');
+    const sizeSelect = document.getElementById('modal-size-select');
+    const addToCartBtn = document.getElementById('modal-add-to-cart-btn');
+
+    colorSelect.innerHTML = '<option value="">Select Color</option>';
+    sizeSelect.innerHTML = '<option value="">Select Size</option>';
+    addToCartBtn.disabled = true;
+
+    p.colors_list.forEach(color => {
+        const opt = document.createElement('option');
+        opt.value = color; opt.innerText = color.toUpperCase();
+        colorSelect.appendChild(opt);
+    });
+
+    p.sizes_list.forEach(size => {
+        const opt = document.createElement('option');
+        opt.value = size; opt.innerText = size.toUpperCase();
+        sizeSelect.appendChild(opt);
+    });
+
+    if (p.colors_list.length === 0 && p.sizes_list.length === 0) {
+        colorSelect.innerHTML = '<option value="N/A">N/A</option>';
+        sizeSelect.innerHTML = '<option value="N/A">N/A</option>';
+        addToCartBtn.disabled = false;
+    } else {
+        if (p.colors_list.length === 1) colorSelect.selectedIndex = 1;
+        if (p.sizes_list.length === 1) sizeSelect.selectedIndex = 1;
+        checkModalSelections();
+    }
+
+    openOverlay();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // NEW: Function to check if color and size are selected in modal
         function checkModalSelections() {
             const color = document.getElementById('modal-color-select').value;
@@ -1472,36 +1718,54 @@
             const p = productsData[modalProductId];
             const addToCartBtn = document.getElementById('modal-add-to-cart-btn');
             
-            const isColorNeeded = p.colors_list.length > 0;
-            const isSizeNeeded = p.sizes_list.length > 0;
+            const isColorNeeded = p.colors_list.length > 0 && !(p.colors_list.length === 1 && p.colors_list[0] === 'N/A'); // Only need if not 'N/A' default
+            const isSizeNeeded = p.sizes_list.length > 0 && !(p.sizes_list.length === 1 && p.sizes_list[0] === 'N/A');
             
-            const colorSelected = !isColorNeeded || color.length > 0;
-            const sizeSelected = !isSizeNeeded || size.length > 0;
+            const colorSelected = !isColorNeeded || (color && color !== 'N/A');
+            const sizeSelected = !isSizeNeeded || (size && size !== 'N/A');
             
             addToCartBtn.disabled = !(colorSelected && sizeSelected);
         }
 
         // Category & Filter helpers
-        function populateCategories(){
+        function populateCategoriesDropdowns(){
             const cats = new Set();
+            // Collect categories from productsData
             Object.values(productsData || {}).forEach(p=>{
                 if(p && p.category) cats.add(p.category);
             });
+            // Also collect from E_COMMERCE_CATEGORIES (main categories only for dropdown)
+            for (const mainCatKey in ecommerceCategories) {
+                if (mainCatKey !== 'General' && typeof ecommerceCategories[mainCatKey] === 'object' && ecommerceCategories[mainCatKey] !== null) {
+                    cats.add(mainCatKey);
+                    // Add subcategories too, if desired for filtering directly
+                    for (const subCatKey in ecommerceCategories[mainCatKey]) {
+                        if (ecommerceCategories[mainCatKey][subCatKey] === true) {
+                            cats.add(subCatKey);
+                        }
+                    }
+                }
+            }
 
             const sel = document.getElementById('category-filter');
-            const sel2 = document.getElementById('cat-shop-filter'); // FIX: Used cat-shop-filter for shop
+            const sel2 = document.getElementById('cat-shop-filter'); 
 
             [sel, sel2].forEach(s=>{
                 if(!s) return;
 
+                const currentSelectedValue = s.value; // Remember current selection
                 s.innerHTML = '<option value="">all categories</option>';
 
-                cats.forEach(catId=>{
+                const sortedCats = Array.from(cats).sort(); // Sort categories alphabetically
+
+                sortedCats.forEach(catId=>{
                     const opt = document.createElement('option');
                     opt.value = catId;
                     opt.innerText = catId.replace(/_/g, ' '); // Use key, replace underscores
                     s.appendChild(opt);
                 });
+
+                s.value = currentSelectedValue; // Restore previous selection
             });
         }
 
@@ -1512,25 +1776,36 @@
             document.getElementById('search-input').value = ''; // Clear search input
             document.getElementById('search-shop').value = ''; // Clear search shop
             applyFilter();
-            showTab('shop');
+            showTab('shop'); // Automatically switch to shop tab
         }
         function applyFilter(){
             searchShop(true); // Always search/filter
         }
         function searchShop(isFilter = false){
-            const q = (document.getElementById('search-shop').value || document.getElementById('search-input').value).trim().toLowerCase();
+            const q = (document.getElementById('search-shop').value || document.getElementById('search-input').value || '').trim().toLowerCase();
             const cat = isFilter 
-                ? (document.getElementById('cat-shop-filter').value || document.getElementById('category-filter').value)
-                : document.getElementById('cat-shop-filter').value;
+                ? (document.getElementById('cat-shop-filter').value || document.getElementById('category-filter').value || '')
+                : (document.getElementById('cat-shop-filter').value || '');
                 
             let keys = Object.keys(productsData||{});
             keys = keys.filter(k=>{
                 const p = productsData[k];
                 if(!p) return false;
-                if(cat && p.category!==cat) return false;
-                if(!q) return true;
+                // If a category is selected, filter by it
+                if(cat && p.category!==cat) {
+                    // Also check if it's a subcategory of the selected category
+                    let isSubcategoryMatch = false;
+                    for (const mainCatKey in ecommerceCategories) {
+                        if (ecommerceCategories[mainCatKey] && ecommerceCategories[mainCatKey][cat] === true && p.category === mainCatKey) {
+                            isSubcategoryMatch = true;
+                            break;
+                        }
+                    }
+                    if (!isSubcategoryMatch) return false;
+                }
+                if(!q) return true; // If no search query, show all in category
                 const text = `${p.name} ${p.description} ${p.brand||''} ${p.colors_list.join(' ')} ${p.sizes_list.join(' ')} ${p.category||''}`.toLowerCase();
-                return text.indexOf(q) !== -1;
+                return text.includes(q); // Use includes for partial matching
             });
             renderProducts(keys.reverse());
         }
@@ -1568,12 +1843,12 @@
             
             const p = productsData[modalProductId];
             
-            const isColorNeeded = p.colors_list.length > 0;
-            const isSizeNeeded = p.sizes_list.length > 0;
+            const isColorNeeded = p.colors_list.length > 0 && !(p.colors_list.length === 1 && p.colors_list[0] === 'N/A');
+            const isSizeNeeded = p.sizes_list.length > 0 && !(p.sizes_list.length === 1 && p.sizes_list[0] === 'N/A');
             
             // Re-check selections
-            if (isColorNeeded && !color) return alert('Please select a color.');
-            if (isSizeNeeded && !size) return alert('Please select a size.');
+            if (isColorNeeded && (!color || color === 'N/A')) return alert('Please select a color.');
+            if (isSizeNeeded && (!size || size === 'N/A')) return alert('Please select a size.');
 
             addToCart(modalProductId, color || 'N/A', size || 'N/A');
             closeOverlay();
@@ -1635,12 +1910,18 @@
             saveCartToDb(); renderCart(); 
         }
         function clearCart(){ cart = {}; saveCartToDb(); renderCart(); }
-        function saveCartToDb(){ if(currentUser) db.ref('carts/'+currentUser.uid).set(cart); }
+        function saveCartToDb(){ 
+            if(currentUser) {
+                db.ref('carts/'+currentUser.uid).set(cart).catch(e => console.error("Error saving cart to DB:", e));
+            }
+        }
         function loadCartFromDb(){
             if(!currentUser) return;
             db.ref('carts/'+currentUser.uid).on('value',snap=>{
                 cart = snap.val() || {};
                 renderCart();
+            }, (error) => {
+                console.error("Error loading cart from DB:", error);
             });
         }
         function updateCartCount(){
@@ -1649,131 +1930,116 @@
             if(count>0){ el.style.display='flex'; el.innerText = count; } else { el.style.display='none'; }
         }
 
+        // ---------- checkout / orders (allapi.in integrated via backend) ----------
+        async function openCheckoutModal(){
+            if (!currentUser) return alert('Please login to checkout.');
+            if(Object.keys(cart).length===0) return alert('cart empty');
+            const itemsDiv = document.getElementById('checkout-items');
+            itemsDiv.innerHTML = '';
+            let subtotal = 0;
 
+            Object.keys(cart).forEach(cartKey=>{
+                const item = cart[cartKey];
+                const pid = item.productId;
+                const p = productsData[pid];
+                if(!p) return;
+                const qty = item.qty;
+                const price = calcDiscountPrice(p.price,p.discount);
+                const total = price * qty;
+                subtotal += total;
+                const row = document.createElement('div');
+                row.className = 'small';
+                row.innerHTML = `<div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(0,0,0,0.1);padding:4px 0;"><div>${p.name} (${item.color}/${item.size}) x ${qty}</div><div>₹${total}</div></div>`;
+                itemsDiv.appendChild(row);
+            });
 
+            const finalRow = document.createElement('div');
+            finalRow.className = 'small';
+            finalRow.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:700;margin-top:6px;"><div>Total:</div><div>₹${subtotal}</div></div>`;
+            itemsDiv.appendChild(finalRow);
+            
+            // Address pre-fill
+            const addrSnap = await db.ref('users/'+currentUser.uid+'/address').once('value');
+            const a = addrSnap.val();
+            if(a){
+                document.getElementById('co-addr-house').value = a.house||'';
+                document.getElementById('co-addr-city').value = a.city||'';
+                document.getElementById('co-addr-district').value = a.district||'';
+                document.getElementById('co-addr-country').value = a.country||'';
+            } else {
+                document.getElementById('co-addr-house').value = '';
+                document.getElementById('co-addr-city').value = '';
+                document.getElementById('co-addr-district').value = '';
+                document.getElementById('co-addr-country').value = '';
+            }
 
-// ---------- checkout / orders (modal flow) ----------
-async function openCheckoutModal(){
-    if(Object.keys(cart).length===0) return alert('cart empty');
-    const itemsDiv = document.getElementById('checkout-items');
-    itemsDiv.innerHTML = '';
-    let subtotal = 0;
+            document.getElementById('checkout-overlay').style.display = 'flex';
+        }
 
-    Object.keys(cart).forEach(cartKey=>{
-        // ... (Items listing code remains here, unchanged) ...
-        const item = cart[cartKey];
-        const pid = item.productId;
-        const p = productsData[pid];
-        if(!p) return;
-        const qty = item.qty;
-        const price = calcDiscountPrice(p.price,p.discount);
-        const total = price * qty;
-        subtotal += total;
-        const row = document.createElement('div');
-        row.className = 'small';
-        row.innerHTML = `<div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(0,0,0,0.1);padding:4px 0;"><div>${p.name} (${item.color}/${item.size}) x ${qty}</div><div>₹${total}</div></div>`; // मैंने यहाँ आपकी टूटी हुई लाइन ठीक की है
-        itemsDiv.appendChild(row);
-    });
-
-    const finalRow = document.createElement('div');
-    finalRow.className = 'small';
-    finalRow.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:700;margin-top:6px;"><div>Total:</div><div>₹${subtotal}</div></div>`; // मैंने यहाँ भी आपकी टूटी हुई लाइन ठीक की है
-    itemsDiv.appendChild(finalRow);
-
-    // --- ✅ नया UPI/QR कोड सेक्शन यहाँ जोड़ा गया है ---
-    const paymentImageDiv = document.createElement('div');
-    paymentImageDiv.style.margin = '15px 0';
-    paymentImageDiv.style.textAlign = 'center';
-    paymentImageDiv.innerHTML = `
-        <h4 style="margin-bottom: 8px;">1. पेमेंट इस QR/UPI पर करें:</h4>
-        <img 
-            src="https://i.ibb.co/CKTVnyGq/Screenshot-20251126-043755-GPay-Business.jpg" 
-            alt="Payment QR Code"
-            style="width: 100%; max-width: 250px; height: auto; border: 1px solid #ccc; border-radius: 8px; padding: 5px;"
-        />
-        <p class="small-muted" style="margin-top: 5px;">पेमेंट के बाद 12-अंकों का UTR/Reference Number नीचे दर्ज करें।</p>
-    `;
-    // इसे finalRow के बाद जोड़ें
-    itemsDiv.appendChild(paymentImageDiv);
-    // --------------------------------------------------
-
-
-    // Address pre-fill
-    const addrSnap = await db.ref('users/'+currentUser.uid+'/address').once('value');
-    const a = addrSnap.val();
-    if(a){
-        document.getElementById('co-addr-house').value = a.house||'';
-        document.getElementById('co-addr-city').value = a.city||'';
-        document.getElementById('co-addr-district').value = a.district||'';
-        document.getElementById('co-addr-country').value = a.country||'';
-    } else {
-        document.getElementById('co-addr-house').value = '';
-        document.getElementById('co-addr-city').value = '';
-        document.getElementById('co-addr-district').value = '';
-        document.getElementById('co-addr-country').value = '';
-    }
-
-    document.getElementById('checkout-utr').value = '';
-    document.getElementById('checkout-overlay').style.display = 'flex';
-}
-
-
-
-
-
-
-async function confirmCheckout(){
-    const utr = (document.getElementById('checkout-utr').value||'').trim();
-    if(!utr || utr.length !== 12) return alert('enter valid 12-digit UTR');
-
-    // Get/Save Address from Checkout form
-    const house = document.getElementById('co-addr-house').value.trim();
-    const city = document.getElementById('co-addr-city').value.trim();
-    const district = document.getElementById('co-addr-district').value.trim();
-    const country = document.getElementById('co-addr-country').value.trim();
-    if(!house || !city || !district || !country) return alert('fill all delivery address fields');
-
-    const addr = {house,city,district,country};
-
-    // --- Start Try-Catch Block to identify the failure point ---
+async function confirmCheckout() {
     try {
-        await db.ref('users/'+currentUser.uid+'/address').set(addr); // 1. Save Address
+        if (!currentUser) return alert('Please login to complete checkout.');
 
-        const orderId = 'o'+Date.now();
-        const subtotalEl = document.getElementById('cart-subtotal');
-        const subtotal = Number(subtotalEl ? subtotalEl.innerText : 0) || 0;
+        // 1. Get Elements
+        const mobile = document.getElementById('co-addr-mobile').value.trim();
+        const house = document.getElementById('co-addr-house').value.trim();
+        const city = document.getElementById('co-addr-city').value.trim();
+        const pincode = document.getElementById('co-addr-pincode').value.trim();
+        const district = document.getElementById('co-addr-district').value.trim();
+        const state = document.getElementById('co-addr-state').value.trim();
+        const country = document.getElementById('co-addr-country').value.trim();
+    // 1. Pehle Checkbox Check Karo
+    const isAgreed = document.getElementById('terms-agree').checked;
+    
 
-        if(subtotal === 0) return alert('cart is empty');
+
+
+
+        // 2. ⭐ STRICT VALIDATION ⭐
+        if (!/^[6-9]\d{9}$/.test(mobile)) return alert("Bhai, sahi 10-digit mobile number dalo!");
         
-        // Store detailed product info in order for admin and detail view
+        // Address Bada Hona Chahiye Check (Min 15 Characters)
+        if (house.length < 15) {
+            return alert("Bhai, address thoda detail mein likho (House No, Street name, Landmark) taaki courier pahunch sake! (Min 15 letters)");
+        }
+        
+        if (!/^[1-9][0-9]{5}$/.test(pincode)) return alert("Sahi 6-digit Pincode dalo!");
+        if (!city || !district || !state) return alert("City, District aur State bharna zaroori hai!");
+
+
+
+
+
+
+        const addr = { mobile, house, city, pincode, district, state, country };
+
+        // 3. Prepare Order Data
+        const orderId = 'o' + Date.now();
+        const subtotalStr = document.getElementById('cart-subtotal')?.innerText || "0";
+        const subtotal = Number(subtotalStr.replace(/[^0-9.]/g, ''));
+
+        if (subtotal <= 0) return alert('Your cart is empty');
+
         const detailedItems = {};
         Object.keys(cart).forEach(cartKey => {
-            const cartItem = cart[cartKey];
-            const pid = cartItem.productId;
-
-            if(!pid) {
-                console.error("Cart Item Missing Product ID:", cartItem);
-                throw new Error(`Invalid item found in cart (Key: ${cartKey}). productId is missing.`);
+            const item = cart[cartKey];
+            const p = productsData[item.productId];
+            if (p) {
+                detailedItems[cartKey] = {
+                    id: item.productId,
+                    name: p.name,
+                    quantity: item.qty,
+                    price: Number(p.price),
+                    final_price: (p.price - (p.price * (p.discount || 0) / 100)),
+                    image: (p.images && p.images[0]) || '',
+                    color: item.color || '—',
+                    size: item.size || '—'
+                };
             }
-
-            const p = productsData[pid];
-
-            if(!p) {
-                throw new Error(`Product data missing for item ID: ${pid}. Please reload products or check the ID.`);
-            }
-
-            detailedItems[cartKey] = {
-                id: pid,
-                name: p.name,
-                quantity: cartItem.qty,
-                price: Number(p.price),
-                discount: Number(p.discount || 0),
-                final_price: calcDiscountPrice(p.price, p.discount),
-                image: (p.images && p.images[0]) || 'https://via.placeholder.com/100',
-                color: cartItem.color || '—',
-                size: cartItem.size || '—'
-            };
         });
+
+        // 4. Save to Firebase (Safety)
+        await db.ref('users/' + currentUser.uid + '/address').set(addr);
 
         const order = {
             id: orderId,
@@ -1781,52 +2047,49 @@ async function confirmCheckout(){
             items: detailedItems,
             total: subtotal,
             address: addr,
-            utr,
-            status: 'payment_pending',
+            gateway: 'cashfree',
+            status: 'pending',
             created_at: Date.now()
         };
 
-        // 2. Save to Orders (Orders node)
-        await db.ref('orders/'+orderId).set(order);
-        
-        // 3. Save to User Orders History (users/$uid/order_history)
-        await db.ref('users/'+currentUser.uid+'/order_history/'+orderId).set(order);
-        
-        // 4. Save Payment Request to the NEW dedicated node (product_payment_orders)
-        // 🚨 यह लाइन बदल दी गई है 🚨
-        await db.ref('product_payment_orders/'+orderId).set({
-            type:'cart',
-            user:currentUser.uid,
-            orderId,
-            amount: subtotal,
-            utr,
-            status:'pending',
-            created_at: Date.now()
+        // 5. Call Backend (Vercel)
+        const res = await axios.post(CREATE_ORDER_BACKEND_URL, {
+            type: 'cart',
+            internal_id: orderId,
+            txn_amount: subtotal,
+            txn_note: `Order ${orderId}`,
+            customer_name: (typeof getUserProfileForPayment === 'function') ? getUserProfileForPayment().customer_name : "User",
+            customer_mobile: mobile,
+            customer_email: currentUser.email || '',
+            redirect_url: ALLAPI_REDIRECT_URL,
+            user_uid: currentUser.uid,
+            order_address: addr,
+            order_items: detailedItems
         });
 
-        // 5. Clear cart (Assuming saveCartToDb is awaited/async)
+        if (!res.data.success) throw new Error(res.data.message || "Backend Error");
+
+        // 6. Save & Clear Cart
+        await db.ref('orders/' + orderId).set(order);
+        await db.ref('users/' + currentUser.uid + '/order_history/' + orderId).set(order);
+
         cart = {};
-        saveCartToDb();
+        if (typeof saveCartToDb === 'function') saveCartToDb();
+        if (typeof renderCart === 'function') renderCart();
+        if (typeof closeCheckoutModal === 'function') closeCheckoutModal();
 
-        renderCart();
-        closeCheckoutModal();
+        // 7. Launch Cashfree
+        if (res.data.results && res.data.results.payment_session_id) {
+            const cashfree = Cashfree({ mode: "production" });
+            cashfree.checkout({
+                paymentSessionId: res.data.results.payment_session_id,
+                redirectUrl: ALLAPI_REDIRECT_URL + "?order_id=" + orderId,
+            });
+        }
 
-        // ✅ Success Message
-        const successMessage = `
-            ✅ ऑर्डर सफलतापूर्वक सबमिट हो गया! (Order ID: ${orderId.substring(0,8)}...)
-            आपकी पेमेंट डिटेल (UTR: ${utr}) हमें प्राप्त हो गई है।
-            आपका ऑर्डर स्टेटस अब 'payment_pending' है।
-        `;
-        alert(successMessage.trim());
-
-        showTab('profile');
-        showHistory('orders');
-
-    } catch(error) {
-        // 🛑 Failure Alert
+    } catch (error) {
         console.error("🔥 CHECKOUT FAILED:", error);
-        alert(`❌ ऑर्डर सबमिट नहीं हुआ। तकनीकी खराबी। \n\nकारण: ${error.message}\n\nसटीक एरर देखने के लिए F12 दबाकर कंसोल (Console) जाँचें।`);
-        return;
+        alert("❌ Error: " + error.message);
     }
 }
 
@@ -1835,38 +2098,19 @@ async function confirmCheckout(){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
         // NEW: Open Order Detail Modal
         function openOrderDetailModal(orderId){
+            if (!currentUser) return alert('Please login to view order details.');
             db.ref('users/'+currentUser.uid+'/order_history/'+orderId).once('value').then(snap => {
                 const order = snap.val();
                 if(!order) return alert('Order not found.');
 
                 let itemsHtml = '';
                 let total = 0;
-                Object.values(order.items).forEach(item => {
+                // Ensure order.items is an object before iterating
+                const orderItems = typeof order.items === 'object' && order.items !== null ? Object.values(order.items) : [];
+
+                orderItems.forEach(item => {
                     const lineTotal = item.final_price * item.quantity;
                     total += lineTotal;
                     itemsHtml += `
@@ -1894,17 +2138,17 @@ async function confirmCheckout(){
                             <div>₹${total}</div>
                         </div>
                         <div class="small-muted" style="margin-top:6px;">Date: ${new Date(order.created_at).toLocaleDateString()} ${new Date(order.created_at).toLocaleTimeString()}</div>
-                        <div class="small-muted">UTR: ${order.utr}</div>
+                        ${order.allapi_order_id ? `<div class="small-muted">Payment ID: ${order.allapi_order_id.substring(0, 10)}...</div>` : ''}
                     </div>
                     
-                    <h4>Items (${Object.keys(order.items).length})</h4>
+                    <h4>Items (${orderItems.length})</h4>
                     <div class="order-item-list" style="max-height: 200px; overflow-y: auto;">
                         ${itemsHtml}
                     </div>
 
                     <h4 style="margin-top:12px;">Delivery Address</h4>
                     <div class="card small-muted">
-                        ${order.address.house}, ${order.address.city}, ${order.address.district}, ${order.address.country}
+                        ${order.address ? `${order.address.house}, ${order.address.city}, ${order.address.district}, ${order.address.country}` : 'Address Not Available'}
                     </div>
                 `;
                 document.getElementById('order-detail-overlay').style.display = 'flex';
@@ -1914,57 +2158,139 @@ async function confirmCheckout(){
             });
         }
 
-        // ---------- gold requests (Unchanged) ----------
+        // ---------- gold requests (allapi.in integrated via backend) ----------
         document.getElementById('gold-amount').addEventListener('input', (e) => {
             const amount = Number(e.target.value);
             const grams = (amount / GOLD_RATE).toFixed(4);
             document.getElementById('gold-grams-calc').innerText = `${grams} g`;
         });
         
-        function buyGold(){
+        async function buyGold(){
+            if (!currentUser) return alert('Please login to buy gold.');
             const amount = Number(document.getElementById('gold-amount').value);
-            const utr = (document.getElementById('gold-utr').value||'').trim();
             if(!amount || amount < REFERRAL_GOLD_MIN) return alert(`minimum ₹${REFERRAL_GOLD_MIN} gold purchase required`);
-            if(!utr || utr.length !== 12) return alert('enter 12-digit utr');
             
-            const id = 'g'+Date.now();
-            const grams = (amount / GOLD_RATE).toFixed(4);
-            const payload = { id, user: currentUser.uid, amount, gold_rate: GOLD_RATE, grams: Number(grams), utr, status: 'pending', created_at: Date.now() };
-            
-            db.ref('gold_requests/'+id).set(payload);
-            db.ref('users/'+currentUser.uid+'/gold_history/'+id).set(payload);
-            db.ref('payment_requests/'+id).set({type:'gold', user:currentUser.uid, id, amount, utr, status:'pending', created_at:Date.now()});
-            
-            alert('gold purchase request sent to admin');
-            
-            document.getElementById('gold-amount').value = '';
-            document.getElementById('gold-utr').value = '';
-            document.getElementById('gold-grams-calc').innerText = '0.0000 g';
-            showHistory('gold');
+            try {
+                const id = 'g'+Date.now(); // Internal Firebase ID
+                const grams = (amount / GOLD_RATE).toFixed(4);
+
+                const customer = getUserProfileForPayment();
+
+                // 1. Call YOUR BACKEND to create the order with allapi.in
+                // **Network Error** अक्सर यहाँ पर Backend के AllAPI.in को कॉल करते समय आती है।
+                // सुनिश्चित करें कि आपका Backend (`index.js`) `HttpsProxyAgent` का सही से इस्तेमाल कर रहा है।
+                const backendResponse = await axios.post(CREATE_ORDER_BACKEND_URL, {
+                    type: 'gold',
+                    internal_id: id, // Your internal Firebase ID (using internal_id as per backend)
+                    txn_amount: amount,
+                    txn_note: `Gold Purchase ${grams}g`,
+                    product_name: `Digital Gold (${grams}g)`,
+                    customer_name: customer.customer_name,
+                    customer_mobile: customer.customer_mobile,
+                    customer_email: customer.customer_email,
+                    redirect_url: ALLAPI_REDIRECT_URL,
+                    user_uid: currentUser.uid
+                });
+
+                if(!backendResponse.data.success) { // Backend now returns 'success' field
+                    throw new Error(backendResponse.data.message || 'Failed to create payment order via backend.');
+                }
+
+                const paymentDataFromBackend = backendResponse.data.results;
+
+                const payload = { 
+                    id, 
+                    user: currentUser.uid, 
+                    amount, 
+                    gold_rate: GOLD_RATE, 
+                    grams: Number(grams), 
+                    allapi_order_id: paymentDataFromBackend.allapi_order_id, // Store allapi.in order ID
+                    allapi_txn_id: paymentDataFromBackend.txn_id, // Store allapi.in transaction ID
+                    status: 'allapi_pending', 
+                    created_at: Date.now() 
+                };
+                
+                await db.ref('gold_requests/'+id).set(payload);
+                await db.ref('users/'+currentUser.uid+'/gold_history/'+id).set(payload);
+                
+                alert('Redirecting to payment gateway for gold purchase...');
+                
+                document.getElementById('gold-amount').value = '';
+                document.getElementById('gold-grams-calc').innerText = '0.0000 g';
+                showHistory('gold');
+
+                // Redirect user to allapi.in payment page (URL received from backend)
+                window.location.href = paymentDataFromBackend.payment_url;
+
+            } catch (error) {
+                console.error("🔥 GOLD PURCHASE FAILED:", error);
+                alert(`❌ Gold purchase failed. Please try again. \n\nReason: ${error.message}`);
+            }
         }
 
-        // ---------- wallet requests (Unchanged) ----------
-        function addWallet(){
+        // ---------- wallet requests (allapi.in integrated via backend) ----------
+        async function addWallet(){
+            if (!currentUser) return alert('Please login to add money to wallet.');
             const amount = Number(document.getElementById('wallet-add-amount').value);
-            const utr = (document.getElementById('wallet-utr').value||'').trim();
             if(!amount || amount < 10) return alert('enter valid amount (min 10)');
-            if(!utr || utr.length !== 12) return alert('enter 12-digit utr');
             
-            const id = 'w_add_'+Date.now();
-            const req = { id, user: currentUser.uid, amount, utr, status:'pending', type:'add', created_at: Date.now() };
-            
-            db.ref('wallet_requests/'+id).set(req);
-            db.ref('users/'+currentUser.uid+'/wallet_history/'+id).set(req);
-            db.ref('payment_requests/'+id).set({type:'wallet', user:currentUser.uid, id, amount, utr, status:'pending', created_at:Date.now()});
-            
-            alert('wallet add request sent to admin');
-            
-            document.getElementById('wallet-add-amount').value = '';
-            document.getElementById('wallet-utr').value = '';
-            showHistory('wallet');
+            try {
+                const id = 'w_add_'+Date.now(); // Internal Firebase ID
+
+                const customer = getUserProfileForPayment();
+
+                // 1. Call YOUR BACKEND to create the order with allapi.in
+                // **Network Error** अक्सर यहाँ पर Backend के AllAPI.in को कॉल करते समय आती है।
+                // सुनिश्चित करें कि आपका Backend (`index.js`) `HttpsProxyAgent` का सही से इस्तेमाल कर रहा है।
+                const backendResponse = await axios.post(CREATE_ORDER_BACKEND_URL, {
+                    type: 'wallet_add', // Changed to wallet_add as per backend
+                    internal_id: id, // Your internal Firebase ID (using internal_id as per backend)
+                    txn_amount: amount,
+                    txn_note: `Add Money to Wallet`,
+                    product_name: "Wallet Top-up",
+                    customer_name: customer.customer_name,
+                    customer_mobile: customer.customer_mobile,
+                    customer_email: customer.customer_email,
+                    redirect_url: ALLAPI_REDIRECT_URL,
+                    user_uid: currentUser.uid
+                });
+
+                if(!backendResponse.data.success) { // Backend now returns 'success' field
+                    throw new Error(backendResponse.data.message || 'Failed to create payment order via backend.');
+                }
+
+                const paymentDataFromBackend = backendResponse.data.results;
+
+                const req = { 
+                    id, 
+                    user: currentUser.uid, 
+                    amount, 
+                    allapi_order_id: paymentDataFromBackend.allapi_order_id, // Store allapi.in order ID
+                    allapi_txn_id: paymentDataFromBackend.txn_id, // Store allapi.in transaction ID
+                    status:'allapi_pending', 
+                    type:'add', 
+                    created_at: Date.now() 
+                };
+                
+                await db.ref('wallet_requests/'+id).set(req);
+                await db.ref('users/'+currentUser.uid+'/wallet_history/'+id).set(req);
+                
+                alert('Redirecting to payment gateway to add money...');
+                
+                document.getElementById('wallet-add-amount').value = '';
+                showHistory('wallet');
+
+                // Redirect user to allapi.in payment page (URL received from backend)
+                window.location.href = paymentDataFromBackend.payment_url;
+
+            } catch (error) {
+                console.error("🔥 WALLET ADD FAILED:", error);
+                alert(`❌ Failed to add money to wallet. Please try again. \n\nReason: ${error.message}`);
+            }
         }
 
         function submitWithdraw(){
+            if (!currentUser) return alert('Please login to withdraw.');
             const amount = Number(document.getElementById('withdraw-amount').value);
             const note = (document.getElementById('withdraw-note').value||'').trim();
             const currentBalance = Number(document.getElementById('withdraw-balance').innerText);
@@ -1976,18 +2302,28 @@ async function confirmCheckout(){
             const wid = 'w_wd_'+Date.now();
             const payload = { id: wid, user: currentUser.uid, amount, note, status:'pending', type:'withdraw', created_at: Date.now() };
             
-            db.ref('users/'+currentUser.uid+'/wallet').transaction(curr => (curr || 0) - amount);
-
-            db.ref('withdrawRequests/'+wid).set(payload);
-            db.ref('users/'+currentUser.uid+'/wallet_history/'+wid).set(payload);
-            
-            alert('withdraw request sent to admin. Amount deducted and pending admin approval.');
-            closeWithdrawModal();
-            showHistory('wallet');
+            db.ref('users/'+currentUser.uid+'/wallet').transaction(curr => (curr || 0) - amount)
+                .then(transactionResult => {
+                    if (transactionResult.committed) {
+                        db.ref('withdrawRequests/'+wid).set(payload);
+                        db.ref('users/'+currentUser.uid+'/wallet_history/'+wid).set(payload);
+                        
+                        alert('Withdraw request sent to admin. Amount deducted and pending admin approval.');
+                        closeWithdrawModal();
+                        showHistory('wallet');
+                    } else {
+                        alert('Failed to deduct amount from wallet. Insufficient balance or concurrent update.');
+                    }
+                })
+                .catch(e => {
+                    console.error("Withdrawal transaction failed:", e);
+                    alert('Withdrawal failed: ' + e.message);
+                });
         }
 
         // ---------- refer (Unchanged logic, UI fixed) ----------
         function submitRefer(){
+            if (!currentUser) return alert('Please login to refer.');
             const name = document.getElementById('refer-friend-name').value.trim();
             const mobile = document.getElementById('refer-friend-mobile').value.trim();
             
@@ -1996,18 +2332,23 @@ async function confirmCheckout(){
             const id = 'r'+Date.now();
             const req = { id, user: currentUser.uid, name, mobile, status:'pending', created_at: Date.now() };
 
-            db.ref('refer_cash_requests/'+id).set(req);
-            db.ref('users/'+currentUser.uid+'/refer_history/'+id).set(req);
+            db.ref('refer_cash_requests/'+id).set(req).then(() => {
+                db.ref('users/'+currentUser.uid+'/refer_history/'+id).set(req);
 
-            alert('refer request sent to admin');
-            document.getElementById('refer-friend-name').value = '';
-            document.getElementById('refer-friend-mobile').value = '';
-            showHistory('refer');
+                alert('refer request sent to admin');
+                document.getElementById('refer-friend-name').value = '';
+                document.getElementById('refer-friend-mobile').value = '';
+                showHistory('refer');
+            }).catch(e => {
+                alert('Referral submission failed: ' + e.message);
+                console.error(e);
+            });
         }
 
         // ---------- kyc (Fixed) ----------
         async function uploadKYC(){
-            const existingSnap = await db.ref('users/'+currentUser.uid+'/kyc').once('value');
+            if (!currentUser) return alert('Please login to submit KYC.');
+            const existingSnap = await db.ref('users/'+currentUser.uid+'/profile/kyc').once('value'); // Correct path
             const existing = existingSnap.val();
             if(existing && existing.status === 'verified') return alert('KYC already verified — cannot resubmit');
 
@@ -2038,10 +2379,10 @@ async function confirmCheckout(){
                 };
 
                 await db.ref('kyc_requests/'+id).set(payload);
-                await db.ref('users/'+currentUser.uid+'/kyc').set({status:'pending', id, number});
+                await db.ref('users/'+currentUser.uid+'/profile/kyc').set({status:'pending', id, number}); // Correct path
 
                 alert('kyc submitted to admin successfully');
-                renderKYCBlock();
+                renderKYCBlock(); // Re-render to show pending status
             } catch(e) {
                 alert('KYC submission failed (upload error or Firebase error).');
                 console.error('KYC failed:', e);
@@ -2049,7 +2390,8 @@ async function confirmCheckout(){
         }
 
         function showKYCStatus(){
-            db.ref('users/'+currentUser.uid+'/kyc').once('value').then(snap=>{
+            if (!currentUser) return alert('Please login to check KYC status.');
+            db.ref('users/'+currentUser.uid+'/profile/kyc').once('value').then(snap=>{ // Correct path
                 const v = snap.val();
                 if(!v || !v.id) return alert('no kyc submitted');
 
@@ -2061,11 +2403,15 @@ admin_note: ${r.admin_note||'none'}`);
                     alert('Could not fetch detailed status.');
                     console.error(e);
                 });
+            }).catch(e => {
+                console.error("Error fetching user KYC status:", e);
+                alert("Error fetching user KYC status.");
             });
         }
         
         // ---------- quick loan (Unchanged logic) ----------
         function openLoanModal(){
+            if (!currentUser) return alert('Please login to apply for a loan.');
             // Clear previous inputs
             document.getElementById('loan-amount-needed').value = '';
             document.getElementById('loan-profession').value = '';
@@ -2080,6 +2426,7 @@ admin_note: ${r.admin_note||'none'}`);
         }
 
         async function submitLoanApplication(){
+            if (!currentUser) return alert('Please login to submit loan application.');
             const amount = Number(document.getElementById('loan-amount-needed').value);
             const profession = document.getElementById('loan-profession').value.trim();
             const panNumber = document.getElementById('loan-pan-number').value.trim();
@@ -2118,6 +2465,7 @@ admin_note: ${r.admin_note||'none'}`);
         }
 
         async function checkAndLoadActiveLoan(){
+            if (!currentUser) return;
             const userLoanSnap = await db.ref('users/'+currentUser.uid+'/loan_application').once('value');
             const userLoan = userLoanSnap.val();
             
@@ -2167,6 +2515,7 @@ admin_note: ${r.admin_note||'none'}`);
                     emiListDiv.innerHTML = '<h4>My EMIs</h4>';
                     emiArray.forEach(emi => {
                         const isPaid = emi.status === 'paid';
+                        const emiStatusBadge = renderStatusBadge(emi.status); // Use the common badge renderer
                         emiListDiv.innerHTML += `
                             <div class="card history" style="border-left: 4px solid ${isPaid ? '#10b981' : '#f59e0b'};">
                                 <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -2176,7 +2525,7 @@ admin_note: ${r.admin_note||'none'}`);
                                     </div>
                                     <div>
                                         ${isPaid 
-                                            ? `<div class="badge badge-completed">Paid</div>` 
+                                            ? emiStatusBadge
                                             : `<button class="btn secondary" onclick="openEmiPaymentModal('${emi.id}', ${emi.amount})">Pay Now</button>`
                                         }
                                     </div>
@@ -2189,11 +2538,15 @@ admin_note: ${r.admin_note||'none'}`);
                     if (remainingEmis === 0 && loanDetails.status === 'approved') { // Check if all paid and loan is not yet closed
                         detailsDiv.innerHTML += `<button class="btn" style="margin-top:10px;" onclick="closeLoan('${userLoan.id}')">Close Loan</button>`;
                     }
+                }, (error) => {
+                    console.error("Error loading loan EMIs:", error);
+                    emiListDiv.innerHTML = '<div class="small-muted" style="color:red;padding:10px;">Error loading EMIs.</div>';
                 });
             }
         }
 
         function openLoanAcceptModal(loanId){
+            if (!currentUser) return alert('Please login to accept loan offer.');
             db.ref('loan_requests/'+loanId).once('value').then(snap => {
                 const loan = snap.val();
                 if(!loan || loan.status !== 'reviewed') return alert('Invalid loan state.');
@@ -2209,10 +2562,14 @@ admin_note: ${r.admin_note||'none'}`);
                     </div>
                 `;
                 openLoanActionModal();
+            }).catch(e => {
+                alert('Failed to load loan offer details.');
+                console.error(e);
             });
         }
         
         async function acceptLoan(loanId, amount){
+            if (!currentUser) return alert('Please login to accept loan.');
             await db.ref('loan_requests/'+loanId+'/status').set('approved');
             await db.ref('users/'+currentUser.uid+'/loan_application/status').set('approved');
 
@@ -2227,6 +2584,7 @@ admin_note: ${r.admin_note||'none'}`);
         }
 
         function openEmiPaymentModal(emiId, amount){
+            if (!currentUser) return alert('Please login to pay EMI.');
             document.getElementById('loan-action-modal').innerHTML = `
                 <h3>Pay EMI: ₹${Number(amount).toFixed(2)}</h3>
                 <p>Please pay the amount using UPI to the main QR and enter the UTR below.</p>
@@ -2244,11 +2602,15 @@ admin_note: ${r.admin_note||'none'}`);
         }
 
         async function submitEmiPayment(emiId, amount){
+            if (!currentUser) return alert('Please login to submit EMI payment.');
             const utr = document.getElementById('emi-utr').value.trim();
             if(!utr || utr.length !== 12) return alert('Enter a valid 12-digit UTR.');
             
             const reqId = 'emi_pay_'+Date.now();
             
+            // This is a direct Firebase update for payment_requests.
+            // Your backend webhook should be listening to 'payment_requests' node for updates,
+            // then process and update 'users/${currentUser.uid}/loan_emis/${emiId}/status'.
             await db.ref('payment_requests/'+reqId).set({
                 type:'emi_payment', 
                 user:currentUser.uid, 
@@ -2267,6 +2629,7 @@ admin_note: ${r.admin_note||'none'}`);
         }
 
         async function closeLoan(loanId){
+            if (!currentUser) return alert('Please login to close loan.');
             await db.ref('loan_requests/'+loanId+'/status').set('closed');
             await db.ref('users/'+currentUser.uid+'/loan_application/status').set('closed');
             
@@ -2276,6 +2639,7 @@ admin_note: ${r.admin_note||'none'}`);
 
         // ---------- chat support (Unchanged) ----------
         function loadChatHistory(){
+            if (!currentUser) return;
             const chatDiv = document.getElementById('chat-messages');
             chatDiv.innerHTML = '';
             db.ref('chat_support/'+currentUser.uid).on('value', snap => {
@@ -2297,10 +2661,13 @@ admin_note: ${r.admin_note||'none'}`);
                     chatDiv.appendChild(d);
                 });
                 chatDiv.scrollTop = chatDiv.scrollHeight; 
+            }, (error) => {
+                console.error("Error loading chat history:", error);
             });
         }
 
         function sendChatMessage(){
+            if (!currentUser) return alert('Please login to chat.');
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
             if(!message) return;
@@ -2327,74 +2694,91 @@ admin_note: ${r.admin_note||'none'}`);
             else if(type==='refer'){ showTab('profile'); loadReferHistory(); }
         }
 
-        function renderStatusBadge(status){
-            status = status || 'pending';
-            const statusClass = {
-                'payment_pending': 'badge-pending',
-                'pending': 'badge-pending',
-                'paid': 'badge-paid',
-                'processing': 'badge-processing',
-                'out_for_delivery': 'badge-processing',
-                'delivered': 'badge-completed',
-                'completed': 'badge-completed',
-                'rejected': 'badge-rejected',
-                'failed': 'badge-rejected',
-                'withdraw': 'badge-withdraw',
-                'add': 'badge-add',
-                'bonus': 'badge-add',
-                'loan_credit': 'badge-loan',
-                'eligible_for_bonus': 'badge-loan', // New status for refer
-                'approved': 'badge-completed',
-                'pending_payment': 'badge-pending',
-                'closed': 'badge-completed',
-            }[status] || 'badge-pending';
-            return `<span class="badge ${statusClass}">${status.replace(/_/g, ' ')}</span>`;
-        }
+function renderStatusBadge(status) {
+    status = (status || 'pending').toLowerCase(); // 👈 Sabko lowercase kar do taki match ho jaye
+    const statusClass = {
+        'payment_pending': 'badge-pending',
+        'pending': 'badge-pending',
+        'paid': 'badge-paid',
+        'processing': 'badge-processing',
+        'shipped': 'badge-processing',      // Added
+        'out_for_delivery': 'badge-processing', 
+        'delivered': 'badge-completed',    // Matches 'delivered'
+        'completed': 'badge-completed',
+        'approved': 'badge-completed',
+        'rejected': 'badge-rejected',
+        'failed': 'badge-rejected',
+        'withdraw': 'badge-withdraw',
+        'add': 'badge-add',
+        'bonus': 'badge-add',
+        'loan_credit': 'badge-loan',
+        'eligible_for_bonus': 'badge-eligible_for_bonus',
+        'pending_payment': 'badge-pending',
+        'closed': 'badge-completed',
+    }[status] || 'badge-pending';
+    
+    return `<span class="badge ${statusClass}">${status.replace(/_/g, ' ')}</span>`;
+}
+
         
-        function loadQuickHistory(){
-            const c = document.getElementById('quick-history');
-            c.innerHTML='<div class="small-muted" style="text-align:center;">loading quick history...</div>';
-            
-            db.ref('users/'+currentUser.uid).once('value').then(snap=>{
-                const u = snap.val()||{};
-                c.innerHTML='';
+function loadQuickHistory() {
+    if (!currentUser) return;
+    const c = document.getElementById('quick-history');
+    c.innerHTML = '<div class="small-muted" style="text-align:center;">loading quick history...</div>';
 
-                const orders = u.order_history ? Object.values(u.order_history) : [];
-                const golds = u.gold_history ? Object.values(u.gold_history) : [];
-                const wallets = u.wallet_history ? Object.values(u.wallet_history) : [];
-                
-                const combined = [...orders, ...golds, ...wallets]
-                    .filter(item => item && item.created_at)
-                    .sort((a,b)=>b.created_at - a.created_at)
-                    .slice(0, 6);
+    db.ref('users/' + currentUser.uid).once('value').then(snap => {
+        const u = snap.val() || {};
+        c.innerHTML = '';
 
-                if (combined.length === 0) {
-                    c.innerHTML = '<div class="small-muted" style="text-align:center;padding:10px;">No recent activity.</div>';
-                    return;
-                }
+        const orders = u.order_history ? Object.values(u.order_history) : [];
+        const golds = u.gold_history ? Object.values(u.gold_history) : [];
+        const wallets = u.wallet_history ? Object.values(u.wallet_history) : [];
 
-                combined.forEach(item=>{
-                    const type = item.type || (item.items ? 'order' : (item.grams ? 'gold' : 'wallet'));
-                    let text = 'Activity';
-                    if (type === 'order') text = `order ${item.id.substring(0,8)} • ₹${item.total} • ${item.items ? Object.keys(item.items).length + ' items' : '—'}`;
-                    if (type === 'gold') text = `gold buy • ₹${item.amount} → ${Number(item.grams).toFixed(4)}g`;
-                    if (type === 'add' || type === 'withdraw' || type === 'bonus' || type === 'loan_credit') text = `${type.replace('_',' ')} • ₹${item.amount}`;
+        const combined = [...orders, ...golds, ...wallets]
+            .filter(item => item && item.created_at)
+            .sort((a, b) => b.created_at - a.created_at)
+            .slice(0, 6);
 
-                    const d = document.createElement('div');
-                    d.className='card history';
-                    d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div style="font-weight:600;text-transform:capitalize;">${text}</div>
-                        ${renderStatusBadge(item.status)}
-                    </div>`;
-                    c.appendChild(d);
-                });
-            }).catch(e => {
-                c.innerHTML = '<div class="small-muted" style="color:red;padding:10px;">Error loading history.</div>';
-                console.error(e);
-            });
+        if (combined.length === 0) {
+            c.innerHTML = '<div class="small-muted" style="text-align:center;padding:10px;">No recent activity.</div>';
+            return;
         }
+
+        combined.forEach(item => {
+            const type = item.type || (item.items ? 'order' : (item.grams ? 'gold' : (item.amount && item.allapi_order_id ? 'wallet' : 'unknown')));
+            let text = 'Activity';
+            if (type === 'order') text = `Order ${item.id.substring(0, 8)} • ₹${item.total}`;
+            if (type === 'gold') text = `Gold Buy • ₹${item.amount} → ${Number(item.grams).toFixed(4)}g`;
+            if (type === 'add' || type === 'withdraw' || type === 'bonus' || type === 'loan_credit' || type === 'wallet') text = `${type.replace(/_/g, ' ')} • ₹${item.amount || item.txn_amount || 0}`;
+
+            // ⭐ Tracking Link (Sirf tab dikhega jab order ship hoga)
+            let trackingHtml = '';
+            if (item.tracking_id && item.tracking_id.length > 5 && item.tracking_id !== 'PENDING_DASHBOARD') {
+                trackingHtml = `<div style="margin-top:5px; border-top:1px solid #eee; padding-top:5px;"><a href="${item.tracking_url || `https://shiprocket.in/tracking/${item.tracking_id}`}" target="_blank" style="font-size:11px; color:#007bff; font-weight:700; text-decoration:none;">🚀 Track Location ➔</a></div>`;
+            }
+
+            const d = document.createElement('div');
+            d.className = 'card history';
+            d.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:600;text-transform:capitalize;">${text}</div>
+                    ${renderStatusBadge(item.status)}
+                </div>
+                ${trackingHtml}`;
+
+            c.appendChild(d);
+        });
+    }).catch(e => {
+        c.innerHTML = '<div class="small-muted" style="color:red;padding:10px;">Error loading history.</div>';
+    });
+}
+
+
+
+
 
         function loadReferHistory(){
+            if (!currentUser) return;
             const list = document.getElementById('refer-history-list');
             list.innerHTML='<div class="small-muted" style="text-align:center;padding:10px;">loading...</div>';
             
@@ -2419,10 +2803,14 @@ admin_note: ${r.admin_note||'none'}`);
                     </div>`;
                     list.appendChild(d);
                 });
+            }, (error) => {
+                console.error("Error loading refer history:", error);
+                list.innerHTML = '<div class="small-muted" style="color:red;padding:10px;">Error loading history.</div>';
             });
         }
 
         function loadWalletHistory(){
+            if (!currentUser) return;
             const list = document.getElementById('wallet-history-list');
             list.innerHTML='<div class="small-muted" style="text-align:center;padding:10px;">loading...</div>';
 
@@ -2437,7 +2825,7 @@ admin_note: ${r.admin_note||'none'}`);
                 }
 
                 items.forEach(w=>{
-                    const type = w.type || (w.utr ? 'add' : 'unknown');
+                    const type = w.type || (w.utr ? 'add' : 'unknown'); // Legacy for UTR, will be 'add' for allapi.in
                     const d = document.createElement('div');
                     d.className='card history';
                     d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;">
@@ -2449,10 +2837,14 @@ admin_note: ${r.admin_note||'none'}`);
                     </div>`;
                     list.appendChild(d);
                 });
+            }, (error) => {
+                console.error("Error loading wallet history:", error);
+                list.innerHTML = '<div class="small-muted" style="color:red;padding:10px;">Error loading history.</div>';
             });
         }
 
         function loadGoldHistory(){
+            if (!currentUser) return;
             const list = document.getElementById('gold-status-list');
             list.innerHTML='<div class="small-muted" style="text-align:center;padding:10px;">loading...</div>';
 
@@ -2478,11 +2870,15 @@ admin_note: ${r.admin_note||'none'}`);
                     </div>`;
                     list.appendChild(d);
                 });
+            }, (error) => {
+                console.error("Error loading gold history:", error);
+                list.innerHTML = '<div class="small-muted" style="color:red;padding:10px;">Error loading history.</div>';
             });
         }
         
         // FIX: Order list should show order details on click
         function loadOrderHistory(){
+            if (!currentUser) return;
             const container = document.getElementById('orders-full-list');
             container.innerHTML = '<h3 style="margin-top:0;">My Orders</h3><div class="small-muted" style="text-align:center;padding:10px;">loading orders...</div>';
 
@@ -2517,32 +2913,90 @@ admin_note: ${r.admin_note||'none'}`);
                                 <div style="font-weight:700">${o.id.substring(0,8)}... • ₹${o.total||0}</div>
                                 <div class="small-muted">${new Date(o.created_at).toLocaleDateString()}</div>
                                 <div class="small" style="margin-top:6px;font-weight:600;">Items: ${itemsSummary}</div>
+
+
+${o.tracking_id && o.tracking_id.length > 10 ? `<div style="color:#007bff; font-size:12px; font-weight:700; margin-top:4px;">📦 Tracking: ${o.tracking_id}</div>` : ''}
+
+
+
+
+
+
+
+
                                 <div class="small-muted" style="margin-top:4px;">Address: ${o.address ? `${o.address.city}, ${o.address.district}` : '—'}</div>
                             </div>
                             <div style="text-align:right;flex-shrink:0;">
                                 ${renderStatusBadge(o.status)}
-                                <div class="small-muted" style="margin-top:8px;">UTR: ${o.utr.substring(0, 4)}...</div>
+                                ${o.allapi_order_id ? `<div class="small-muted" style="margin-top:8px;">ID: ${o.allapi_order_id.substring(0, 8)}...</div>` : ''}
                             </div>
                         </div>
                     `;
                     wrapper.appendChild(d);
                 });
                 container.appendChild(wrapper);
+            }, (error) => {
+                console.error("Error loading order history:", error);
+                container.innerHTML = '<h3 style="margin-top:0;">My Orders</h3><div class="small-muted" style="color:red;padding:10px;">Error loading orders.</div>';
             });
         }
 
 
-        // ---------- listen to payment_requests (Admin verifications) (Unchanged logic) ----------
-        paymentRequestsRef.on('child_changed', handlePaymentRequest);
 
+
+
+// --- [A] SEEDHA SHARE LOGIC ---
+function shareProduct(pid, pname) {
+    // Sirf kaam ki cheez: URL aur Message
+    const shareUrl = `${window.location.origin}${window.location.pathname}?pid=${pid}`;
+    const msg = `Check out ${pname} on Gold Rupi: ${shareUrl}`;
+
+    if (navigator.share) {
+        navigator.share({ title: pname, text: msg, url: shareUrl }).catch(() => {
+            navigator.clipboard.writeText(shareUrl); // Cancel pe copy
+        });
+    } else {
+        navigator.clipboard.writeText(shareUrl); // Desktop pe copy
+    }
+}
+
+// --- [B] SIMPLE HANDLE LOGIC ---
+function handleSharedProductLink() {
+    const p = new URLSearchParams(window.location.search).get('pid');
+    if (p) {
+        const wait = setInterval(() => {
+            if (window.productsData && productsData[p]) {
+                clearInterval(wait);
+                openProductModal(p);
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        }, 500);
+        setTimeout(() => clearInterval(wait), 8000);
+    }
+}
+
+
+
+
+        // ---------- listen to payment_requests (Admin verifications) (Unchanged logic) ----------
+        function listenPaymentRequests(){
+            // Make sure this listener is only set up once.
+            // Using `off` before `on` ensures a clean state if called multiple times.
+            paymentRequestsRef.off('child_changed', handlePaymentRequest);
+            paymentRequestsRef.on('child_changed', handlePaymentRequest);
+        }
+
+        // Modified handlePaymentRequest to work with allapi.in's flow
         function handlePaymentRequest(snap){
             const pr = snap.val();
-            if(!pr || pr.user !== currentUser.uid) return; 
+            // Only process if it's for the current user and not an internal allapi.in pending status
+            if(!pr || !currentUser || pr.user !== currentUser.uid || pr.status === 'allapi_pending') return; 
 
             const uid = pr.user;
-            const key = pr.id || pr.orderId || snap.key;
+            const key = pr.id; // Use 'id' which links to internal Firebase object (order, gold_request, wallet_request)
             
-            if(pr.status!=='completed' && pr.status!=='paid' && pr.status!=='success' && pr.status!=='approved') return;
+            // Expected status from backend webhook: 'completed', 'paid', 'success', 'approved'
+            if(!['completed', 'paid', 'success', 'approved'].includes(pr.status)) return;
 
             // GOLD
             if(pr.type==='gold'){
@@ -2556,39 +3010,43 @@ admin_note: ${r.admin_note||'none'}`);
                     db.ref('users/'+uid+'/gold_balance').transaction(curr => Number(curr||0) + Number(grams));
                     
                     checkReferralCompletion(uid);
-                });
+                    alert(`✅ Gold purchase of ${grams}g completed!`);
+                }).catch(e => console.error("Error processing gold payment request:", e));
             }
 
             // WALLET (Add Money)
-            if(pr.type==='wallet'){
+            if(pr.type==='wallet_add'){ // Use wallet_add type
                 db.ref('users/'+uid+'/wallet_history/'+key).once('value').then(h=>{
                     if(!h.exists() || h.val().status==='completed') return;
 
                     db.ref('users/'+uid+'/wallet').transaction(curr => Number(curr||0) + Number(pr.amount));
                     db.ref('users/'+uid+'/wallet_history/'+key+'/status').set('completed');
-                });
+                    alert(`✅ ₹${pr.amount} added to your wallet!`);
+                }).catch(e => console.error("Error processing wallet add payment request:", e));
             }
 
-            // WALLET (Withdrawal Approval)
+            // WALLET (Withdrawal Approval - This still uses manual admin approval, not allapi.in)
             if(pr.type==='withdraw'){
                  db.ref('users/'+uid+'/wallet_history/'+key).once('value').then(h=>{
                     if(!h.exists() || h.val().status==='completed') return;
 
                     db.ref('users/'+uid+'/wallet_history/'+key+'/status').set('completed');
-                });
+                    alert(`✅ ₹${pr.amount} withdrawal processed to your account.`);
+                }).catch(e => console.error("Error processing withdrawal payment request:", e));
             }
-
 
             // CART (Order Payment)
             if(pr.type==='cart'){
-                const orderId = pr.orderId || key;
+                const orderId = pr.id; // Use 'id' which links to Firebase internal order ID
                 db.ref('orders/'+orderId+'/status').set('paid');
                 db.ref('users/'+uid+'/order_history/'+orderId+'/status').set('paid');
+                alert(`✅ Order #${orderId.substring(0,8)}... payment completed!`);
             }
 
-            // LOAN EMI PAYMENT
+            // LOAN EMI PAYMENT (This still uses manual UTR, not allapi.in)
             if(pr.type === 'emi_payment'){
                  db.ref('users/'+uid+'/loan_emis/'+pr.emiId+'/status').set('paid');
+                 alert(`✅ EMI payment for ${pr.emiId.substring(0,8)}... completed!`);
             }
         }
         
@@ -2626,10 +3084,23 @@ admin_note: ${r.admin_note||'none'}`);
             if(!document.getElementById('search-input').value) applyFilter();
         });
         document.getElementById('search-shop').addEventListener('keydown', (e)=>{
-            if(e.key==='Enter') searchShop();
+            if(e.key==='Enter') searchShop(true); // Pass true to indicate filter
         });
+
+window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-11380267758');
+
+
+
+
+
+
 
     </script>
 </body>
 </html>
+
 

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MoneyCard - Code Splitter</title>
+    <style>
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #238636; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        textarea { width: 100%; height: 250px; background: #010409; color: #7ee787; border: 1px solid #30363d; border-radius: 8px; padding: 15px; font-family: monospace; }
+        .btn-box { margin: 20px 0; display: flex; gap: 10px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; background: var(--accent); }
+        .file-card { background: var(--card); border: 1px solid #30363d; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .filename { font-weight: bold; color: #58a6ff; }
+        .download-btn { background: #30363d; padding: 8px 15px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚀 MoneyCard Auto-Splitter</h2>
+    <p>AI se mila hua pura combo code yahan paste kar:</p>
+    <textarea id="rawInput" placeholder="Pura code yahan paste kar do..."></textarea>
+    
+    <div class="btn-box">
+        <button onclick="splitCode()">Split & Taiyaar Karo</button>
+    </div>
+
+    <div id="outputList">
+        </div>
+</div>
+
+<script>
+    function downloadFile(filename, content) {
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
+    function splitCode() {
+        const input = document.getElementById('rawInput').value;
+        const outputList = document.getElementById('outputList');
+        outputList.innerHTML = ""; // Clear purana
+
+        // Logic: Keywords dhoondo files pehchanne ke liye
+        const files = [
+            { name: "index.html", pattern: /<!DOCTYPE html>|<html>/i },
+            { name: "index.js", pattern: /require\(|express\(|const app =/i },
+            { name: "Webhook.js", pattern: /webhook|handler|export default/i }
+        ];
+
+        // Agar AI ne markdown use kiya hai (```javascript)
+        const sections = input.split(/```[a-z]*\n/);
+
+        sections.forEach((section, index) => {
+            let code = section.split('```')[0].trim();
+            if(!code) return;
+
+            let fileName = `file_${index}.txt`;
+            
+            // Auto-detect filename based on content
+            if(code.includes("<!DOCTYPE html>")) fileName = "index.html";
+            else if(code.includes("express") && !code.includes("webhook")) fileName = "index.js";
+            else if(code.includes("webhook") || code.includes("shiprocket")) fileName = "Webhook.js";
+
+            const card = document.createElement('div');
+            card.className = 'file-card';
+            card.innerHTML = `
+                <span class="filename">📄 ${fileName}</span>
+                <button class="download-btn" onclick="saveMe('${fileName}', ${index})">Download</button>
+            `;
+            outputList.appendChild(card);
+            
+            // Save to memory for download
+            window[`code_${index}`] = code;
+        });
+    }
+
+    function saveMe(name, idx) {
+        downloadFile(name, window[`code_${idx}`]);
+    }
+</script>
+
+</body>
+</html>
+

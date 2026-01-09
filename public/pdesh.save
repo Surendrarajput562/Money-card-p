@@ -1,0 +1,786 @@
+Bhai diikkat coad me hai<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Rupi - Admin Panel (Smart AI Batch)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+Devanagari:wght=400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+<style>
+/* Base & Global Styles */
+body{font-family:'Poppins', 'Noto Sans Devangari', sans-serif;margin:0;padding:0;background:linear-gradient(135deg,#ffd700,#f0e68c);color:#222;min-height:100vh;}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100;}
+header h1{margin:0;font-size:20px;font-weight:700;color:#111;}
+main{padding:20px;}
+h2{color:#444;border-bottom:2px solid #ffda47;padding-bottom:5px;margin-top:0;}
+input,textarea,select{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.98);box-sizing:border-box;}
+button.primary{background:#ffd700;padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s; color: #111;}
+button.primary:hover{background:#ffc700;}
+button.ai-btn{background:#10b981; color:white; padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s;}
+button.ai-btn:hover{background:#059669;}
+button.danger-btn{background:#dc3545; color:white; padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s;}
+button.danger-btn:hover{background:#c82333;}
+button[disabled]{opacity:0.6; cursor:not-allowed;}
+
+.card{background:rgba(255,255,255,0.95);padding:15px;margin:12px 0;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.08);border-left:4px solid #ffd700;}
+.small{font-size:13px;color:#555}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+img.thumb{width:100%;height:140px;object-fit:cover;border-radius:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;}
+.meta{font-size:13px;color:#666}
+.btn-reject {padding: 8px 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background: #F44336; color: white; transition: opacity 0.2s; font-size: 12px;}
+.btn-reject:hover {opacity: 0.8;}
+
+/* Draft Card Specifics */
+.draft-card { border-left: 4px solid #10b981; position: relative; animation: fadeIn 0.5s; }
+.draft-card.error { border-left: 4px solid #dc3545; }
+.draft-status { position: absolute; top: 10px; right: 10px; font-size: 12px; font-weight: bold; background: #eee; padding: 2px 6px; border-radius: 4px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Preloader & Loader */
+#preloader{position:fixed;top:0;left:0;width:100%;height:100%;background:#ffffffdd;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s;}
+.loader{border:6px solid #f3f3f3;border-top:6px solid #ffd700;border-radius:50%;width:50px;height:50px;animation:spin 1.5s linear infinite;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* Modal/Edit Form Styles */
+.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,0.4);}
+.modal-content{background-color:#fefefe;margin:10% auto;padding:20px;border:1px solid #888;width:80%;max-width:600px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.3);}
+.close{color:#aaa;float:right;font-size:28px;font-weight:bold;}
+.close:hover,.close:focus{color:#000;text-decoration:none;cursor:pointer;}
+
+/* Image Preview and Log */
+#image-preview-container{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;padding:10px;border:1px dashed #ccc;border-radius:8px;min-height:40px;}
+#image-preview-container > div {position: relative; display: inline-block;}
+#image-preview-container img{width:60px;height:60px;object-fit:cover;border-radius:4px; background: repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px;} 
+#log-output{margin-top:10px;font-size:12px;color:#111;background:#f9f9f9;padding:10px;border-radius:6px;max-height:100px;overflow-y:auto;}
+
+#login-form-container { max-width: 400px; margin: 50px auto; padding: 30px; background: #fff; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: none; }
+
+#bg-color-controls { display: flex; gap: 10px; align-items: center; margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; background: #f9f9f9; }
+#bg-color-controls label { font-weight: 600; min-width: 70px; }
+#bg-color-controls input[type="color"] { width: 50px; height: 35px; padding: 0; border: none; cursor: pointer; margin: 0; }
+#bg-color-controls button { flex-grow: 1; margin: 0; padding: 8px 12px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+</head>
+<body>
+
+<div id="preloader">
+    <div class="loader"></div>
+</div>
+
+<header>
+    <h1>Gold Rupi — Product Admin</h1>
+    <div style="display:flex; gap: 10px;">
+        <span id="user-display" style="font-size: 14px; font-weight: 600; color: #444; align-self: center;"></span>
+        <button onclick="handleLogout()" class="primary" style="padding:8px 12px; border:none; background:#ff6b6b; color:white; font-size:14px; margin-top:0;">
+            Logout
+        </button>
+    </div>
+</header>
+
+<main>
+
+<section id="login-form-container">
+    <h2>Admin Login</h2>
+    <input type="email" id="login-email" placeholder="Admin Email" required>
+    <input type="password" id="login-password" placeholder="Password" required>
+    <button class="primary" onclick="handleLogin()" style="width:100%;">Login</button>
+    <p class="small" style="text-align: center; margin-top: 15px;">*Only registered Admin email can log in.</p>
+</section>
+
+<section id="main-content-container" style="display: none;">
+    
+    <section id="products">
+        <h2>Add Products (Batch AI Mode) 🚀</h2>
+        
+        <!-- Batch Control Panel -->
+        <div class="card">
+            <div style="margin-bottom:15px;">
+                <label>1. Select Images (Multiple products allowed):</label>
+                <input type="file" id="prod-images" accept="image/*" multiple>
+                
+                <div id="image-preview-container"></div>
+                
+                <div style="display:flex; gap: 10px; margin-top: 10px;">
+                    <button id="generateBatchBtn" class="ai-btn" disabled style="flex-grow: 1;" onclick="startBatchAIProcessing()">
+                        🤖 Generate AI for ALL Images (One by One)
+                    </button>
+                </div>
+
+                <div id="bg-color-controls">
+                    <label for="bg-color-picker">BG Color:</label>
+                    <input type="color" id="bg-color-picker" value="#ffffff" title="Select Background Color">
+                    <button id="changeBgColorBtn" class="primary" disabled onclick="changeBackgroundColor()">
+                        🔄 Apply BG Color to All
+                    </button>
+                </div>
+                
+                <div style="display:flex; gap: 10px; margin-top: 10px;">
+                    <button id="resetImagesBtn" class="danger-btn" disabled style="flex-grow: 1;" onclick="resetImageInput()">
+                        ❌ Reset All
+                    </button>
+                </div>
+                <div id="log-output"></div>
+            </div>
+        </div>
+
+        <!-- BATCH DRAFTS CONTAINER -->
+        <div id="batch-drafts-area" style="margin-top: 20px;">
+            <h3 style="border-left: 5px solid #10b981; padding-left: 10px; color: #111;"> Generated Drafts (Review before Upload)</h3>
+            <p class="small">AI will generate drafts here sequentially. You can edit them and then upload individually.</p>
+            <div id="draft-list" class="grid" style="margin-top: 10px;">
+                <!-- Draft Cards will appear here -->
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Manual Add Section (Optional fallback) -->
+    <details style="margin: 20px 0;">
+        <summary style="cursor: pointer; font-weight: bold; color: #555;">Manual Entry / Single Product (Click to Expand)</summary>
+        <div class="card" style="margin-top: 10px;">
+             <!-- Old manual form hidden inside details for cleaner UI, but usable if needed -->
+             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <input id="prod-name" placeholder="Product Name" required>
+                <input id="prod-brand" placeholder="Brand">
+                <input id="prod-price" placeholder="Price" type="number">
+                <input id="prod-discount" placeholder="Discount %" type="number">
+            </div>
+            <textarea id="prod-desc" placeholder="Description"></textarea>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                 <select id="prod-colors" multiple><option value="" disabled>Colors</option></select>
+                 <select id="prod-sizes" multiple><option value="" disabled>Sizes</option></select>
+            </div>
+            <select id="prod-category"></select>
+            <button class="primary" onclick="addProductManually()">Add Manually</button>
+        </div>
+    </details>
+
+    <section id="category-management">
+        <h2>Category Image & Landing Page Management 📸</h2>
+        <div id="category-list-for-images" class="grid"></div>
+    </section>
+
+    <section id="all-products">
+        <h2>All Live Products 📦</h2>
+        <div id="product-list" class="grid"></div>
+    </section>
+
+    <!-- Modals -->
+    <div id="categoryProductModal" class="modal">
+        <div class="modal-content" style="max-width: 90%;">
+            <span class="close" onclick="document.getElementById('categoryProductModal').style.display='none'">&times;</span>
+            <h2 id="category-modal-title">Products in Category:</h2>
+            <div id="category-products-list" class="grid"></div>
+        </div>
+    </div>
+
+    <div id="editProductModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="document.getElementById('editProductModal').style.display='none'">&times;</span>
+        <h2>Edit Product Details</h2>
+        <div id="edit-form-content"></div>
+        <button class="primary" onclick="updateProductDetails()">Save Changes</button>
+      </div>
+    </div>
+
+    <div id="cropImageModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="closeCropModal()">&times;</span>
+            <h2>Crop Image</h2>
+            <div style="margin-bottom: 10px; min-height: 300px;">
+                <img id="image-to-crop" style="max-width: 100%; display: block; height: auto;">
+            </div>
+            <button class="primary" onclick="getCroppedCanvas()" style="width:100%;">Crop & Save</button>
+        </div>
+    </div>
+
+</section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+// ---------- CONFIG ----------
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.appspot.com", 
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597998bad55", 
+    measurementId: "G-3LS5W6F8QW"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const storage = firebase.storage(); 
+
+const imgbbKey = ''; // Enter ImgBB Key Here if using
+const GEMINI_API_KEY = ''; // ENTER YOUR GEMINI API KEY HERE
+const CLOUDFLARE_WORKER_URL = 'https://cold-snow-e955.surendrarathode040.workers.dev'; 
+
+// --- STATE ---
+let currentUser = null; 
+let categoriesData = {}; 
+let colorsData = {}; 
+let sizesData = {}; 
+let currentEditProductId = null; 
+let adminEmail = null; 
+let filesToUpload = []; 
+let currentCropper = null;
+let currentCropFileIndex = -1;
+
+// --- UTILS ---
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+function log(msg){
+    const logEl = document.getElementById('log-output');
+    logEl.textContent = (new Date()).toLocaleTimeString() + ": " + msg + "\n" + logEl.textContent;
+}
+function showPreloader(){ document.getElementById('preloader').style.display = 'flex'; document.getElementById('preloader').style.opacity = '1'; }
+function hidePreloader(){ 
+    const p = document.getElementById('preloader'); 
+    p.style.opacity = '0'; 
+    setTimeout(() => { p.style.display = 'none'; }, 500); 
+}
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('prod-images').addEventListener('change', updateImagePreviewAndButton);
+    loadDynamicOptions();
+});
+
+// --- AUTH ---
+auth.onAuthStateChanged(async user => {
+    if (!user) { currentUser = null; showLoginScreen(); return; }
+    currentUser = user;
+    try {
+        const adminEmailRef = db.ref('ADMIN_CONTROL_LISTS/adminEmail'); 
+        const snapshot = await adminEmailRef.once('value');
+        adminEmail = snapshot.val(); 
+        if (user.email === adminEmail) {
+            showMainContent(user.email);
+        } else {
+            alert('Access Denied. Not Admin.');
+            auth.signOut();
+        }
+    } catch (error) { console.error("Admin Check Error", error); }
+});
+
+function showLoginScreen(){
+    document.getElementById('main-content-container').style.display = 'none';
+    document.getElementById('login-form-container').style.display = 'block';
+    hidePreloader();
+}
+function showMainContent(email){
+    document.getElementById('user-display').textContent = `Admin: ${email}`;
+    document.getElementById('login-form-container').style.display = 'none';
+    document.getElementById('main-content-container').style.display = 'block';
+    loadProducts();
+    hidePreloader();
+}
+async function handleLogin() {
+    const e = document.getElementById('login-email').value;
+    const p = document.getElementById('login-password').value;
+    if (!e || !p) return alert('Enter details');
+    showPreloader();
+    try { await auth.signInWithEmailAndPassword(e, p); } 
+    catch (err) { alert(err.message); hidePreloader(); }
+}
+function handleLogout() { auth.signOut(); }
+
+// --- FILE HANDLING & BATCH SETUP ---
+function updateImagePreviewAndButton(e) {
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length > 0) filesToUpload = selectedFiles;
+    else if (e.type === 'change') filesToUpload = [];
+    
+    updateFinalPreview();
+    const hasFiles = filesToUpload.length > 0;
+    document.getElementById('generateBatchBtn').disabled = !hasFiles;
+    document.getElementById('resetImagesBtn').disabled = !hasFiles;
+    document.getElementById('changeBgColorBtn').disabled = !hasFiles;
+}
+
+function updateFinalPreview() {
+    const preview = document.getElementById('image-preview-container');
+    preview.innerHTML = "";
+    filesToUpload.forEach((f, index) => {
+        const d = document.createElement("div");
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(f);
+        
+        const badge = document.createElement("span");
+        badge.textContent = index + 1;
+        badge.style.cssText = "position:absolute;top:0;left:0;background:#000;color:#fff;padding:2px 5px;font-size:10px;";
+        
+        const del = document.createElement("span");
+        del.textContent = '🗑️';
+        del.style.cssText = "position:absolute;top:0;right:0;background:red;color:#fff;cursor:pointer;padding:2px;";
+        del.onclick = (ev) => { ev.stopPropagation(); filesToUpload.splice(index, 1); updateFinalPreview(); };
+
+        const crop = document.createElement("span");
+        crop.textContent = '✂️';
+        crop.style.cssText = "position:absolute;bottom:0;right:0;background:blue;color:#fff;cursor:pointer;padding:2px;";
+        crop.onclick = (ev) => { ev.stopPropagation(); openCropper(f, index); };
+
+        d.appendChild(img); d.appendChild(badge); d.appendChild(del); d.appendChild(crop);
+        preview.appendChild(d);
+    });
+}
+
+function resetImageInput() {
+    document.getElementById('prod-images').value = null;
+    filesToUpload = [];
+    updateFinalPreview();
+    document.getElementById('draft-list').innerHTML = ''; // Clear drafts too
+}
+
+// --- CROPPER (Simplified) ---
+function openCropper(file, index) {
+    currentCropFileIndex = index;
+    const img = document.getElementById('image-to-crop');
+    img.src = URL.createObjectURL(file);
+    document.getElementById('cropImageModal').style.display = 'block';
+    if(currentCropper) currentCropper.destroy();
+    currentCropper = new Cropper(img, { aspectRatio: 1/1, viewMode: 1 });
+}
+function closeCropModal(){ document.getElementById('cropImageModal').style.display = 'none'; }
+function getCroppedCanvas() {
+    if (!currentCropper) return;
+    currentCropper.getCroppedCanvas().toBlob((blob) => {
+        const orig = filesToUpload[currentCropFileIndex];
+        const newFile = new File([blob], orig.name, { type: orig.type });
+        filesToUpload[currentCropFileIndex] = newFile;
+        updateFinalPreview();
+        closeCropModal();
+    }, 'image/jpeg');
+}
+
+// --- BG COLOR CHANGE ---
+async function changeBackgroundColor() {
+    if (!filesToUpload.length) return;
+    const color = document.getElementById('bg-color-picker').value;
+    const btn = document.getElementById('changeBgColorBtn');
+    btn.textContent = "Processing..."; btn.disabled = true;
+    showPreloader();
+    
+    try {
+        const newFiles = [];
+        for (let file of filesToUpload) {
+            const bmp = await createImageBitmap(file);
+            const cvs = document.createElement('canvas');
+            cvs.width = bmp.width; cvs.height = bmp.height;
+            const ctx = cvs.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.fillRect(0,0,cvs.width,cvs.height);
+            ctx.drawImage(bmp, 0, 0);
+            const blob = await new Promise(r => cvs.toBlob(r, 'image/jpeg', 0.9));
+            newFiles.push(new File([blob], "bg_"+file.name, {type:'image/jpeg'}));
+        }
+        filesToUpload = newFiles;
+        updateFinalPreview();
+    } catch(e) { alert("Error changing BG"); }
+    finally { btn.textContent = "🔄 Apply BG Color to All"; btn.disabled = false; hidePreloader(); }
+}
+
+
+// =========================================================================
+// ====================  CORE BATCH AI LOGIC (ANTI-429) ====================
+// =========================================================================
+
+// 1. Main Trigger
+async function startBatchAIProcessing() {
+    if (!GEMINI_API_KEY) return alert("Please set GEMINI_API_KEY inside script.");
+    if (filesToUpload.length === 0) return alert("No images selected.");
+
+    const btn = document.getElementById('generateBatchBtn');
+    btn.disabled = true;
+    btn.textContent = "🚀 Processing Queue (Please Wait)...";
+    
+    const draftContainer = document.getElementById('draft-list');
+    draftContainer.innerHTML = ''; // Clear old drafts
+
+    log("Starting Batch Processing...");
+    
+    // Loop through each file SEQUENTIALLY
+    for (let i = 0; i < filesToUpload.length; i++) {
+        const file = filesToUpload[i];
+        const fileId = `draft-${Date.now()}-${i}`;
+        
+        // Create a Skeleton Card (Loading State)
+        createSkeletonCard(fileId, file, i + 1);
+        
+        try {
+            log(` Analyzing Image ${i+1}/${filesToUpload.length}...`);
+            
+            // Call AI with Retry Logic
+            const aiData = await fetchGeminiWithBackoff(file);
+            
+            // Update Card with Data
+            updateDraftCard(fileId, file, aiData, i);
+            
+        } catch (error) {
+            console.error(error);
+            markDraftAsError(fileId, error.message);
+        }
+
+        // DELAY: Wait 4 seconds between requests to keep Gemini happy
+        if (i < filesToUpload.length - 1) {
+            log(`⏳ Waiting 4s before next image to avoid 429...`);
+            await sleep(4000); 
+        }
+    }
+
+    btn.textContent = "✅ Batch Processing Complete";
+    setTimeout(() => { 
+        btn.textContent = "🤖 Generate AI for ALL Images"; 
+        btn.disabled = false; 
+    }, 3000);
+}
+
+// 2. Helper: Fetch from Gemini with Backoff (The 429 Fix)
+async function fetchGeminiWithBackoff(file, retryCount = 0) {
+    const base64 = await fileToBase64(file);
+    const prompt = `Analyze this product image. JSON output only. Fields: name (English Title), brand, price (number), discount (number), description (English), colors (array), sizes (array). Valid JSON.`;
+
+    const body = {
+        contents: [{ parts: [{ inlineData: { data: base64.split(',')[1], mimeType: file.type } }, { text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json" }
+    };
+
+    try {
+        const res = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, body);
+        
+        if (!res.data.candidates || !res.data.candidates[0].content) throw new Error("Empty AI Response");
+        const jsonText = res.data.candidates[0].content.parts[0].text;
+        return JSON.parse(jsonText);
+
+    } catch (error) {
+        // DETECT 429 ERROR
+        if (error.response && error.response.status === 429) {
+            if (retryCount >= 3) throw new Error("Too Many Requests (Max Retries Exceeded).");
+            
+            // Exponential Backoff: 5s, 10s, 20s
+            const waitTime = (5000 * (retryCount + 1)); 
+            log(`⚠️ Rate Limit (429). Retrying in ${waitTime/1000} seconds...`);
+            
+            await sleep(waitTime);
+            return fetchGeminiWithBackoff(file, retryCount + 1); // Recursive Retry
+        }
+        throw error;
+    }
+}
+
+// 3. UI: Create Loading Card
+function createSkeletonCard(id, file, index) {
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'card draft-card';
+    div.innerHTML = `
+        <div class="draft-status">⏳ Analyzing...</div>
+        <img src="${URL.createObjectURL(file)}" class="thumb" style="height:100px; width:100px; float:left; margin-right:10px;">
+        <div style="margin-left: 120px;">
+            <h4>Image #${index}</h4>
+            <div class="loader" style="width:20px; height:20px; border-width:3px;"></div>
+        </div>
+        <div style="clear:both;"></div>
+    `;
+    document.getElementById('draft-list').appendChild(div);
+}
+
+// 4. UI: Update Card with Results
+function updateDraftCard(id, file, data, originalIndex) {
+    const card = document.getElementById(id);
+    if (!card) return;
+
+    // Build Select Options for this card specifically
+    const colorOpts = Object.keys(colorsData).map(c => `<option value="${c}" ${data.colors?.some(x=>x.toLowerCase().includes(c.toLowerCase()))?'selected':''}>${c}</option>`).join('');
+    const sizeOpts = Object.keys(sizesData).map(s => `<option value="${s}" ${data.sizes?.some(x=>x.toLowerCase().includes(s.toLowerCase()))?'selected':''}>${s}</option>`).join('');
+    
+    // Category Options
+    let catOpts = '<option value="">Select Category</option>';
+    Object.keys(categoriesData).forEach(main => {
+        catOpts += `<optgroup label="${main}">`;
+        Object.keys(categoriesData[main]).forEach(sub => catOpts += `<option value="${sub}">${sub}</option>`);
+        catOpts += `</optgroup>`;
+    });
+
+    card.innerHTML = `
+        <div class="draft-status" style="background:#d1fae5; color:#065f46;">✅ AI Ready</div>
+        <div class="row" style="align-items:start;">
+            <img src="${URL.createObjectURL(file)}" class="thumb" style="width:100px;height:100px;">
+            <div style="flex:1; display:grid; gap:5px;">
+                <input class="d-name" value="${data.name || ''}" placeholder="Name">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                    <input class="d-price" type="number" value="${data.price||0}" placeholder="Price">
+                    <input class="d-disc" type="number" value="${data.discount||0}" placeholder="Disc %">
+                </div>
+            </div>
+        </div>
+        <textarea class="d-desc" rows="3" style="margin-top:5px;">${data.description||''}</textarea>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+            <select class="d-color" multiple style="height:60px;">${colorOpts}</select>
+            <select class="d-size" multiple style="height:60px;">${sizeOpts}</select>
+        </div>
+        <select class="d-cat" style="margin-top:5px;">${catOpts}</select>
+        
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="primary" style="flex:1; background:#10b981; color:white;" onclick="uploadDraftProduct('${id}', ${originalIndex})">🚀 Upload This Product</button>
+            <button class="danger-btn" style="width:40px;" onclick="document.getElementById('${id}').remove()">🗑️</button>
+        </div>
+    `;
+}
+
+// 5. UI: Mark Error
+function markDraftAsError(id, msg) {
+    const card = document.getElementById(id);
+    if(card) {
+        card.className += ' error';
+        card.innerHTML += `<p style="color:red; font-weight:bold;">❌ Failed: ${msg}</p><button onclick="this.parentElement.remove()">Remove</button>`;
+    }
+}
+
+// 6. Final Upload Logic for a SINGLE Draft
+async function uploadDraftProduct(cardId, fileIndex) {
+    const card = document.getElementById(cardId);
+    const file = filesToUpload[fileIndex];
+    if(!file) return alert("File source lost.");
+
+    const name = card.querySelector('.d-name').value;
+    const price = card.querySelector('.d-price').value;
+    const cat = card.querySelector('.d-cat').value;
+    const desc = card.querySelector('.d-desc').value;
+    const colors = Array.from(card.querySelector('.d-color').selectedOptions).map(o=>o.value).join(',');
+    const sizes = Array.from(card.querySelector('.d-size').selectedOptions).map(o=>o.value).join(',');
+
+    if(!name || !price || !cat) return alert("Fill Name, Price and Category.");
+
+    const btn = card.querySelector('button.primary');
+    const oldText = btn.textContent;
+    btn.textContent = "Uploading Image..."; btn.disabled = true;
+
+    try {
+        // Upload Image to R2 (or ImgBB)
+        const imageUrl = await uploadR2(file); // Defaulting to R2
+        
+        // Save to Firebase
+        await db.ref('products').push({
+            name, brand: "Generic", price: parseFloat(price), 
+            discount: parseFloat(card.querySelector('.d-disc').value)||0,
+            description: desc, color: colors, size: sizes, category: cat,
+            images: imageUrl, stock: 'In Stock', createdAt: Date.now()
+        });
+
+        card.innerHTML = `<div style="text-align:center; padding:20px; color:green;"><h3>✅ Uploaded!</h3></div>`;
+        setTimeout(() => card.remove(), 2000); // Remove from list after success
+
+    } catch(e) {
+        alert("Upload Failed: " + e.message);
+        btn.textContent = oldText; btn.disabled = false;
+    }
+}
+
+// =========================================================================
+
+// --- HELPERS (Same as before) ---
+function fileToBase64(file) {
+    return new Promise((r, j) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => r(reader.result);
+        reader.onerror = j;
+    });
+}
+
+function uploadR2(file) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const fd = new FormData(); fd.append("file", file, file.name); 
+            const resp = await fetch(CLOUDFLARE_WORKER_URL, { method: "POST", body: fd });
+            if (!resp.ok) throw new Error("R2 Error");
+            const json = await resp.json();
+            resolve(json.publicURL);
+        } catch (err) { reject(err); }
+    });
+}
+
+// --- DYNAMIC DATA LOADING ---
+async function loadDynamicOptions() {
+    const snap = await db.ref('/').once('value');
+    const data = snap.val() || {};
+    categoriesData = data.E_COMMERCE_CATEGORIES || {};
+    colorsData = data.colors || {};
+    sizesData = data.sizes || {};
+    
+    // Populate Manual Form
+    populateSelect('prod-colors', colorsData);
+    populateSelect('prod-sizes', sizesData);
+    populateCat('prod-category');
+    loadCategoryImages();
+}
+
+function populateSelect(id, data) {
+    const s = document.getElementById(id);
+    s.innerHTML = `<option value="" disabled>Select</option>`;
+    Object.keys(data).forEach(k => s.innerHTML += `<option value="${k}">${k}</option>`);
+}
+function populateCat(id) {
+    const s = document.getElementById(id);
+    s.innerHTML = '<option value="">Category</option>';
+    Object.keys(categoriesData).forEach(m => {
+        const grp = document.createElement('optgroup'); grp.label = m;
+        Object.keys(categoriesData[m]).forEach(sub => grp.innerHTML += `<option value="${sub}">${sub}</option>`);
+        s.appendChild(grp);
+    });
+}
+
+// --- PRODUCTS LIST & EDIT/DELETE (Same logic) ---
+function loadProducts(){
+    db.ref('products').on('value', snap => {
+        const d = snap.val() || {};
+        const l = document.getElementById('product-list'); l.innerHTML = '';
+        Object.keys(d).reverse().forEach(k => {
+            const p = d[k];
+            l.innerHTML += `
+            <div class="card">
+                <img src="${p.images?.split(',')[0]}" class="thumb">
+                <div style="margin-top:5px"><b>${p.name}</b><br>₹${p.price}</div>
+                <div class="row">
+                    <button onclick="editProduct('${k}')" class="primary" style="font-size:11px;padding:5px;">Edit</button>
+                    <button onclick="if(confirm('Delete?')) db.ref('products/${k}').remove()" class="danger-btn" style="font-size:11px;padding:5px;margin:0;">Del</button>
+                </div>
+            </div>`;
+        });
+    });
+}
+
+function editProduct(pid){
+    currentEditProductId = pid;
+    db.ref('products/'+pid).once('value', s => {
+        const p = s.val();
+        document.getElementById('editProductModal').style.display='block';
+        document.getElementById('edit-form-content').innerHTML = `
+            <input id="e-name" value="${p.name}"> <input id="e-price" type="number" value="${p.price}">
+            <textarea id="e-desc">${p.description}</textarea>
+            <p class="small">Editing limited in this quick view. Re-upload images if needed.</p>
+        `;
+    });
+}
+async function updateProductDetails(){
+    const n = document.getElementById('e-name').value;
+    const pr = document.getElementById('e-price').value;
+    const d = document.getElementById('e-desc').value;
+    await db.ref('products/'+currentEditProductId).update({ name:n, price:pr, description:d });
+    document.getElementById('editProductModal').style.display='none';
+}
+
+// --- CATEGORY IMAGES (Same) ---
+async function loadCategoryImages() {
+    const snap = await db.ref('category_images').once('value');
+    const imgs = snap.val() || {};
+    const l = document.getElementById('category-list-for-images'); l.innerHTML = '';
+    
+    // Flatten logic for display
+    const list = [];
+    Object.keys(categoriesData).forEach(m => {
+         // Main
+         list.push({key: m, lbl: `MAIN: ${m}`, img: imgs[m]});
+         // Subs
+         Object.keys(categoriesData[m]).forEach(s => {
+             if(s!==m) list.push({key: s, lbl: `SUB: ${s}`, img: imgs[s]});
+         });
+    });
+
+    list.forEach(item => {
+        l.innerHTML += `
+        <div class="card">
+            <strong>${item.lbl}</strong><br>
+            <img src="${item.img || 'https://via.placeholder.com/100'}" class="thumb" style="height:80px">
+            <input type="file" id="cimg-${item.key}" style="font-size:10px">
+            <button onclick="uploadCatImg('${item.key}')" class="primary" style="font-size:11px;padding:4px">Upload</button>
+        </div>`;
+    });
+}
+async function uploadCatImg(key){
+    const f = document.getElementById('cimg-'+key).files[0];
+    if(!f) return;
+    try {
+        const u = await uploadR2(f);
+        await db.ref('category_images/'+key).set(u);
+        loadCategoryImages();
+    } catch(e){ alert(e.message); }
+}
+</script>
+</body>
+
+
+// --- UPDATED CONFIG & STATE ---
+const ADMIN_EMAIL = "your-admin-email@gmail.com"; // <--- Yahan apna sahi admin email dalo
+
+// --- UPDATED AUTH LOGIC (Logic Changed for Error Handling) ---
+auth.onAuthStateChanged(async user => {
+    if (!user) { 
+        currentUser = null; 
+        showLoginScreen(); 
+        return; 
+    }
+
+    // New Logic: Direct verification to bypass Identity Toolkit/Database fetch issues
+    if (user.email === ADMIN_EMAIL) {
+        currentUser = user;
+        showMainContent(user.email);
+        log("Admin Verified: " + user.email);
+    } else {
+        alert('Access Denied: You are not the authorized Admin.');
+        auth.signOut();
+    }
+});
+
+// --- UPDATED LOGIN FUNCTION ---
+async function handleLogin() {
+    const e = document.getElementById('login-email').value;
+    const p = document.getElementById('login-password').value;
+    
+    if (!e || !p) return alert('Kripya Email aur Password bhariye');
+    
+    // UI feedback
+    showPreloader();
+    
+    try { 
+        // Logic Change: Pehle local check, phir Firebase call
+        if(e !== ADMIN_EMAIL) {
+            throw new Error("Ye email admin list mein nahi hai.");
+        }
+        await auth.signInWithEmailAndPassword(e, p); 
+    } catch (err) { 
+        hidePreloader();
+        alert("Login Error: " + err.message); 
+        console.error("Auth Fail:", err);
+    }
+}
+
+// --- REST OF YOUR FUNCTIONS (No lines deleted) ---
+function showLoginScreen(){
+    document.getElementById('main-content-container').style.display = 'none';
+    document.getElementById('login-form-container').style.display = 'block';
+    hidePreloader();
+}
+
+function showMainContent(email){
+    document.getElementById('user-display').textContent = `Admin: ${email}`;
+    document.getElementById('login-form-container').style.display = 'none';
+    document.getElementById('main-content-container').style.display = 'block';
+    loadProducts();
+    hidePreloader();
+}
+
+
+Ye karna
+	

@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 Admin Panel - Premium eBook Management (AI Integrated)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        /* Base Styles */
+        body { font-family:'Poppins',sans-serif; margin:0; background:#f4f4f4; color:#1f2937; }
+        header { background:#222; color:#fff; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; font-size:20px; font-weight:600; }
+        .container { padding:20px; max-width:1200px; margin:auto; }
+        /* Section and Card Styles */
+        section { margin-bottom:30px; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color:#d4af37; margin-top:0; border-bottom:2px solid #eee; padding-bottom:10px; }
+        .book-list, .payment-list, .coupon-list, .notification-log { display:flex; flex-direction:column; gap:10px; }
+        .book-item, .payment-item, .coupon-item { background:#f9f9f9; padding:15px; border-radius:5px; display:flex; align-items:center; justify-content:space-between; border:1px solid #eee; }
+        .book-item img { width:50px; height:70px; object-fit:cover; margin-right:10px; border:1px solid #ccc; }
+        /* Button and Form Styles */
+        button { padding:8px 15px; margin-left:5px; background:#d4af37; border:none; color:#fff; border-radius:5px; cursor:pointer; font-weight:600; transition:background 0.3s; }
+        button:hover { background:#c59b2d; }
+        .ai-button { background:#0e9f6e; }
+        .ai-button:hover { background:#0c8a5f; }
+        button:disabled { opacity: 0.5; cursor: default; }
+        .hidden { opacity:0.6; background:#fff3cd; }
+        .flex { display:flex; align-items:center; gap:10px; }
+        .flex-col { display:flex; flex-direction:column; align-items:flex-start; gap:5px; }
+        /* Updated Form Styles */
+        .upload-form, .ai-form { display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; }
+        .upload-form input, .upload-form textarea, .upload-form select, .ai-form input, .ai-form textarea, .ai-form select { padding:10px; border:1px solid #ccc; border-radius:5px; width:100%; box-sizing:border-box; }
+        .full-width { grid-column:1 / -1; }
+        /* Progress */
+        #upload-progress, #ai-progress-text, #ai-progress-final, #paste-upload-progress { margin-top:10px; padding:10px; background:#e0f7fa; border-left:5px solid #00bcd4; display:none; font-weight:600; }
+        /* Login & other styles remain the same */
+        .login-form { max-width:400px; margin:50px auto; padding:30px; background:#fff; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+        .login-form input { margin-bottom: 15px; }
+        .coupon-item strong { color:#007bff; }
+        .notif-form { display:flex; flex-direction:column; gap:10px; }
+        
+        /* Styles for the "5x Turbo Engine" Terminal, adapted for Admin Panel */
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --green: #238636; --red: #da3633; --blue: #58a6ff; }
+        .terminal-box { margin-top: 20px; background: var(--card); border: 1px solid #30363d; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .terminal-box h3 { color:white; margin:0 0 10px 0; }
+        .terminal-output { background: #000; border: 2px solid #333; border-radius: 8px; padding: 15px; height: 300px; overflow-y: auto; position: relative; }
+        .terminal-output pre { margin: 0; font-family: 'Consolas', monospace; color: #a5d6ff; white-space: pre-wrap; line-height: 1.6; font-size: 14px; letter-spacing: 0.5px; }
+        .cursor { display: inline-block; width: 10px; height: 18px; background: var(--blue); animation: blink 0.5s infinite; vertical-align: middle; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div id="login-screen" class="login-form">
+    <h2>Admin Login 🔐</h2>
+    <input type="email" id="admin-email" placeholder="Email" value="rajputsurendra562@gmail.com" required>
+    <input type="password" id="admin-password" placeholder="Password (Banna@1712)" required>
+    <button onclick="adminLogin()" class="full-width">Login</button>
+</div>
+
+<div id="admin-panel" style="display:none;">
+    <header>
+        <span>Admin Panel - Premium eBook</span>
+        <button onclick="adminLogout()">Logout</button>
+    </header>
+    <div class="container">
+    
+    <section>
+        <h2>✍️ AI Book Creator (5x Hyper Engine)</h2>
+        <form id="ai-book-form" class="ai-form">
+            <input type="text" id="ai-book-title" placeholder="1. Book Name / Title" required>
+            <select id="ai-book-main-category" required onchange="handleCategoryChange('ai')">
+                 <option value="">2. Select Main Category</option>
+            </select>
+            <select id="ai-book-sub-category" required>
+                 <option value="">3. Select Sub Category (Genre)</option>
+            </select>
+            <select id="ai-book-lang" required>
+                <option value="en">4. Language (English)</option>
+                <option value="hi">4. Language (Hindi)</option>
+            </select>
+            
+            <textarea id="ai-book-prompt" class="full-width" placeholder="5. Detailed Prompt: किस तरह की कहानी या कंटेंट चाहिए? (e.g., A short story about a brave astronaut who discovers a singing planet.)" required></textarea>
+            
+            <input type="number" id="ai-word-count" placeholder="6. Target Word Count (e.g., 70000)" value="70000" required>
+            <input type="text" id="ai-text-color" placeholder="7. Text Color (e.g., #222)" value="#222">
+            <input type="text" id="ai-text-size" placeholder="8. Text Size (e.g., 14px)" value="14px">
+            
+            <div id="ai-progress-text" class="full-width">Status: Waiting...</div>
+            <button type="button" id="generate-content-btn" class="full-width ai-button">1. ✨ Generate Book Content (Text Only)</button>
+        </form>
+
+        <div id="ai-upload-section" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+            <h3>2. Upload Cover & Finalize (Metadata Required)</h3>
+             <div class="upload-form">
+                
+                <input type="number" id="ai-price-monthly" placeholder="Price Monthly (₹299)" value="299" required>
+                <input type="number" id="ai-price-yearly" placeholder="Price Yearly (₹2999)" value="2999" required>
+                <input type="number" id="ai-discount" placeholder="Discount (%)" value="0">
+                <textarea id="ai-book-desc-final" class="full-width" placeholder="Book Description (AI generated text will be copied here)" required></textarea>
+                <input type="file" id="ai-cover-file" accept="image/*" required style="grid-column: 1 / 2;">
+                
+                <select id="ai-upload-target" style="grid-column: 2 / -1;" required>
+                    <option value="">Select Upload Target (Cover & Content)</option>
+                    <option value="r2">Upload Cover & Content to Cloudflare R2 (Permanent - Recommended)</option>
+                    <option value="imgbb">Upload Cover to ImgBB (Content to R2)</option>
+                </select>
+
+                <div id="ai-progress-final" class="full-width">Status: Ready to Upload.</div>
+                <button type="button" id="upload-final-btn" class="full-width ai-button" disabled>3. 🚀 Upload Cover & Content to Database</button>
+            </div>
+        </div>
+        <!-- Live Terminal for AI Output during generation -->
+        <div class="terminal-box">
+            <h3>Hyper Engine Live Output</h3>
+            <div class="terminal-output">
+                <pre id="aiLiveOutput"></pre><span id="aiCursor" class="cursor" style="display:none;"></span>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>📝 Paste Your Book Content (Manual Upload)</h2>
+        <form id="paste-book-form" class="upload-form">
+            <textarea id="paste-book-content" class="full-width" rows="10" placeholder="1. Paste your full book content here. It will be saved as a .txt file."></textarea>
+            
+            <input type="text" id="paste-book-title" placeholder="2. Book Title" required>
+            <input type="text" id="paste-book-author" placeholder="3. Author Name" value="Self-Published" required>
+            <select id="paste-book-main-category" required onchange="handleCategoryChange('paste')">
+                <option value="">4. Select Main Category</option>
+            </select>
+            <select id="paste-book-sub-category" required>
+                <option value="">5. Select Sub Category (Genre)</option>
+            </select>
+            
+            <input type="number" id="paste-price-monthly" placeholder="6. Price Monthly (₹299)" value="299" required>
+            <input type="number" id="paste-price-yearly" placeholder="7. Price Yearly (₹2999)" value="2999" required>
+            <input type="number" id="paste-discount" placeholder="8. Discount (%)" value="0">
+            
+            <textarea id="paste-book-desc" class="full-width" placeholder="9. Book Description"></textarea>
+            
+            <input type="text" id="paste-text-color" placeholder="10. Text Color (e.g., #222)" value="#222">
+            <input type="text" id="paste-text-size" placeholder="11. Text Size (e.g., 14px)" value="14px">
+            
+            <input type="file" id="paste-cover-file" accept="image/*" required style="grid-column: 1 / 2;">
+            <select id="paste-upload-target" style="grid-column: 2 / -1;" required>
+                <option value="">12. Select Upload Target (Cover & Content)</option>
+                <option value="r2">Upload Cover & Content to Cloudflare R2 (Recommended)</option>
+                <option value="imgbb">Upload Cover to ImgBB (Content to R2)</option>
+            </select>
+
+            <div id="paste-upload-progress" class="full-width">Status: Ready.</div>
+            <button type="submit" class="full-width">🚀 Upload Pasted Book</button>
+        </form>
+    </section>
+    
+    <section>
+    <h2>➕ Add New Book (Manual Upload & Metadata)</h2>
+    <form id="add-book-form" class="upload-form">
+        <input type="text" id="book-title" placeholder="Book Title" required>
+        <input type="text" id="book-author" placeholder="Author Name" required>
+        <select id="book-main-category" required onchange="handleCategoryChange('manual')">
+            <option value="">Select Main Category</option>
+        </select>
+        <select id="book-sub-category" required>
+            <option value="">Select Sub Category (Genre)</option>
+        </select>
+        
+        <input type="number" id="book-price-monthly" placeholder="Price Monthly (₹299)" value="299" required>
+        <input type="number" id="book-price-yearly" placeholder="Price Yearly (₹2999)" value="2999" required>
+        <input type="number" id="book-discount" placeholder="Discount (%)" value="0">
+        
+        <textarea id="book-desc" class="full-width" placeholder="Book Description"></textarea>
+        
+        <select id="upload-source" required>
+            <option value="imgbb">Upload to ImgBB (Fast)</option>
+            <option value="r2">Upload to Cloudflare R2 (Permanent)</option>
+        </select>
+        <input type="file" id="book-cover" accept="image/*" required>
+        <input type="file" id="book-pages" accept="image/*" multiple required>
+
+        <div id="upload-progress" class="full-width">Uploading: <span id="progress-status">0/0</span> pages...</div>
+        <button type="submit" class="full-width">🚀 Upload Book</button>
+    </form>
+    </section>
+    
+    <section>
+    <h2>🎁 Coupon Code Management</h2>
+    <div class="flex" style="margin-bottom:15px;">
+        <input type="text" id="coupon-code" placeholder="CODE100" style="width:150px;">
+        <input type="number" id="coupon-discount" placeholder="Discount (%)" style="width:100px;">
+        <input type="date" id="coupon-expiry" title="Expiry Date" style="width:150px;">
+        <button onclick="createCoupon()">Create Coupon</button>
+    </div>
+    <div id="coupon-list" class="coupon-list"></div>
+    </section>
+
+    <section>
+    <h2>📢 Send Notifications (Basic)</h2>
+    <div class="notif-form">
+        <input type="text" id="notif-title" placeholder="Notification Title (e.g., New Coupon Alert!)">
+        <textarea id="notif-body" placeholder="Notification Message (e.g., Use code NEWYEAR for 20% off!)"></textarea>
+        <button onclick="sendNotification()">Send Global Notification</button>
+    </div>
+    </section>
+
+    <section>
+    <h2>📚 All Books / Manage</h2>
+    <div id="book-list" class="book-list"></div>
+    </section>
+
+    <section>
+    <h2>💳 Pending Subscription Requests</h2>
+    <div id="payment-list" class="payment-list"></div>
+    </section>
+
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+// --- APNI 5 API KEYS YAHAN DALO ---
+// CRITICAL: Replace these with your actual Gemini API keys. More keys means more chances of success and speed!
+const API_KEYS = ["YOUR_GEMINI_API_KEY_1", "YOUR_GEMINI_API_KEY_2", "YOUR_GEMINI_API_KEY_3", "YOUR_GEMINI_API_KEY_4", "YOUR_GEMINI_API_KEY_5"];
+
+// Saare models jo hum ek sath fire karenge
+const MODELS = [
+    "gemini-2.5-flash",
+    "gemini-1.5-flash", // More stable
+    "gemini-1.5-pro",   // High quality, often slower
+    "gemini-1.0-pro"    // Legacy but sometimes useful
+];
+
+// --- AI ENGINE CONTROLS (for HyperEngine) ---
+let isTyping = false;
+let currentAbortControllers = []; // Renamed from 'controllers' to avoid conflict with 'firebase.controllers'
+
+const aiLiveOutputBox = document.getElementById('aiLiveOutput');
+const aiCursor = document.getElementById('aiCursor');
+
+function startAILiveOutput(message = "Starting AI Engine...") {
+    aiLiveOutputBox.textContent = message;
+    aiCursor.style.display = "inline-block";
+    isTyping = true;
+}
+
+function stopAILiveOutput(message = "AI Engine Stopped.") {
+    isTyping = false;
+    currentAbortControllers.forEach(c => c.abort());
+    aiCursor.style.display = "none";
+    if (aiLiveOutputBox.textContent === "") { // Only update if nothing was written
+        aiLiveOutputBox.textContent = message;
+    }
+}
+
+function typeStreamToAILiveOutput(fullText) {
+    let charIndex = 0;
+    function burst() {
+        if (charIndex < fullText.length && isTyping) {
+            aiLiveOutputBox.textContent += fullText.substr(charIndex, 40); // Type 40 chars at once
+            charIndex += 40;
+            aiLiveOutputBox.parentElement.scrollTop = aiLiveOutputBox.parentElement.scrollHeight; // Scroll to bottom
+            setTimeout(burst, 0); // Use setTimeout(0) for non-blocking UI update
+        } else {
+            aiCursor.style.display = "none";
+        }
+    }
+    burst();
+}
+
+// --- Configuration ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.firebasestorage.app",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597778bad55",
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const auth = firebase.auth();
+
+const imgbbKey = '021a2437b889915669b66554687bf17f';
+const ADMIN_EMAIL = 'rajputsurendra562@gmail.com'; 
+const DUMMY_ADMIN_PASS = 'Banna@1712'; 
+
+// ✅ R2 WORKER CONFIG (R2 पर अपलोड करने के लिए)
+const R2_WORKER_URL = 'https://cold-snow-e955.surendrarathode040.workers.dev';
+
+// Global variable to hold generated content and description
+let generatedBookContent = {
+    story: '',
+    description: '',
+    title: '',
+    category: '', // This will hold the final 'MainCategory/SubCategory' string
+    lang: '',
+    textColor: '#222',
+    textSize: '14px'
+};
+
+// 🚩 NEW: Global variable for categories
+let allEbookCategories = {};
+
+// --- Authentication (Fixed Login Logic) ---
+auth.onAuthStateChanged(user => {
+    if (user && user.email === ADMIN_EMAIL) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        loadAdminData();
+        // 🚩 NEW: Load categories after login
+        loadCategories();
+    } else {
+        // Only show login screen if not already logged in
+        if (!user) {
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('admin-panel').style.display = 'none';
+        }
+    }
+});
+
+function adminLogin() {
+    const email = document.getElementById('admin-email').value;
+    const password = document.getElementById('admin-password').value; 
+    
+    // Attempt sign-in first
+    auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+            console.log("Login successful!");
+        })
+        .catch(error => {
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                 // If sign-in fails, try to create account (First-time setup logic)
+                 auth.createUserWithEmailAndPassword(ADMIN_EMAIL, DUMMY_ADMIN_PASS)
+                    .then(() => {
+                        alert('Admin account created and logged in. (Please use this password for next login: Banna@1712)');
+                        // Now sign in the newly created user
+                        auth.signInWithEmailAndPassword(ADMIN_EMAIL, DUMMY_ADMIN_PASS);
+                    })
+                    .catch(e => {
+                        // If account creation also fails (e.g., already exists but sign-in failed due to wrong password)
+                        alert('Login Failed. If you are the admin, check your password: ' + e.message);
+                    });
+            } else {
+                alert('Login Failed: ' + error.message);
+            }
+        });
+}
+
+function adminLogout() {
+    auth.signOut();
+}
+
+// ----------------------------------------------------
+// CATEGORY LOGIC 
+// ----------------------------------------------------
+
+async function loadCategories() {
+    try {
+        const snapshot = await db.ref('EBOOK_CATEGORIES').once('value');
+        allEbookCategories = snapshot.val() || {};
+        
+        if (Object.keys(allEbookCategories).length === 0) {
+            console.warn("EBOOK_CATEGORIES node is empty or missing. Please ensure you have added categories like Fiction and Non_Fiction.");
+        }
+        
+        populateCategoryDropdowns();
+    } catch(err) {
+        console.error("Error loading categories:", err);
+    }
+}
+
+function populateCategoryDropdowns() {
+    const mainCategories = Object.keys(allEbookCategories).sort();
+
+    const aiMainSelect = document.getElementById('ai-book-main-category');
+    const manualMainSelect = document.getElementById('book-main-category');
+    const pasteMainSelect = document.getElementById('paste-book-main-category'); // NEW for paste section
+
+    [aiMainSelect, manualMainSelect, pasteMainSelect].forEach(select => { // Updated here
+        // Clear previous options except the default one
+        select.innerHTML = `<option value="">${select.id.includes('paste') ? '4. Select Main Category' : (select.id.includes('ai') ? '2. Select Main Category' : 'Select Main Category')}</option>`;
+        
+        mainCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat.replace(/_/g, ' '); // Display with spaces
+            select.appendChild(option);
+        });
+        select.dispatchEvent(new Event('change')); 
+    });
+}
+
+function handleCategoryChange(type) {
+    const mainId = (type === 'manual') ? 'book-main-category' : `${type}-book-main-category`;
+    const subId = (type === 'manual') ? 'book-sub-category' : `${type}-book-sub-category`;
+    
+    const mainSelect = document.getElementById(mainId);
+    const subSelect = document.getElementById(subId);
+    
+    if (!mainSelect || !subSelect) {
+        console.error(`handleCategoryChange failed: Could not find select elements for type: ${type}`);
+        return;
+    }
+    
+    const selectedMainCat = mainSelect.value;
+
+    subSelect.innerHTML = `<option value="">${subSelect.id.includes('paste') ? '5. Select Sub Category (Genre)' : (subSelect.id.includes('ai') ? '3. Select Sub Category (Genre)' : 'Select Sub Category (Genre)')}</option>`;
+    
+    if (!selectedMainCat || !allEbookCategories[selectedMainCat]) {
+        return; 
+    }
+    
+    const subCategories = Object.keys(allEbookCategories[selectedMainCat]).sort();
+
+    subCategories.forEach(subCat => {
+        const option = document.createElement('option');
+        option.value = subCat;
+        option.textContent = subCat.replace(/_/g, ' '); 
+        subSelect.appendChild(option);
+    });
+}
+
+
+// --- Utility & Upload Functions ---
+async function uploadImgbb(file){
+    const base64Image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+    });
+
+    const form = new FormData();
+    form.append('image', base64Image); 
+
+    const res = await axios.post(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, form);
+    return res.data.data.url;
+}
+
+async function uploadR2(file, prefix){
+    const fd = new FormData();
+    fd.append("file", file, file.name); 
+    fd.append("prefix", prefix); 
+    
+    const resp = await fetch(R2_WORKER_URL, {
+        method: "POST",
+        body: fd
+    });
+    
+    if (!resp.ok) {
+        const text = await resp.text();
+        console.error("R2 Worker Failed:", resp.status, text);
+        throw new Error(`R2 Upload failed. Status: ${resp.status}. See console for Worker response: ${text}`);
+    }
+
+    const json = await resp.json();
+    if (json.publicURL) {
+        return json.publicURL; 
+    } else {
+        throw new Error('R2 Worker did not return public URL. Response: ' + JSON.stringify(json));
+    }
+}
+
+
+// --- HYPER ENGINE CORE LOGIC (Adapted from 5x Turbo Engine) ---
+async function generateAIContentWithHyperEngine(title, category, prompt, totalWordCount, lang, aiProgress) {
+    if (API_KEYS.filter(key => key.length > 0).length === 0) {
+        throw new Error("No valid API keys found. Please add your Gemini API keys in the API_KEYS array.");
+    }
+    
+    startAILiveOutput("Firing all engines... 🚀");
+    aiProgress.innerHTML = 'Status: Firing up 5x Hyper Engine...';
+
+    currentAbortControllers = [];
+    const allRequests = [];
+
+    // Construct a comprehensive prompt for the AI to generate both story and description
+    const fullPrompt = `You are a highly skilled ${lang} writer. Write a complete book content for a book titled "${title}", in the category "${category}". The story should be coherent, engaging, and approximately ${totalWordCount} words long.
+    
+    Before the main story, provide a compelling 150-word marketing description for this book. Enclose this description strictly within <DESCRIPTION> and </DESCRIPTION> tags.
+    
+    After the description, immediately begin the full story content. Do not include any chapter headings or conversational fillers, just the story text.`;
+
+    MODELS.forEach(model => {
+        API_KEYS.forEach(key => {
+            if (!key || key.length < 35) return; // Skip invalid or empty keys
+            
+            const controller = new AbortController();
+            currentAbortControllers.push(controller);
+            
+            const req = axios.post(
+                `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, 
+                { contents: [{ role: "user", parts: [{ text: fullPrompt }] }] }, // No memory for single book gen
+                { signal: controller.signal, timeout: 60000 } // 60-second timeout for each request
+            ).then(res => ({ res, modelUsed: model }))
+             .catch(error => {
+                // If a specific request fails, log and let Promise.any handle it.
+                // If it's an abort error, that's expected if another finishes faster.
+                if (error.code !== 'ERR_CANCELED') {
+                    console.warn(`Model ${model} with key ended in error:`, error.message);
+                }
+                throw error; // Re-throw to ensure Promise.any correctly picks the fastest success
+            });
+            
+            allRequests.push(req);
+        });
+    });
+
+    try {
+        const { res, modelUsed } = await Promise.any(allRequests);
+        stopAILiveOutput(); // Stop all other ongoing requests
+
+        const fullResponse = res.data.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (!fullResponse) {
+            const blockReason = res.data.candidates?.[0]?.finishReason || res.data.promptFeedback?.blockReason;
+            throw new Error(`AI generated no content. Reason: ${blockReason || 'Unknown (Check API response in console)'}`);
+        }
+
+        // Extract description
+        const descMatch = fullResponse.match(/<DESCRIPTION>(.*?)<\/DESCRIPTION>/s);
+        const bookDescription = descMatch ? descMatch[1].trim() : `AI generated story for ${title}.`;
+
+        // Extract story (remove description part from full response)
+        const storyContent = fullResponse.replace(/<DESCRIPTION>.*?<\/DESCRIPTION>/s, '').trim();
+
+        // Simulate typing the content
+        typeStreamToAILiveOutput(`SUCCESS | Fastest Engine: ${modelUsed}\n\n${storyContent}`);
+        
+        return { story: storyContent, description: bookDescription, finalWordCount: storyContent.split(/\s+/).length };
+
+    } catch (e) {
+        stopAILiveOutput();
+        console.error('Hyper Engine Failed:', e);
+        if (e && Array.isArray(e.errors)) { // AggregateError from Promise.any
+            e.errors.forEach((err, index) => console.error(`Individual engine error ${index + 1}:`, err.message));
+            throw new Error(`All engines failed to generate content. Check console for details. Common issues: API keys invalid/blocked, prompt too complex.`);
+        }
+        throw new Error(`Hyper Engine Failed: ${e.message || 'Unknown error.'}`);
+    }
+}
+
+
+// --- AI GENERATION FLOW HANDLERS ---
+
+// STEP 1: GENERATE CONTENT
+document.getElementById('generate-content-btn').addEventListener('click', async () => {
+    // 1. Get Form Values
+    const title = document.getElementById('ai-book-title').value.trim();
+    const mainCategory = document.getElementById('ai-book-main-category').value.trim();
+    const subCategory = document.getElementById('ai-book-sub-category').value.trim(); 
+    const finalCategory = `${mainCategory}/${subCategory}`; 
+
+    const prompt = document.getElementById('ai-book-prompt').value.trim();
+    const totalWordCount = Number(document.getElementById('ai-word-count').value);
+    const lang = document.getElementById('ai-book-lang').value;
+    const textColor = document.getElementById('ai-text-color').value;
+    const textSize = document.getElementById('ai-text-size').value;
+
+    if (!title || !mainCategory || !subCategory || !prompt || isNaN(totalWordCount) || totalWordCount < 500) {
+        return alert('Please fill Title, both Categories, detailed Prompt, and a valid Word Count (min 500).');
+    }
+    
+    // Store metadata globally
+    generatedBookContent.title = title;
+    generatedBookContent.category = finalCategory; 
+    generatedBookContent.lang = lang;
+    generatedBookContent.textColor = textColor;
+    generatedBookContent.textSize = textSize;
+    generatedBookContent.author = 'Money card (AI)'; // Assign AI author here
+
+    const generateBtn = document.getElementById('generate-content-btn');
+    const aiProgress = document.getElementById('ai-progress-text');
+    generateBtn.disabled = true;
+    aiProgress.style.display = 'block';
+    aiProgress.innerHTML = 'Status: Initializing AI Generation... 🤖';
+    
+    // Reset state and hide upload section
+    document.getElementById('ai-upload-section').style.display = 'none';
+    generatedBookContent.story = '';
+    document.getElementById('upload-final-btn').disabled = true;
+    aiLiveOutputBox.textContent = ""; // Clear terminal output
+
+    try {
+        // 2. Generate Text Content using Hyper Engine
+        const aiData = await generateAIContentWithHyperEngine(title, finalCategory, prompt, totalWordCount, lang, aiProgress);
+
+        // 3. Store Generated Content globally
+        generatedBookContent.story = aiData.story;
+        generatedBookContent.description = aiData.description;
+        
+        document.getElementById('ai-book-desc-final').value = aiData.description;
+
+        // 4. Show Next Step
+        aiProgress.innerHTML = `Status: ✅ Content Generated (${aiData.finalWordCount} words). Now upload the cover and finalize.`;
+        document.getElementById('ai-upload-section').style.display = 'block';
+        document.getElementById('upload-final-btn').disabled = false;
+        
+        alert(`Content for "${title}" generated successfully! Now upload the cover and finalize the book.`);
+
+    } catch(err) {
+        console.error('AI Content Generation Error:', err);
+        alert('AI Content Generation Failed: ' + (err.message || 'Check console for details.'));
+        aiProgress.innerHTML = 'Status: Error.';
+        stopAILiveOutput("AI Engine Failed.");
+    } finally {
+        generateBtn.disabled = false;
+    }
+});
+
+// STEP 2: UPLOAD COVER AND FINAL DATA 
+document.getElementById('upload-final-btn').addEventListener('click', async () => {
+    // 1. Check content is available
+    if (!generatedBookContent.story) {
+        return alert('Please generate book content first (Step 1).');
+    }
+    
+    // 2. Get Upload Form Values 
+    const coverFile = document.getElementById('ai-cover-file').files[0];
+    const uploadTarget = document.getElementById('ai-upload-target').value;
+
+    const priceMonthly = Number(document.getElementById('ai-price-monthly').value);
+    const priceYearly = Number(document.getElementById('ai-price-yearly').value);
+    const discount = Number(document.getElementById('ai-discount').value);
+    const finalDescription = document.getElementById('ai-book-desc-final').value.trim(); 
+
+    if (isNaN(priceMonthly) || isNaN(priceYearly) || priceMonthly <= 0 || priceYearly <= 0) {
+        return alert('Please enter valid Monthly and Yearly Prices in the Finalize section.');
+    }
+    if (!finalDescription) {
+        return alert('Description cannot be empty. Please ensure the AI generated it or manually enter one.');
+    }
+    
+    if (!coverFile) {
+        return alert('Please select a cover image for upload.');
+    }
+    if (!uploadTarget) {
+        return alert('Please select an Upload Target.');
+    }
+    
+    const mainCategoryForFirebase = generatedBookContent.category.split('/')[0];
+    if (!mainCategoryForFirebase) {
+        return alert('Category split failed. Please re-select categories in Step 1.');
+    }
+    
+    const finalBtn = document.getElementById('upload-final-btn');
+    const aiProgressFinal = document.getElementById('ai-progress-final');
+    finalBtn.disabled = true;
+    aiProgressFinal.style.display = 'block';
+    aiProgressFinal.innerHTML = 'Status: Starting final upload sequence...';
+
+    try {
+        let coverUrl = '';
+        const safeTitle = generatedBookContent.title.replace(/[^a-z0-9]/gi, '_').toLowerCase(); // For file names
+
+        // --- A. Handle Cover Upload ---
+        aiProgressFinal.innerHTML = 'Status: Uploading Cover...';
+        
+        if (uploadTarget === 'r2') {
+            coverUrl = await uploadR2(coverFile, `ai-covers/${safeTitle}/`); 
+        } else if (uploadTarget === 'imgbb') {
+            coverUrl = await uploadImgbb(coverFile);
+        } else {
+             throw new Error("Invalid upload target selected for cover.");
+        }
+
+
+        // --- B. Upload Final Text File to R2 (Always R2 for content) ---
+        aiProgressFinal.innerHTML = `Status: Uploading content text to R2...`;
+        
+        const textBlob = new Blob([generatedBookContent.story], {type: 'text/plain;charset=utf-8'});
+        const contentFile = new File([textBlob], `${safeTitle}_content.txt`, {type: 'text/plain'});
+        const contentUrl = await uploadR2(contentFile, `ai-content-text/${safeTitle}/`); 
+        
+        
+        // --- C. Save to Firebase ---
+        aiProgressFinal.innerHTML = 'Status: Saving all details to Firebase... 🔥';
+
+        const bookId = 'b'+Date.now();
+        await db.ref('books/'+bookId).set({
+            id: bookId, 
+            title: generatedBookContent.title, 
+            author: generatedBookContent.author, // Will be 'Money card (AI)'
+            priceMonthly, priceYearly, discount, 
+            category: generatedBookContent.category, 
+            desc: finalDescription, 
+            coverUrl: coverUrl,
+            pages: [], // AI books don't have image pages
+            pageCount: 0, 
+            contentUrl: contentUrl, 
+            textColor: generatedBookContent.textColor,
+            textSize: generatedBookContent.textSize,
+            hidden: false, 
+            createdAt: Date.now()
+        });
+        
+        await db.ref('categories/'+mainCategoryForFirebase).set(true); 
+
+        alert(`AI Book "${generatedBookContent.title}" uploaded successfully!`);
+        
+        // Reset state
+        document.getElementById('ai-book-form').reset();
+        document.getElementById('ai-upload-section').style.display = 'none';
+        document.getElementById('ai-progress-text').style.display = 'none';
+        aiProgressFinal.style.display = 'none';
+        aiLiveOutputBox.textContent = ""; // Clear terminal output
+        generatedBookContent = { story: '', description: '', title: '', category: '', lang: '', textColor: '#222', textSize: '14px', author: '' };
+        
+        loadAdminData();
+        
+    } catch(err) {
+        console.error('Final Upload Error:', err);
+        alert('Final Upload Failed: ' + (err.message || 'Check console for details.'));
+        aiProgressFinal.innerHTML = 'Status: Error.';
+    } finally {
+        finalBtn.disabled = false;
+    }
+});
+
+
+// --- NEW: MANUAL PASTE BOOK HANDLER ---
+document.getElementById('paste-book-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const bookContent = document.getElementById('paste-book-content').value.trim();
+    const title = document.getElementById('paste-book-title').value.trim();
+    const author = document.getElementById('paste-book-author').value.trim();
+    const mainCategory = document.getElementById('paste-book-main-category').value.trim();
+    const subCategory = document.getElementById('paste-book-sub-category').value.trim();
+    const finalCategory = `${mainCategory}/${subCategory}`;
+
+    const priceMonthly = Number(document.getElementById('paste-price-monthly').value);
+    const priceYearly = Number(document.getElementById('paste-price-yearly').value);
+    const discount = Number(document.getElementById('paste-discount').value);
+    const desc = document.getElementById('paste-book-desc').value.trim();
+    const textColor = document.getElementById('paste-text-color').value;
+    const textSize = document.getElementById('paste-text-size').value;
+    const coverFile = document.getElementById('paste-cover-file').files[0];
+    const uploadTarget = document.getElementById('paste-upload-target').value;
+
+    if (!bookContent || !title || !author || !mainCategory || !subCategory || 
+        isNaN(priceMonthly) || priceMonthly <= 0 || isNaN(priceYearly) || priceYearly <= 0 || 
+        !desc || !coverFile || !uploadTarget) {
+        return alert('Please fill all required fields in the "Paste Your Book Content" section.');
+    }
+
+    const pasteProgress = document.getElementById('paste-upload-progress');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    pasteProgress.style.display = 'block';
+    pasteProgress.innerHTML = 'Status: Starting upload for pasted content...';
+
+    try {
+        let coverUrl = '';
+        const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+        // 1. Upload Cover
+        pasteProgress.innerHTML = 'Status: Uploading Cover...';
+        if (uploadTarget === 'r2') {
+            coverUrl = await uploadR2(coverFile, `pasted-covers/${safeTitle}/`);
+        } else if (uploadTarget === 'imgbb') {
+            coverUrl = await uploadImgbb(coverFile);
+        } else {
+            throw new Error("Invalid upload target selected for cover.");
+        }
+
+        // 2. Upload Content Text to R2
+        pasteProgress.innerHTML = `Status: Uploading pasted text content to R2...`;
+        const textBlob = new Blob([bookContent], { type: 'text/plain;charset=utf-8' });
+        const contentFile = new File([textBlob], `${safeTitle}_pasted_content.txt`, { type: 'text/plain' });
+        const contentUrl = await uploadR2(contentFile, `manual-pasted-content/${safeTitle}/`);
+
+        // 3. Save to Firebase
+        pasteProgress.innerHTML = 'Status: Saving all details to Firebase... 🔥';
+        const bookId = 'b' + Date.now();
+        await db.ref('books/' + bookId).set({
+            id: bookId,
+            title, author, priceMonthly, priceYearly, discount,
+            category: finalCategory,
+            desc, coverUrl,
+            pages: [], // Pasted books don't have image pages
+            pageCount: 0,
+            contentUrl: contentUrl,
+            textColor,
+            textSize,
+            hidden: false,
+            createdAt: Date.now()
+        });
+
+        await db.ref('categories/' + mainCategory).set(true);
+
+        alert(`Pasted book "${title}" uploaded successfully!`);
+        document.getElementById('paste-book-form').reset();
+        pasteProgress.style.display = 'none';
+        loadAdminData();
+
+    } catch (err) {
+        console.error('Pasted Book Upload Error:', err);
+        alert('Pasted Book Upload Failed: ' + (err.message || 'Check console for details.'));
+        pasteProgress.innerHTML = 'Status: Error.';
+    } finally {
+        submitBtn.disabled = false;
+    }
+});
+
+
+// --- OLD: MANUAL ADD BOOK HANDLER ---
+document.getElementById('add-book-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    
+    // Form values
+    const title = document.getElementById('book-title').value.trim();
+    const author = document.getElementById('book-author').value.trim();
+    const mainCategory = document.getElementById('book-main-category').value.trim(); 
+    const subCategory = document.getElementById('book-sub-category').value.trim();     
+    const finalCategory = `${mainCategory}/${subCategory}`; 
+
+    const priceMonthly = Number(document.getElementById('book-price-monthly').value);
+    const priceYearly = Number(document.getElementById('book-price-yearly').value);
+    const discount = Number(document.getElementById('book-discount').value);
+    const desc = document.getElementById('book-desc').value.trim();
+    const coverFile = document.getElementById('book-cover').files[0];
+    const pageFiles = Array.from(document.getElementById('book-pages').files);
+    const uploadSource = document.getElementById('upload-source').value; 
+    
+    if(!title || !author || !priceMonthly || !priceYearly || !coverFile || pageFiles.length===0 || !mainCategory || !subCategory) {
+        return alert('Please fill all required fields: Title, Author, Prices, both Categories, Cover, and Pages.');
+    }
+
+    const uploader = (uploadSource === 'r2') ? (file, isCover) => uploadR2(file, isCover ? "covers/" : "pages/") : uploadImgbb;
+    
+    const progressDiv = document.getElementById('upload-progress');
+    const statusSpan = document.getElementById('progress-status');
+    progressDiv.style.display = 'block';
+    
+    try{
+        // 1. Upload cover
+        statusSpan.innerText = `1/1 Cover... using ${uploadSource}`;
+        const coverUrl = await uploader(coverFile, true); 
+        
+        // 2. Upload pages with progress
+        const pagesUrls = [];
+        for(let i=0;i<pageFiles.length;i++){
+            statusSpan.innerText = `Uploading Page ${i+1} of ${pageFiles.length}... using ${uploadSource}`;
+            const url = await uploader(pageFiles[i], false); 
+            pagesUrls.push(url);
+        }
+        statusSpan.innerText = `All ${pageFiles.length} Pages Uploaded. Saving to Database...`;
+
+        // 3. Save to Firebase
+        const bookId = 'b'+Date.now();
+        await db.ref('books/'+bookId).set({
+            id: bookId, title, author, priceMonthly, priceYearly, discount, 
+            category: finalCategory, 
+            desc, coverUrl,
+            pages: pagesUrls, pageCount: pagesUrls.length, hidden:false, createdAt:Date.now()
+        });
+        
+        await db.ref('categories/'+mainCategory).set(true); 
+
+        alert('Book uploaded successfully!');
+        document.getElementById('add-book-form').reset();
+        progressDiv.style.display = 'none';
+        loadAdminData();
+    }catch(err){
+        console.error('Upload Error:', err);
+        alert('Error uploading book: ' + (err.message || 'Check console'));
+        progressDiv.style.display = 'none';
+    }
+});
+
+
+// --- Data Loading & Management ---
+function loadAdminData() {
+    loadBooks();
+    loadPayments();
+    loadCoupons();
+}
+
+function loadBooks(){
+    db.ref('books').once('value').then(snap=>{
+        const data = snap.val()||{};
+        const container = document.getElementById('book-list');
+        container.innerHTML='';
+        Object.values(data).sort((a,b)=>b.createdAt - a.createdAt).forEach(book=>{
+            const finalMonthlyPrice = book.priceMonthly * (1 - (book.discount || 0) / 100);
+            const isAI = book.author && book.author.includes('(AI)'); // Check for AI author
+            const isPasted = book.contentUrl && book.contentUrl.includes('manual-pasted-content/'); // Check for pasted content
+
+            const source = book.coverUrl && book.coverUrl.includes(R2_WORKER_URL.split('/')[2]) ? 'R2' : (book.coverUrl && book.coverUrl.includes('imgbb') ? 'ImgBB' : 'Unknown'); 
+            
+            // Display category nicely
+            const categoryDisplay = book.category ? book.category.replace(/\//g, ' / ').replace(/_/g, ' ') : 'N/A';
+            
+            const div = document.createElement('div');
+            div.className='book-item '+(book.hidden?'hidden':'');
+            div.innerHTML=`
+            <div class="flex">
+                <img src="${book.coverUrl}" alt="Cover">
+                <div class="flex-col">
+                    <strong>${book.title} ${isAI ? '✨(AI)' : (isPasted ? '📄(Pasted)' : '')}</strong> (${categoryDisplay})<br>By ${book.author}
+                    <div style="font-size:12px;">₹${finalMonthlyPrice.toFixed(0)}/mo | Discount: ${book.discount || 0}% | Content Type: ${book.contentUrl ? 'Text File' : 'Images'}</div>
+                    <span style="color:${book.hidden?'red':'green'}; font-weight:600; font-size:12px;">Status: ${book.hidden?'Hidden':'Visible'} | Cover Source: ${source}</span>
+                    ${book.contentUrl ? `<a href="${book.contentUrl}" target="_blank" style="font-size:12px; font-weight:600; color:#007bff;">[📄 Download Text]</a>` : ''}
+                </div>
+            </div>
+            <div class="flex">
+                <button onclick="previewBook('${book.id}')">Preview</button>
+                <button onclick="editBookDetails('${book.id}')">Edit Details</button>
+                <button onclick="toggleVisibility('${book.id}',${book.hidden})">${book.hidden?'Show':'Hide'}</button>
+                <button onclick="deleteBook('${book.id}')">Delete</button>
+            </div>
+            `;
+            container.appendChild(div);
+        });
+        if (Object.keys(data).length === 0) container.innerHTML = '<p>No books uploaded yet.</p>';
+    });
+}
+
+// --- Preview Book, Payments, Coupons, Notifications ---
+async function previewBook(id){
+    const snap = await db.ref('books/'+id).once('value');
+    const book = snap.val();
+    if(!book) return;
+    
+    let html = `<h3>${book.title} - Admin Preview</h3><p>By ${book.author} | Category: ${book.category} | <span style="font-size:12px;">${book.desc}</span></p>`;
+
+    if (book.contentUrl) {
+        html += `<hr><h4>Ebook Content (AI/Pasted Text File Preview):</h4>`;
+        try {
+            const response = await fetch(book.contentUrl);
+            if (!response.ok) throw new Error('Failed to fetch text content.');
+            const textContent = await response.text();
+            
+            const paragraphs = textContent.split('\n\n').filter(p => p.trim() !== ''); 
+            const pages = [];
+            let currentPage = '';
+            const MAX_CHARS_PER_PAGE = 1200; 
+
+            for(const para of paragraphs) {
+                if ((currentPage.length + para.length + 2) > MAX_CHARS_PER_PAGE && currentPage.length > 0) {
+                    pages.push(currentPage);
+                    currentPage = para + '\n\n';
+                } else {
+                    currentPage += para + '\n\n';
+                }
+            }
+            if (currentPage) pages.push(currentPage);
+
+            html += `<div style="padding: 10px; background:#f0f0f0; border: 1px solid #ccc;">`;
+            pages.forEach((pageText, index) => {
+                const style = `color: ${book.textColor || '#222'}; font-size: ${book.textSize || '14px'}; line-height: 1.6;`;
+                html += `
+                    <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; background: white;">
+                        <p style="font-weight:600; color:#c59b2d;">--- Page ${index + 1} / ${pages.length} (Text View) ---</p>
+                        <pre style="white-space: pre-wrap; word-wrap: break-word; font-family: inherit; ${style}">${pageText}</pre>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+        } catch (e) {
+            html += `<p style="color:red;">Error fetching text content: ${e.message}</p>`;
+        }
+    }
+    
+    if (book.pages && book.pages.length > 0) {
+         html += `<hr><h4>Ebook Pages (Image View - Legacy):</h4>`;
+         book.pages.forEach((url, index)=>{ html+=`<p style="font-size:12px; margin: 5px 0;">Page ${index+1}:</p><img src="${url}" style="width:100%; max-width:500px; margin-bottom:15px; border:1px solid #ccc;">`; });
+    }
+
+    const win = window.open('','_blank','width=600,height=700,scrollbars=yes');
+    win.document.write(`<html><head><title>Admin Preview - ${book.title}</title></head><body><div style="padding: 20px;">${html}</div></body></html>`);
+}
+function editBookDetails(id){
+    db.ref('books/'+id).once('value').then(snap => {
+        const book = snap.val();
+        if (!book) return;
+        const newMonthly = prompt(`Enter new Monthly Price (Current: ₹${book.priceMonthly}):`);
+        const newYearly = prompt(`Enter new Yearly Price (Current: ₹${book.priceYearly}):`);
+        const newDiscount = prompt(`Enter new Discount Percentage (Current: ${book.discount || 0}%):`);
+        const newTextColor = prompt(`Enter new Text Color (Current: ${book.textColor || '#222'}):`);
+        const newTextSize = prompt(`Enter new Text Size (Current: ${book.textSize || '14px'}):`);
+
+
+        const updates = {};
+        if (newMonthly !== null && !isNaN(newMonthly) && newMonthly >= 0) updates.priceMonthly = Number(newMonthly);
+        if (newYearly !== null && !isNaN(newYearly) && newYearly >= 0) updates.priceYearly = Number(newYearly);
+        if (newDiscount !== null && !isNaN(newDiscount) && newDiscount >= 0 && newDiscount <= 100) updates.discount = Number(newDiscount);
+        if (newTextColor !== null && newTextColor.trim() !== '') updates.textColor = newTextColor.trim();
+        if (newTextSize !== null && newTextSize.trim() !== '') updates.textSize = newTextSize.trim();
+
+        
+        if(Object.keys(updates).length > 0) {
+            db.ref('books/'+id).update(updates).then(()=>{ loadBooks(); alert('Book details updated!'); });
+        } else {
+            alert('No valid changes made.');
+        }
+    });
+}
+function toggleVisibility(id,hidden){ db.ref('books/'+id).update({hidden:!hidden}).then(()=>{ loadBooks(); }); }
+function deleteBook(id){ if(confirm('Permanently delete this book?')) db.ref('books/'+id).remove().then(()=>{ loadBooks(); alert('Book deleted.'); }); }
+function loadPayments(){
+    db.ref('payments').orderByChild('status').equalTo('pending').once('value').then(snap=>{
+        const data = snap.val()||{};
+        const container = document.getElementById('payment-list');
+        container.innerHTML='';
+        Object.values(data).sort((a,b)=>b.timestamp - a.timestamp).forEach(p=>{
+            const div = document.createElement('div');
+            div.className='payment-item';
+            div.innerHTML=`
+            <div class="flex-col">
+                <div><strong>📧 User:</strong> ${p.userEmail}</div>
+                <div><strong>📘 Book ID:</strong> ${p.bookId} (<span style="color:#d4af37;">${p.plan.toUpperCase()}</span>)</div>
+                <div><strong>💰 Amount:</b> ₹${p.amount}</div>
+                <div><strong>🔢 UTR:</strong> <span style="font-weight:bold; color:#0056b3;">**${p.utr}**</span></div>
+                <div><strong>🕒 Date:</strong> ${new Date(p.timestamp).toLocaleString()}</div>
+            </div>
+            <div class="flex">
+                <button onclick="approvePayment('${p.id}', '${p.userEmail}', '${p.bookId}', '${p.plan}')">✅ Approve</button>
+                <button onclick="rejectPayment('${p.id}')">❌ Reject</button>
+            </div>
+            `;
+            container.appendChild(div);
+        });
+        if(Object.keys(data).length === 0) container.innerHTML = '<p style="padding:10px;">🎉 No pending payment requests.</p>';
+    });
+}
+function approvePayment(paymentId, userEmail, bookId, plan){
+    const now = Date.now();
+    let durationDays = (plan === 'monthly') ? 30 : (plan === 'yearly' ? 365 : 0);
+    const expiryDate = now + (durationDays * 24 * 60 * 60 * 1000); 
+    const userKey = userEmail.replace(/[.#$[\]]/g, '_'); 
+
+    db.ref('payments/'+paymentId).update({status:'approved'}).then(()=>{
+        db.ref('users/'+userKey+'/subscriptions/'+bookId).set({
+            status:'approved', plan: plan, timestamp: now, expiresAt: expiryDate
+        }).then(()=>{
+            loadPayments();
+            const notifId = 'notif'+Date.now();
+            db.ref('notifications/'+notifId).set({
+                id: notifId, recipient: userKey, 
+                title: 'Subscription Approved! 🎉',
+                body: `Your ${plan.toUpperCase()} subscription for Book ID ${bookId} has been approved. Expires: ${new Date(expiryDate).toLocaleDateString()}.`,
+                timestamp: Date.now(), read: false
+            });
+            alert(`Payment approved & subscription unlocked for user ${userEmail}! Notification sent.`);
+        });
+    }).catch(err => alert('Error approving payment: ' + err.message));
+}
+function rejectPayment(id){
+    if(confirm('Are you sure you want to reject this payment request?')) {
+        db.ref('payments/'+id).update({status:'rejected'}).then(()=>{ loadPayments(); alert('Payment rejected.'); });
+    }
+}
+function createCoupon() {
+    const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+    const discount = Number(document.getElementById('coupon-discount').value);
+    const expiryDate = document.getElementById('coupon-expiry').value;
+
+    if (!code || isNaN(discount) || discount <= 0 || discount > 100 || !expiryDate) {
+        return alert('Enter a valid code, discount (1-100%), and expiry date.');
+    }
+
+    const expiryTimestamp = new Date(expiryDate).getTime();
+    if(expiryTimestamp < Date.now()) return alert('Expiry date must be in the future.');
+
+    db.ref('coupons/' + code).set({
+        code, discount, expiryTimestamp, createdAt: Date.now()
+    }).then(() => {
+        alert(`Coupon ${code} (${discount}% off) created successfully!`);
+        document.getElementById('coupon-code').value = '';
+        document.getElementById('coupon-discount').value = '';
+        document.getElementById('coupon-expiry').value = '';
+        loadCoupons();
+    }).catch(e => alert('Error creating coupon: ' + e.message));
+}
+function loadCoupons() {
+    db.ref('coupons').once('value').then(snap => {
+        const data = snap.val() || {};
+        const container = document.getElementById('coupon-list');
+        container.innerHTML = '';
+        
+        Object.values(data).sort((a,b)=>b.createdAt - a.createdAt).forEach(coupon => {
+            const expired = coupon.expiryTimestamp < Date.now();
+            const div = document.createElement('div');
+            div.className = 'coupon-item ' + (expired ? 'hidden' : '');
+            div.innerHTML = `
+            <div class="flex-col">
+                <strong>${coupon.code}</strong>
+                <div>Discount: ${coupon.discount}% Off</div>
+                <div style="font-size:12px; color: ${expired ? 'red' : 'green'};">
+                    Expires: ${new Date(coupon.expiryTimestamp).toLocaleDateString()} (${expired ? 'EXPIRED' : 'ACTIVE'})
+                </div>
+            </div>
+            <button onclick="deleteCoupon('${coupon.code}')">Delete</button>
+            `;
+            container.appendChild(div);
+        });
+        if (Object.keys(data).length === 0) container.innerHTML = '<p>No coupons available.</p>';
+    });
+}
+function sendNotification() {
+    const title = document.getElementById('notif-title').value.trim();
+    const body = document.getElementById('notif-body').value.trim();
+
+    if (!title || !body) return alert('Enter both title and message body.');
+
+    if(confirm('Send this notification to ALL users?')) {
+        const notifId = 'notif'+Date.now();
+        db.ref('notifications/'+notifId).set({
+            id: notifId, recipient: 'global', 
+            title, body, timestamp: Date.now(), read: false
+        }).then(() => {
+            alert('Global notification sent successfully!');
+            document.getElementById('notif-title').value = '';
+            document.getElementById('notif-body').value = '';
+        }).catch(e => alert('Error sending notification: ' + e.message));
+    }
+}
+</script>
+</body>
+</html>
+

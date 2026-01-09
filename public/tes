@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Money Card</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11380267758"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-11380267758');
+    </script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .signup-card { background: #1a1a1a; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; border: 1px solid #333; }
+        h2 { color: #ffcc00; margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #ffcc00; border: none; border-radius: 8px; color: black; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 20px; transition: 0.3s; }
+        button:hover { background: #e6b800; transform: translateY(-2px); }
+        .footer-link { margin-top: 20px; font-size: 14px; color: #888; }
+        .footer-link a { color: #ffcc00; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="signup-card">
+    <h2>Create Account</h2>
+    <form id="signupForm">
+        <input type="text" id="name" placeholder="Full Name" required>
+        <input type="email" id="email" placeholder="Email Address" required>
+        <input type="password" id="password" placeholder="Create Password" required>
+        <button type="submit">Get Started</button>
+    </form>
+    <div class="footer-link">Already have an account? <a href="login.html">Login</a></div>
+</div>
+
+<script>
+document.getElementById('signupForm').onsubmit = function(e) {
+    e.preventDefault();
+    
+    // --- 1. FIRE Google Conversion Event ---
+    gtag('event', 'conversion', {
+        'send_to': 'AW-11380267758/7ERoCNPK-OIaEO61xLIq',
+        'event_callback': function() {
+            console.log("Conversion Tracked!");
+        }
+    });
+
+    // --- 2. SIGN UP LOGIC (Simulation) ---
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    
+    // Yahan tera Firebase signup logic aayega
+    alert("Signing up " + name + "...");
+    
+    // Redirect after success
+    // window.location.href = "dev-portal.html";
+};
+</script>
+
+</body>
+</html>
+

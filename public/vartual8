@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyCard | Activation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .step-card { display: none; }
+        .step-active { display: block; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-success { background-color: #10b981 !important; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+    <nav class="p-4 bg-white shadow-sm flex justify-between items-center border-b border-blue-100">
+        <h1 class="text-xl font-black text-blue-600 italic">MONEYCARD</h1>
+        <div id="statusTag" class="text-[10px] font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase">Syncing...</div>
+    </nav>
+
+    <div class="max-w-md mx-auto py-12 px-6">
+        
+        <div id="step-LANDING" class="step-card text-center">
+            <h2 class="text-3xl font-black text-gray-800 mb-4">Merchant Activation</h2>
+            <p class="text-gray-500 mb-8">Bhai, setup start karke account active karo.</p>
+            <button onclick="changeStep('BASICS')" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-all">Get Started</button>
+        </div>
+
+        <div id="step-BASICS" class="step-card bg-white p-6 rounded-3xl shadow-xl border border-gray-100">
+            <h3 class="text-xl font-bold mb-6 text-blue-600">1. Basic Info</h3>
+            <div class="space-y-4">
+                <input type="text" id="inName" placeholder="Full Name (as on PAN)" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-blue-500">
+                <input type="tel" id="inPhone" placeholder="Mobile Number" class="w-full p-4 bg-gray-50 border rounded-xl outline-none focus:border-blue-500">
+                <button onclick="saveBasics()" class="w-full bg-black text-white py-4 rounded-xl font-bold shadow-lg">Next Step</button>
+            </div>
+        </div>
+
+        <div id="step-PAN" class="step-card bg-white p-6 rounded-3xl shadow-xl border border-gray-100 text-center">
+            <h3 class="text-xl font-bold mb-6">2. PAN Verification</h3>
+            <input type="text" id="inPan" placeholder="ABCDE1234F" class="w-full p-5 border-2 border-dashed rounded-xl mb-4 text-center font-black text-2xl uppercase tracking-widest outline-none focus:border-blue-600">
+            <div id="panResult" class="hidden mb-4 p-4 bg-green-50 text-green-700 rounded-xl font-bold text-sm border border-green-200"></div>
+            <button onclick="verifyPAN()" id="btnPan" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg transition-all duration-500">Verify Details</button>
+        </div>
+
+        <div id="step-DIGILOCKER" class="step-card bg-white p-8 rounded-3xl shadow-xl border border-gray-100 text-center">
+            <i class="fas fa-shield-alt text-5xl text-blue-500 mb-4"></i>
+            <h3 class="text-2xl font-black mb-2">Aadhaar KYC</h3>
+            <p class="text-sm text-gray-500 mb-8 font-medium italic">Powered by DigiLocker Government Secure</p>
+            <button onclick="openDigi()" id="btnDigi" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2">
+                <i class="fas fa-external-link-alt"></i> Open DigiLocker
+            </button>
+        </div>
+
+        <div id="step-COMPLETED" class="step-card text-center">
+            <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl border-t-8 border-green-500">
+                <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                <h3 class="text-2xl font-black text-gray-800">Account Active!</h3>
+                <div class="mt-6 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Verified Merchant</p>
+                    <p id="finalName" class="text-lg font-black text-blue-900 leading-tight">---</p>
+                </div>
+                <button onclick="window.location.href='https://smbrand-4543a.web.app/dashboard.html'" class="mt-8 w-full bg-black text-white py-4 rounded-xl font-bold">Go to Dashboard</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        const VERCEL_URL = "https://money-card-p.vercel.app";
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let userUID = "";
+
+        firebase.auth().onAuthStateChanged(user => {
+            if(user) { userUID = user.uid; syncFlow(); } 
+            else { window.location.href = "login.html"; }
+        });
+
+        function syncFlow() {
+            db.ref(`users/${userUID}/profile`).on('value', snap => {
+                const data = snap.val() || {};
+                const currentStep = data.step || 'LANDING';
+                document.querySelectorAll('.step-card').forEach(c => c.classList.remove('step-active'));
+                const el = document.getElementById('step-' + currentStep);
+                if(el) el.classList.add('step-active');
+                if(data.registered_name) document.getElementById('finalName').innerText = data.registered_name;
+                document.getElementById('statusTag').innerText = "Status: " + currentStep;
+            });
+        }
+
+        async function saveBasics() {
+            const name = document.getElementById('inName').value;
+            const phone = document.getElementById('inPhone').value;
+            if(!name || !phone) return alert("Details dalo!");
+            await db.ref(`users/${userUID}/profile`).update({ name, phone, step: 'PAN' });
+        }
+
+        async function verifyPAN() {
+            const pan = document.getElementById('inPan').value.trim();
+            const name = document.getElementById('inName').value;
+            const btn = document.getElementById('btnPan');
+            const resBox = document.getElementById('panResult');
+            if(!pan) return alert("PAN dalo!");
+            btn.innerText = "Verifying...";
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${VERCEL_URL}/api/verify-pan`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pan, userId: userUID, name })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    resBox.innerHTML = `✅ Verified: ${data.registered_name}`;
+                    resBox.classList.remove('hidden');
+                    btn.innerText = "VERIFIED ✅";
+                    btn.classList.add('btn-success');
+                    setTimeout(() => { db.ref(`users/${userUID}/profile`).update({ step: 'DIGILOCKER' }); }, 3000);
+                } else {
+                    alert(data.message || "Invalid PAN");
+                    btn.disabled = false;
+                    btn.innerText = "Verify Details";
+                }
+            } catch (e) { alert("Backend Sync Error!"); btn.disabled = false; }
+        }
+
+        async function openDigi() {
+            const btn = document.getElementById('btnDigi');
+            btn.innerText = "Generating Secure Link...";
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${VERCEL_URL}/api/create-digilocker-url`, { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userId: userUID }) // Body mein userId bhej rahe hain
+                });
+                const data = await res.json();
+                if(data.success && data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert(data.message || "Could not open DigiLocker");
+                    btn.disabled = false;
+                    btn.innerText = "Open DigiLocker";
+                }
+            } catch (e) { alert("Backend Error"); btn.disabled = false; }
+        }
+
+        function changeStep(s) { db.ref(`users/${userUID}/profile`).update({ step: s }); }
+    </script>
+</body>
+</html>
+

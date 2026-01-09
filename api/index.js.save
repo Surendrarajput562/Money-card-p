@@ -1,0 +1,843 @@
+const express = require('express');
+const axios = require('axios');
+const admin = require('firebase-admin');
+onst cors = require('cors');
+const { HttpsProxyAgent } = require('https-proxy-agent');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+//-- 1. CONFIG VARIABLES ---
+// Inhe upar hi define kar diya taaki poore code mein use ho sakein
+const SPEED_SECRET_KEY = process.env.SPEED_SECRET_KEY;
+const DIDIT_API_KEY = process.env.DIDIT_API_KEY || process.env.DIDIT_APIKEY;
+const DIDIT_WORKFLOW_ID = "5b594327-9f78-4cb1-a233-7d84dbfa88a0";
+const KUCOIN_KEY = process.env.KUCOIN_KEY;
+const KUCOIN_SECRET = process.env.KUCOIN_SECRET;
+const KUCOIN_PASSPHRASE = process.env.KUCOIN_PASSPHRASE;
+
+// --- 1. FIREBASE INITIALIZATION ---
+if (!admin.apps.length) {
+    try {
+        let pKey = process.env.FIREBASE_PRIVATE_KEY || "";
+        const cleanKey = pKey.trim().replace(/^"|"$/g, '').replace(/\\n/g, '\n');
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId: process.env.FIREBASE_PROJECT_ID,
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                privateKey: cleanKey
+            }),
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com"
+        });
+    } catch (e) { console.error("Firebase Error:", e.message); }
+}
+const db = admin.database();
+const agent = process.env.FIXIE_URL ? new HttpsProxyAgent(process.env.FIXIE_URL) : null;
+
+const getHeaders = () => ({
+    'x-client-id': process.env.PAN_CLIENT_ID,
+    'x-client-secret': process.env.PAN_CLIENT_SECRET,
+    'Content-Type': 'application/json'
+});
+
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
+
+// --- 2FA CHECK ENDPOINT ---
+app.post('/api/2fa/check', async (req, res) => {
+    const { userId } = req.body;
+    const snap = await db.ref(`users/${userId}/2fa_settings`).once('value');
+    const data = snap.val();
+
+    if (data && data.secret) {
+        return res.json({ setup_done: true });
+    } else {
+        // Naya secret banao agar nahi hai
+        const secret = speakeasy.generateSecret({ name: `MoneyCard (${userId})` });
+        const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+        
+        // Database mein secret save karo (Isse delete mat hone dena)
+        await db.ref(`users/${userId}/2fa_settings`).set({
+            secret: secret.base32,
+            setup_done: false
+        });
+
+        res.json({ setup_done: false, qr_code: qrCodeUrl, secret: secret.base32 });
+    }
+});
+
+// --- 2FA VERIFY ENDPOINT ---
+app.post('/api/2fa/verify', async (req, res) => {
+    const { userId, token } = req.body;
+    const snap = await db.ref(`users/${userId}/2fa_settings`).once('value');
+    const data = snap.val();
+
+    if (!data || !data.secret) return res.status(400).json({ success: false });
+
+    const verified = speakeasy.totp.verify({
+        secret: data.secret,
+        encoding: 'base32',
+        token: token
+    });
+
+    if (verified) {
+        await db.ref(`users/${userId}/2fa_settings`).update({ setup_done: true });
+        res.json({ success: true });
+    } else {
+        res.json({ success: false });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// --- Speed Headers ---
+const speedHeaders = {
+    'Authorization': `Basic ${Buffer.from(`${process.env.SPEED_SECRET_KEY}:`).toString('base64')}`,
+    'speed-version': '2022-10-15',
+    'Content-Type': 'application/json'
+};
+
+app.post('/api/speed/add-crypto', async (req, res) => {
+    const { userId, amount, assetType } = req.body; 
+
+    try {
+        const response = await axios.post('https://api.tryspeed.com/checkout-sessions', {
+            amount: parseFloat(amount),
+            currency: 'USD',
+            // Tryspeed me SATS ke liye BTC + lightning method use karna zyada stable hai
+            target_currency: assetType === 'SATS' ? 'BTC' : assetType,
+            payment_methods: assetType === 'SATS' ? ['lightning'] : ['onchain'],
+            metadata: { user_id: userId, asset: assetType },
+            
+            // ⚠️ FIX: Inhe Firebase hosting ke URL par set karo taaki 404 na aaye
+            success_url: `https://moneycard-8f457.web.app/dashboard.html`,
+            cancel_url: `https://moneycard-8f457.web.app/add-crypto.html`
+        }, { 
+            headers: {
+                'Authorization': `Basic ${Buffer.from(process.env.SPEED_SECRET_KEY + ':').toString('base64')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        // Ye URL user ko Stripe jaisa hosted checkout page dikhayega
+        res.json({ success: true, url: response.data.url });
+
+    } catch (e) {
+        console.error("Speed API Error:", e.response?.data || e.message);
+        res.status(500).json({ success: false, message: "Gateway Connection Error" });
+    }
+});
+
+app.post('/api/speed/withdraw', async (req, res) => {
+    const { userId, amountUSD, assetType, email } = req.body;
+    const amount = parseFloat(amountUSD);
+
+    try {
+        const walletRef = db.ref(`users/${userId}/wallets/${assetType}`);
+
+        // STEP 1: Firebase Transaction (Balance check aur lock ek saath)
+        const result = await walletRef.transaction((current) => {
+            if (current === null || (current.balance || 0) < amount) {
+                return; // Transaction cancel agar balance kam hai
+            }
+            return { ...current, balance: (current.balance || 0) - amount };
+        });
+
+        // Agar Firebase mein balance nahi tha
+        if (!result.committed) {
+            return res.status(400).json({ success: false, message: "Firebase mein balance nahi hai!" });
+        }
+
+        // STEP 2: Speed API Call
+        try {
+            const response = await axios.post('https://api.tryspeed.com/withdrawal-links', {
+                amount: amount,
+                currency: 'USD',
+                target_currency: assetType === 'SATS' ? 'SATS' : assetType,
+                email: email || "user@moneycard.space",
+                metadata: { user_id: userId, asset: assetType }
+            }, {
+                headers: {
+                    'Authorization': `Basic ${Buffer.from(process.env.SPEED_SECRET_KEY + ':').toString('base64')}`,
+                    'speed-version': '2022-10-15',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            res.json({ success: true, withdraw_url: response.data.url });
+
+        } catch (apiErr) {
+            // STEP 3: REFUND LOGIC (Agar Speed API fail ho gayi toh balance wapas do)
+            console.error("Speed API Failed, Refunding...");
+            await walletRef.transaction((current) => {
+                if (current) current.balance = (current.balance || 0) + amount;
+                return current;
+            });
+
+            const errorMsg = apiErr.response?.data?.errors?.[0]?.message || "Gateway Offline";
+            return res.status(500).json({ success: false, message: `Speed Error: ${errorMsg}. Balance Refunded.` });
+        }
+
+    } catch (e) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+// ==========================================
+// --- SPEED WEBHOOK: AUTO-CREDIT BALANCE ---
+// ==========================================
+app.post('/api/speed/webhook', async (req, res) => {
+    const event = req.body;
+    if (event.object === 'payment' && event.status === 'paid') {
+        const userId = event.metadata.user_id;
+        const asset = event.metadata.asset;
+        const amountReceived = event.target_amount_paid;
+
+        try {
+            const walletRef = db.ref(`users/${userId}/wallets/${asset}`);
+            const snap = await walletRef.once('value');
+            const currentBal = Number(snap.val()?.balance || 0);
+
+            await walletRef.update({
+                balance: currentBal + Number(amountReceived),
+                last_sync: Date.now()
+            });
+
+            await db.ref(`users/${userId}/deposits/${event.id}`).update({ 
+                status: 'paid',
+                paid_at: Date.now(),
+                received_amount: amountReceived
+            });
+        } catch (dbErr) { console.error("Firebase Update Error:", dbErr.message); }
+    }
+    res.status(200).send('OK');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ==========================================================
+// --- NEW: DIDIT REAL-TIME STATUS CHECK (404 FIX) ---
+// ==========================================================
+app.post('/api/check-kyc-status', async (req, res) => {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ success: false, message: "User ID missing" });
+
+    try {
+        const snapshot = await db.ref(`users/${userId}/profile`).once('value');
+        const profile = snapshot.val() || {};
+
+        let liveStatus = "NEW";
+        try {
+            // Didit API call to fetch session status by vendorData
+            const diditRes = await axios.get(`https://api.didit.me/v1/sessions?vendor_data=${userId}`, {
+                headers: { 'Authorization': `Bearer ${DIDIT_API_KEY}` }
+            });
+
+            if (diditRes.data.results && diditRes.data.results.length > 0) {
+                // Get the latest session
+                const latest = diditRes.data.results[0];
+                liveStatus = latest.status.toUpperCase(); // COMPLETED, PENDING, REJECTED
+            }
+        } catch (apiErr) {
+            console.log("Didit API error, using DB fallback");
+            liveStatus = (profile.kyc_status || "NEW").toUpperCase();
+        }
+
+        // Logic based on Live Status
+        if (liveStatus === 'COMPLETED' || liveStatus === 'APPROVED') {
+            await db.ref(`users/${userId}/profile`).update({ kyc_status: 'VERIFIED', step: 'COMPLETED' });
+            return res.json({ success: true, status: 'VERIFIED' });
+        } 
+        
+        if (liveStatus === 'PENDING' || liveStatus === 'IN_REVIEW') {
+            await db.ref(`users/${userId}/profile`).update({ kyc_status: 'PENDING' });
+            return res.json({ success: true, status: 'PENDING' });
+        }
+
+        if (liveStatus === 'REJECTED' || liveStatus === 'FAILED') {
+            await db.ref(`users/${userId}/profile`).update({ kyc_status: 'REJECTED' });
+            return res.json({ success: true, status: 'REJECTED' });
+        }
+
+        res.json({ success: true, status: 'NEW' });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+
+
+
+
+
+
+
+// --- MIDDLEWARE: DEVELOPER WALLET DEDUCTION ---
+const validateDevAndDeduct = async (req, res, next) => {
+    const userKey = req.headers['x-api-key'];
+    const userId = req.headers['x-user-id'];
+    if (!userKey || !userId) return res.status(401).json({ success: false, message: "Missing Credentials" });
+
+    try {
+        const snapshot = await db.ref(`users/${userId}/api_settings`).once('value');
+        const settings = snapshot.val();
+        if (!settings || settings.key !== userKey) return res.status(403).json({ success: false, message: "Invalid API Key" });
+
+        const currentBalance = Number(settings.balance || 0);
+        if (currentBalance < 1) return res.status(402).json({ success: false, message: "Insufficient Balance" });
+
+        req.devUid = userId;
+        req.currentBalance = currentBalance;
+        next();
+    } catch (e) { res.status(500).json({ success: false }); }
+};
+
+// ==========================================================
+// --- SECTION 1: DEVELOPER APIs (v1) - Key Required ---
+// ==========================================================
+
+// 1. IFSC LOOKUP (FREE FOR DEVS)
+app.get('/api/v1/lookup/ifsc/:ifsc', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.get(`https://ifsc.razorpay.com/${req.params.ifsc}`);
+        res.json({ success: true, data: response.data });
+    } catch (e) { res.status(404).json({ success: false, message: "IFSC Not Found" }); }
+});
+
+// 2. PAN VERIFY (₹1)
+app.post('/api/v1/verify-pan', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/pan`, 
+        { pan: req.body.pan.toUpperCase() }, { httpsAgent: agent, headers: getHeaders() });
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(req.currentBalance - 1);
+        res.json({ success: true, registered_name: response.data.registered_name, remaining: req.currentBalance - 1 });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// 3. BANK SYNC (₹2)
+app.post('/api/v1/bank-sync', validateDevAndDeduct, async (req, res) => {
+    try {
+        const { bank_account, ifsc } = req.body;
+        const response = await axios.post("https://api.cashfree.com/verification/bank-account/sync", 
+        { bank_account, ifsc, name: "Dev Test", phone: "9999999999" }, { httpsAgent: agent, headers: getHeaders() });
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(req.currentBalance - 2);
+        res.json({ success: true, data: response.data, remaining: req.currentBalance - 2 });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// --- NEW: DEVELOPER v1 ARGOS VERIFY (₹5 Deduction) ---
+app.post('/api/v1/argos-verify', validateDevAndDeduct, async (req, res) => {
+    const { idNumber, idType, country, name } = req.body;
+    try {
+        const response = await axios.post('https://api.argos-identity.com/v1/verify', {
+            customer_id: req.devUid,
+            name: name,
+            id_type: idType,
+            id_number: idNumber,
+            issuing_country: country
+        }, { headers: { 'x-api-key': process.env.ARGOS_IDENTITY_API, 'Content-Type': 'application/json' } });
+
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(req.currentBalance - 5);
+        res.json({ success: true, data: response.data, remaining: req.currentBalance - 5 });
+    } catch (e) { res.status(500).json({ success: false, message: "Argos API Error" }); }
+});
+
+
+
+
+
+
+
+
+
+// ==========================================================
+// --- SECTION 2: USER PORTAL (INTERNAL - ALL ON) ---
+// ==========================================================
+// --- PAN VERIFY ---
+app.post('/api/verify-pan', async (req, res) => {
+    const { pan, userId } = req.body;
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/pan`, 
+        { pan: pan.toUpperCase() }, { httpsAgent: agent, headers: getHeaders() });
+        if (response.data.valid && userId) {
+            await db.ref(`users/${userId}/profile`).update({ registered_name: response.data.registered_name, pan_number: pan.toUpperCase(), step: 'DIGILOCKER' });
+        }
+        res.json({ success: true, registered_name: response.data.registered_name });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// --- DIGILOCKER URL ---
+app.post('/api/create-digilocker-url', async (req, res) => {
+    const { userId } = req.body;
+    const v_id = `v_${userId || 'user'}_${Date.now()}`;
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/digilocker`, { 
+            verification_id: v_id, 
+            redirect_url: `https://money-card-p.vercel.app/api/callback?userId=${userId}`, 
+            document_requested: ["AADHAAR"] 
+        }, { httpsAgent: agent, headers: getHeaders() });
+        if(userId) await db.ref(`users/${userId}/profile`).update({ reference_id: response.data.reference_id });
+        res.json({ success: true, url: response.data.url });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// --- CALLBACK ---
+app.get('/api/callback', async (req, res) => {
+    const { userId } = req.query;
+    try {
+        const snap = await db.ref(`users/${userId}/profile`).once('value');
+        const refId = snap.val().reference_id;
+        await axios.get(`https://api.cashfree.com/verification/digilocker/document/AADHAAR?reference_id=${refId}`, {
+            httpsAgent: agent, headers: getHeaders()
+        });
+        await db.ref(`users/${userId}/profile`).update({ step: 'COMPLETED' });
+        res.send("<script>window.location.href='https://smbrand-4543a.web.app/dashboard.html'</script>");
+    } catch (e) { res.redirect('https://smbrand-4543a.web.app/dashboard.html'); }
+});
+
+
+
+
+
+// --- SECTION: USER PORTAL - BANK SYNC (SURENDRA FLOW) ---
+// Is endpoint par koi balance deduction nahi hai (Internal Use)
+app.post('/api/verify-bank-sync', async (req, res) => {
+    const { userId, bank_account, ifsc, name, phone, pan_number } = req.body;
+
+    if (!userId || !bank_account || !ifsc) {
+        return res.status(400).json({ success: false, message: "Details incomplete!" });
+    }
+
+    try {
+        const response = await axios.post(
+            "https://api.cashfree.com/verification/bank-account/sync",
+            { 
+                bank_account: bank_account, 
+                ifsc: ifsc.toUpperCase(), 
+                name: name || "Merchant", 
+                phone: phone || "916268520141" 
+            },
+            { 
+                // Yahan headers direct function se aa rahe hain
+                headers: getHeaders(),
+                httpsAgent: agent
+            }
+        );
+
+        const d = response.data;
+
+        if (d.status === "SUCCESS" || d.sub_code === "200") {
+            // Live Data Mapping (No Hardcoding)
+            const firebaseData = {
+                bank_info: {
+                    account_number: bank_account,
+                    ifsc: ifsc.toUpperCase(),
+                    bank_name: d.bank_name,
+                    branch: d.branch,
+                    city: d.city,
+                    micr: d.micr,               
+                    account_status: d.status || "VALID"
+                },
+                kyc_details: {
+                    name_at_bank: d.name_at_bank, // SURENDRA ya jo bhi bank record mein hai
+                    provided_name: name,
+                    pan_card: pan_number || "N/A"
+                },
+                meta: {
+                    reference_id: d.reference_id,
+                    verification_id: d.verification_id,
+                    verified_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+                }
+            };
+
+            // Firebase Save
+            await db.ref(`users/${userId}/bank_details`).set(firebaseData);
+            await db.ref(`users/${userId}/profile`).update({ step: 'BANK_ADDED' });
+
+            return res.json({ success: true, name: d.name_at_bank, data: firebaseData });
+        } else {
+            return res.status(400).json({ success: false, message: d.message || "Invalid Bank Details" });
+        }
+    } catch (e) {
+        console.error("Internal Bank Sync Error:", e.response?.data || e.message);
+        res.status(500).json({ success: false, error: "Gateway Auth Error" });
+    }
+});
+
+// --- SECTION: 2FA & DASHBOARD SECURITY ---
+app.get('/api/user/status', async (req, res) => {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: "User ID missing" });
+
+    try {
+        const snap = await db.ref(`users/${userId}`).once('value');
+        const user = snap.val();
+        
+        res.json({
+            kyc: user?.profile?.kyc_status || 'NEW',
+            // FIX: Bracket notation use kiya taaki Syntax Error na aaye
+            twoFA: user?.['2fa_settings']?.setup_done || false, 
+            bank: !!user?.bank_details
+        });
+    } catch (e) { 
+        res.status(500).json({ error: e.message }); 
+    }
+});
+
+
+
+
+
+
+// --- SECTION 3: GLOBAL PAY MONEY CARD QR (Logic Protected) ---
+
+// Ye function ensure karega ki headers hamesha sahi milen
+const getSpeedHeaders = () => ({
+    'Authorization': `Basic ${Buffer.from(`${process.env.SPEED_SECRET_KEY}:`).toString('base64')}`,
+    'speed-version': '2022-10-15',
+    'Content-Type': 'application/json'
+});
+
+app.post('/api/create-global-qr', async (req, res) => {
+    const { name, description, userId, selected_currency, networks } = req.body;
+
+    const final_currency = selected_currency || "USDT";
+    const primary_method = (networks && networks.length > 0) ? networks[0] : "ethereum";
+
+    try {
+        const response = await axios.post('https://api.tryspeed.com/oneqrs', {
+            name: name || `Global Pay QR`,
+            method: primary_method, 
+            currency: final_currency, 
+            target_currency: final_currency,
+            description: description || "Money Card Multi-Currency Payment"
+        }, {
+            headers: getSpeedHeaders() // Fixed call
+        });
+
+        const qr_link = response.data.url || "";
+        const qr_id = response.data.id || "";
+
+        if (userId && qr_link) {
+            // Poora data save ho raha hai bina kisi shortcut ke
+            await db.ref(`users/${userId}/latest_qr`).set({
+                qr_id: qr_id,
+                qr_url: qr_link,
+                currency: final_currency,
+                method: primary_method,
+                qr_name: name || "Global Pay QR",
+                updated_at: Date.now()
+            });
+        }
+
+        res.json({
+            success: true,
+            qr_url: qr_link,
+            qr_id: qr_id,
+            message: "Speed QR Created!"
+        });
+
+    } catch (e) {
+        console.error("Speed API Error:", e.response ? e.response.data : e.message);
+        res.status(500).json({
+            success: false,
+            message: e.response?.data?.errors?.[0]?.message || "Failed to create Speed QR"
+        });
+    }
+});
+
+
+
+
+
+app.get('/api/global-tools', async (req, res) => {
+    const { action, zip, country } = req.query;
+
+    if (action === 'geonames') {
+        try {
+            // Yahan Username .env se uthaya ja raha hai
+            const username = process.env.GEONAMES_USERNAME; 
+            
+            const geoRes = await axios.get(`http://api.geonames.org/postalCodeLookupJSON?postalcode=${zip}&country=${country}&username=${username}`);
+            
+            if (geoRes.data.postalcodes?.length > 0) {
+                const p = geoRes.data.postalcodes[0];
+                return res.json({ 
+                    success: true, 
+                    city: p.adminName2 || p.placeName, 
+                    state: p.adminName1 
+                });
+            }
+            return res.json({ success: false, message: "No location found" });
+        } catch (e) { 
+            return res.status(500).json({ success: false, error: e.message }); 
+        }
+    }
+});
+
+
+// Webhook for Didit
+app.post('/api/webhook', async (req, res) => {
+    const { event, data } = req.body;
+    const userId = data?.vendorData;
+    if (!userId) return res.status(400).send("No userId");
+    try {
+        if (event === 'decision.made' && data.decision === 'APPROVED') {
+            await db.ref(`users/${userId}/profile`).update({ kyc_status: 'VERIFIED', step: 'COMPLETED', didit_verified: true });
+        } else if (data.decision === 'REJECTED') {
+            await db.ref(`users/${userId}/profile`).update({ kyc_status: 'REJECTED' });
+        }
+        res.status(200).send('Processed');
+    } catch (e) { res.status(500).send('Error'); }
+});
+
+
+
+
+
+
+// Create Session
+app.post('/api/create-didit-session', async (req, res) => {
+    const { userId } = req.body;
+    try {
+        const response = await axios.post('https://api.didit.me/v1/sessions', {
+            workflowId: DIDIT_WORKFLOW_ID,
+            vendorData: userId,
+            redirect_url: "https://money-card-p.vercel.app/dashboard"
+        }, {
+            headers: { 'Authorization': `Bearer ${DIDIT_API_KEY}`, 'Content-Type': 'application/json' }
+        });
+        res.json({ success: true, url: response.data.url });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+
+
+app.post('/api/speed/swap', async (req, res) => {
+    const { userId, amountUSD, fromAsset, toAsset } = req.body;
+    try {
+        const speedRes = await axios.post('https://api.tryspeed.com/balances/swap', {
+            amount: amountUSD.toString(),
+            currency: 'USD',
+            target_currency_swap_out: fromAsset === 'BTC' ? 'SATS' : fromAsset,
+            target_currency_swap_in: toAsset === 'BTC' ? 'SATS' : toAsset
+        }, { 
+            headers: getSpeedHeaders() // Hamara pehle se banaya hua helper function
+        });
+
+        const received = speedRes.data.target_amount_swapped;
+        const ref = db.ref(`users/${userId}/wallets`);
+        
+        await ref.transaction((w) => {
+            if (w) {
+                const fKey = fromAsset === 'BTC' ? 'SATS' : fromAsset;
+                const tKey = toAsset === 'BTC' ? 'SATS' : toAsset;
+                if(w[fKey]) w[fKey].balance = (w[fKey].balance || 0) - parseFloat(amountUSD);
+                if(w[tKey]) w[tKey].balance = (w[tKey].balance || 0) + parseFloat(received);
+            }
+            return w;
+        });
+
+        res.json({ success: true, received });
+    } catch (e) { 
+        console.error(e.response?.data || e.message);
+        res.status(500).json({ success: false }); 
+    }
+});
+
+const M_KEY = process.env.OXAPAY_MERCHANT_KEY || 'UPKYYA-NFTKDV-XCHPKC-ZB4RY4';
+const G_KEY = process.env.OXAPAY_GENERAL_KEY || '9AASEK-WBPKBL-PTYMUL-RC6IEU';
+
+const oxaHeaders = (k) => ({
+    headers: { 'merchant_api_key': k, 'general_api_key': k, 'Content-Type': 'application/json' }
+});
+
+// STATIC ADDRESS: Firebase check + Auto Generate
+app.post('/api/oxa/static', async (req, res) => {
+    const { userId, coin } = req.body;
+    try {
+        const addrRef = db.collection('users').doc(userId).collection('wallets').doc(coin);
+        const doc = await addrRef.get();
+        if (doc.exists) return res.json({ status: 200, data: doc.data() });
+
+        const r = await axios.post('https://api.oxapay.com/v1/payment/static-address', {
+            network: (coin === 'BTC' || coin === 'ETH') ? coin : 'TRON',
+            to_currency: coin,
+            callback_url: "https://money-card-p.vercel.app/api/oxa-callback",
+            order_id: userId
+        }, oxaHeaders(M_KEY));
+
+        if (r.data.status === 200) await addrRef.set(r.data.data);
+        res.json(r.data);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// YOUR CORRECT BALANCE LOGIC
+app.get('/api/oxa/balance', async (req, res) => {
+    try {
+        const r = await axios.get('https://api.oxapay.com/v1/general/account/balance', oxaHeaders(G_KEY));
+        res.json(r.data);
+    } catch (e) { res.status(500).json({ status: 400 }); }
+});
+
+// MARKET PRICES (Real-time Prices for UI)
+app.get('/api/oxa/prices', async (req, res) => {
+    try {
+        const r = await axios.get('https://api.oxapay.com/v1/general/info/currencies', oxaHeaders(G_KEY));
+        res.json(r.data);
+    } catch (e) { res.status(500).json({ error: "Price error" }); }
+});
+
+// YOUR CORRECT CALCULATION LOGIC
+app.post('/api/oxa/calculate', async (req, res) => {
+    try {
+        const r = await axios.post('https://api.oxapay.com/v1/general/swap/calculate', req.body, oxaHeaders(G_KEY));
+        res.json(r.data);
+    } catch (e) { res.status(500).json({ status: 400 }); }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// File ki sabse aakhiri line bas ye honi chahiye
+module.exports = app;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

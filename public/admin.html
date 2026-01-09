@@ -1,230 +1,653 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <h1>Admin Dashboard</h1>
-  <div id="loan-requests">
-    <h2>Loan Requests</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Customer Name</th>
-          <th>Mobile</th>
-          <th>Email</th>
-          <th>PAN</th>
-          <th>Bank Details</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="loan-data"></tbody>
-    </table>
-  </div>
-
-  <script>
-    // Fetch loan data from backend
-    async function fetchLoanData() {
-      const response = await fetch("/admin/loan-data");
-      const loanData = await response.json();
-      const tableBody = document.getElementById("loan-data");
-
-      tableBody.innerHTML = ""; // Clear existing data
-
-      for (const key in loanData) {
-        const { name, mobile, email, pan, bankDetails, status } = loanData[key];
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${name}</td>
-          <td>${mobile}</td>
-          <td>${email}</td>
-          <td>${pan}</td>
-          <td>${bankDetails}</td>
-          <td>${status}</td>
-          <td>
-            <button onclick="updateLoanStatus('${key}', 'approved')">Approve</button>
-            <button onclick="updateLoanStatus('${key}', 'rejected')">Reject</button>
-          </td>
-        `;
-
-        tableBody.appendChild(row);
-      }
-    }
-
-    // Update loan status
-    async function updateLoanStatus(loanId, status) {
-      const response = await fetch("/admin/update-loan-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loanId, status }),
-      });
-
-      if (response.ok) {
-        alert(`Loan ${status} successfully!`);
-        fetchLoanData(); // Refresh data
-      } else {
-        alert("Failed to update loan status!");
-      }
-    }
-
-    // Fetch loan data on page load
-    window.onload = fetchLoanData;
-  </script>
-
-  <script src="admin.js"></script>
-</body>
-</html>
-
-
-
-
-<!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Rupi - Admin Panel (Hugging Face AI)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+Devanagari:wght=400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+<style>
+/* Base & Global Styles */
+body{font-family:'Poppins', 'Noto Sans Devangari', sans-serif;margin:0;padding:0;background:linear-gradient(135deg,#ffd700,#f0e68c);color:#222;min-height:100vh;}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100;}
+header h1{margin:0;font-size:20px;font-weight:700;color:#111;}
+main{padding:20px;}
+h2{color:#444;border-bottom:2px solid #ffda47;padding-bottom:5px;margin-top:0;}
+input,textarea,select{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.98);box-sizing:border-box;}
+button.primary{background:#ffd700;padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s; color: #111;}
+button.primary:hover{background:#ffc700;}
+button.ai-btn{background:#10b981; color:white; padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s;}
+button.ai-btn:hover{background:#059669;}
+button.danger-btn{background:#dc3545; color:white; padding:12px 15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-top:10px;transition:background 0.2s;}
+button.danger-btn:hover{background:#c82333;}
+button[disabled]{opacity:0.6; cursor:not-allowed;}
 
-        header {
-            background-color: #ff6347;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
+.card{background:rgba(255,255,255,0.95);padding:15px;margin:12px 0;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.08);border-left:4px solid #ffd700;}
+.small{font-size:13px;color:#555}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+img.thumb{width:100%;height:140px;object-fit:cover;border-radius:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;}
+.meta{font-size:13px;color:#666}
 
-        .dashboard-container {
-            padding: 20px;
-        }
+/* Draft Card Specifics */
+.draft-card { border-left: 4px solid #10b981; position: relative; animation: fadeIn 0.5s; }
+.draft-card.error { border-left: 4px solid #dc3545; }
+.draft-status { position: absolute; top: 10px; right: 10px; font-size: 12px; font-weight: bold; background: #eee; padding: 2px 6px; border-radius: 4px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .user-card {
-            background-color: #fff;
-            margin: 15px;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-        }
+/* Preloader & Loader */
+#preloader{position:fixed;top:0;left:0;width:100%;height:100%;background:#ffffffdd;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s;}
+.loader{border:6px solid #f3f3f3;border-top:6px solid #ffd700;border-radius:50%;width:50px;height:50px;animation:spin 1.5s linear infinite;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 
-        .user-card h3 {
-            margin: 0 0 10px;
-            color: #ff6347;
-        }
+/* Modal/Edit Form Styles */
+.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,0.4);}
+.modal-content{background-color:#fefefe;margin:10% auto;padding:20px;border:1px solid #888;width:80%;max-width:600px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.3);}
+.close{color:#aaa;float:right;font-size:28px;font-weight:bold;}
+.close:hover,.close:focus{color:#000;text-decoration:none;cursor:pointer;}
 
-        .user-card p {
-            margin: 5px 0;
-        }
+/* Image Preview and Log */
+#image-preview-container{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;padding:10px;border:1px dashed #ccc;border-radius:8px;min-height:40px;}
+#image-preview-container > div {position: relative; display: inline-block;}
+#image-preview-container img{width:60px;height:60px;object-fit:cover;border-radius:4px; background: repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px;} 
 
-        .user-card button {
-            background-color: #ff6347;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s;
-        }
+#login-form-container { max-width: 400px; margin: 50px auto; padding: 30px; background: #fff; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: none; }
 
-        .user-card button:hover {
-            background-color: #ff4500;
-        }
-
-        .user-card .link {
-            margin-top: 10px;
-            font-size: 1.1em;
-            color: #007bff;
-        }
-    </style>
+#bg-color-controls { display: flex; gap: 10px; align-items: center; margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; background: #f9f9f9; }
+#bg-color-controls label { font-weight: 600; min-width: 70px; }
+#bg-color-controls input[type="color"] { width: 50px; height: 35px; padding: 0; border: none; cursor: pointer; margin: 0; }
+#bg-color-controls button { flex-grow: 1; margin: 0; padding: 8px 12px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 </head>
 <body>
 
+<div id="preloader">
+    <div class="loader"></div>
+</div>
+
 <header>
-    <h1>Owner Dashboard</h1>
-    <p>यहां से आप सभी सबमिटेड जानकारी देख सकते हैं और एजेंट बना सकते हैं।</p>
+    <h1>Gold Rupi — Admin (Hugging Face Edition)</h1>
+    <div style="display:flex; gap: 10px;">
+        <span id="user-display" style="font-size: 14px; font-weight: 600; color: #444; align-self: center;"></span>
+        <button onclick="handleLogout()" class="primary" style="padding:8px 12px; border:none; background:#ff6b6b; color:white; font-size:14px; margin-top:0;">
+            Logout
+        </button>
+    </div>
 </header>
 
-<div class="dashboard-container">
-    <!-- User Card Example -->
-    <div class="user-card" id="user1">
-        <h3>पूरा नाम: <span id="userName1">अमन कुमार</span></h3>
-        <p>ईमेल: <span id="userEmail1">aman@example.com</span></p>
-        <p>फोन नंबर: <span id="userPhone1">9876543210</span></p>
-        <p>स्थान: <span id="userLocation1">दिल्ली</span></p>
-        <p>अनुभव: <span id="userExperience1">3 साल</span></p>
-        
-        <input type="text" id="userLinkInput" placeholder="लिंक डालें">
-        <button onclick="sendLink('user1')">एजेंट लिंक भेजें</button>
+<main>
 
-        <!-- Link after sending -->
-        <div class="link" id="userLink1" style="display: none;">
-            <a id="dynamicLink" href="#" target="_blank">यहां क्लिक करें एजेंट बनने के लिए</a>
+<section id="login-form-container">
+    <h2>Admin Login</h2>
+    <input type="email" id="login-email" placeholder="Admin Email" required>
+    <input type="password" id="login-password" placeholder="Password" required>
+    <button class="primary" onclick="handleLogin()" style="width:100%;">Login</button>
+    <p class="small" style="text-align: center; margin-top: 15px;">*Only registered Admin email can log in.</p>
+</section>
+
+<section id="main-content-container" style="display: none;">
+    
+    <section id="products">
+        <h2>Add Products (Vision AI) 👁️</h2>
+        
+        <!-- Batch Control Panel -->
+        <div class="card">
+            <div style="margin-bottom:15px;">
+                <label>1. Select Images (Shoes, Clothes, etc.):</label>
+                <input type="file" id="prod-images" accept="image/*" multiple>
+                
+                <div id="image-preview-container"></div>
+                
+                <div style="display:flex; gap: 10px; margin-top: 10px;">
+                    <button id="generateBatchBtn" class="ai-btn" disabled style="flex-grow: 1;" onclick="startBatchAIProcessing()">
+                        🤖 SCAN & AUTO-FILL (Hugging Face)
+                    </button>
+                </div>
+
+                <div id="bg-color-controls">
+                    <label for="bg-color-picker">BG Color:</label>
+                    <input type="color" id="bg-color-picker" value="#ffffff">
+                    <button id="changeBgColorBtn" class="primary" disabled onclick="changeBackgroundColor()">
+                        🔄 Apply BG Color to All
+                    </button>
+                </div>
+                
+                <div style="display:flex; gap: 10px; margin-top: 10px;">
+                    <button id="resetImagesBtn" class="danger-btn" disabled style="flex-grow: 1;" onclick="resetImageInput()">
+                        ❌ Reset All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BATCH DRAFTS CONTAINER -->
+        <div id="batch-drafts-area" style="margin-top: 20px;">
+            <h3 style="border-left: 5px solid #10b981; padding-left: 10px; color: #111;"> Generated Drafts</h3>
+            <p class="small">AI will look at the photo and fill details. Check and Upload.</p>
+            <div id="draft-list" class="grid" style="margin-top: 10px;"></div>
+        </div>
+
+    </section>
+
+    <section id="category-management">
+        <h2>Category Image Management 📸</h2>
+        <div id="category-list-for-images" class="grid"></div>
+    </section>
+
+    <section id="all-products">
+        <h2>All Live Products 📦</h2>
+        <div id="product-list" class="grid"></div>
+    </section>
+
+    <!-- Modals -->
+    <div id="editProductModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="document.getElementById('editProductModal').style.display='none'">&times;</span>
+        <h2>Edit Product</h2>
+        <div id="edit-form-content"></div>
+        <button class="primary" onclick="updateProductDetails()">Save Changes</button>
+      </div>
+    </div>
+
+    <div id="cropImageModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="closeCropModal()">&times;</span>
+            <h2>Crop Image</h2>
+            <div style="margin-bottom: 10px; min-height: 300px;">
+                <img id="image-to-crop" style="max-width: 100%; display: block; height: auto;">
+            </div>
+            <button class="primary" onclick="getCroppedCanvas()" style="width:100%;">Crop & Save</button>
         </div>
     </div>
 
-    <!-- Additional User Cards can go here -->
-</div>
+</section>
+</main>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 <script>
-    function sendLink(userId) {
-        // Get the link from the input field
-        let userLink = document.querySelector(`#${userId} #userLinkInput`).value;
+// ---------- CONFIG ----------
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.appspot.com", 
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597998bad55", 
+    measurementId: "G-3LS5W6F8QW"
+};
 
-        if (userLink) {
-            // Hide the button and show the link after sending
-            document.querySelector(`#${userId} button`).style.display = 'none';
-            document.querySelector(`#${userId} .link`).style.display = 'block';
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 
-            // Set the dynamic link
-            document.querySelector(`#${userId} #dynamicLink`).href = userLink;
+//  👇👇👇 APNA HUGGING FACE TOKEN YAHAN DALO 👇👇👇
+const HF_TOKEN = "hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"; 
+const CLOUDFLARE_WORKER_URL = 'https://cold-snow-e955.surendrarathode040.workers.dev'; 
 
-            // Simulating the process of generating and sending the agent link.
-            alert("एजेंट लिंक भेज दिया गया है!");
+// --- STATE ---
+let currentUser = null; 
+let categoriesData = {}; 
+let colorsData = {}; 
+let sizesData = {}; 
+let currentEditProductId = null; 
+let adminEmail = null; 
+let filesToUpload = []; 
+let currentCropper = null;
+let currentCropFileIndex = -1;
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('prod-images').addEventListener('change', updateImagePreviewAndButton);
+    loadDynamicOptions();
+});
+
+// --- AUTH ---
+auth.onAuthStateChanged(async user => {
+    if (!user) { currentUser = null; showLoginScreen(); return; }
+    currentUser = user;
+    try {
+        const adminEmailRef = db.ref('ADMIN_CONTROL_LISTS/adminEmail'); 
+        const snapshot = await adminEmailRef.once('value');
+        adminEmail = snapshot.val(); 
+        if (user.email === adminEmail) {
+            showMainContent(user.email);
         } else {
-            alert("कृपया एक लिंक डालें!");
+            alert('Access Denied. Not Admin.');
+            auth.signOut();
         }
+    } catch (error) { console.error("Admin Check Error", error); }
+});
+
+function showLoginScreen(){
+    document.getElementById('main-content-container').style.display = 'none';
+    document.getElementById('login-form-container').style.display = 'block';
+    hidePreloader();
+}
+function showMainContent(email){
+    document.getElementById('user-display').textContent = `Admin: ${email}`;
+    document.getElementById('login-form-container').style.display = 'none';
+    document.getElementById('main-content-container').style.display = 'block';
+    loadProducts();
+    hidePreloader();
+}
+async function handleLogin() {
+    const e = document.getElementById('login-email').value;
+    const p = document.getElementById('login-password').value;
+    if (!e || !p) return alert('Enter details');
+    showPreloader();
+    try { await auth.signInWithEmailAndPassword(e, p); } 
+    catch (err) { alert(err.message); hidePreloader(); }
+}
+function handleLogout() { auth.signOut(); }
+function showPreloader(){ document.getElementById('preloader').style.display = 'flex'; document.getElementById('preloader').style.opacity = '1'; }
+function hidePreloader(){ 
+    const p = document.getElementById('preloader'); 
+    p.style.opacity = '0'; 
+    setTimeout(() => { p.style.display = 'none'; }, 500); 
+}
+
+// --- FILE HANDLING ---
+function updateImagePreviewAndButton(e) {
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length > 0) filesToUpload = selectedFiles;
+    else if (e.type === 'change') filesToUpload = [];
+    
+    updateFinalPreview();
+    const hasFiles = filesToUpload.length > 0;
+    document.getElementById('generateBatchBtn').disabled = !hasFiles;
+    document.getElementById('resetImagesBtn').disabled = !hasFiles;
+    document.getElementById('changeBgColorBtn').disabled = !hasFiles;
+}
+
+function updateFinalPreview() {
+    const preview = document.getElementById('image-preview-container');
+    preview.innerHTML = "";
+    filesToUpload.forEach((f, index) => {
+        const d = document.createElement("div");
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(f);
+        
+        const badge = document.createElement("span");
+        badge.textContent = index + 1;
+        badge.style.cssText = "position:absolute;top:0;left:0;background:#000;color:#fff;padding:2px 5px;font-size:10px;";
+        
+        const del = document.createElement("span");
+        del.textContent = '🗑️';
+        del.style.cssText = "position:absolute;top:0;right:0;background:red;color:#fff;cursor:pointer;padding:2px;";
+        del.onclick = (ev) => { ev.stopPropagation(); filesToUpload.splice(index, 1); updateFinalPreview(); };
+
+        const crop = document.createElement("span");
+        crop.textContent = '✂️';
+        crop.style.cssText = "position:absolute;bottom:0;right:0;background:blue;color:#fff;cursor:pointer;padding:2px;";
+        crop.onclick = (ev) => { ev.stopPropagation(); openCropper(f, index); };
+
+        d.appendChild(img); d.appendChild(badge); d.appendChild(del); d.appendChild(crop);
+        preview.appendChild(d);
+    });
+}
+
+function resetImageInput() {
+    document.getElementById('prod-images').value = null;
+    filesToUpload = [];
+    updateFinalPreview();
+    document.getElementById('draft-list').innerHTML = ''; 
+}
+
+// --- CROPPER ---
+function openCropper(file, index) {
+    currentCropFileIndex = index;
+    const img = document.getElementById('image-to-crop');
+    img.src = URL.createObjectURL(file);
+    document.getElementById('cropImageModal').style.display = 'block';
+    if(currentCropper) currentCropper.destroy();
+    currentCropper = new Cropper(img, { aspectRatio: 1/1, viewMode: 1 });
+}
+function closeCropModal(){ document.getElementById('cropImageModal').style.display = 'none'; }
+function getCroppedCanvas() {
+    if (!currentCropper) return;
+    currentCropper.getCroppedCanvas().toBlob((blob) => {
+        const orig = filesToUpload[currentCropFileIndex];
+        const newFile = new File([blob], orig.name, { type: orig.type });
+        filesToUpload[currentCropFileIndex] = newFile;
+        updateFinalPreview();
+        closeCropModal();
+    }, 'image/jpeg');
+}
+
+// --- BG COLOR CHANGE ---
+async function changeBackgroundColor() {
+    if (!filesToUpload.length) return;
+    const color = document.getElementById('bg-color-picker').value;
+    const btn = document.getElementById('changeBgColorBtn');
+    btn.textContent = "Processing..."; btn.disabled = true;
+    showPreloader();
+    
+    try {
+        const newFiles = [];
+        for (let file of filesToUpload) {
+            const bmp = await createImageBitmap(file);
+            const cvs = document.createElement('canvas');
+            cvs.width = bmp.width; cvs.height = bmp.height;
+            const ctx = cvs.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.fillRect(0,0,cvs.width,cvs.height);
+            ctx.drawImage(bmp, 0, 0);
+            const blob = await new Promise(r => cvs.toBlob(r, 'image/jpeg', 0.9));
+            newFiles.push(new File([blob], "bg_"+file.name, {type:'image/jpeg'}));
+        }
+        filesToUpload = newFiles;
+        updateFinalPreview();
+    } catch(e) { alert("Error changing BG"); }
+    finally { btn.textContent = "🔄 Apply BG Color to All"; btn.disabled = false; hidePreloader(); }
+}
+
+
+// =========================================================================
+// ============= HUGGING FACE INTELLIGENT AI (NO GEMINI) ===================
+// =========================================================================
+
+// 1. Core AI: Har photo ka alag data nikalega (Weight/Size/Color/Cat)
+async function fetchProductAI(file) {
+    // 1. Image ko Resize aur Base64 karna (Important for API)
+    const base64Data = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                // Resize to max 640px to save data
+                canvas.width = 640; 
+                canvas.height = (img.height / img.width) * 640;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.6)); 
+            };
+        };
+    });
+
+    try {
+        // 2. Call Hugging Face API
+        const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
+            headers: { 
+                "Authorization": `Bearer ${HF_TOKEN}`, 
+                "Content-Type": "application/json" 
+            },
+            method: "POST",
+            body: JSON.stringify({
+                model: "Qwen/Qwen2-VL-7B-Instruct", 
+                messages: [{
+                    role: "user",
+                    content: [
+                        { 
+                          type: "text", 
+                          text: "Analyze image. Detect: Product Name, Price (estimate), Color, Category, Size, Weight (kg/g), Dimensions (cm). Write 80-word unique description. Return ONLY JSON: {\"name\":\"\",\"price\":0,\"description\":\"\",\"category\":\"\",\"color\":\"\",\"size\":\"\",\"weight\":\"\",\"dimensions\":\"\"}" 
+                        },
+                        { type: "image_url", image_url: { url: base64Data } }
+                    ]
+                }],
+                max_tokens: 1200
+            })
+        });
+
+        const result = await response.json();
+        const content = result.choices[0].message.content;
+        
+        // 3. Extract JSON from response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        return jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
+    } catch (e) { 
+        console.error("AI Error:", e);
+        return null; 
     }
+}
+
+// 2. Batch Processor: Handles List
+async function startBatchAIProcessing() {
+    if (!HF_TOKEN || HF_TOKEN.includes('XXXX')) return alert("Bhai, HF_TOKEN dalo code me!");
+    if (filesToUpload.length === 0) return alert("Photo kahan hai?");
+    
+    const btn = document.getElementById('generateBatchBtn');
+    btn.disabled = true;
+    btn.innerHTML = `🚀 Scanning ${filesToUpload.length} Products...`;
+    document.getElementById('draft-list').innerHTML = ''; 
+
+    for (let i = 0; i < filesToUpload.length; i++) {
+        const uniqueId = `draft-${Date.now()}-${i}`;
+        // Show Skeleton Card (Loading)
+        createSkeletonCard(uniqueId, filesToUpload[i], i + 1);
+        
+        try {
+            // Call AI
+            const aiData = await fetchProductAI(filesToUpload[i]);
+            
+            // Default Fallback if AI fails
+            const finalData = aiData || {
+                name: "New Product",
+                price: 0,
+                description: "Quality product.",
+                weight: "200g",
+                dimensions: "10x10x5 cm"
+            };
+
+            updateDraftCard(uniqueId, filesToUpload[i], finalData, i);
+        } catch (e) { console.error(e); }
+        
+        // Delay to prevent Rate Limit
+        await new Promise(r => setTimeout(r, 1500)); 
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = "🤖 Batch Processing Done";
+}
+
+// 3. UI Helper: Create Loading Card
+function createSkeletonCard(id, file, index) {
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'card draft-card';
+    div.innerHTML = `
+        <div class="draft-status">⏳ Scanning...</div>
+        <img src="${URL.createObjectURL(file)}" class="thumb" style="height:100px; width:100px; float:left; margin-right:10px;">
+        <div style="margin-left: 120px;">
+            <h4>Image #${index}</h4>
+            <div class="loader" style="width:20px; height:20px; border-width:3px;"></div>
+        </div>
+        <div style="clear:both;"></div>
+    `;
+    document.getElementById('draft-list').appendChild(div);
+}
+
+// 4. Draft Card UI: Fill Data (Weight, Dims, Category, Color included)
+function updateDraftCard(id, file, data, idx) {
+    const card = document.getElementById(id);
+    if (!card) return;
+
+    // Color Options (Auto-select based on AI string)
+    const colorOpts = Object.keys(colorsData).map(c => 
+        `<option value="${c}" ${data.color && data.color.toLowerCase().includes(c.toLowerCase()) ? 'selected' : ''}>${c}</option>`
+    ).join('');
+
+    // Size Options
+    const sizeOpts = Object.keys(sizesData).map(s => 
+        `<option value="${s}" ${data.size && data.size.toLowerCase().includes(s.toLowerCase()) ? 'selected' : ''}>${s}</option>`
+    ).join('');
+
+    // Category Options
+    let catOpts = '<option value="">Select Category</option>';
+    Object.keys(categoriesData).forEach(main => {
+        catOpts += `<optgroup label="${main}">`;
+        Object.keys(categoriesData[main]).forEach(sub => {
+            const isSelected = data.category && (data.category.toLowerCase().includes(sub.toLowerCase()) || sub.toLowerCase().includes(data.category.toLowerCase()));
+            catOpts += `<option value="${sub}" ${isSelected ? 'selected' : ''}>${sub}</option>`;
+        });
+        catOpts += `</optgroup>`;
+    });
+
+    card.innerHTML = `
+        <div class="draft-status" style="background:#d1fae5; color:#065f46;">✅ AI Auto-Filled</div>
+        <div class="row" style="display:flex; gap:10px;">
+            <img src="${URL.createObjectURL(file)}" class="thumb" style="width:100px; height:100px;">
+            <div style="flex:1; display:grid; gap:5px;">
+                <input class="d-name" value="${data.name}" placeholder="Name">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                    <input class="d-price" type="number" value="${data.price}" placeholder="Price">
+                    <input class="d-weight" value="${data.weight || ''}" placeholder="Weight (e.g. 500g)">
+                </div>
+            </div>
+        </div>
+        <input class="d-dims" value="${data.dimensions || ''}" placeholder="Dimensions (LxWxH)" style="margin-top:5px; width:100%;">
+        <textarea class="d-desc" rows="3" style="margin-top:5px; font-size:12px;">${data.description}</textarea>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:5px;">
+            <select class="d-color" multiple style="height:50px;">${colorOpts}</select>
+            <select class="d-size" multiple style="height:50px;">${sizeOpts}</select>
+        </div>
+        <select class="d-cat" style="margin-top:5px; border:1px solid #10b981;">${catOpts}</select>
+        
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="primary" style="flex:1; background:#10b981; color:white;" onclick="uploadDraftProduct('${id}', ${idx})">🚀 Upload Now</button>
+            <button class="danger-btn" style="width:40px;" onclick="document.getElementById('${id}').remove()">🗑️</button>
+        </div>
+    `;
+}
+
+// 5. SECURE UPLOAD (No undefined Errors)
+async function uploadDraftProduct(cardId, fileIndex) {
+    const card = document.getElementById(cardId);
+    const file = filesToUpload[fileIndex];
+    const btn = card.querySelector('button.primary');
+    
+    if(!file) return alert("File Missing");
+    
+    btn.textContent = "⏳ Uploading Image..."; btn.disabled = true;
+
+    try {
+        // Upload to Cloudflare/ImgBB
+        const imageUrl = await uploadR2(file); 
+        if (!imageUrl || imageUrl === "undefined") throw new Error("Image Upload Failed");
+
+        const finalData = {
+            name: card.querySelector('.d-name').value,
+            price: parseFloat(card.querySelector('.d-price').value),
+            weight: card.querySelector('.d-weight').value,
+            dimensions: card.querySelector('.d-dims').value,
+            description: card.querySelector('.d-desc').value,
+            category: card.querySelector('.d-cat').value,
+            color: Array.from(card.querySelector('.d-color').selectedOptions).map(o=>o.value).join(','),
+            size: Array.from(card.querySelector('.d-size').selectedOptions).map(o=>o.value).join(','),
+            images: imageUrl,
+            stock: 'In Stock',
+            createdAt: Date.now()
+        };
+
+        await db.ref('products').push(finalData);
+        card.innerHTML = `<div style="text-align:center;color:#10b981;padding:20px;font-weight:bold;">✅ PRODUCT LIVE!</div>`;
+        setTimeout(() => card.remove(), 1000);
+    } catch(e) {
+        alert("Error: " + e.message);
+        btn.textContent = "❌ Retry Upload"; btn.disabled = false;
+    }
+}
+
+// --- UTILS ---
+function uploadR2(file) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const fd = new FormData(); fd.append("file", file, file.name); 
+            const resp = await fetch(CLOUDFLARE_WORKER_URL, { method: "POST", body: fd });
+            if (!resp.ok) throw new Error("Cloudflare Error");
+            const json = await resp.json();
+            resolve(json.publicURL);
+        } catch (err) { reject(err); }
+    });
+}
+
+// --- DYNAMIC DATA LOADING ---
+async function loadDynamicOptions() {
+    const snap = await db.ref('/').once('value');
+    const data = snap.val() || {};
+    categoriesData = data.E_COMMERCE_CATEGORIES || {};
+    colorsData = data.colors || {};
+    sizesData = data.sizes || {};
+    loadCategoryImages();
+}
+
+// --- PRODUCTS LIST & EDIT/DELETE ---
+function loadProducts(){
+    db.ref('products').on('value', snap => {
+        const d = snap.val() || {};
+        const l = document.getElementById('product-list'); l.innerHTML = '';
+        Object.keys(d).reverse().forEach(k => {
+            const p = d[k];
+            l.innerHTML += `
+            <div class="card">
+                <img src="${p.images?.split(',')[0]}" class="thumb">
+                <div style="margin-top:5px"><b>${p.name}</b><br>₹${p.price}</div>
+                <div class="row">
+                    <button onclick="editProduct('${k}')" class="primary" style="font-size:11px;padding:5px;">Edit</button>
+                    <button onclick="if(confirm('Delete?')) db.ref('products/${k}').remove()" class="danger-btn" style="font-size:11px;padding:5px;margin:0;">Del</button>
+                </div>
+            </div>`;
+        });
+    });
+}
+function editProduct(pid){
+    currentEditProductId = pid;
+    db.ref('products/'+pid).once('value', s => {
+        const p = s.val();
+        document.getElementById('editProductModal').style.display='block';
+        document.getElementById('edit-form-content').innerHTML = `
+            <input id="e-name" value="${p.name}"> <input id="e-price" type="number" value="${p.price}">
+            <textarea id="e-desc">${p.description}</textarea>
+        `;
+    });
+}
+async function updateProductDetails(){
+    const n = document.getElementById('e-name').value;
+    const pr = document.getElementById('e-price').value;
+    const d = document.getElementById('e-desc').value;
+    await db.ref('products/'+currentEditProductId).update({ name:n, price:pr, description:d });
+    document.getElementById('editProductModal').style.display='none';
+}
+
+// --- CATEGORY IMAGES ---
+async function loadCategoryImages() {
+    const snap = await db.ref('category_images').once('value');
+    const imgs = snap.val() || {};
+    const l = document.getElementById('category-list-for-images'); l.innerHTML = '';
+    const list = [];
+    Object.keys(categoriesData).forEach(m => {
+         list.push({key: m, lbl: `MAIN: ${m}`, img: imgs[m]});
+         Object.keys(categoriesData[m]).forEach(s => {
+             if(s!==m) list.push({key: s, lbl: `SUB: ${s}`, img: imgs[s]});
+         });
+    });
+    list.forEach(item => {
+        l.innerHTML += `
+        <div class="card">
+            <strong>${item.lbl}</strong><br>
+            <img src="${item.img || 'https://via.placeholder.com/100'}" class="thumb" style="height:80px">
+            <input type="file" id="cimg-${item.key}" style="font-size:10px">
+            <button onclick="uploadCatImg('${item.key}')" class="primary" style="font-size:11px;padding:4px">Upload</button>
+        </div>`;
+    });
+}
+async function uploadCatImg(key){
+    const f = document.getElementById('cimg-'+key).files[0];
+    if(!f) return;
+    try {
+        const u = await uploadR2(f);
+        await db.ref('category_images/'+key).set(u);
+        loadCategoryImages();
+    } catch(e){ alert(e.message); }
+}
 </script>
-
-</body>
-</html>
-
-
-
-
-
-
-
-!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <h1>Welcome to the App</h1>
-  <button onclick="location.href='addAccount.html'">Add Bank Account</button>
-  <button onclick="location.href='adminproduct.html'">Go to Wallet</button>
-  <button onclick="location.href='accountmanagmant.html'">Transaction History</button>
-<button onclick="location.href='adminproduct.html'">Add Bank Account</button>
-  <button onclick="location.href='onwer.html'">Go to Wallet</button>
-  <button onclick="location.href='ownerDashboard.html'">Transaction History</button><button onclick="location.href='addAccount.html'">Add Bank Account</button>
-  <button onclick="location.href='appnevimenu.html'">Go to Wallet</button>
-  <button onclick="location.href='transactions.html'">Transaction History</button>
 </body>
 </html>

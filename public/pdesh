@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Rupi - Bulk Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* --- BASE STYLES --- */
+body{font-family:'Poppins', sans-serif;margin:0;padding:0;background:linear-gradient(135deg,#ffd700,#f0e68c);color:#222;min-height:100vh;}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(255,255,255,0.4);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100;}
+header h1{margin:0;font-size:18px;font-weight:700;}
+main{padding:20px;}
+
+/* --- BULK CARD STYLES --- */
+.bulk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+.bulk-card { 
+    background: #fff; 
+    border-radius: 12px; 
+    padding: 15px; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+    border-top: 5px solid #ccc; /* Default Grey */
+    transition: transform 0.2s;
+    position: relative;
+}
+.bulk-card.ai-done { border-top: 5px solid #10b981; } /* Green when AI finishes */
+.bulk-card.upload-done { opacity: 0.6; pointer-events: none; border-top: 5px solid #333; }
+
+.img-preview-box { width: 100%; height: 200px; background: #f0f0f0; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; border: 1px dashed #ccc; }
+.img-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+input, textarea, select { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 13px; }
+.row { display: flex; gap: 5px; }
+
+/* --- BUTTONS --- */
+button { cursor: pointer; padding: 10px; border: none; border-radius: 6px; font-weight: 600; width: 100%; margin-top: 5px; }
+.btn-primary { background: #ffd700; color: #111; }
+.btn-primary:hover { background: #e6c200; }
+.btn-ai { background: #6f42c1; color: white; } /* Purple for AI */
+.btn-success { background: #10b981; color: white; } /* Green for Upload */
+.btn-danger { background: #ef4444; color: white; width: auto; padding: 5px 10px; font-size: 12px; position: absolute; top: 10px; right: 10px; z-index: 10; }
+
+/* --- LOADER --- */
+#preloader { position:fixed; top:0; left:0; width:100%; height:100%; background:#fffff0; z-index:9999; display:flex; align-items:center; justify-content:center; }
+.loader { border: 5px solid #f3f3f3; border-top: 5px solid #ffd700; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* --- LOG CONSOLE --- */
+#log-output { background: #111; color: #0f0; padding: 10px; font-family: monospace; font-size: 11px; height: 100px; overflow-y: auto; margin-top: 20px; border-radius: 8px; }
+
+/* Login Form */
+#login-container { max-width: 350px; margin: 50px auto; background: white; padding: 30px; border-radius: 12px; text-align: center; display: none; }
+#app-container { display: none; }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="preloader"><div class="loader"></div></div>
+
+<!-- LOGIN -->
+<section id="login-container">
+    <h2>Admin Login</h2>
+    <input type="email" id="login-email" placeholder="Email">
+    <input type="password" id="login-password" placeholder="Password">
+    <button class="btn-primary" onclick="handleLogin()">Login</button>
+</section>
+
+<!-- MAIN APP -->
+<section id="app-container">
+    <header>
+        <h1>Gold Rupi - Bulk Upload 🚀</h1>
+        <button onclick="handleLogout()" style="width: auto; background: #ff6b6b; color: white; padding: 5px 15px;">Logout</button>
+    </header>
+
+    <main>
+        <!-- MASTER CONTROLS -->
+        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <h3>1. Select Multiple Photos (Bulk Mode)</h3>
+            <input type="file" id="bulk-files" multiple accept="image/*" onchange="handleFileSelect(event)">
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-ai" id="run-all-ai" onclick="runAIForAll()" disabled>
+                    ✨ AI से सभी का डेटा भरें (Run All)
+                </button>
+                <button class="btn-danger" onclick="clearAll()" style="position:static; width: 100px; background: #666;">
+                    ❌ Clear All
+                </button>
+            </div>
+            
+            <div style="margin-top: 10px;">
+                <label>Default Category (Optional):</label>
+                <select id="master-category" onchange="applyMasterCategory()"></select>
+            </div>
+        </div>
+
+        <!-- CONSOLE LOG -->
+        <div id="log-output">System Ready...</div>
+
+        <!-- DYNAMIC BULK GRID -->
+        <div id="bulk-container" class="bulk-grid">
+            <!-- CARDS WILL APPEAR HERE -->
+        </div>
+
+    </main>
+</section>
+
+<!-- SCRIPTS -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+// --- CONFIGURATION ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.appspot.com",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597998bad55"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+const AI_WORKER_URL = 'https://misty-butterfly-bddc.surendrarathode040.workers.dev/'; 
+const CLOUDFLARE_UPLOAD_WORKER = 'https://cold-snow-e955.surendrarathode040.workers.dev'; 
+
+// --- GLOBAL VARIABLES ---
+let bulkFiles = []; // Array to store { id, file, status }
+let categoriesData = {};
+let adminEmail = null;
+
+// --- INITIALIZATION ---
+window.onload = function() {
+    loadCategories();
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            checkAdmin(user.email);
+        } else {
+            showLogin();
+        }
+    });
+};
+
+// --- CORE BULK LOGIC ---
+
+function handleFileSelect(e) {
+    const files = Array.from(e.target.files);
+    if(files.length === 0) return;
+
+    const container = document.getElementById('bulk-container');
+    
+    files.forEach(file => {
+        const id = Date.now() + Math.random().toString(36).substr(2, 9);
+        
+        // Add to global array
+        bulkFiles.push({ id: id, file: file, aiDone: false });
+
+        // Create HTML Card
+        const card = document.createElement('div');
+        card.className = 'bulk-card';
+        card.id = `card-${id}`;
+        card.innerHTML = `
+            <button class="btn-danger" onclick="removeCard('${id}')">🗑️</button>
+            
+            <div class="img-preview-box">
+                <img src="${URL.createObjectURL(file)}" alt="Preview">
+            </div>
+
+            <div class="row">
+                <input type="text" class="inp-name" placeholder="Product Name" id="name-${id}">
+                <input type="text" class="inp-brand" placeholder="Brand" id="brand-${id}">
+            </div>
+            
+            <div class="row">
+                <input type="number" class="inp-price" placeholder="Price (₹)" id="price-${id}">
+                <input type="number" class="inp-discount" placeholder="Disc %" id="disc-${id}">
+            </div>
+
+            <textarea class="inp-desc" placeholder="Description" rows="2" id="desc-${id}"></textarea>
+            
+            <div class="row">
+                <input type="text" class="inp-color" placeholder="Colors (e.g. Red, Blue)" id="color-${id}">
+                <input type="text" class="inp-size" placeholder="Sizes (e.g. M, L)" id="size-${id}">
+            </div>
+
+            <select class="inp-cat" id="cat-${id}">
+                <option value="">Select Category</option>
+                ${getCategoryOptionsHtml()}
+            </select>
+
+            <button class="btn-ai" onclick="runAIForSingle('${id}')" id="btn-ai-${id}">🤖 Get Details (This only)</button>
+            <button class="btn-success" onclick="uploadSingle('${id}')" id="btn-up-${id}">🚀 UPLOAD PRODUCT</button>
+        `;
+        container.appendChild(card);
+    });
+
+    document.getElementById('run-all-ai').disabled = false;
+    log(`Added ${files.length} new photos to staging.`);
+}
+
+function removeCard(id) {
+    document.getElementById(`card-${id}`).remove();
+    bulkFiles = bulkFiles.filter(item => item.id !== id);
+}
+
+function clearAll() {
+    document.getElementById('bulk-container').innerHTML = '';
+    document.getElementById('bulk-files').value = '';
+    bulkFiles = [];
+}
+
+// --- AI LOGIC (PARALLEL & ROBUST) ---
+
+async function runAIForAll() {
+    const btn = document.getElementById('run-all-ai');
+    btn.disabled = true;
+    btn.innerText = "⏳ Processing All...";
+    
+    // Process strictly one by one to avoid browser freeze
+    for (const item of bulkFiles) {
+        if (!item.aiDone) {
+            await runAIForSingle(item.id);
+            // Small delay to be safe
+            await new Promise(r => setTimeout(r, 500));
+        }
+    }
+    
+    btn.disabled = false;
+    btn.innerText = "✨ AI से सभी का डेटा भरें (Run All)";
+    alert("AI Processing Complete!");
+}
+
+async function runAIForSingle(id) {
+    const item = bulkFiles.find(x => x.id === id);
+    if (!item) return;
+
+    const btn = document.getElementById(`btn-ai-${id}`);
+    const card = document.getElementById(`card-${id}`);
+    
+    btn.disabled = true;
+    btn.innerText = "⏳ Analyzing...";
+    
+    try {
+        log(`Compressing image for ${id}...`);
+        const compressedFile = await compressImage(item.file);
+        
+        log(`Sending ${id} to Cloudflare AI...`);
+        const formData = new FormData();
+        formData.append('image', compressedFile);
+
+        const response = await fetch(AI_WORKER_URL, { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if(data.error) throw new Error(data.error);
+
+        // POPULATE FIELDS
+        document.getElementById(`name-${id}`).value = data.name || '';
+        document.getElementById(`brand-${id}`).value = data.brand || '';
+        document.getElementById(`price-${id}`).value = data.price || '';
+        document.getElementById(`disc-${id}`).value = data.discount || '';
+        document.getElementById(`desc-${id}`).value = data.description || '';
+        
+        if(data.colors) document.getElementById(`color-${id}`).value = Array.isArray(data.colors) ? data.colors.join(', ') : data.colors;
+        if(data.sizes) document.getElementById(`size-${id}`).value = Array.isArray(data.sizes) ? data.sizes.join(', ') : data.sizes;
+
+        // Try Auto Category
+        if(data.category) {
+            const catSelect = document.getElementById(`cat-${id}`);
+            for(let opt of catSelect.options) {
+                if(opt.value.toLowerCase().includes(data.category.toLowerCase())) {
+                    opt.selected = true;
+                    break;
+                }
+            }
+        }
+
+        // UI Updates
+        card.classList.add('ai-done');
+        item.aiDone = true;
+        btn.innerText = "✅ AI Done";
+        log(`AI Success for ${id}`);
+
+    } catch (e) {
+        console.error(e);
+        log(`❌ Error ${id}: ${e.message}`);
+        btn.innerText = "❌ Retry";
+        btn.disabled = false;
+    }
+}
+
+
+
+// --- UPLOAD LOGIC (SINGLE PRODUCT) ---
+async function uploadSingle(id) {
+    const item = bulkFiles.find(x => x.id === id);
+    if(!item) return;
+
+    const name = document.getElementById(`name-${id}`).value;
+    const price = document.getElementById(`price-${id}`).value;
+    const disc = document.getElementById(`disc-${id}`).value || 0;
+    const cat = document.getElementById(`cat-${id}`).value;
+
+    if(!name || !price || !cat) {
+        alert("Name, Price and Category are required!");
+        return;
+    }
+
+    const btn = document.getElementById(`btn-up-${id}`);
+    btn.disabled = true;
+    btn.innerText = "⬆️ Uploading...";
+
+    try {
+        // 1. Upload Image to Cloudflare R2
+        log(`Uploading Image ${id}...`);
+        const fd = new FormData();
+        fd.append("file", item.file);
+        
+        const r2Resp = await fetch(CLOUDFLARE_UPLOAD_WORKER, { method: "POST", body: fd });
+        if(!r2Resp.ok) throw new Error("Image Upload Failed");
+        const r2Json = await r2Resp.json();
+        const imageUrl = r2Json.publicURL;
+
+        // 2. Save to Firebase Database
+        log(`Saving Product ${id}...`);
+        const productData = {
+            name: name,
+            brand: document.getElementById(`brand-${id}`).value,
+            price: parseFloat(price),
+            discount: disc,
+            description: document.getElementById(`desc-${id}`).value,
+            color: document.getElementById(`color-${id}`).value,
+            size: document.getElementById(`size-${id}`).value,
+            category: cat,
+            images: imageUrl,
+            createdAt: Date.now(),
+            stock: 'In Stock',
+            video_status: 'processing' 
+        };
+
+        const pushRef = await db.ref('products').push(productData);
+        const productId = pushRef.key;
+
+        // 🔥 VERCEL BACKEND TRIGGER (वीडियो इंजन)
+        log(`🚀 Triggering Video Sync: ${productId}`);
+        axios.post('https://money-card-p.vercel.app/api/generate-video', {
+            imageUrl: imageUrl,
+            productId: productId,
+            name: name,
+            price: price,
+            discount: disc
+        }).then(res => {
+            log(`✅ Video Sync OK: ${productId}`);
+            const statusDiv = document.createElement('div');
+            statusDiv.style = "color:#6f42c1; font-size:11px; font-weight:bold; margin-top:5px;";
+            statusDiv.innerText = "🎬 Video processing on Vercel...";
+            document.getElementById(`card-${id}`).appendChild(statusDiv);
+        }).catch(err => {
+            log(`❌ Video Sync Error: ${err.message}`);
+        });
+
+        // 3. UI Cleanup
+        document.getElementById(`card-${id}`).classList.add('upload-done');
+        btn.innerText = "✅ Uploaded!";
+        log(`Product ${id} Done!`);
+
+    } catch(e) {
+        console.error(e);
+        log(`❌ Upload Failed: ${e.message}`);
+        btn.disabled = false;
+        btn.innerText = "🚀 UPLOAD PRODUCT";
+    }
+}
+
+
+
+
+
+
+
+
+// --- UTILS & HELPERS ---
+
+function compressImage(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; 
+                const scaleSize = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scaleSize;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob((blob) => {
+                    resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                }, 'image/jpeg', 0.8);
+            }
+        };
+    });
+}
+
+async function loadCategories() {
+    const snap = await db.ref('E_COMMERCE_CATEGORIES').once('value');
+    categoriesData = snap.val() || {};
+}
+
+function getCategoryOptionsHtml() {
+    let html = '';
+    for(const main in categoriesData) {
+        html += `<optgroup label="${main.replace(/_/g,' ')}">`;
+        for(const sub in categoriesData[main]) {
+            html += `<option value="${sub}">${sub.replace(/_/g,' ')}</option>`;
+        }
+        html += `</optgroup>`;
+    }
+    return html;
+}
+
+function applyMasterCategory() {
+    const val = document.getElementById('master-category').value;
+    if(!val) return;
+    document.querySelectorAll('.inp-cat').forEach(el => el.value = val);
+}
+
+function log(msg) {
+    const box = document.getElementById('log-output');
+    box.innerHTML = `<div>> ${msg}</div>` + box.innerHTML;
+}
+
+// --- AUTH ---
+async function checkAdmin(email) {
+    try {
+        const snap = await db.ref('ADMIN_CONTROL_LISTS/adminEmail').once('value');
+        adminEmail = snap.val();
+        if(email === adminEmail) {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            document.getElementById('preloader').style.display = 'none';
+            
+            // Populate master category
+            const masterSelect = document.getElementById('master-category');
+            masterSelect.innerHTML = '<option value="">Apply Category to All</option>' + getCategoryOptionsHtml();
+            
+        } else {
+            alert("Not Admin");
+            auth.signOut();
+        }
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+function showLogin() {
+    document.getElementById('preloader').style.display = 'none';
+    document.getElementById('login-container').style.display = 'block';
+    document.getElementById('app-container').style.display = 'none';
+}
+
+function handleLogin() {
+    const e = document.getElementById('login-email').value;
+    const p = document.getElementById('login-password').value;
+    auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
+}
+
+function handleLogout() {
+    auth.signOut();
+}
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+

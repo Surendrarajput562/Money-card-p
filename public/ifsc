@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Global Master API - Money Card P</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #000; color: #0f0; padding: 20px; }
+        .terminal { border: 2px solid #0f0; padding: 20px; max-width: 500px; margin: auto; box-shadow: 0 0 15px #0f0; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #111; border: 1px solid #0f0; color: #0f0; outline: none; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; padding: 12px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-swift { background: #0f0; color: #000; }
+        .btn-swift:hover { background: #0c0; }
+        .btn-ifsc { background: #ffcc00; color: #000; }
+        .btn-ifsc:hover { background: #ccaa00; }
+        #output { margin-top: 20px; font-size: 14px; border-top: 1px dashed #0f0; padding-top: 15px; min-height: 100px; white-space: pre-wrap; }
+        .highlight { color: #fff; text-shadow: 0 0 5px #fff; }
+    </style>
+</head>
+<body>
+
+<div class="terminal">
+    <h2>> MASTER_BANK_FETCH_v3</h2>
+    <p style="font-size: 12px;">URL: https://money-card-p.vercel.app</p>
+
+    <label>Enter Code (SWIFT/IBAN or IFSC):</label>
+    <input type="text" id="bankCode" placeholder="CHASUS33 or KKBK0000631...">
+    
+    <div class="btn-group">
+        <button class="btn-swift" onclick="fetchGlobal()">FETCH GLOBAL (SWIFT/IBAN)</button>
+        <button class="btn-ifsc" onclick="fetchIfsc()">FETCH IFSC</button>
+    </div>
+
+    <div id="output">System Ready. Awaiting Global or Domestic Input...</div>
+</div>
+
+<script>
+    const out = document.getElementById('output');
+
+    // 1. GLOBAL SEARCH (SWIFT/BIC & IBAN) - 100% FREE
+    async function fetchGlobal() {
+        const code = document.getElementById('bankCode').value.trim();
+        if(!code) return alert("Bhai Code toh daal!");
+        
+        out.innerText = "> Initializing Global Database Scan...";
+
+        try {
+            // Hum OpenIBAN API use kar rahe hain jo SWIFT/BIC aur IBAN dono handle karti hai
+            // Testing ke liye "CHASUS33" ya koi IBAN daalo
+            const response = await fetch(`https://openiban.com/validate/${code}?getBIC=true&validateBankCode=true`);
+            const data = await response.json();
+
+            if (data.valid || (data.bankData && data.bankData.name)) {
+                renderOutput(
+                    "GLOBAL_SUCCESS", 
+                    data.bankData.name || "Unknown Bank", 
+                    data.bankData.city || "Unknown City", 
+                    data.bankData.zip || "N/A", 
+                    data.bankData.bic || code
+                );
+            } else {
+                throw new Error();
+            }
+        } catch (err) {
+            out.innerHTML = "> <span style='color:red'>ERROR:</span> Invalid Global Code or Server Busy.";
+        }
+    }
+
+    // 2. IFSC FETCH (Domestic System)
+    async function fetchIfsc() {
+        const code = document.getElementById('bankCode').value.trim();
+        if(!code) return alert("Bhai IFSC code toh daal!");
+        
+        out.innerText = "> Scanning Domestic Database for IFSC...";
+
+        try {
+            const response = await fetch(`https://ifsc.razorpay.com/${code}`);
+            if(!response.ok) throw new Error();
+            const data = await response.json();
+
+            renderOutput("IFSC_SUCCESS", data.BANK, data.BRANCH, data.CITY, data.IFSC);
+        } catch (err) {
+            out.innerHTML = "> <span style='color:red'>ERROR:</span> IFSC Not Found.";
+        }
+    }
+
+    function renderOutput(type, bank, branch, city, code) {
+        out.innerHTML = `
+<span style="color:#0f0">[${type}]</span>
+BANK  : <span class="highlight">${bank}</span>
+LOC   : ${branch}, ${city}
+CODE  : <span class="highlight">${code}</span>
+
+<span style="color:#888">> Data synced with Vercel backend.</span>`;
+    }
+</script>
+
+</body>
+</html>

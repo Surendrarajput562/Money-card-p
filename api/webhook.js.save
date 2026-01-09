@@ -1,0 +1,609 @@
+// webhook.js
+const admin = require('firebase-admin');
+const { HttpsProxyAgent } = require('https-proxy-agent');
+const axios = require('axios');
+const crypto = require('crypto');
+
+// Firebase Initialization
+if (!admin.apps.length) {
+    try {
+        const pKey = process.env.FIREBASE_PRIVATE_KEY || "";
+        const cleanKey = pKey.trim().replace(/^"|"$/g, '').replace(/\\n/g, '\n');
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId: process.env.FIREBASE_PROJECT_ID,
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                privateKey: cleanKey
+            }),
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com"
+        });
+        console.log('Firebase Admin SDK initialized in webhook.js');
+    } catch (e) {
+        console.error("Firebase Initialization Error:", e.message);
+    }
+}
+
+const db = admin.database();
+
+module.exports = async function handler(req, res) {
+    if (req.method !== 'POST') {
+        return res.status(405).send('Only POST allowed');
+    }
+
+    // Required for logging and potential future signature verification
+    const rawBodyForVerification = JSON.stringify(req.body);
+    const cashfreeSignature = req.headers['x-webhook-signature'];
+    const cashfreeTimestamp = req.headers['x-webhook-timestamp'];
+
+    console.log('🔔 Webhook Received Raw:', rawBodyForVerification);
+    // --- A. CASHFREE WEBHOOK LOGIC ---
+    if (cashfreeSignature && cashfreeTimestamp) {
+        try {
+            const { data } = req.body;
+            const cfOrderId = data?.order?.order_id;
+            const status = (data?.payment?.payment_status || "").toUpperCase(); // Uppercase for safety
+
+            console.log(`🔔 Processing: ${cfOrderId} | Status: ${status}`);
+
+            if (status === "SUCCESS") {
+                const cfMappingSnap = await db.ref(`cashfree_transactions_mapping/${cfOrderId}`).once('value');
+                const mapping = cfMappingSnap.val() || {};
+                
+                // 🔥 SMART FALLBACK: Agar mapping load nahi hui, toh ID split karke data nikalo
+                // Format: CF_PLANID_USERUID_TIMESTAMP
+                const idParts = cfOrderId.split('_');
+                const user_uid = mapping.user_uid || idParts[2] || data.customer_details?.customer_id;
+                const amount = mapping.amount || data.payment?.payment_amount || 0;
+                
+                // Type detect karne ka robust tarika
+                let type = mapping.type;
+                if (!type) {
+                    if (cfOrderId.includes('sub') || cfOrderId.includes('standard') || cfOrderId.includes('premium')) {
+                        type = 'subscription';
+                    } else if (cfOrderId.startsWith('o') || cfOrderId.startsWith('ORDER')) {
+                        type = 'cart';
+                    } else {
+                        type = 'wallet';
+                    }
+                }
+
+                console.log(`🎯 Logic Check: Type=${type}, User=${user_uid}`);
+
+                // 1. Ebook/Plan Activation Logic
+                if (type === 'subscription' && user_uid) {
+                    const planId = mapping.plan_id || idParts[1] || 'standard';
+                    
+                    // User ke subscription node mein entry
+                    await db.ref(`users/${user_uid}/ebook_subscriptions/${cfOrderId}`).set({
+                        is_active: true,
+                        plan_id: planId,
+                        status: 'paid',
+                        amount: amount,
+                        activated_at: admin.database.ServerValue.TIMESTAMP
+                    });
+
+                    // Profile update (Isse frontend ko pata chalta hai ki button change karna hai)
+                    await db.ref(`users/${user_uid}/profile`).update({
+                        has_active_ebook: true,
+                        plan_active: true,
+                        last_plan: planId
+                    });
+                    console.log(`✅ Ebook Activated for: ${user_uid}`);
+                } 
+                // 2. Shopping Cart Logic
+                else if (type === 'cart' && user_uid) {
+                    const internal_id = mapping.internal_id || idParts[1];
+                    const orderUpdate = { 
+                        status: 'paid', 
+                        cf_payment_id: data.payment.cf_payment_id, 
+                        utr: data.payment.bank_reference || '', 
+                        updated_at: admin.database.ServerValue.TIMESTAMP 
+                    };
+                    await db.ref(`orders/${internal_id}`).update(orderUpdate);
+                    await db.ref(`users/${user_uid}/order_history/${internal_id}`).update(orderUpdate);
+                    await db.ref(`carts/${user_uid}`).remove();
+                    console.log(`✅ Order Paid: ${internal_id}`);
+                } 
+                // 3. Wallet Logic
+                else if (user_uid) {
+                    await db.ref(`users/${user_uid}/wallet`).transaction(bal => (bal || 0) + Number(amount));
+                    await db.ref(`users/${user_uid}/wallet_history/${cfOrderId}`).set({ 
+                        type: 'cashfree_topup', 
+                        amount: amount, 
+                        status: 'completed', 
+                        timestamp: admin.database.ServerValue.TIMESTAMP 
+                    });
+                    console.log(`✅ Wallet Credited: ${user_uid}`);
+                }
+            } 
+
+            // Status hamesha update karo mapping mein
+            await db.ref(`cashfree_transactions_mapping/${cfOrderId}/status`).set(status);
+            return res.status(200).send("OK");
+        } catch (err) {
+            console.error("🔥 Webhook Process Error:", err.message);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    if (cashfreeSignature && cashfreeTimestamp) {
+        try {
+            const { data } = req.body;
+            const cfOrderId = data?.order?.order_id;
+            const status = data?.payment?.payment_status;
+
+console.log(`🔔 Processing: ${cfOrderId} | Status: ${status}`);
+            if (status === "SUCCESS") {
+                const cfMappingSnap = await db.ref(`cashfree_transactions_mapping/${cfOrderId}`).once('value');
+                const mapping = cfMappingSnap.val() || {};
+                const internal_id = mapping.internal_id || '';
+                const user_uid = mapping.user_uid || data.customer_details?.customer_id;
+                const amount = mapping.amount || data.payment.payment_amount;
+                const type = mapping.type || (internal_id.startsWith('o') ? 'cart' : 'wallet');
+
+                // 1. Ebook Logic
+                if (type === 'subscription' && user_uid) {
+                    await db.ref(`users/${user_uid}/ebook_subscriptions/${cfOrderId}`).set({
+                        is_active: true, plan_id: mapping.plan_id || 'std', status: 'paid', updated_at: admin.database.ServerValue.TIMESTAMP
+                    });
+                    await db.ref(`users/${user_uid}/profile`).update({ has_active_ebook: true });
+                } 
+                // 2. Cart Logic
+                else if (type === 'cart' && internal_id) {
+                    const orderUpdate = { status: 'paid', cf_payment_id: data.payment.cf_payment_id, utr: data.payment.bank_reference || '', updated_at: admin.database.ServerValue.TIMESTAMP };
+                    await db.ref(`orders/${internal_id}`).update(orderUpdate);
+                    await db.ref(`users/${user_uid}/order_history/${internal_id}`).update(orderUpdate);
+                    await db.ref(`carts/${user_uid}`).remove();
+                    try {
+                        const indexApp = require('./index');
+                        if (indexApp?.createShiprocketOrder) {
+                            const orderSnap = await db.ref(`orders/${internal_id}`).once('value');
+                            const shipRes = await indexApp.createShiprocketOrder(orderSnap.val(), orderSnap.val().address, (await db.ref(`users/${user_uid}`).once('value')).val());
+                            await db.ref(`orders/${internal_id}`).update({ shiprocket_order_id: shipRes.shiprocket_order_id || '', status: 'processing' });
+                        }
+                    } catch (srErr) { console.error("SR Error:", srErr.message); }
+                } 
+                // 3. Wallet Logic
+                else if (user_uid) {
+                    await db.ref(`users/${user_uid}/wallet`).transaction(bal => (bal || 0) + Number(amount));
+                    await db.ref(`users/${user_uid}/wallet_history/${cfOrderId}`).set({ type: 'cashfree_topup', amount: amount, status: 'completed', timestamp: admin.database.ServerValue.TIMESTAMP });
+                }
+            } 
+            else if (status === "FAILED") {
+                const cfMappingSnap = await db.ref(`cashfree_transactions_mapping/${cfOrderId}`).once('value');
+                const mapping = cfMappingSnap.val() || {};
+                if (mapping.type === 'subscription') await db.ref(`users/${mapping.user_uid}/ebook_subscriptions/${cfOrderId}`).update({ status: 'failed' });
+                else if (mapping.type === 'cart') await db.ref(`orders/${mapping.internal_id}`).update({ status: 'failed' });
+            }
+
+            await db.ref(`cashfree_transactions_mapping/${cfOrderId}/status`).set(status);
+            return res.status(200).send("OK");
+        } catch (err) {
+            console.error("🔥 Webhook Error:", err.message);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // --- B. AllAPI.in Webhook ---
+    // AllAPI.in typically sends form-urlencoded data, but Vercel parses it into req.body.
+    const ALLAPI_WEBHOOK_SECRET = process.env.ALLAPI_WEBHOOK_SECRET;
+    const allapiSignatureHeader = req.headers['x-api-secret']; // Check if AllAPI sends this or if secret is in payload
+
+    const allapiOrderId = req.body.order_id;
+    const allapiStatus = req.body.status;
+    const allapiTxnId = req.body.txn_id;
+    const allapiUtr = req.body.utr_number;
+    const allapiTxnAmount = req.body.txn_amount;
+
+    if (allapiOrderId && typeof allapiStatus === 'string' && ['Success', 'Failed', 'Pending'].includes(allapiStatus)) {
+        // Optional: AllAPI.in secret verification (uncomment if you have a secret from AllAPI.in)
+        if (ALLAPI_WEBHOOK_SECRET && allapiSignatureHeader && allapiSignatureHeader !== ALLAPI_WEBHOOK_SECRET) {
+            console.warn('AllAPI Webhook received with invalid secret header. Headers:', req.headers);
+            return res.status(403).send('Forbidden: Invalid AllAPI Webhook Secret');
+        }
+
+        console.log('Processing as AllAPI.in Webhook...');
+        try {
+            let firebaseStatus = '';
+            if (allapiStatus === 'Success') {
+                firebaseStatus = 'completed';
+            } else if (allapiStatus === 'Failed') {
+                firebaseStatus = 'failed';
+            } else if (allapiStatus === 'Pending') {
+                firebaseStatus = 'payment_pending';
+            }
+
+            const mappingRef = db.ref(`allapi_transactions_mapping/${allapiOrderId}`);
+            let mappingSnapshot = await mappingRef.once('value');
+            let mappingData = mappingSnapshot.val();
+
+            // Handle cases where mapping might be missed or partially recorded
+            if (!mappingData) {
+                console.warn(`AllAPI: Mapping for order ${allapiOrderId} not found. Attempting direct lookup in payment_requests.`);
+                const directPaymentReqSnap = await db.ref(`payment_requests/allapi_${allapiOrderId}`).once('value');
+                if (directPaymentReqSnap.exists()) {
+                    console.log(`AllAPI: Found matching entry in payment_requests for ${allapiOrderId}.`);
+                    const directPaymentReqData = directPaymentReqSnap.val();
+                    // Reconstruct minimal mapping data for processing
+                    mappingData = {
+                        user_uid: directPaymentReqData.user_uid,
+                        internal_id: directPaymentReqData.internal_id,
+                        type: directPaymentReqData.type,
+                        txn_amount: allapiTxnAmount || directPaymentReqData.txn_amount,
+                        customer_name: directPaymentReqData.customer_name,
+                        customer_mobile: directPaymentReqData.customer_mobile,
+                        customer_email: directPaymentReqData.customer_email,
+                        order_address: directPaymentReqData.order_address,
+                        order_items: directPaymentReqData.order_items
+                    };
+                } else {
+                    console.error(`AllAPI: No mapping or direct payment request found for ${allapiOrderId}.`);
+                    return res.status(404).send('Mapping Not Found');
+                }
+            }
+
+            // Prevent reprocessing if already completed or similar success state
+            if (mappingData.status === 'completed' || mappingData.status === 'paid' || mappingData.status === 'success') {
+                console.log(`Webhook: AllAPI Order ${allapiOrderId} already processed with status ${mappingData.status}. Skipping.`);
+                return res.status(200).send("Already Processed.");
+            }
+
+            const { user_uid, internal_id, type } = mappingData;
+
+            const updatePayload = {
+                status: firebaseStatus,
+                utr: allapiUtr || 'N/A',
+                allapi_txn_id: allapiTxnId || 'N/A',
+                gateway_response: req.body, // Store full webhook payload
+                updated_at: admin.database.ServerValue.TIMESTAMP
+            };
+
+            let transactionRef; // Reference to the specific transaction node
+
+            if (type === 'cart') { // Shopping Orders
+                transactionRef = db.ref(`orders/${internal_id}`);
+                await db.ref(`users/${user_uid}/order_history/${internal_id}`).update(updatePayload);
+                console.log(`AllAPI: Shopping Order ${internal_id} for user ${user_uid} updated to ${firebaseStatus}.`);
+
+                if (firebaseStatus === 'completed') {
+                    await db.ref(`carts/${user_uid}`).remove(); // Clear cart
+                    const orderSnapshot = await transactionRef.once('value');
+                    const orderDetails = orderSnapshot.val();
+                    const customerRef = await db.ref(`users/${user_uid}`).once('value');
+                    const customerDetails = customerRef.val();
+
+                    if (orderDetails && customerDetails && createShiprocketOrder) {
+                        try {
+                            const shiprocketInfo = await createShiprocketOrder(
+                                {
+                                    id: orderDetails.id,
+                                    created_at: orderDetails.created_at,
+                                    items: orderDetails.items,
+                                    total: orderDetails.total,
+                                    gateway_txn_id: allapiTxnId || 'N/A'
+                                },
+                                orderDetails.address,
+                                { customer_name: customerDetails.name, customer_email: customerDetails.email, customer_mobile: customerDetails.mobile }
+                            );
+                            await transactionRef.update({
+                                shiprocket_order_id: shiprocketInfo.shiprocket_order_id,
+                                tracking_id: shiprocketInfo.tracking_id,
+                                tracking_url: shiprocketInfo.tracking_url,
+                                shiprocket_status: shiprocketInfo.shiprocket_status,
+                                status: 'processing', // Update main order status
+                                shiprocket_message: shiprocketInfo.message
+                            });
+                            await db.ref(`users/${user_uid}/order_history/${internal_id}`).update({
+                                shiprocket_order_id: shiprocketInfo.shiprocket_order_id,
+                                tracking_id: shiprocketInfo.tracking_id,
+                                tracking_url: shiprocketInfo.tracking_url,
+                                shiprocket_status: shiprocketInfo.shiprocket_status,
+                                status: 'processing', // Update user's order status
+                                shiprocket_message: shiprocketInfo.message
+                            });
+                            console.log(`Shiprocket order initiated for internal ID ${internal_id}. Result:`, shiprocketInfo);
+                        } catch (srError) {
+                            console.error(`Failed to initiate Shiprocket order for ${internal_id}:`, srError.message);
+                            await transactionRef.update({ status: 'payment_completed_shiprocket_failed', shiprocket_message: srError.message });
+                            await db.ref(`users/${user_uid}/order_history/${internal_id}`).update({ status: 'payment_completed_shiprocket_failed', shiprocket_message: srError.message });
+                        }
+                    } else {
+                        console.warn(`Shiprocket: Skipping Shiprocket order for ${internal_id}. Missing order details, customer details or createShiprocketOrder function.`);
+                    }
+                }
+            } else if (type === 'gold') { // Gold Purchases
+                transactionRef = db.ref(`gold_requests/${internal_id}`);
+                await db.ref(`users/${user_uid}/gold_history/${internal_id}`).update(updatePayload);
+                if (firebaseStatus === 'completed') {
+                    const goldRequest = (await transactionRef.once('value')).val();
+                    const grams = Number(goldRequest.grams || (allapiTxnAmount / (goldRequest.gold_rate || 6500)));
+                    await db.ref(`users/${user_uid}/gold_balance`).transaction(currentBalance => (currentBalance || 0) + grams);
+                    console.log(`AllAPI: User ${user_uid} gold balance updated by ${grams}g.`);
+                }
+                console.log(`AllAPI: Gold Request ${internal_id} for user ${user_uid} updated to ${firebaseStatus}.`);
+            } else if (type === 'wallet') { // Wallet Top-ups
+                transactionRef = db.ref(`wallet_requests/${internal_id}`);
+                await db.ref(`users/${user_uid}/wallet_history/${internal_id}`).update(updatePayload);
+                if (firebaseStatus === 'completed') {
+                    const amount = Number(allapiTxnAmount);
+                    await db.ref(`users/${user_uid}/wallet`).transaction(currentBalance => (currentBalance || 0) + amount);
+                    console.log(`AllAPI: User ${user_uid} wallet updated by ₹${amount}.`);
+                }
+                console.log(`AllAPI: Wallet Add Request ${internal_id} for user ${user_uid} updated to ${firebaseStatus}.`);
+            } else if (type === 'emi_payment') { // Loan EMI Payments
+                transactionRef = db.ref(`users/${user_uid}/loan_emis/${internal_id}`);
+                await transactionRef.update({
+                    ...updatePayload,
+                    status: firebaseStatus === 'completed' ? 'paid' : firebaseStatus,
+                    paid_at: firebaseStatus === 'completed' ? admin.database.ServerValue.TIMESTAMP : null,
+                });
+                console.log(`AllAPI: EMI Payment ${internal_id} for user ${user_uid} updated to ${firebaseStatus}.`);
+            } else {
+                console.warn(`AllAPI: Unrecognized transaction type '${type}' for internal_id: ${internal_id}. No specific Firebase update performed.`);
+            }
+
+            // Update the central payment_requests node
+            const centralPaymentReqRef = db.ref(`payment_requests/allapi_${allapiOrderId}`);
+            await centralPaymentReqRef.update(updatePayload);
+            console.log(`AllAPI: Central payment request allapi_${allapiOrderId} updated to ${firebaseStatus}.`);
+
+        } catch (error) {
+            console.error('Error processing AllAPI.in Webhook:', error.message, error.stack);
+            await db.ref(`webhook_errors/${allapiOrderId || `unknown_allapi_webhook_${Date.now()}`}`).set({
+                source: 'AllAPI.in Webhook',
+                payload: req.body,
+                error: error.message,
+                stack: error.stack,
+                timestamp: admin.database.ServerValue.TIMESTAMP
+            });
+            return res.status(500).send('Error processing AllAPI.in Webhook.');
+        }
+        return res.status(200).send('AllAPI.in Webhook processed.');
+    }
+
+    // --- C. Shiprocket Webhook (AUTO-TRACKING SYNC) ---
+    // Jab tu dashboard par "Ship Now" dabayega ya status badlega, tab ye chalega
+    const srData = req.body;
+    
+    // Check if it's a valid Shiprocket payload
+    if (srData.order_id && (srData.awb_code || srData.current_status || srData.awb_number)) {
+        console.log('Shiprocket Webhook Triggered for SR_ID:', srData.order_id);
+        
+        try {
+            const ordersRef = db.ref('orders');
+            // Shiprocket ID hamesha number hoti hai payload mein
+            const srOrderId = Number(srData.order_id);
+            const snapshot = await ordersRef.orderByChild('shiprocket_order_id').equalTo(srOrderId).once('value');
+
+            if (snapshot.exists()) {
+                const orderKey = Object.keys(snapshot.val())[0];
+                const orderData = snapshot.val()[orderKey];
+                const userId = orderData.user || orderData.user_uid;
+
+                // 1. Tracking Data nikalna (Alag-alag events mein key alag ho sakti hai)
+                const finalAwb = srData.awb_code || srData.awb_number || orderData.tracking_id || "";
+                const currentSrStatus = srData.current_status || orderData.shiprocket_status || "AWB_ASSIGNED";
+
+                // 2. Hamara Internal Status decide karna
+                let internalStatus = orderData.status; 
+                if (currentSrStatus === 'DELIVERED') {
+                    internalStatus = 'delivered';
+                } else if (['SHIPPED', 'PICKED_UP', 'AWB_ASSIGNED', 'OUT_FOR_DELIVERY'].includes(currentSrStatus)) {
+                    internalStatus = 'processing';
+                } else if (currentSrStatus === 'CANCELED') {
+                    internalStatus = 'rejected';
+                }
+
+                const updatePayload = {
+                    shiprocket_status: currentSrStatus,
+                    tracking_id: finalAwb,
+                    tracking_url: finalAwb ? `https://shiprocket.in/tracking/${finalAwb}` : "",
+                    status: internalStatus,
+                    updated_at: admin.database.ServerValue.TIMESTAMP
+                };
+
+                // 3. Firebase Update (Main Node + User History)
+                await db.ref(`orders/${orderKey}`).update(updatePayload);
+                if (userId) {
+                    await db.ref(`users/${userId}/order_history/${orderKey}`).update(updatePayload);
+                }
+
+                console.log(`✅ Webhook: Order ${orderKey} updated. Status: ${currentSrStatus}, AWB: ${finalAwb}`);
+            } else {
+                console.warn(`Shiprocket: Order ID ${srOrderId} not found in Firebase.`);
+            }
+        } catch (error) {
+            console.error('Shiprocket Webhook Error:', error.message);
+            await db.ref(`webhook_errors/sr_${Date.now()}`).set({
+                payload: srData,
+                error: error.message,
+                timestamp: admin.database.ServerValue.TIMESTAMP
+            });
+        }
+        return res.status(200).send('Webhook Handled');
+    }
+
+
+
+
+
+    // --- D. Speed Webhook ---
+    if (req.body.object === 'payment' && req.body.status === 'paid') {
+        console.log('Processing as Speed Webhook...');
+        const userId = req.body.metadata?.user_id;
+        const asset = req.body.metadata?.asset;
+        const amountReceived = req.body.target_amount_paid;
+
+        if (!userId || !asset || !amountReceived) {
+            console.warn("Speed Webhook: Missing required data for auto-credit.", req.body);
+            return res.status(400).send('Missing data');
+        }
+
+        try {
+            const walletRef = db.ref(`users/${userId}/wallets/${asset}`);
+            const snap = await walletRef.once('value');
+            const currentBal = Number(snap.val()?.balance || 0);
+
+            await walletRef.update({
+                balance: currentBal + Number(amountReceived),
+                last_sync: admin.database.ServerValue.TIMESTAMP
+            });
+
+            await db.ref(`users/${userId}/deposits/${req.body.id}`).update({
+                status: 'paid',
+                paid_at: admin.database.ServerValue.TIMESTAMP,
+                received_amount: amountReceived,
+                asset_type: asset,
+                gateway_payload: req.body // Store full payload
+            });
+            console.log(`Speed Webhook: User ${userId} wallet for ${asset} credited with ${amountReceived}.`);
+        } catch (dbErr) {
+            console.error("Speed Webhook Firebase Update Error:", dbErr.message, dbErr.stack);
+            await db.ref(`webhook_errors/${req.body.id || `unknown_speed_webhook_${Date.now()}`}`).set({
+                source: 'Speed Webhook',
+                payload: req.body,
+                error: dbErr.message,
+                stack: dbErr.stack,
+                timestamp: admin.database.ServerValue.TIMESTAMP
+            });
+            return res.status(500).send('Firebase Update Error');
+        }
+        return res.status(200).send('Speed Webhook OK');
+    }
+
+    // --- E. OxaPay Webhook ---
+    // Note: OxaPay's `order_id` in the callback is your `userId` if you used it that way in `/api/oxa/static`
+    if (req.body.status === 'completed' && req.body.order_id && req.body.crypto_amount && req.body.to_currency && req.body.transaction_id) {
+        console.log("Processing as OxaPay Webhook...");
+        const userId = req.body.order_id;
+        const amount = parseFloat(req.body.crypto_amount);
+        const currency = req.body.to_currency;
+        const transaction_id = req.body.transaction_id;
+
+        if (!userId || !amount || !currency || !transaction_id) {
+            console.warn("OxaPay Webhook: Missing required data.", req.body);
+            return res.status(400).send('Missing data');
+        }
+
+        try {
+            const userWalletRef = db.ref(`users/${userId}/wallets/oxapay/${currency}/balance`);
+            await userWalletRef.transaction(currentBalance => (currentBalance || 0) + amount);
+
+            await db.ref(`users/${userId}/deposits/oxapay/${transaction_id}`).set({
+                currency,
+                amount,
+                status: 'completed',
+                timestamp: admin.database.ServerValue.TIMESTAMP,
+                gateway_payload: req.body // Store full payload
+            });
+            console.log(`OxaPay: User ${userId} ${currency} balance updated by ${amount}.`);
+        } catch (e) {
+            console.error("OxaPay Webhook Firebase Update Error:", e.message, e.stack);
+            await db.ref(`webhook_errors/${transaction_id || `unknown_oxapay_webhook_${Date.now()}`}`).set({
+                source: 'OxaPay Webhook',
+                payload: req.body,
+                error: e.message,
+                stack: e.stack,
+                timestamp: admin.database.ServerValue.TIMESTAMP
+            });
+            return res.status(500).send('Firebase Update Error');
+        }
+        return res.status(200).send('OxaPay Webhook OK');
+    }
+
+    // --- F. Didit Webhook ---
+    if (req.body.event === 'decision.made' && req.body.data?.decision && req.body.data?.vendorData) {
+        console.log('Processing as Didit Webhook...');
+        const userId = req.body.data.vendorData;
+        if (!userId) {
+            console.warn("Didit Webhook: Missing userId in vendorData.", req.body);
+            return res.status(400).send('Missing userId');
+        }
+        try {
+            if (req.body.data.decision === 'APPROVED') {
+                await db.ref(`users/${userId}/profile`).update({ kyc_status: 'VERIFIED', step: 'COMPLETED', didit_verified: true });
+                console.log(`Didit: User ${userId} KYC VERIFIED.`);
+            } else if (req.body.data.decision === 'REJECTED') {
+                await db.ref(`users/${userId}/profile`).update({ kyc_status: 'REJECTED' });
+                console.log(`Didit: User ${userId} KYC REJECTED.`);
+            } else if (req.body.data.decision === 'PENDING' || req.body.data.decision === 'IN_REVIEW') {
+                 await db.ref(`users/${userId}/profile`).update({ kyc_status: 'PENDING' });
+                 console.log(`Didit: User ${userId} KYC status updated to PENDING.`);
+            }
+            return res.status(200).send('Didit Webhook Processed');
+        } catch (e) {
+            console.error("Didit Webhook Error:", e.message, e.stack);
+            await db.ref(`webhook_errors/${userId || `unknown_didit_webhook_${Date.now()}`}`).set({
+                source: 'Didit Webhook',
+                payload: req.body,
+                error: e.message,
+                stack: e.stack,
+                timestamp: admin.database.ServerValue.TIMESTAMP
+            });
+            return res.status(500).send('Error processing Didit webhook');
+        }
+    }
+
+    // --- G. Generic/Fallback Webhook ---
+    // Catches any remaining webhooks that might indicate a successful payment or event.
+    if (req.body.status === "SUCCESS" || req.body.event === "PAYMENT_SUCCESS" || req.body.event === "SUCCESS") {
+        console.log('Processing as Generic/Fallback Webhook (status/event SUCCESS)...');
+        // Attempt to extract a user ID from common fields, or fallback to 'Unknown_User'
+        const vendorId = req.body.vendorData?.id || req.body.userId || req.body.customer_id || req.body.user_uid || "Unknown_User";
+        console.log(`Generic Webhook: Transaction for ${vendorId}`);
+
+        if (vendorId !== "Unknown_User") {
+            try {
+                // Log a general transaction entry for the user
+                await db.ref(`users/${vendorId}/transactions`).push({
+                    amount: req.body.amount || req.body.txn_amount || 0,
+                    status: "COMPLETED",
+                    gateway_type: req.body.gateway_type || "Generic", // Add a gateway type if available
+                    gateway_txn_id: req.body.transaction_id || req.body.txn_id || 'N/A',
+                    timestamp: admin.database.ServerValue.TIMESTAMP,
+                    payload_summary: JSON.stringify(req.body).substring(0, 500) + '...' // Store truncated payload
+                });
+                console.log(`Generic Webhook: Recorded transaction for ${vendorId}.`);
+            } catch (err) {
+                console.error("Generic Webhook Firebase Logic Error:", err.message, err.stack);
+                await db.ref(`webhook_errors/${vendorId || `unknown_generic_webhook_${Date.now()}`}`).set({
+                    source: 'Generic Webhook',
+                    payload: req.body,
+                    error: err.message,
+                    stack: err.stack,
+                    timestamp: admin.database.ServerValue.TIMESTAMP
+                });
+            }
+        }
+        return res.status(200).json({ success: true, message: "Generic Webhook processed." });
+    }
+
+    // If no specific webhook type matched
+    console.warn("Unhandled Webhook Payload:", req.body);
+    return res.status(200).json({ status: "ignored", message: "Webhook type not recognized." });
+};
+

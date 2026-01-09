@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyCard | Merchant Dashboard Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .tab-content { display: none; }
+        .tab-active { display: block; animation: slideUp 0.3s ease; }
+        .sidebar { transition: transform 0.3s ease; background: white; }
+        .sidebar-open .sidebar { transform: translateX(0); }
+        .sidebar-overlay { display: none; }
+        .sidebar-open .sidebar-overlay { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-loading { pointer-events: none; opacity: 0.7; }
+        .qr-premium-box { background: #ffffff; border: 2px solid #f3f4f6; border-radius: 2.5rem; }
+        iframe { width: 100%; height: 600px; border: none; border-radius: 2rem; }
+
+#twoFA_Overlay {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.9);
+}
+.otp-digit-input {
+    letter-spacing: 0.4em;
+    text-shadow: 0 0 0 #000;
+}
+.hidden-2fa { display: none !important; }
+
+
+
+
+
+
+
+
+ 
+
+
+   </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<div id="twoFA_LockScreen" class="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+    <div class="w-full max-w-md p-8 text-center">
+        <h1 class="text-3xl font-black text-blue-600 italic mb-8">MONEYCARD SECURE</h1>
+
+        <div id="setup-box" class="hidden animate-slideUp">
+            <div class="bg-blue-50 p-6 rounded-[2.5rem] mb-6">
+                <p class="text-[10px] font-bold text-blue-600 uppercase mb-4 tracking-widest">Scan this QR in Google Authenticator</p>
+                <div class="flex justify-center bg-white p-4 rounded-3xl shadow-inner mb-4">
+                    <img id="qr2fa_img" src="" class="w-48 h-48">
+                </div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Manual Secret Key</p>
+                <div class="bg-white py-3 px-4 rounded-xl border border-blue-100 flex justify-between items-center">
+                    <code id="secret_key_display" class="font-mono font-bold text-blue-600 text-sm">----</code>
+                    <button onclick="copySecret()" class="text-blue-600"><i class="fas fa-copy"></i></button>
+                </div>
+            </div>
+            <button onclick="showOtpInput()" class="w-full bg-blue-600 text-white py-5 rounded-[2rem] font-black shadow-lg">I HAVE SAVED IT</button>
+        </div>
+
+        <div id="verify-box" class="hidden animate-slideUp">
+            <div class="mb-8">
+                <i class="fas fa-shield-alt text-5xl text-blue-600 mb-4"></i>
+                <h2 class="text-2xl font-black italic">Security Check</h2>
+                <p class="text-gray-400 font-bold text-xs uppercase tracking-tighter">Enter 6-digit code from your app</p>
+            </div>
+            <input type="text" id="2fa_otp" placeholder="000 000" maxlength="6" 
+                class="w-full text-center text-4xl font-black tracking-[0.5em] p-6 bg-gray-50 border-none rounded-[2rem] outline-none focus:ring-4 focus:ring-blue-100 mb-6">
+            <button id="btn_verify_2fa" onclick="processVerify2FA()" class="w-full bg-black text-white py-5 rounded-[2rem] font-black shadow-xl">UNLOCK DASHBOARD</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="sidebar-overlay fixed inset-0 bg-black/50 z-40 lg:hidden" onclick="toggleSidebar()"></div>
+<div id="bankModal" class="fixed inset-0 bg-black/60 z-[60] hidden items-center justify-center p-6">
+    <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
+        <h3 class="text-2xl font-black mb-6 italic text-blue-600">Add Bank Account</h3>
+        <div class="space-y-4">
+            <input type="text" id="bankPhone" placeholder="Mobile Number" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none font-bold">
+            
+            <input type="text" id="accNum" placeholder="Account Number" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none font-bold">
+            <input type="text" id="ifscCode" placeholder="IFSC Code" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none font-bold uppercase">
+            
+            <button onclick="processBankSync(this)" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg mt-2">Verify & Link</button>
+            <button onclick="toggleBankModal(false)" class="w-full text-gray-400 font-bold py-2 text-center block">Cancel</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+    <aside id="sidebarNav" class="sidebar fixed top-0 left-0 h-full w-72 shadow-2xl z-50 -translate-x-full lg:translate-x-0 border-r overflow-y-auto">
+        <div class="p-6 border-b flex justify-between items-center">
+            <h1 class="text-2xl font-black text-blue-600 italic">MONEYCARD</h1>
+            <button onclick="toggleSidebar()" class="lg:hidden text-gray-400"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="mt-4">
+            <a href="javascript:void(0)" onclick="showTab('overview')" class="flex items-center px-8 py-4 text-blue-600 font-bold bg-blue-50 border-l-4 border-blue-600"><i class="fas fa-home mr-4"></i> Overview</a>
+            
+            <div class="px-8 py-2 text-[10px] font-bold text-gray-400 uppercase mt-4">Trading & Assets</div>
+            <a href="javascript:void(0)" onclick="showTab('trading')" class="flex items-center px-8 py-4 text-gray-500 font-bold hover:bg-gray-50"><i class="fas fa-chart-line mr-4 text-green-500"></i> Live Trading</a>
+            <a href="javascript:void(0)" onclick="showTab('swipe-crypto')" class="flex items-center px-8 py-4 text-gray-500 font-bold hover:bg-gray-50"><i class="fas fa-sync-alt mr-4 text-orange-500"></i> Swipe Crypto</a>
+            
+            <div class="px-8 py-2 text-[10px] font-bold text-gray-400 uppercase mt-4">Move Money</div>
+            <a href="javascript:void(0)" onclick="showTab('transfer')" class="flex items-center px-8 py-4 text-gray-500 font-bold hover:bg-gray-50"><i class="fas fa-exchange-alt mr-4 text-blue-500"></i> Transfer</a>
+            <a href="javascript:void(0)" onclick="showTab('add-crypto.html')" class="flex items-center px-8 py-4 text-gray-500 font-bold hover:bg-gray-50"><i class="fas fa-plus-circle mr-4 text-purple-500"></i> Add Crypto</a>
+            <a href="javascript:void(0)" onclick="showTab('sand-crypto.html')" class="flex items-center px-8 py-4 text-gray-500 font-bold hover:bg-gray-50"><i class="fas fa-paper-plane mr-4 text-indigo-500"></i> Send Crypto</a>
+
+            <div class="px-8 py-2 text-[10px] font-bold text-gray-400 uppercase mt-4">Settings</div>
+            <a href="javascript:void(0)" onclick="showTab('globalPay')" class="flex items-center px-8 py-4 text-gray-500 font-bold hover:bg-gray-50"><i class="fas fa-qrcode mr-4 text-yellow-500"></i> Smart One QR</a>
+            <a href="javascript:void(0)" onclick="toggleBankModal(true)" class="flex items-center px-8 py-4 text-gray-500 font-bold hover:bg-gray-50"><i class="fas fa-university mr-4 text-red-400"></i> Add Bank</a>
+
+
+
+
+
+
+            
+            <button onclick="logout()" class="w-full flex items-center px-8 py-10 text-red-500 font-bold border-t mt-4"><i class="fas fa-sign-out-alt mr-4"></i> Logout</button>
+        </nav>
+    </aside>
+
+    <main class="lg:ml-72 min-h-screen">
+        <nav class="p-4 bg-white shadow-sm flex justify-between items-center border-b sticky top-0 z-30">
+            <button onclick="toggleSidebar()" class="lg:hidden p-2 text-gray-600"><i class="fas fa-bars text-xl"></i></button>
+            <div id="statusTag" class="text-[10px] font-bold bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full uppercase italic tracking-widest">Active</div>
+        </nav>
+
+        <div class="max-w-4xl mx-auto py-8 px-6">
+            
+            <div id="tab-overview" class="tab-content tab-active">
+                <div class="bg-gradient-to-br from-gray-900 to-black p-10 rounded-[3rem] text-white shadow-2xl mb-8">
+                    <p class="text-[10px] font-bold opacity-60 uppercase italic">Live Bank Balance</p>
+                    <div class="mt-4 flex items-baseline gap-2">
+                        <span class="text-3xl font-light opacity-50">₮</span>
+                        <h2 id="liveBalance" class="text-7xl font-black tracking-tighter">0.00</h2>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border">
+                        <h3 class="text-gray-400 text-[10px] font-black uppercase mb-4">Linked Bank</h3>
+                        <p id="dispBank" class="font-black text-xl italic text-gray-800">No Bank Linked</p>
+                        <p id="dispAcc" class="text-xs text-gray-400 font-mono">#### #### ####</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border">
+                        <h3 class="text-gray-400 text-[10px] font-black uppercase mb-4">Merchant Name</h3>
+                        <p id="finalName" class="font-black text-xl italic text-blue-600">---</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-trading" class="tab-content">
+                <div class="bg-white p-4 rounded-[2rem] shadow-xl border overflow-hidden" style="height: 600px;">
+                    <div class="tradingview-widget-container" style="height:100%;width:100%">
+                      <div id="tradingview_chart" style="height:100%;width:100%"></div>
+                      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                      <script type="text/javascript">
+                      new TradingView.widget({
+                        "autosize": true,
+                        "symbol": "BINANCE:BTCUSDT",
+                        "interval": "D",
+                        "timezone": "Etc/UTC",
+                        "theme": "light",
+                        "style": "1",
+                        "locale": "en",
+                        "container_id": "tradingview_chart"
+                      });
+                      </script>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-swipe-crypto" class="tab-content"><iframe src="https://moneycard.space/swipe-crypto"></iframe></div>
+            <div id="tab-transfer" class="tab-content"><iframe src="https://money-card-p.vercel.app/transfer"></iframe></div>
+            <div id="tab-add-crypto" class="tab-content"><iframe src="https://moneycard.space/add-crypto.html"></iframe></div>
+            <div id="tab-sand-crypto" class="tab-content"><iframe src="https://moneycard.space/sand-crypto.html"></iframe></div>
+
+            <div id="tab-globalPay" class="tab-content">
+                <div class="bg-white p-8 rounded-[3rem] shadow-xl border">
+                    <h3 class="text-3xl font-black italic mb-2">Smart One QR</h3>
+                    <p id="qrLimitInfo" class="text-red-500 text-[10px] font-bold uppercase mb-8 tracking-widest">You can regenerate QR 3 times only</p>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">1. Select Asset</label>
+                            <div class="flex gap-3 mt-2">
+                                <button onclick="selectCurr('USDT', this)" class="curr-btn flex-1 p-4 border-2 rounded-2xl font-bold border-blue-600 bg-blue-50 text-blue-600">USDT</button>
+                                <button onclick="selectCurr('SATS', this)" class="curr-btn flex-1 p-4 border-2 rounded-2xl font-bold border-gray-100">BTC</button>
+                                <button onclick="selectCurr('USDC', this)" class="curr-btn flex-1 p-4 border-2 rounded-2xl font-bold border-gray-100">USDC</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 ml-2 uppercase">2. Select Network</label>
+                            <select id="networkSelect" class="w-full mt-2 p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none font-bold focus:border-blue-600 appearance-none"></select>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="qrName" placeholder="QR Name" class="w-full p-4 bg-gray-50 border rounded-2xl font-bold">
+                            <input type="text" id="qrDesc" placeholder="Description" class="w-full p-4 bg-gray-50 border rounded-2xl font-bold">
+                        </div>
+
+                        <button id="btnGenQr" onclick="generateGlobalQR(this)" class="w-full bg-blue-600 text-white py-5 rounded-[2rem] font-black shadow-lg">
+                            ACTIVATE GLOBAL ONE QR
+                        </button>
+
+                        <div id="qrResult" class="hidden mt-10">
+                            <div class="qr-premium-box p-8 text-center shadow-lg">
+                                <p id="qrLabelHead" class="text-[10px] font-black text-blue-600 mb-6 uppercase italic"></p>
+                                <div class="flex justify-center mb-6"><img id="qrImg" src="" class="w-48 h-48 border p-2 rounded-3xl"></div>
+                                <div class="bg-gray-50 p-5 rounded-[2rem] mb-6">
+                                    <p id="qrAddr" class="text-sm font-black text-gray-900 break-all"></p>
+                                </div>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <button onclick="copyAddr()" class="p-3 bg-white border rounded-2xl text-[9px] font-bold"><i class="fas fa-copy block text-blue-500 text-lg mb-1"></i> COPY</button>
+                                    <button onclick="downloadQR()" class="p-3 bg-white border rounded-2xl text-[9px] font-bold"><i class="fas fa-download block text-green-500 text-lg mb-1"></i> SAVE</button>
+                                    <button onclick="shareQR()" class="p-3 bg-white border rounded-2xl text-[9px] font-bold"><i class="fas fa-share-alt block text-black text-lg mb-1"></i> SHARE</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        const VERCEL_URL = "https://money-card-p.vercel.app";
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let userUID = "";
+        let selCurr = "USDT";
+        let qrCounts = 0;
+
+// --- LOGOUT FUNCTION ---
+function logout() {
+    if (confirm("Bhai, kya aap sach mein logout karna chahte ho?")) {
+        firebase.auth().signOut().then(() => {
+            // Session storage saaf karo taaki 2FA wapas maange
+            sessionStorage.clear();
+            // KYC ya Login page par bhejo
+            window.location.href = "kyc"; 
+        }).catch((error) => {
+            console.error("Logout Error:", error);
+            alert("Logout fail ho gaya, dobara try karo.");
+        });
+    }
+}
+
+
+// --- 2FA SYSTEM CORE LOGIC ---
+
+async function init2FA() {
+    if(!userUID) return;
+
+    try {
+        const res = await fetch(`${VERCEL_URL}/api/2fa/check`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userId: userUID })
+        });
+        const data = await res.json();
+
+        if(data.setup_done) {
+            // Agar pehle se set hai to seedha OTP maango
+            document.getElementById('verify-box').classList.remove('hidden');
+        } else {
+            // Naya user hai to QR aur Secret dikhao
+            document.getElementById('qr2fa_img').src = data.qr_code;
+            document.getElementById('secret_key_display').innerText = data.secret;
+            document.getElementById('setup-box').classList.remove('hidden');
+        }
+    } catch (e) {
+        console.error("2FA Load Error", e);
+    }
+}
+
+function refreshIframe(iframeId) {
+    const iframe = document.getElementById(iframeId);
+    if (iframe) {
+        const url = new URL(iframe.src);
+        // URL ke peeche ek naya timestamp (t=12345) add kar rahe hain taaki cache bypass ho jaye
+        url.searchParams.set('t', Date.now()); 
+        iframe.src = url.toString();
+        console.log("Iframe Refreshed with latest version!");
+    }
+}
+
+
+function showOtpInput() {
+    document.getElementById('setup-box').classList.add('hidden');
+    document.getElementById('verify-box').classList.remove('hidden');
+}
+
+async function processVerify2FA() {
+    const otp = document.getElementById('2fa_otp').value.trim();
+    const btn = document.getElementById('btn_verify_2fa');
+
+    if(otp.length !== 6) return alert("Bhai, 6 digit code daal!");
+
+    btn.innerText = "VERIFYING...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${VERCEL_URL}/api/2fa/verify`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userId: userUID, token: otp })
+        });
+        const result = await res.json();
+
+        if(result.success) {
+            // Lock Screen Hatao
+            document.getElementById('twoFA_LockScreen').classList.add('hidden');
+            // Dashboard sync start karo
+            syncData();
+        } else {
+            alert("Invalid OTP! Try again.");
+            btn.innerText = "UNLOCK DASHBOARD";
+            btn.disabled = false;
+        }
+    } catch (e) {
+        alert("Verification Server Error");
+        btn.disabled = false;
+    }
+}
+
+function copySecret() {
+    const key = document.getElementById('secret_key_display').innerText;
+    navigator.clipboard.writeText(key);
+    alert("Secret Key Copied!");
+}
+
+// 🔥 Integration: Firebase Auth State me call karo
+firebase.auth().onAuthStateChanged(user => {
+    if(user) { 
+        userUID = user.uid; 
+        init2FA(); // <-- Sabse pehle 2FA check hoga
+    } else { 
+        window.location.href = "kyc"; 
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function syncData() {
+        db.ref(`users/${userUID}`).on('value', snap => {
+            const data = snap.val();
+            if(!data) return;
+            
+            qrCounts = data.qr_generation_count || 0;
+            document.getElementById('qrLimitInfo').innerText = `Limit Used: ${qrCounts} / 3`;
+
+            if(data.profile) {
+                document.getElementById('finalName').innerText = data.profile.registered_name || data.profile.name || "Merchant";
+            }
+            if(data.bank_details) {
+                document.getElementById('dispBank').innerText = data.bank_details.bank_name;
+                document.getElementById('dispAcc').innerText = "A/C: " + data.bank_details.account_number;
+            }
+            if(data.wallet) {
+                document.getElementById('liveBalance').innerText = parseFloat(data.wallet.live_bank_balance || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
+            }
+            
+            if(data.qrs && data.qrs[selCurr]) {
+                updateQRDisplay(data.qrs[selCurr].qr_url, data.qrs[selCurr].method);
+            }
+        });
+    }
+
+    // --- 1. DISPLAY LOGIC (FIXED) ---
+    function updateQRDisplay(link, method) {
+        const img = document.getElementById('qrImg'); // Match with HTML ID
+        const txt = document.getElementById('qrAddr'); // Match with HTML ID
+        const container = document.getElementById('qrResult');
+        const head = document.getElementById('qrLabelHead');
+
+        if(!img || !txt || !container) return;
+
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(link)}`;
+        txt.innerText = link;
+        if(head) head.innerText = `${selCurr} - ${method.toUpperCase()} LIVE`;
+        
+        container.classList.remove('hidden');
+        container.style.display = 'block';
+    }
+
+
+async function processBankSync(btn) {
+    const phone = document.getElementById('bankPhone').value.trim();
+    const acc = document.getElementById('accNum').value.trim();
+    const ifsc = document.getElementById('ifscCode').value.trim();
+    const name = document.getElementById('finalName').innerText || "Merchant";
+
+    if(!phone || !acc || !ifsc) return alert("Bhai, saari details bharna zaroori hai!");
+
+    btn.classList.add('btn-loading');
+    btn.innerText = "Verifying...";
+
+    try {
+        const res = await fetch(`${VERCEL_URL}/api/verify-bank-sync`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                userId: userUID,
+                bank_account: acc,
+                ifsc: ifsc,
+                phone: phone, // Ab asli mobile number jayega
+                name: name
+            })
+        });
+        
+        const d = await res.json();
+        
+        if(d.success) {
+            alert("Bank Verified: " + d.name);
+            toggleBankModal(false);
+            // Refresh logic ya Firebase sync automatically UI update kar dega
+        } else {
+            alert(d.message || "Verification fail ho gayi!");
+        }
+    } catch(e) {
+        alert("Server Error! Check backend connection.");
+    } finally {
+        btn.classList.remove('btn-loading');
+        btn.innerText = "Verify & Link";
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+ 
+
+
+
+
+
+
+
+
+
+
+x
+            });
+            btn.classList.replace('border-gray-100', 'border-blue-600');
+            btn.classList.add('bg-blue-50', 'text-blue-600');
+            
+            const net = document.getElementById('networkSelect');
+            net.innerHTML = "";
+            let opts = [];
+            if(c === 'SATS') opts = [{v: 'lightning', t: 'Lightning Network'}, {v: 'bitcoin', t: 'Bitcoin On-Chain'}];
+            else if(c === 'USDT') opts = [{v: 'tron', t: 'TRC20'}, {v: 'ethereum', t: 'ERC20'}, {v: 'solana', t: 'Solana (SPL)'}, {v: 'ton', t: 'TON'}];
+            else opts = [{v: 'ethereum', t: 'ERC20'}, {v: 'solana', t: 'Solana'}, {v: 'ton', t: 'TON'}];
+            
+            opts.forEach(o => {
+                const el = document.createElement('option');
+                el.value = o.v; el.innerText = o.t;
+                net.appendChild(el);
+            });
+
+            // Re-fetch stored QR for this asset if it exists
+            db.ref(`users/${userUID}/qrs/${selCurr}`).once('value', s => {
+                if(s.exists()) updateQRDisplay(s.val().qr_url, s.val().method);
+                else document.getElementById('qrResult').classList.add('hidden');
+            });
+        }
+
+
+async function generateGlobalQR(btn) {
+    const net = document.getElementById('networkSelect').value;
+    btn.classList.add('btn-loading');
+    btn.innerText = "Processing...";
+
+    try {
+        const res = await fetch(`${VERCEL_URL}/api/create-global-qr`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                userId: userUID, 
+                selected_currency: selCurr, 
+                networks: [net] 
+            })
+        });
+        
+        const responseData = await res.json();
+        // Speed API ka asli maal 'data' ke andar hai
+        const speedData = responseData.data; 
+
+        console.log("Speed Response:", speedData);
+
+        if(responseData.success && speedData) {
+            // Seedha 'payment_request' uthaya (Lightning ke liye yahi hai)
+            const finalAddr = speedData.payment_request || speedData.address || speedData.url;
+
+            if(!finalAddr) return alert("No Link Found!");
+
+            // Firebase me poora object save
+            await db.ref(`users/${userUID}/qrs/${selCurr}`).set({
+                qr_url: finalAddr,
+                id: speedData.id,
+                method: speedData.method,
+                timestamp: Date.now()
+            });
+
+            // Display QR
+            updateQRDisplay(finalAddr, speedData.method);
+            alert("QR Activated!");
+        }
+    } catch(e) { 
+        console.error("Critical Error:", e);
+    } finally { 
+        btn.classList.remove('btn-loading'); 
+        btn.innerText = "ACTIVATE GLOBAL ONE QR"; 
+    }
+}
+
+function updateQRDisplay(link, method) {
+    const img = document.getElementById('qrImage');
+    const txt = document.getElementById('qrAddressText');
+    const container = document.getElementById('qrResult');
+
+    // QR generate using Google Charts API or QRserver
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(link)}`;
+    txt.innerText = link;
+    
+    container.classList.remove('hidden');
+    container.style.display = 'block';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// --- Bank Modal Toggle ---
+function toggleBankModal(s) { 
+    document.getElementById('bankModal').style.display = s ? 'flex' : 'none'; 
+}
+
+// --- Tab System ---
+function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('tab-active'));
+    document.getElementById('tab-' + id.replace('.html', '')).classList.add('tab-active');
+}
+
+// --- Sidebar Toggle ---
+function toggleSidebar() { 
+    document.body.classList.toggle('sidebar-open'); 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

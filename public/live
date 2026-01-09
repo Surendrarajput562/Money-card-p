@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyCard Live Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.11.0.js"></script>
+    <style>
+        .live-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; }
+        .glow { box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+    </style>
+</head>
+<body class="bg-black text-white font-sans">
+
+    <div class="p-6 flex justify-between items-center border-b border-white/10">
+        <h1 class="text-yellow-500 font-black tracking-tighter text-2xl">MONEYCARD LIVE</h1>
+        <div class="bg-yellow-500/10 px-4 py-2 rounded-full border border-yellow-500/20">
+            <span class="text-xs text-gray-400">Wallet: </span>
+            <span id="wallet-bal" class="font-bold text-yellow-500">₹810</span>
+        </div>
+    </div>
+
+    <div id="video-grid" class="grid grid-cols-2 gap-4 p-4 min-h-[60vh]">
+        </div>
+
+    <div class="fixed bottom-10 w-full px-6 flex flex-col gap-4">
+        <button onclick="goLiveNow()" id="live-btn" class="w-full bg-yellow-500 text-black py-5 rounded-3xl font-black uppercase tracking-widest glow">
+            GO LIVE (GAND ME UNGLI MODE)
+        </button>
+    </div>
+
+    <script>
+        const VERCEL_URL = "https://money-card-p.vercel.app"; // Tera backend
+        let rtc = { client: null, localVideoTrack: null };
+
+        async function goLiveNow() {
+            const userId = "C8guxihnqXSHxcjo7hnCmmCeVN63"; // Tera UID
+            
+            // 1. Get Token from Vercel
+            const resp = await fetch(`${VERCEL_URL}/api/get-live-access`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ uid: userId })
+            });
+            const { token, appId, balance } = await resp.json();
+            
+            document.getElementById('wallet-bal').innerText = `₹${balance}`;
+
+            // 2. Agora Setup
+            rtc.client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
+            rtc.client.setClientRole("host");
+
+            // Listener for others
+            rtc.client.on("user-published", async (user, mediaType) => {
+                await rtc.client.subscribe(user, mediaType);
+                if (mediaType === "video") {
+                    const remoteContainer = document.createElement("div");
+                    remoteContainer.id = user.uid;
+                    remoteContainer.className = "live-card h-64 w-full";
+                    document.getElementById("video-grid").append(remoteContainer);
+                    user.videoTrack.play(remoteContainer);
+                }
+            });
+
+            // 3. Join & Publish
+            await rtc.client.join(appId, "moneycard_live", token, userId);
+            rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+            
+            const localContainer = document.createElement("div");
+            localContainer.className = "live-card h-64 w-full border-yellow-500 border-2";
+            document.getElementById("video-grid").prepend(localContainer);
+            rtc.localVideoTrack.play(localContainer);
+            
+            await rtc.client.publish([rtc.localVideoTrack]);
+            document.getElementById('live-btn').innerText = "LIVE STREAMING...";
+            document.getElementById('live-btn').classList.replace('bg-yellow-500', 'bg-red-600');
+        }
+    </script>
+</body>
+</html>
+
+

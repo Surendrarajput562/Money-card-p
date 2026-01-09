@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Crypto - MoneyCard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .premium-card { border-radius: 2rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .premium-card:active { transform: scale(0.97); }
+        .bottom-sheet { transform: translateY(100%); transition: transform 0.4s ease; border-radius: 3rem 3rem 0 0; }
+        .bottom-sheet.active { transform: translateY(0); }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+    <div class="max-w-md mx-auto p-6 space-y-6">
+        <div class="flex items-center justify-between mb-8 pt-4">
+            <div>
+                <h2 class="text-3xl font-black italic text-slate-900">Send Crypto</h2>
+                <p class="text-[10px] font-black text-red-600 uppercase tracking-widest">Instant Withdrawal</p>
+            </div>
+            <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-900 shadow-sm border border-slate-100">
+                <i class="fas fa-paper-plane text-xl"></i>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-6 premium-card border border-slate-100 shadow-sm">
+                <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="w-8 mb-3">
+                <p class="text-[9px] font-black text-slate-400 uppercase">Available SATS</p>
+                <h3 id="bal-BTC" class="text-xl font-black text-slate-900">0</h3>
+            </div>
+            <div class="bg-white p-6 premium-card border border-slate-100 shadow-sm">
+                <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="w-8 mb-3">
+                <p class="text-[9px] font-black text-slate-400 uppercase">Available USDT</p>
+                <h3 id="bal-USDT" class="text-xl font-black text-slate-900">0.00</h3>
+            </div>
+        </div>
+
+        <div class="space-y-4 pt-4">
+            <p class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Choose Withdrawal Method</p>
+            
+            <div onclick="openWithdrawSheet('SATS')" class="bg-white p-6 premium-card border border-slate-100 flex items-center justify-between shadow-sm cursor-pointer hover:border-orange-500 group">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-orange-50 rounded-3xl flex items-center justify-center text-orange-500">
+                        <i class="fas fa-bolt text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="font-black text-slate-800 text-lg">Send Bitcoin</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Lightning Withdrawal</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-slate-200 group-hover:text-orange-500 transition-colors"></i>
+            </div>
+
+            <div onclick="openWithdrawSheet('USDT')" class="bg-white p-6 premium-card border border-slate-100 flex items-center justify-between shadow-sm cursor-pointer hover:border-green-500 group">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-green-50 rounded-3xl flex items-center justify-center text-green-500">
+                        <i class="fas fa-dollar-sign text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="font-black text-slate-800 text-lg">Send USDT</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">External Wallet</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-slate-200 group-hover:text-green-500 transition-colors"></i>
+            </div>
+        </div>
+    </div>
+
+    <div id="overlay" class="fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity z-40" onclick="closeWithdrawSheet()"></div>
+    
+    <div id="withdraw-sheet" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white bottom-sheet z-50 p-8 shadow-2xl">
+        <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-8"></div>
+        
+        <h3 class="text-2xl font-black text-slate-900 mb-2">Withdraw Amount</h3>
+        <p id="sheet-asset-text" class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Sending SATS from Wallet</p>
+
+        <div class="relative mb-10">
+            <span class="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-slate-300">$</span>
+            <input type="number" id="withdraw-amount" placeholder="0.00" 
+                class="w-full bg-slate-50 border-none rounded-[2rem] py-8 pl-14 pr-8 text-4xl font-black text-slate-900 focus:ring-4 focus:ring-red-100 outline-none transition-all">
+        </div>
+
+        <button id="withdraw-btn" onclick="processWithdrawal()" class="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all">
+            Generate Withdrawal Link
+        </button>
+    </div>
+
+    <div id="full-loader" class="fixed inset-0 bg-white/90 z-[100] hidden flex flex-col items-center justify-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-slate-900 mb-4"></div>
+        <p class="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em]">Preparing Instant Send</p>
+    </div>
+
+    <script>
+        const firebaseConfig = { databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const VERCEL_URL = "https://money-card-p.vercel.app";
+
+        let userUID = null;
+        let selectedAsset = null;
+        let userEmail = "";
+
+
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+        userUID = user.uid;
+        
+        // 1. Check karo ki kya isi session mein 2FA verify ho chuka hai?
+        if (sessionStorage.getItem('is2FAVerified') === 'true') {
+            // Agar verified hai, toh lock screen hatao aur data sync karo
+            const lockScreen = document.getElementById('twoFA_LockScreen');
+            if(lockScreen) lockScreen.classList.add('hidden');
+            
+            syncData();    // Tera main data sync
+            syncWallets(); // Tera wallet balance sync
+        } else {
+            // 2. Agar verified nahi hai, toh 2FA initialize karo (QR/OTP Screen dikhao)
+            init2FA(); 
+        }
+    } else {
+        // 3. Agar user logged in nahi hai, toh seedha KYC/Login par bhejo
+        window.location.href = "kyc";
+    }
+});
+
+
+
+
+
+        function syncWallets() {
+            db.ref(`users/${userUID}/wallets`).on('value', (snap) => {
+                const w = snap.val() || {};
+                document.getElementById('bal-BTC').innerText = (w.SATS?.balance || 0).toLocaleString();
+                document.getElementById('bal-USDT').innerText = (w.USDT?.balance || 0).toFixed(2);
+            });
+        }
+
+        function openWithdrawSheet(asset) {
+            selectedAsset = asset;
+            document.getElementById('sheet-asset-text').innerText = `Sending ${asset} from Wallet`;
+            document.getElementById('overlay').classList.add('opacity-100', 'pointer-events-auto');
+            document.getElementById('withdraw-sheet').classList.add('active');
+        }
+
+        function closeWithdrawSheet() {
+            document.getElementById('overlay').classList.remove('opacity-100', 'pointer-events-auto');
+            document.getElementById('withdraw-sheet').classList.remove('active');
+        }
+
+        async function processWithdrawal() {
+            const amt = document.getElementById('withdraw-amount').value;
+            if(!amt || amt < 1) return alert("Minimum $1 required for withdrawal");
+
+            document.getElementById('full-loader').classList.remove('hidden');
+            
+            try {
+                // Backend API call for Withdrawal Link
+                const res = await fetch(`${VERCEL_URL}/api/speed/withdraw`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        userId: userUID, 
+                        amountUSD: amt, 
+                        assetType: selectedAsset,
+                        email: userEmail 
+                    })
+                });
+                
+                const data = await res.json();
+                if(data.success && data.withdraw_url) {
+                    // Stripe-style Withdrawal portal par bhejein
+                    window.location.href = data.withdraw_url;
+                } else {
+                    alert(data.message || "Withdrawal failed");
+                    location.reload();
+                }
+            } catch(e) {
+                alert("Network Error");
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
+

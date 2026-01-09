@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Card P | Developer Portal</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --accent: #00d2ff; --bg: #0f111a; --panel: #1a1c26; --text: #eaebed; --border: #2d313d; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* SIDEBAR */
+        #sidebar { width: 260px; background: var(--panel); border-right: 1px solid var(--border); transition: 0.3s; display: flex; flex-direction: column; }
+        #sidebar.closed { width: 0; overflow: hidden; }
+        .nav-item { padding: 16px 25px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: #8a8f9d; display: flex; align-items: center; gap: 12px; }
+        .nav-item:hover, .nav-item.active { background: #242736; color: var(--accent); border-left: 4px solid var(--accent); }
+
+        /* CONTENT */
+        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-bar { padding: 15px 25px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .content { padding: 40px; overflow-y: auto; }
+        
+        .card { background: var(--panel); border: 1px solid var(--border); padding: 30px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        h3 { margin-top: 0; font-size: 22px; font-style: italic; font-weight: 800; color: var(--accent); }
+        
+        input { background: #0f111a; border: 1px solid var(--border); color: #fff; padding: 14px; width: 100%; border-radius: 8px; margin-bottom: 15px; font-family: monospace; }
+        input:focus { border-color: var(--accent); outline: none; }
+        
+        button { background: var(--accent); color: #000; border: none; padding: 12px 24px; font-weight: 800; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        pre { background: #000; padding: 20px; border-radius: 10px; color: #7ee787; font-size: 13px; overflow-x: auto; line-height: 1.6; border: 1px solid #1b1f23; }
+        code { color: #ffa657; }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <div style="padding: 30px 25px; font-weight: 900; color: var(--accent); font-size: 22px; font-style: italic; letter-spacing: -1px;">MONEY CARD P</div>
+    <div class="nav-item active" onclick="nav('pan-section')"><i class="fas fa-id-card"></i> PAN Verify</div>
+    <div class="nav-item" onclick="nav('bank-section')"><i class="fas fa-university"></i> Bank Sync</div>
+    <div class="nav-item" onclick="nav('aadhaar-section')"><i class="fas fa-fingerprint"></i> Aadhaar (DigiLocker)</div>
+    <div class="nav-item" onclick="nav('ifsc-section')"><i class="fas fa-search-dollar"></i> IFSC Lookup</div>
+    <div class="nav-item" onclick="nav('guide-section')"><i class="fas fa-book"></i> Node.js Guide</div>
+    <div style="margin-top: auto; padding: 20px;">
+        <button onclick="logout()" style="background:#ff4444; width:100%; color:white;">Logout</button>
+    </div>
+</div>
+
+<div id="main">
+    <div class="top-bar">
+        <button onclick="document.getElementById('sidebar').classList.toggle('closed')" style="background:none; color:var(--accent); font-size: 20px;"><i class="fas fa-bars"></i></button>
+        <div id="userKey" style="color:var(--accent); font-family:monospace; font-weight:bold; background: rgba(0,210,255,0.1); padding: 5px 15px; border-radius: 5px;">KEY: LOADING...</div>
+    </div>
+
+    <div class="content">
+        <div id="pan-section" class="page">
+            <h3>Live PAN Verification</h3>
+            <div class="card">
+                <input type="text" id="panIn" placeholder="ABCDE1234F">
+                <button onclick="runLive('verify-pan', {pan: document.getElementById('panIn').value}, 'panRes')">Run Test</button>
+                <pre id="panRes" style="margin-top:20px;">// JSON Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="bank-section" class="page" style="display:none;">
+            <h3>Bank Account Sync V2</h3>
+            <div class="card">
+                <input type="text" id="bankAcc" placeholder="Account Number">
+                <input type="text" id="bankIfsc" placeholder="IFSC Code">
+                <button onclick="runLive('verify-bank', {bank_account: document.getElementById('bankAcc').value, ifsc: document.getElementById('bankIfsc').value}, 'bankRes')">Verify Bank</button>
+                <pre id="bankRes" style="margin-top:20px;">// Bank result will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="aadhaar-section" class="page" style="display:none;">
+            <h3>Aadhaar DigiLocker System</h3>
+            <div class="card">
+                <p>Generate a production-ready DigiLocker verification URL.</p>
+                <button onclick="runLive('aadhaar/generate-url', {}, 'aadhaarRes')" style="background:#238636; color:white;">Generate URL</button>
+                <pre id="aadhaarRes" style="margin-top:20px;">// URL will show here...</pre>
+            </div>
+        </div>
+
+        <div id="ifsc-section" class="page" style="display:none;">
+            <h3>IFSC / SWIFT Finder</h3>
+            <div class="card">
+                <input type="text" id="ifscIn" placeholder="SBIN0001234">
+                <button onclick="runLiveGet('lookup/ifsc/', document.getElementById('ifscIn').value, 'ifscRes')">Search</button>
+                <pre id="ifscRes" style="margin-top:20px;">// Branch info will show here...</pre>
+            </div>
+        </div>
+
+        <div id="guide-section" class="page" style="display:none;">
+            <h3>Integration Guide</h3>
+            <div class="card">
+                <p>Use this snippet to integrate <b>Money Card P</b> in your Node.js app:</p>
+                <pre>
+const axios = require('axios');
+
+async function checkPAN(pan) {
+  const config = {
+    headers: { 'x-api-key': '<code id="guideKey">YOUR_KEY</code>' }
+  };
+  const res = await axios.post('https://money-card-p.vercel.app/api/v1/verify-pan', { pan }, config);
+  console.log(res.data);
+}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+        authDomain: "smbrand-4543a.firebaseapp.com",
+        databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+        projectId: "smbrand-4543a",
+        appId: "1:720775550032:web:0622548a007597778bad55"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    let USER_API_KEY = "";
+    const VERCEL_URL = "https://money-card-p.vercel.app/api/v1";
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            db.ref(`users/${user.uid}/api_settings`).on('value', snap => {
+                const d = snap.val();
+                if(d && d.key) {
+                    USER_API_KEY = d.key;
+                    document.getElementById('userKey').innerText = "KEY: " + USER_API_KEY;
+                    if(document.getElementById('guideKey')) document.getElementById('guideKey').innerText = USER_API_KEY;
+                }
+            });
+        } else { window.location.href = "login.html"; }
+    });
+
+    function nav(id) {
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    async function runLive(path, body, resId) {
+        const btn = event.currentTarget;
+        btn.innerText = "Processing...";
+        try {
+            const res = await fetch(`${VERCEL_URL}/${path}`, {
+                method: 'POST',
+                headers: { 'x-api-key': USER_API_KEY, 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            document.getElementById(resId).innerText = JSON.stringify(data, null, 2);
+        } catch (e) { document.getElementById(resId).innerText = "Error connecting to server."; }
+        btn.innerText = "Run Test";
+    }
+
+    async function runLiveGet(path, param, resId) {
+        try {
+            const res = await fetch(`${VERCEL_URL}/${path}${param}`, {
+                headers: { 'x-api-key': USER_API_KEY }
+            });
+            const data = await res.json();
+            document.getElementById(resId).innerText = JSON.stringify(data, null, 2);
+        } catch (e) { document.getElementById(resId).innerText = "Error."; }
+    }
+
+    function logout() { auth.signOut(); }
+</script>
+</body>
+</html>

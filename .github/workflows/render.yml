@@ -1,0 +1,33 @@
+name: Video Dhamaka Engine
+on:
+  repository_dispatch:
+    types: [generate_video]
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Create 20s Video
+        run: |
+          IMG_URL="${{ github.event.client_payload.imageUrl }}"
+          NAME="${{ github.event.client_payload.name }}"
+          PRICE="${{ github.event.client_payload.price }}"
+          PID="${{ github.event.client_payload.productId }}"
+
+          # Image Download
+          curl -L "$IMG_URL" -o input.jpg
+
+          # FFmpeg: Zoom + Dhamaka Text + 20 Seconds
+          ffmpeg -loop 1 -i input.jpg -vf "zoompan=z='min(zoom+0.0015,1.5)':d=500:s=720x1280,
+          drawtext=text='🔥 DHAMAKA OFFER 🔥':fontcolor=yellow:fontsize=60:x=(w-text_w)/2:y=150,
+          drawtext=text='$NAME':fontcolor=white:fontsize=45:x=(w-text_w)/2:y=h-400,
+          drawtext=text='Price: Rs $PRICE':fontcolor=green:fontsize=70:x=(w-text_w)/2:y=h-250"           -c:v libx264 -t 20 -pix_fmt yuv420p -y video_out.mp4
+
+          # Yahan file upload ka logic aayega (R2 ya Firebase)
+          # Filhaal testing ke liye hum ise artifacts mein rakh sakte hain

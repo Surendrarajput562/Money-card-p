@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyCard | Developer Suite</title>
+    <!-- Firebase SDKs -->
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+   
+ <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* === Root Variables === */
+        :root {
+            --primary: #6045e2;
+            --primary-hover: #503bc9;
+            --bg-light: #f9fafb;
+            --sidebar-bg: #ffffff;
+            --text-dark: #1a1f36;
+            --text-secondary: #4f566b;
+            --text-label: #697386;
+            --text-nav-label: #a3acb9;
+            --border: #e3e8ee;
+            --hover-light: #f7f9fc;
+            --active-bg: #f0f4ff;
+            --error-color: #d93025;
+            --code-bg: #1a1f36;
+            --code-text: #7ee787;
+        }
+
+        /* === Base Styles === */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        /* === Sidebar Layout & Styling === */
+        #sidebar {
+            width: 240px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .sidebar-header {
+            padding: 25px;
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-group {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-group:last-of-type {
+            border-bottom: none; /* No border for the last group before logout */
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-nav-label);
+            padding: 10px 25px;
+            text-transform: uppercase;
+        }
+
+        .nav-item {
+            padding: 12px 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.2s ease;
+            position: relative; /* For border-right active state */
+        }
+
+        .nav-item:hover {
+            background: var(--hover-light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--active-bg);
+            color: var(--primary);
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--primary);
+        }
+
+        .nav-item .fa, .nav-item .fas, .nav-item .far {
+            width: 18px; /* Fixed width for icons */
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+        .sidebar-footer .nav-item {
+            color: var(--error-color);
+        }
+        .sidebar-footer .nav-item:hover {
+            background: var(--hover-light);
+            color: var(--error-color);
+        }
+
+        /* === Main Content Area === */
+        #main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .top-nav {
+            height: 60px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            flex-shrink: 0;
+        }
+
+        .top-nav-title {
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top-nav-status-badge {
+            background: var(--border);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        .top-nav-user-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .top-nav-user-info .fa-bell, .top-nav-user-info .far-bell {
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .user-email-display {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: var(--bg-light);
+        }
+        .content-area h2 {
+            font-size: 24px;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+        }
+        .content-area p {
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* === White Card UI (Cashfree Style) === */
+        .wallet-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .white-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+        }
+        .balance-title {
+            font-size: 13px;
+            color: var(--text-label);
+            margin-bottom: 5px;
+        }
+        .balance-amt {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .white-card button {
+            width: auto;
+            padding: 5px 15px;
+            font-size: 12px;
+            margin-top: 10px;
+            align-self: flex-start; /* Align button to start */
+        }
+        .white-card .merchant-details {
+            font-size: 14px;
+            margin-top: 5px;
+            color: var(--text-secondary);
+        }
+        .merchant-details strong {
+            color: var(--text-dark);
+        }
+        .merchant-details .status-active {
+            color: green;
+        }
+
+        /* === API Sections === */
+        .api-page {
+            display: none; /* Hidden by default */
+        }
+        .api-form-box {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .api-form-box h3 {
+            font-size: 20px;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+        .endpoint-badge {
+            background: var(--active-bg);
+            color: var(--primary);
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 20px;
+            border: 1px solid #d0d7de;
+        }
+        .api-input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .api-input-group > div {
+            flex: 1;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        input, select {
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 12px;
+            width: 100%;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            font-size: 14px;
+            color: var(--text-dark);
+            background-color: #fff;
+            transition: border-color 0.2s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+        .readonly-input {
+            background: var(--hover-light);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+        
+        button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            font-size: 15px;
+            transition: background 0.2s ease;
+        }
+        button:hover {
+            background: var(--primary-hover);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            overflow-x: auto;
+            margin-top: 20px;
+            white-space: pre-wrap; /* Wrap long lines */
+            word-break: break-all;
+        }
+
+        /* === iFrame View === */
+        #iframe-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff; /* Ensure iframe has a white background */
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <div class="sidebar-header"><i class="fas fa-bolt"></i> MoneyCard</div>
+    
+    <div class="nav-group">
+        <div class="nav-label">Main Menu</div>
+        <div class="nav-item active" data-section="dashboard-section"><i class="fas fa-home"></i> Home</div>
+        <div class="nav-item" data-iframe="https://money-card-p.vercel.app/analytics"><i class="fas fa-chart-line"></i> Analytics</div>
+    </div>
+
+    <div class="nav-group">
+        <div class="nav-label">Identity APIs</div>
+        <div class="nav-item" data-section="pan-section"><i class="fas fa-id-card"></i> PAN Verification</div>
+        <div class="nav-item" data-section="aadhaar-section"><i class="fas fa-fingerprint"></i> Aadhaar Masking</div>
+        <div class="nav-item" data-section="voterid-verify-section"><i class="fas fa-person-booth"></i> Voter ID Verify</div>
+        <div class="nav-item" data-section="passport-verify-section"><i class="fas fa-passport"></i> Passport Verify</div>
+        <div class="nav-item" data-section="dl-verify-section"><i class="fas fa-id-badge"></i> Driving License Verify</div>
+        <div class="nav-item" data-section="argos-verify-section"><i class="fas fa-user-check"></i> Advanced ID Verify</div>
+        <div class="nav-item" data-section="face-liveness-section"><i class="fas fa-camera-retro"></i> Face Liveness Check</div>
+    </div>
+
+    <div class="nav-group">
+        <div class="nav-label">Banking Stack</div>
+        <div class="nav-item" data-section="bank-verify-section"><i class="fas fa-university"></i> Bank Account Name Match</div>
+        <div class="nav-item" data-section="add-bank-account-section"><i class="fas fa-credit-card"></i> Add Bank Account</div>
+        <div class="nav-item" data-section="ifsc-section"><i class="fas fa-search"></i> IFSC Lookup</div>
+    </div>
+
+    <div class="nav-group">
+        <div class="nav-label">Utility APIs</div>
+        <div class="nav-item" data-section="vehicle-rc-section"><i class="fas fa-car"></i> Vehicle RC Status</div>
+        <div class="nav-item" data-section="employment-verify-section"><i class="fas fa-briefcase"></i> Employment Verify</div>
+        <div class="nav-item" data-section="name-match-section"><i class="fas fa-user-friends"></i> Name Match</div>
+        <div class="nav-item" data-section="reverse-geocode-section"><i class="fas fa-map-marker-alt"></i> Reverse Geocode</div>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
+    </div>
+</div>
+
+<div id="main-container">
+    <div class="top-nav">
+        <div class="top-nav-title">
+            Developer Portal <span class="top-nav-status-badge">LIVE</span>
+        </div>
+        <div class="top-nav-user-info">
+            <i class="far fa-bell"></i>
+            <div id="userEmail" class="user-email-display">Loading...</div>
+        </div>
+    </div>
+
+    <iframe id="iframe-container" title="Developer Analytics"></iframe>
+
+    <div class="content-area" id="main-content-scroll">
+        
+        <div id="dashboard-section" class="api-page">
+            <h2>Welcome to MoneyCard Developer Suite</h2>
+            <p>Your hub for powerful financial APIs. Integrate seamlessly and build the future of finance.</p>
+            <div class="wallet-row">
+                <div class="white-card">
+                    <div class="balance-title">Secure ID Wallet Balance</div>
+                    <div class="balance-amt" id="balanceVal">₹ 0.00</div>
+
+
+<button onclick="initiateRecharge()">Recharge Wallet</button>
+
+                </div>
+                <div class="white-card">
+                    <div class="balance-title">Merchant Details</div>
+                    <div class="merchant-details">
+                        <strong>ID:</strong> <span id="m_id">...</span><br>
+                        <strong>Status:</strong> <span class="status-active">● Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pan-section" class="api-page">
+            <div class="api-form-box">
+                <h3>PAN Verification (Lite)</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/verify-pan</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="panInput">Enter PAN Number</label>
+                <input type="text" id="panInput" placeholder="Ex: ABCDE1234F" maxlength="10">
+                <button data-api-path="verify-pan" data-cost="1.00" data-result-id="panRes"
+                        data-body-keys='{"pan": "panInput"}'>Verify Now (₹1.00)</button>
+                <pre id="panRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="aadhaar-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Aadhaar Masking (Dummy)</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/aadhaar-mask</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="aadhaarInput">Aadhaar Number (Last 4 Digits Only)</label>
+                <input type="text" id="aadhaarInput" placeholder="Ex: 1234" maxlength="4">
+                <button data-api-path="aadhaar-mask" data-cost="0.50" data-result-id="aadhaarRes"
+                        data-body-keys='{"aadhaar_last_4": "aadhaarInput"}'>Mask Aadhaar (₹0.50)</button>
+                <pre id="aadhaarRes">// Dummy Response: {"success": true, "masked_aadhaar": "XXXXXXXX1234", "message": "This is a dummy API response."}</pre>
+            </div>
+        </div>
+
+        <div id="voterid-verify-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Voter ID Verification</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/verify-voterid</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="voteridEpic">EPIC Number</label>
+                <input type="text" id="voteridEpic" placeholder="Ex: ABC1234567">
+                <label for="voteridName">Name</label>
+                <input type="text" id="voteridName" placeholder="Ex: John Doe">
+                <button data-api-path="verify-voterid" data-cost="2.00" data-result-id="voteridRes"
+                        data-body-keys='{"epic_number": "voteridEpic", "name": "voteridName"}'>Verify Voter ID (₹2.00)</button>
+                <pre id="voteridRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="passport-verify-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Passport Verification</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/verify-passport</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="passportNumber">Passport Number</label>
+                <input type="text" id="passportNumber" placeholder="Ex: M1234567">
+                <label for="passportDOB">Date of Birth (YYYY-MM-DD)</label>
+                <input type="date" id="passportDOB">
+                <label for="passportSurname">Surname</label>
+                <input type="text" id="passportSurname" placeholder="Ex: Doe">
+                <label for="passportGivenName">Given Name</label>
+                <input type="text" id="passportGivenName" placeholder="Ex: John">
+
+                <button data-api-path="verify-passport" data-cost="6.00" data-result-id="passportRes"
+                        data-body-keys='{"passport_number": "passportNumber", "dob": "passportDOB", "surname": "passportSurname", "given_name": "passportGivenName"}'>Verify Passport (₹6.00)</button>
+                <pre id="passportRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="dl-verify-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Driving License Verification</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/verify-dl</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="dlNumber">Driving License Number</label>
+                <input type="text" id="dlNumber" placeholder="Ex: DL0120150123456">
+                <label for="dlDOB">Date of Birth (YYYY-MM-DD)</label>
+                <input type="date" id="dlDOB">
+
+                <button data-api-path="verify-dl" data-cost="3.00" data-result-id="dlRes"
+                        data-body-keys='{"dl_number": "dlNumber", "dob": "dlDOB"}'>Verify Driving License (₹3.00)</button>
+                <pre id="dlRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="argos-verify-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Advanced ID Verification (Argos)</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/argos-verify</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="argosIDNumber">ID Number</label>
+                <input type="text" id="argosIDNumber" placeholder="Ex: A1234567B">
+                <label for="argosIDType">ID Type</label>
+                <select id="argosIDType">
+                    <option value="PASSPORT">Passport</option>
+                    <option value="NATIONAL_ID">National ID</option>
+                    <option value="DRIVING_LICENSE">Driving License</option>
+                </select>
+                <label for="argosCountry">Issuing Country (ISO 3166-1 alpha-3)</label>
+                <input type="text" id="argosCountry" placeholder="Ex: IND">
+                <label for="argosName">Name on ID</label>
+                <input type="text" id="argosName" placeholder="Ex: John Doe">
+
+                <button data-api-path="argos-verify" data-cost="5.00" data-result-id="argosRes"
+                        data-body-keys='{"idNumber": "argosIDNumber", "idType": "argosIDType", "country": "argosCountry", "name": "argosName"}'>Verify with Argos (₹5.00)</button>
+                <pre id="argosRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="face-liveness-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Face Liveness Check</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/face-liveness</div>
+                <p style="font-size: 13px; color: var(--text-label);">Note: This API typically expects multipart/form-data with an image file. For this demo, please enter a dummy image URL, assuming the backend can process it. A real implementation would use a file input and FormData.</p>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="faceLivenessImage">Image URL (for demo purposes)</label>
+                <input type="text" id="faceLivenessImage" placeholder="Ex: https://example.com/selfie.jpg">
+                
+                <button data-api-path="face-liveness" data-cost="5.00" data-result-id="faceLivenessRes"
+                        data-body-keys='{"image_url": "faceLivenessImage"}'>Check Liveness (₹5.00)</button>
+                <pre id="faceLivenessRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="bank-verify-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Bank Account Name Match</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/bank-sync</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="accNum">Account Number</label>
+                <input type="text" id="accNum" placeholder="000000000000">
+                <label for="ifscCode">IFSC Code</label>
+                <input type="text" id="ifscCode" placeholder="IFSC0000000">
+                
+                <button data-api-path="bank-sync" data-cost="2.00" data-result-id="bankRes"
+                        data-body-keys='{"bank_account": "accNum", "ifsc": "ifscCode"}'>Fetch Name (₹2.00)</button>
+                <pre id="bankRes">// Bank response data...</pre>
+            </div>
+        </div>
+
+        <div id="add-bank-account-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Add Bank Account (Beneficiary)</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/bank-sync</div>
+                <p style="font-size: 13px; color: var(--text-label);">Note: This is a demo endpoint. In a real scenario, this would likely be a separate API for adding a beneficiary account, not just verifying its existence.</p>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="addAccNum">Account Number</label>
+                <input type="text" id="addAccNum" placeholder="000000000000">
+                <label for="addIfscCode">IFSC Code</label>
+                <input type="text" id="addIfscCode" placeholder="IFSC0000000">
+                <label for="addAccountHolderName">Account Holder Name</label>
+                <input type="text" id="addAccountHolderName" placeholder="Ex: John Doe">
+                <label for="addPhoneNumber">Phone Number</label>
+                <input type="text" id="addPhoneNumber" placeholder="Ex: 9999999999">
+                
+                <button data-api-path="bank-sync" data-cost="2.00" data-result-id="addBankRes"
+                        data-body-keys='{"bank_account": "addAccNum", "ifsc": "addIfscCode", "name": "addAccountHolderName", "phone": "addPhoneNumber"}'>Add & Verify Account (₹2.00)</button>
+                <pre id="addBankRes">// Response for adding/verifying account...</pre>
+            </div>
+        </div>
+
+        <div id="ifsc-section" class="api-page">
+            <div class="api-form-box">
+                <h3>IFSC Lookup (Dummy)</h3>
+                <div class="endpoint-badge">GET https://money-card-p.vercel.app/api/v1/ifsc/:ifscCode</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="ifscLookupInput">Enter IFSC Code</label>
+                <input type="text" id="ifscLookupInput" placeholder="Ex: HDFC0000001">
+                <button data-api-path="ifsc-lookup" data-cost="0.00" data-result-id="ifscRes"
+                        data-body-keys='{"ifscCode": "ifscLookupInput"}' data-method="GET" data-path-param-key="ifscCode">Lookup IFSC (FREE)</button>
+                <pre id="ifscRes">// Dummy Response: {"success": true, "bank_name": "HDFC Bank", "branch": "Example Branch", "city": "Mumbai", "state": "Maharashtra", "address": "123 Main Street"}</pre>
+            </div>
+        </div>
+
+        <div id="vehicle-rc-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Vehicle RC Status</h3>
+                <div class="endpoint-badge">GET https://money-card-p.vercel.app/api/v1/vehicle-rc/:regNo</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="rcRegNoInput">Registration Number</label>
+                <input type="text" id="rcRegNoInput" placeholder="Ex: UP32GA1234">
+                
+                <button data-api-path="vehicle-rc" data-cost="1.00" data-result-id="rcRes"
+                        data-body-keys='{"regNo": "rcRegNoInput"}' data-method="GET" data-path-param-key="regNo">Fetch RC Status (₹1.00)</button>
+                <pre id="rcRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="employment-verify-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Advance Employment Verification</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/verify-employment</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="employmentPhone">Phone Number</label>
+                <input type="text" id="employmentPhone" placeholder="Ex: 9876543210">
+                <label for="employmentVerificationId">Verification ID (Optional)</label>
+                <input type="text" id="employmentVerificationId" placeholder="Ex: emp_12345">
+                
+                <button data-api-path="verify-employment" data-cost="5.00" data-result-id="employmentRes"
+                        data-body-keys='{"phone": "employmentPhone", "verification_id": "employmentVerificationId"}'>Verify Employment (₹5.00)</button>
+                <pre id="employmentRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="name-match-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Name Match</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/name-match</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="nameMatchName1">Name 1</label>
+                <input type="text" id="nameMatchName1" placeholder="Ex: John Doe">
+                <label for="nameMatchName2">Name 2</label>
+                <input type="text" id="nameMatchName2" placeholder="Ex: Jon Doe">
+                
+                <button data-api-path="name-match" data-cost="2.00" data-result-id="nameMatchRes"
+                        data-body-keys='{"name1": "nameMatchName1", "name2": "nameMatchName2"}'>Match Names (₹2.00)</button>
+                <pre id="nameMatchRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+        <div id="reverse-geocode-section" class="api-page">
+            <div class="api-form-box">
+                <h3>Reverse Geocoding</h3>
+                <div class="endpoint-badge">POST https://money-card-p.vercel.app/api/v1/reverse-geocode</div>
+                
+                <div class="api-input-group">
+                    <div><label>API KEY</label><input type="text" class="api-key-fld readonly-input" readonly></div>
+                    <div><label>SECRET KEY</label><input type="text" class="secret-fld readonly-input" readonly></div>
+                </div>
+
+                <label for="latInput">Latitude</label>
+                <input type="text" id="latInput" placeholder="Ex: 19.0760">
+                <label for="lonInput">Longitude</label>
+                <input type="text" id="lonInput" placeholder="Ex: 72.8777">
+                
+                <button data-api-path="reverse-geocode" data-cost="2.00" data-result-id="reverseGeocodeRes"
+                        data-body-keys='{"latitude": "latInput", "longitude": "lonInput"}'>Get Address (₹2.00)</button>
+                <pre id="reverseGeocodeRes">// Response will appear here...</pre>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // === Firebase Configuration (Same as provided) ===
+    const firebaseConfig = {
+        apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+        authDomain: "smbrand-4543a.firebaseapp.com",
+        databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+        projectId: "smbrand-4543a",
+        appId: "1:720775550032:web:0622548a007597778bad55"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const VERCEL_API = "https://money-card-p.vercel.app/api/v1";
+
+    // === DOM Elements Cache ===
+    const dom = {
+        userEmail: document.getElementById('userEmail'),
+        apiKeyFields: document.querySelectorAll('.api-key-fld'),
+        secretKeyFields: document.querySelectorAll('.secret-fld'),
+        balanceVal: document.getElementById('balanceVal'),
+        merchantId: document.getElementById('m_id'),
+        sidebarNavItems: document.querySelectorAll('.nav-item'),
+        iframeContainer: document.getElementById('iframe-container'),
+        mainContentScroll: document.getElementById('main-content-scroll'),
+        apiPages: document.querySelectorAll('.api-page'),
+        logoutBtn: document.getElementById('logoutBtn')
+    };
+
+    // === Firebase Auth State Listener ===
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            dom.userEmail.innerText = user.email;
+            db.ref(`users/${user.uid}/api_settings`).on('value', snap => {
+                const data = snap.val() || {};
+                dom.apiKeyFields.forEach(el => el.value = data.key || 'NOT_GENERATED');
+                dom.secretKeyFields.forEach(el => el.value = user.uid);
+                dom.balanceVal.innerText = "₹ " + (data.balance || 0).toFixed(2);
+                dom.merchantId.innerText = user.uid.substring(0,8).toUpperCase();
+            });
+            // Default to dashboard or last active section
+            const lastActiveSection = localStorage.getItem('lastActiveSection') || 'dashboard-section';
+            const lastActiveType = localStorage.getItem('lastActiveType') || 'section';
+            if (lastActiveType === 'iframe') {
+                const url = localStorage.getItem('lastActiveUrl');
+                showIframe(url);
+                // Highlight the corresponding nav item if it exists
+                const navItem = document.querySelector(`.nav-item[data-iframe="${url}"]`);
+                if (navItem) setActiveNavItem(navItem);
+            } else {
+                showSection(lastActiveSection);
+                 // Highlight the corresponding nav item
+                const navItem = document.querySelector(`.nav-item[data-section="${lastActiveSection}"]`);
+                if (navItem) setActiveNavItem(navItem);
+            }
+           
+        } else {
+            window.location.href = "/login"; // Redirect to login if not authenticated
+        }
+    });
+
+    // === Navigation Logic ===
+    function setActiveNavItem(targetElement) {
+        dom.sidebarNavItems.forEach(item => item.classList.remove('active'));
+        if (targetElement) {
+            targetElement.classList.add('active');
+        }
+    }
+async function initiateRecharge() {
+    const amount = prompt("Enter amount to recharge (₹):", "500");
+    if (!amount || isNaN(amount) || amount < 1) return;
+
+    try {
+        // 1. Backend se session mangwana
+        const response = await fetch(`${VERCEL_API}/recharge`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                uid: auth.currentUser.uid,
+                email: auth.currentUser.email,
+                amount: parseFloat(amount)
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.payment_session_id) {
+            
+            // --- FIXED SDK LOADING LOGIC ---
+            const startCheckout = () => {
+                const cfInstance = typeof Cashfree !== 'undefined' ? Cashfree : window.Cashfree;
+                if (!cfInstance) {
+                    alert("Cashfree SDK failed to load. Please check your internet.");
+                    return;
+                }
+                const checkout = cfInstance({ mode: "production" });
+                checkout.checkout({
+                    paymentSessionId: data.payment_session_id,
+                    redirectTarget: "_self"
+                });
+            };
+
+            // Agar SDK pehle se nahi hai, toh dynamic load karo
+            if (typeof Cashfree === 'undefined') {
+                const script = document.createElement('script');
+                script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+                script.onload = startCheckout;
+                document.head.appendChild(script);
+            } else {
+                startCheckout();
+            }
+            // -------------------------------
+
+        } else {
+            alert("Payment Error: " + (data.message || "Session not created"));
+        }
+    } catch (error) {
+        console.error("Recharge Error:", error);
+        alert("Could not initiate payment. Check console.");
+    }
+}
+
+
+
+
+
+
+    function showSection(id) {
+        dom.iframeContainer.style.display = 'none';
+        dom.mainContentScroll.style.display = 'block';
+        
+        dom.apiPages.forEach(p => p.style.display = 'none');
+        const targetSection = document.getElementById(id);
+        if (targetSection) {
+            targetSection.style.display = 'block';
+            localStorage.setItem('lastActiveSection', id);
+            localStorage.setItem('lastActiveType', 'section');
+        } else {
+             console.warn(`Section with ID ${id} not found.`);
+        }
+    }
+
+    function showIframe(url) {
+        dom.mainContentScroll.style.display = 'none';
+        dom.apiPages.forEach(p => p.style.display = 'none'); // Hide all API pages
+        dom.iframeContainer.style.display = 'block';
+        dom.iframeContainer.src = url;
+        localStorage.setItem('lastActiveType', 'iframe');
+        localStorage.setItem('lastActiveUrl', url);
+    }
+
+    // Event Listener for Sidebar Navigation (Delegation or direct)
+    dom.sidebarNavItems.forEach(item => {
+        item.addEventListener('click', (event) => {
+            setActiveNavItem(event.currentTarget);
+            const sectionId = event.currentTarget.dataset.section;
+            const iframeUrl = event.currentTarget.dataset.iframe;
+
+            if (sectionId) {
+                showSection(sectionId);
+            } else if (iframeUrl) {
+                showIframe(iframeUrl);
+            }
+        });
+    });
+
+    // === API Calling Logic ===
+    async function executeApi(buttonElement) {
+        const path = buttonElement.dataset.apiPath;
+        const cost = buttonElement.dataset.cost; // Not used in frontend logic but useful for display
+        const resId = buttonElement.dataset.resultId;
+        const method = buttonElement.dataset.method || 'POST'; // Default to POST
+        const bodyKeysJson = buttonElement.dataset.bodyKeys;
+        const pathParamKey = buttonElement.dataset.pathParamKey;
+
+        const resBox = document.getElementById(resId);
+        if (!resBox) {
+            console.error(`Result box with ID ${resId} not found.`);
+            return;
+        }
+        resBox.innerText = "Processing...";
+        
+        // Prepare API Keys from readonly inputs
+        const apiKey = dom.apiKeyFields[0].value;
+        const secretKey = dom.secretKeyFields[0].value;
+
+        if (apiKey === 'NOT_GENERATED' || !secretKey) {
+            resBox.innerText = JSON.stringify({ success: false, message: "API Key or Secret Key not available. Please ensure you are logged in and keys are generated." }, null, 2);
+            return;
+        }
+
+        let requestBody = {};
+        if (bodyKeysJson) {
+            try {
+                const bodyMap = JSON.parse(bodyKeysJson);
+                for (const key in bodyMap) {
+                    const inputId = bodyMap[key];
+                    const inputElement = document.getElementById(inputId);
+                    if (inputElement) {
+                         // Special handling for date inputs to ensure correct format or other dynamic values
+                        if (inputElement.type === 'date' && inputElement.value) {
+                            requestBody[key] = inputElement.value; // YYYY-MM-DD
+                        } else if (inputElement.tagName === 'SELECT' || inputElement.type === 'text') {
+                            if (inputElement.value) { // Only include if value exists
+                                requestBody[key] = inputElement.value;
+                            } else if (key === 'verification_id' && path === 'verify-employment') {
+                                // Auto-generate verification_id if empty for employment API
+                                requestBody[key] = `emp_${Date.now()}`;
+                            }
+                        }
+                    } else {
+                        console.warn(`Input element with ID ${inputId} not found for key ${key}.`);
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing body keys JSON:", e);
+                resBox.innerText = JSON.stringify({ success: false, message: "Configuration error: Invalid body keys." }, null, 2);
+                return;
+            }
+        }
+        
+        let apiUrl = `${VERCEL_API}/${path}`;
+
+        // Handle path parameters for GET requests (e.g., /vehicle-rc/:regNo)
+        if (method === 'GET' && pathParamKey && requestBody[pathParamKey]) {
+            const paramValue = encodeURIComponent(requestBody[pathParamKey]);
+            apiUrl = `${VERCEL_API}/${path}/${paramValue}`;
+            delete requestBody[pathParamKey]; // Remove from body as it's in path
+        } else if (method === 'GET' && Object.keys(requestBody).length > 0) {
+            // Append query parameters for other GET requests if needed
+            const queryParams = new URLSearchParams(requestBody).toString();
+            if (queryParams) {
+                apiUrl += `?${queryParams}`;
+            }
+        }
+
+        try {
+            const requestOptions = {
+                method: method,
+                headers: { 
+                    'x-api-key': apiKey,
+                    'x-user-id': secretKey // Assuming secret_key is user_uid
+                }
+            };
+
+            if (method !== 'GET') {
+                 // For face-liveness, the backend expects multipart/form-data.
+                 // In this demo, we'll send a JSON body with 'image_url' for simplicity,
+                 // as a full multipart file upload is more complex for a quick demo.
+                 // A real solution would use FormData.
+                if (path === 'face-liveness') {
+                    requestOptions.headers['Content-Type'] = 'application/json';
+                    if (requestBody.image_url) {
+                        requestOptions.body = JSON.stringify({ image_url: requestBody.image_url });
+                    } else {
+                        throw new Error("Image URL is required for Face Liveness.");
+                    }
+                } else if (path === 'aadhaar-mask' || path === 'ifsc-lookup') {
+                     // Dummy APIs won't actually call the backend, provide mock response
+                } else {
+                    requestOptions.headers['Content-Type'] = 'application/json';
+                    requestOptions.body = JSON.stringify(requestBody);
+                }
+            }
+
+            // Handle dummy API responses
+            if (path === 'aadhaar-mask') {
+                const aadhaarLast4 = document.getElementById('aadhaarInput')?.value || 'XXXX';
+                resBox.innerText = JSON.stringify({ success: true, masked_aadhaar: `XXXXXXXX${aadhaarLast4}`, message: "This is a dummy API response." }, null, 2);
+                return;
+            }
+            if (path === 'ifsc-lookup') {
+                const ifscCode = document.getElementById('ifscLookupInput')?.value || 'DUMMYIFSC';
+                resBox.innerText = JSON.stringify({ success: true, ifsc: ifscCode, bank_name: "Dummy Bank Ltd", branch: "Dummy Branch", city: "Dummy City", state: "Dummy State", address: "123 Dummy Street" }, null, 2);
+                return;
+            }
+
+            const response = await fetch(apiUrl, requestOptions);
+            const result = await response.json();
+            resBox.innerText = JSON.stringify(result, null, 2);
+
+            // Update balance after an API call (if backend returns `remaining` or force refresh from Firebase)
+            if (result.remaining !== undefined) {
+                 dom.balanceVal.innerText = "₹ " + result.remaining.toFixed(2);
+            } else {
+                // If the API doesn't return balance, force a refresh from Firebase
+                auth.currentUser && db.ref(`users/${auth.currentUser.uid}/api_settings/balance`).once('value', snapshot => {
+                    const balance = snapshot.val()?.balance || 0;
+                    dom.balanceVal.innerText = "₹ " + balance.toFixed(2);
+                });
+            }
+
+        } catch (e) {
+            console.error("API Call Error:", e);
+            resBox.innerText = JSON.stringify({ success: false, message: e.message || "Error calling endpoint!" }, null, 2);
+        }
+    }
+
+    // Event Delegation for API Buttons
+    dom.mainContentScroll.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-api-path]');
+        if (button) {
+            executeApi(button);
+        }
+    });
+
+    // === Logout Logic ===
+    dom.logoutBtn.addEventListener('click', () => {
+        auth.signOut().then(() => {
+            localStorage.removeItem('lastActiveSection');
+            localStorage.removeItem('lastActiveType');
+            localStorage.removeItem('lastActiveUrl');
+            window.location.href = "/login"; // Redirect after logout
+        }).catch(error => {
+            console.error("Logout Error:", error);
+            alert("Failed to log out: " + error.message);
+        });
+    });
+
+    // Initial load: show the dashboard if no section is active in local storage
+    if (!localStorage.getItem('lastActiveSection') && !localStorage.getItem('lastActiveType')) {
+        showSection('dashboard-section');
+        document.querySelector('.nav-item[data-section="dashboard-section"]').classList.add('active');
+    }
+</script>
+</body>
+</html>

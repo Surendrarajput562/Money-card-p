@@ -1,0 +1,1475 @@
+const express = require('express');
+const axios = require('axios');
+const admin = require('firebase-admin');
+const cors = require('cors');
+const { HttpsProxyAgent } = require('https-proxy-agent');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const nodemailer = require('nodemailer');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
+
+
+const app = express();
+
+app.use(cors());
+app.use(express.json()); // For parsing application/json
+app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded, common for webhooks
+
+// --- 1. CONFIG VARIABLES (from environment variables) ---
+const FIREBASE_PRIVATE_KEY = process.env.FIREBASE_PRIVATE_KEY;
+const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
+const FIREBASE_CLIENT_EMAIL = process.env.FIREBASE_CLIENT_EMAIL;
+const FIREBASE_DATABASE_URL = "https://smbrand-4543a-default-rtdb.firebaseio.com"; // Your database URL
+
+const ALLAPI_TOKEN = process.env.ALLAPI_TOKEN;
+const SHIPROCKET_EMAIL = process.env.SHIPROCKET_EMAIL;
+const SHIPROCKET_PASSWORD = process.env.SHIPROCKET_PASSWORD;
+
+const IMG_BB_API_KEY = process.env.IMG_BB_API_KEY; // Not used in this version, but kept for consistency
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const DIDIT_API_KEY = process.env.DIDIT_API_KEY;
+const DIDIT_WORKFLOW_ID = process.env.DIDIT_WORKFLOW_ID || "5b594327-9f78-4cb1-a233-7d84dbfa88a0";
+
+const SPEED_SECRET_KEY = process.env.SPEED_SECRET_KEY;
+const KUCOIN_KEY = process.env.KUCOIN_KEY; // Not used in this version
+const KUCOIN_SECRET = process.env.KUCOIN_SECRET; // Not used in this version
+const KUCOIN_PASSPHRASE = process.env.KUCOIN_PASSPHRASE; // Not used in this version
+
+const GEONAMES_USERNAME = process.env.GEONAMES_USERNAME;
+const OXAPAY_MERCHANT_KEY = process.env.OXAPAY_MERCHANT_KEY;
+const OXAPAY_GENERAL_KEY = process.env.OXAPAY_GENERAL_KEY;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+
+const PAN_CLIENT_ID = process.env.PAN_CLIENT_ID; // Cashfree Client ID
+const PAN_CLIENT_SECRET = process.env.PAN_CLIENT_SECRET; // Cashfree Client Secret
+const ARGOS_IDENTITY_API = process.env.ARGOS_IDENTITY_API;
+const SANDBOX_CO_API = process.env.SANDBOX_CO_API;
+const SANDBOX_CO_SECRET = process.env.SANDBOX_CO_SECRET;
+
+const CASHFREE_GETWEYAPPID = process.env.CASHFREE_GETWEYAPPID; // For Cashfree PG Orders
+const CASHFREE_GETWEYSECRET = process.env.CASHFREE_GETWEYSECRET; // For Cashfree PG Orders
+
+const FIXIE_URL = process.env.FIXIE_URL;
+const agent = FIXIE_URL ? new HttpsProxyAgent(FIXIE_URL) : null;
+
+// --- 2. INITIALIZE FIREBASE ADMIN SDK ---
+if (!admin.apps.length) {
+    try {
+        const cleanKey = FIREBASE_PRIVATE_KEY.trim().replace(/^"|"$/g, '').replace(/\\n/g, '\n');
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId: FIREBASE_PROJECT_ID,
+                clientEmail: FIREBASE_CLIENT_EMAIL,
+                privateKey: cleanKey
+            }),
+            databaseURL: FIREBASE_DATABASE_URL
+        });
+        console.log('Firebase Admin SDK initialized in index.js');
+    } catch (e) {
+        console.error("Firebase Initialization Error in index.js:", e.message);
+    }
+}
+const db = admin.database();
+const firebaseAuth = admin.auth(); // Firebase Admin Auth for backend operations
+
+// --- 3. INITIALIZE GEMINI ---
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+
+// --- 4. NODEMAILER TRANSPORTER ---
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+    }
+});
+const sendAutomationEmail = async (to, subject, text) => {
+    try {
+        await transporter.sendMail({
+            from: `"MoneyCard Official" <${EMAIL_USER}>`,
+            to: to,
+            subject: subject,
+            html: `<b>Bhai, ye lo aapki details:</b><br>${text}`
+        });
+        console.log("Email sent successfully!");
+    } catch (error) {
+        console.error("Gmail Auth Failed. Check App Password.", error);
+    }
+};
+
+// --- 5. HELPER FUNCTIONS ---
+const getPanHeaders = () => ({
+    'x-client-id': PAN_CLIENT_ID,
+    'x-client-secret': PAN_CLIENT_SECRET,
+    'Content-Type': 'application/json'
+});
+
+const getSpeedHeaders = () => ({
+    'Authorization': `Basic ${Buffer.from(`${SPEED_SECRET_KEY}:`).toString('base64')}`,
+    'speed-version': '2022-10-15',
+    'Content-Type': 'application/json'
+});
+
+const getOxaHeaders = (key) => ({
+    headers: { 'merchant_api_key': key, 'general_api_key': key, 'Content-Type': 'application/json' }
+});
+
+
+// --- SHIPROCKET AUTHENTICATION ---
+let shiprocketToken = null;
+let shiprocketTokenExpiry = 0;
+
+async function getShiprocketToken() {
+    if (shiprocketToken && Date.now() < shiprocketTokenExpiry) {
+        return shiprocketToken;
+    }
+
+    try {
+        const response = await axios.post('https://apiv2.shiprocket.in/v1/external/auth/login', {
+            email: SHIPROCKET_EMAIL,
+            password: SHIPROCKET_PASSWORD
+        });
+        shiprocketToken = response.data.token;
+        shiprocketTokenExpiry = Date.now() + (response.data.expires_in * 1000); // Convert seconds to milliseconds
+        console.log('Shiprocket token refreshed.');
+        return shiprocketToken;
+    } catch (error) {
+        console.error('Failed to get Shiprocket token:', error.response ? error.response.data : error.message);
+        throw new Error('Shiprocket authentication failed.');
+    }
+}
+
+
+// --- SHIPROCKET ORDER CREATION (THIS FUNCTION IS EXPORTED FOR WEBHOOK.JS) ---
+async function createShiprocketOrder(orderData, customerAddress, customerDetails) {
+    try {
+        if (!SHIPROCKET_EMAIL || !SHIPROCKET_PASSWORD) {
+            console.warn('Shiprocket credentials are not configured. Skipping order creation.');
+            return {
+                shiprocket_order_id: null,
+                tracking_id: null,
+                tracking_url: null,
+                shiprocket_status: 'SKIPPED_NO_CREDENTIALS',
+                message: 'Shiprocket credentials missing.'
+            };
+        }
+
+        const token = await getShiprocketToken();
+        const shiprocketOrderItems = Object.values(orderData.items).map(item => ({
+            name: item.name,
+            sku: item.id, // Using product ID as SKU
+            units: item.quantity,
+            selling_price: item.final_price,
+            discount: item.price - item.final_price,
+            tax: 0, // Assuming tax is handled externally or not applicable
+            hsn: 4202, // Placeholder, ideally from product data
+        }));
+
+        const srPayload = {
+            order_id: orderData.id, // Your internal order ID as Shiprocket order ID
+            order_date: new Date(orderData.created_at).toISOString().split('T')[0], // YYYY-MM-DD
+            pickup_address: "Default", // You need to configure pickup locations in Shiprocket and choose one
+            channel_id: "", // Optional: If you have specific sales channels
+            comment: `Payment received via AllAPI.in (Txn ID: ${orderData.gateway_txn_id || 'N/A'})`,
+            billing_customer_name: customerDetails.customer_name || 'User',
+            billing_address: customerAddress.house,
+            billing_address_2: `${customerAddress.city}, ${customerAddress.district}`,
+            billing_city: customerAddress.city,
+            billing_pincode: customerAddress.pincode || "110001", // Use actual pincode
+            billing_state: customerAddress.state || 'Delhi', // Use actual state
+            billing_country: customerAddress.country || 'India',
+            billing_email: customerDetails.customer_email || 'user@example.com',
+            billing_phone: customerDetails.customer_mobile || '9999999999',
+            shipping_customer_name: customerDetails.customer_name || 'User',
+            shipping_address: customerAddress.house,
+            shipping_address_2: `${customerAddress.city}, ${customerAddress.district}`,
+            shipping_city: customerAddress.city,
+            shipping_pincode: customerAddress.pincode || "110001", // Use actual pincode
+            shipping_state: customerAddress.state || 'Delhi', // Use actual state
+            shipping_country: customerAddress.country || 'India',
+            shipping_email: customerDetails.customer_email || 'user@example.com',
+            shipping_phone: customerDetails.customer_mobile || '9999999999',
+            order_items: shiprocketOrderItems,
+            payment_method: "Prepaid", // Assuming AllAPI.in means prepaid
+            shipping_charges: 0,
+            giftwrap_charges: 0,
+            transaction_charges: 0,
+            total_discount: shiprocketOrderItems.reduce((sum, item) => sum + item.discount, 0),
+            sub_total: orderData.total,
+            length: 10, // Placeholder, ideally from product data
+            breadth: 10, // Placeholder, ideally from product data
+            height: 10, // Placeholder, ideally from product data
+            weight: 0.5, // Placeholder in kg, ideally from product data
+        };
+
+        const response = await axios.post('https://apiv2.shiprocket.in/v1/external/orders/create/adhoc', srPayload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        console.log(`Shiprocket order created for ${orderData.id}:`, response.data);
+        return {
+            shiprocket_order_id: response.data.order_id,
+            tracking_id: response.data.shipping_id, // This might be AWB number
+            tracking_url: `https://shiprocket.in/tracking/${response.data.shipping_id}`, // Generic tracking URL
+            shiprocket_status: response.data.status, // e.g., 'NEW'
+            message: 'Shiprocket order successfully created.'
+        };
+    } catch (error) {
+        console.error('Failed to create Shiprocket order:', error.response ? error.response.data : error.message);
+        return {
+            shiprocket_order_id: null,
+            tracking_id: null,
+            tracking_url: null,
+            shiprocket_status: 'FAILED',
+            message: `Shiprocket order creation failed: ${error.response?.data?.message || error.message}`
+        };
+    }
+}
+
+
+// ==========================================
+// --- AUTHENTICATION ENDPOINTS ---
+// ==========================================
+
+// --- SIGNUP ---
+app.post('/api/signup', async (req, res) => {
+    const { name, email, mobile, password } = req.body;
+
+    if (!name || !email || !mobile || !password) {
+        return res.status(400).json({ success: false, message: "All fields are required." });
+    }
+    if (password.length < 6) {
+        return res.status(400).json({ success: false, message: "Password must be at least 6 characters." });
+    }
+
+    try {
+        // Create user in Firebase Authentication
+        const userRecord = await firebaseAuth.createUser({
+            email: email,
+            password: password,
+            displayName: name,
+            phoneNumber: mobile
+        });
+
+        // Store additional user data in Realtime Database
+        await db.ref(`users/${userRecord.uid}`).set({
+            uid: userRecord.uid,
+            name: name,
+            email: email,
+            mobile: mobile,
+            created_at: admin.database.ServerValue.TIMESTAMP,
+            wallet: 0,
+            gold_balance: 0,
+            signup_bonus_given: false, // Will be set true by frontend on first login
+            refer: Math.random().toString(36).substring(2, 8).toUpperCase(), // Generate refer code
+        });
+
+        return res.status(200).json({ success: true, message: "User created successfully!", uid: userRecord.uid });
+
+    } catch (error) {
+        console.error("Firebase Signup Error:", error.message);
+        let errorMessage = "Signup failed. Please try again.";
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = "This email is already registered.";
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = "Invalid email format.";
+        }
+        return res.status(500).json({ success: false, message: errorMessage });
+    }
+});
+
+
+// --- LOGIN (Backend will just confirm login, frontend uses client-side auth) ---
+app.post('/api/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: "Email and password are required." });
+    }
+
+    try {
+        const userRecord = await firebaseAuth.getUserByEmail(email);
+        return res.status(200).json({ success: true, message: "Login successful!", uid: userRecord.uid });
+
+    } catch (error) {
+        console.error("Firebase Login Error:", error.message);
+        let errorMessage = "Login failed. Invalid credentials.";
+        if (error.code === 'auth/user-not-found') {
+            errorMessage = "User not found.";
+        } else if (error.code === 'auth/wrong-password') {
+            errorMessage = "Incorrect password.";
+        }
+        return res.status(401).json({ success: false, message: errorMessage });
+    }
+});
+
+
+app.post('/api/create-order', async (req, res) => {
+    const {
+        user_uid, internal_id, txn_amount, txn_note, product_name,
+        customer_name, customer_mobile, customer_email, type,
+        redirect_url, order_address, order_items, plan_id, plan_name
+    } = req.body;
+
+    if (!user_uid || !internal_id || !txn_amount || !customer_name || !customer_mobile || !type || !redirect_url) {
+        return res.status(400).json({ success: false, message: "Missing required fields." });
+    }
+
+    const cf_order_id = `CF_${internal_id}_${Date.now()}`;
+    const cleanPhone = String(customer_mobile || "").replace(/\D/g, '').slice(-10);
+
+    try {
+        // --- STEP 1: ALLAPI (STILL HERE BUT BYPASSED FOR NOW) ---
+        /* AllAPI ka logic yahan hai, delete nahi kiya gaya.
+        Sirf abhi ke liye skip karke Step 2 par bhej raha hoon.
+        */
+
+        // --- STEP 2: DIRECT CASHFREE (Ab ye automatic chalega) ---
+        console.log("Processing direct Cashfree order...");
+
+        await db.ref(`cashfree_transactions_mapping/${cf_order_id}`).set({
+            user_uid: user_uid || "unknown",
+            internal_id: internal_id, // Aapki original Order ID
+            plan_name: plan_name || "cart_order",
+            amount: parseFloat(txn_amount),
+            status: 'awaiting_payment',
+            created_at: admin.database.ServerValue.TIMESTAMP
+        });
+
+        const cfRes = await axios.post('https://api.cashfree.com/pg/orders', {
+            order_id: cf_order_id,
+            order_amount: parseFloat(txn_amount).toFixed(2),
+            order_currency: "INR",
+            customer_details: {
+                customer_id: user_uid,
+                customer_phone: cleanPhone,
+                customer_name: (customer_name || "User").replace(/[^a-zA-Z ]/g, "").trim(),
+                customer_email: customer_email || "user@moneycard.app"
+            },
+            order_meta: {
+                return_url: `${redirect_url}?order_id=${cf_order_id}`
+            }
+        }, {
+            headers: {
+                'x-client-id': CASHFREE_GETWEYAPPID,
+                'x-client-secret': CASHFREE_GETWEYSECRET,
+                'x-api-version': '2023-08-01',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const cf = cfRes.data;
+        await db.ref(`cashfree_transactions_mapping/${cf_order_id}`).update({
+            cf_order_id: cf.cf_order_id,
+            payment_session_id: cf.payment_session_id,
+            status: 'initiated',
+            updated_at: admin.database.ServerValue.TIMESTAMP
+        });
+
+        return res.status(200).json({
+            success: true,
+            results: {
+                payment_gateway: 'cashfree',
+                payment_session_id: cf.payment_session_id,
+                order_id: cf_order_id
+            }
+        });
+
+    } catch (error) {
+        console.error("Gateway Error:", error.response ? error.response.data : error.message);
+        return res.status(500).json({ success: false, message: "Payment processing failed." });
+    }
+});
+
+
+// ==========================================
+// --- MERGED PAYMENT: ALLAPI (Primary) + CASHFREE (Fallback) ---
+// ==========================================
+app.post('/api/create-order', async (req, res) => {
+    const { 
+        user_uid, internal_id, txn_amount, txn_note, product_name, 
+        customer_name, customer_mobile, customer_email, type, 
+        redirect_url, order_address, order_items, plan_id, plan_name,
+        skip_allapi // Frontend se bheja gaya flag
+    } = req.body;
+
+    if (!user_uid || !internal_id || !txn_amount || !customer_name || !customer_mobile || !type || !redirect_url) {
+        return res.status(400).json({ success: false, message: "Missing required fields." });
+    }
+
+    const cf_order_id = `CF_${internal_id}_${Date.now()}`;
+    const allapi_order_id = `ALLAPI_${type}_${internal_id}_${Date.now()}`;
+
+    try {
+        // --- STEP 1: ALLAPI BYPASS LOGIC ---
+        // Agar frontend ne bola hai skip karne ya AllAPI token nahi hai
+        if (!skip_allapi && ALLAPI_TOKEN) {
+            console.log("Attempting AllAPI...");
+            // ... (Aapka purana AllAPI logic yahan reh sakta hai)
+        }
+
+        // --- STEP 2: DIRECT CASHFREE (AS REQUESTED) ---
+        console.log("Processing via Cashfree...");
+        
+        const cleanPhone = String(customer_mobile || "").replace(/\D/g, '').slice(-10);
+
+        // Firebase Mapping
+        await db.ref(`cashfree_transactions_mapping/${cf_order_id}`).set({
+            user_uid: user_uid || "unknown",
+            internal_id: internal_id,
+            plan_name: plan_name || (type === 'cart' ? "Shopping Cart" : "Subscription"),
+            amount: parseFloat(txn_amount),
+            status: 'awaiting_payment',
+            created_at: admin.database.ServerValue.TIMESTAMP
+        });
+
+        const cfRes = await axios.post('https://api.cashfree.com/pg/orders', {
+            order_id: cf_order_id,
+            order_amount: parseFloat(txn_amount).toFixed(2),
+            order_currency: "INR",
+            customer_details: {
+                customer_id: user_uid,
+                customer_phone: cleanPhone,
+                customer_name: (customer_name || "User").replace(/[^a-zA-Z ]/g, "").trim(),
+                customer_email: customer_email || "user@moneycard.app"
+            },
+            order_meta: {
+                // Redirect back to our success page
+                return_url: `${redirect_url}?order_id=${internal_id}`
+            }
+        }, {
+            headers: {
+                'x-client-id': CASHFREE_GETWEYAPPID,
+                'x-client-secret': CASHFREE_GETWEYSECRET,
+                'x-api-version': '2023-08-01',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const cf = cfRes.data;
+        
+        // Update Firebase with Session ID
+        await db.ref(`cashfree_transactions_mapping/${cf_order_id}`).update({
+            cf_order_id: cf.cf_order_id,
+            payment_session_id: cf.payment_session_id,
+            status: 'initiated',
+            updated_at: admin.database.ServerValue.TIMESTAMP
+        });
+
+        // Response send karega bina 'allapi_order_id' ke, taaki frontend undefined na ho
+        return res.status(200).json({
+            success: true,
+            results: {
+                payment_gateway: 'cashfree',
+                payment_session_id: cf.payment_session_id,
+                order_id: cf_order_id
+                // Note: allapi_order_id yahan nahi bhej rahe, isse error fix ho jayega
+            }
+        });
+
+    } catch (error) {
+        console.error("Payment Gateway Error:", error.response ? error.response.data : error.message);
+        return res.status(500).json({ success: false, message: "Gateway processing failed." });
+    }
+});
+
+
+
+
+
+// ==========================================
+// --- MERGED PAYMENT: ALLAPI (Primary) + CASHFREE (Fallback) ---
+// ==========================================
+app.post('/api/create-order', async (req, res) => {
+    const { 
+        user_uid, internal_id, txn_amount, txn_note, product_name, 
+        customer_name, customer_mobile, customer_email, type, 
+        redirect_url, order_address, order_items, plan_id, plan_name 
+    } = req.body;
+
+    // Sabhi fields ki validation (Vahi purani logic)
+    if (!ALLAPI_TOKEN) return res.status(500).json({ success: false, message: "AllAPI.in token is not configured." });
+    if (!user_uid || !internal_id || !txn_amount || !txn_note || !customer_name || !customer_mobile || !type || !redirect_url) {
+        return res.status(400).json({ success: false, message: "Missing required fields." });
+    }
+
+    const allapi_order_id = `ALLAPI_${type}_${internal_id}_${Date.now()}`;
+    const cf_order_id = `CF_${internal_id}_${Date.now()}`;
+
+    try {
+        // --- STEP 1: Pehle AllAPI Try Karega Aur Mapping Karega ---
+        await db.ref(`allapi_transactions_mapping/${allapi_order_id}`).set({
+            user_uid: user_uid,
+            internal_id: internal_id,
+            type: type,
+            txn_amount: txn_amount,
+            status: 'pending',
+            created_at: admin.database.ServerValue.TIMESTAMP,
+            customer_name: customer_name,
+            customer_mobile: customer_mobile,
+            customer_email: customer_email,
+            plan_id: plan_id || null,
+            plan_name: plan_name || null,
+            order_address: type === 'cart' ? order_address : null,
+            order_items: type === 'cart' ? order_items : null
+        });
+
+        const allapiResponse = await axios.post('https://allapi.in/order/create', {
+            token: ALLAPI_TOKEN,
+            order_id: allapi_order_id,
+            txn_amount: txn_amount,
+            txn_note: txn_note,
+            product_name: product_name || txn_note,
+            customer_name: customer_name,
+            customer_mobile: customer_mobile,
+            customer_email: customer_email,
+            redirect_url: redirect_url
+        });
+
+        // Agar AllAPI ka Plan OK hai
+        if (allapiResponse.data.status) {
+            await db.ref(`allapi_transactions_mapping/${allapi_order_id}`).update({
+                gateway_txn_id: allapiResponse.data.results.txn_id,
+                payment_url: allapiResponse.data.results.payment_url,
+                status: 'awaiting_payment',
+                updated_at: admin.database.ServerValue.TIMESTAMP
+            });
+
+            return res.status(200).json({
+                success: true,
+                results: {
+                    payment_gateway: 'allapi', // Frontend ko batane ke liye
+                    allapi_order_id: allapi_order_id,
+                    txn_id: allapiResponse.data.results.txn_id,
+                    payment_url: allapiResponse.data.results.payment_url
+                }
+            });
+        } 
+        
+        // --- STEP 2: AGAR ALLAPI FAIL HUA (No Plan etc), TOH CASHFREE CHALEGA ---
+        console.warn("AllAPI Error (Plan?), switching to Cashfree...");
+        
+        const cleanPhone = String(customer_mobile || "").replace(/\D/g, '').slice(-10);
+
+        // Cashfree mapping (Mapping nahi kaati gayi)
+        await db.ref(`cashfree_transactions_mapping/${cf_order_id}`).set({
+            user_uid: user_uid || "unknown",
+            plan_name: plan_name || "cart_order",
+            amount: parseFloat(txn_amount),
+            status: 'awaiting_payment',
+            created_at: admin.database.ServerValue.TIMESTAMP
+        });
+
+        const cfRes = await axios.post('https://api.cashfree.com/pg/orders', {
+            order_id: cf_order_id,
+            order_amount: parseFloat(txn_amount).toFixed(2),
+            order_currency: "INR",
+            customer_details: {
+                customer_id: user_uid,
+                customer_phone: cleanPhone,
+                customer_name: (customer_name || "User").replace(/[^a-zA-Z ]/g, "").trim(),
+                customer_email: customer_email || "user@moneycard.app"
+            },
+            order_meta: {
+                return_url: `${redirect_url}?order_id=${internal_id}`
+            }
+        }, {
+            headers: {
+                'x-client-id': CASHFREE_GETWEYAPPID,
+                'x-client-secret': CASHFREE_GETWEYSECRET,
+                'x-api-version': '2023-08-01',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const cf = cfRes.data;
+        await db.ref(`cashfree_transactions_mapping/${cf_order_id}`).update({
+            cf_order_id: cf.cf_order_id,
+            payment_session_id: cf.payment_session_id,
+            status: 'initiated',
+            updated_at: admin.database.ServerValue.TIMESTAMP
+        });
+
+        return res.status(200).json({
+            success: true,
+            results: {
+                payment_gateway: 'cashfree',
+                payment_session_id: cf.payment_session_id,
+                order_id: cf_order_id
+            }
+        });
+
+    } catch (error) {
+        console.error("Gateway Final Error:", error.response ? error.response.data : error.message);
+        return res.status(500).json({ success: false, message: "All payment gateways failed." });
+    }
+});
+
+
+
+app.post('/api/pay', async (req, res) => {
+    let orderId = ""; 
+    try {
+        const { amount, phone, name, user_uid, plan_id, plan_name } = req.body;
+        const cleanPhone = String(phone || "").replace(/\D/g, '').slice(-10);
+        orderId = `CF_${plan_id || 'sub'}_${user_uid || 'anon'}_${Date.now()}`;
+
+        // 1. Initial Entry with basic data
+        await db.ref(`cashfree_transactions_mapping/${orderId}`).set({
+            user_uid: user_uid || "unknown",
+            plan_name: plan_name || "standard",
+            amount: parseFloat(amount || 0),
+            status: 'awaiting_payment',
+            created_at: admin.database.ServerValue.TIMESTAMP
+        });
+
+        // 2. Cashfree API Call
+        const response = await axios.post('https://api.cashfree.com/pg/orders', {
+            order_id: orderId,
+            order_amount: parseFloat(amount).toFixed(2),
+            order_currency: "INR",
+            customer_details: {
+                customer_id: user_uid || "CUST_" + Date.now(),
+                customer_phone: cleanPhone,
+                customer_name: (name || "User").replace(/[^a-zA-Z ]/g, "").trim()
+            },
+            order_meta: {
+                return_url: `https://moneycard-8f457.web.app/dashboard.html?order_id=${orderId}`
+            }
+        }, {
+            headers: {
+                'x-client-id': CASHFREE_GETWEYAPPID,
+                'x-client-secret': CASHFREE_GETWEYSECRET,
+                'x-api-version': '2023-08-01',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        // 3. CLEAN UPDATE LOGIC (Filters out undefined/null)
+        const cf = response.data;
+        const rawUpdate = {
+            cf_order_id: cf.cf_order_id,
+            payment_session_id: cf.payment_session_id,
+            payment_link: cf.payment_link || null, // null is allowed, undefined is not
+            status: 'initiated',
+            updated_at: admin.database.ServerValue.TIMESTAMP
+        };
+
+        // Remove any keys that are still undefined
+        const cleanUpdate = Object.fromEntries(
+            Object.entries(rawUpdate).filter(([_, v]) => v !== undefined)
+        );
+
+        await db.ref(`cashfree_transactions_mapping/${orderId}`).update(cleanUpdate);
+
+        // 4. Return to Frontend
+        res.status(200).json({
+            success: true,
+            payment_session_id: cf.payment_session_id,
+            order_id: orderId
+        });
+
+    } catch (error) {
+        const errorData = error.response ? error.response.data : error.message;
+        console.error("CASHFREE_ERROR:", errorData);
+        
+        if (orderId) {
+            await db.ref(`cashfree_transactions_mapping/${orderId}`).update({
+                status: 'failed',
+                error: typeof errorData === 'string' ? errorData : "Gateway Rejected"
+            }).catch(() => {});
+        }
+        res.status(400).json({ success: false, message: "Payment Initiation Failed" });
+    }
+});
+
+
+// ==========================================
+// --- 2FA CHECK ENDPOINT ---
+// ==========================================
+app.post('/api/2fa/check', async (req, res) => {
+    const { userId } = req.body;
+    const snap = await db.ref(`users/${userId}/2fa_settings`).once('value');
+    const data = snap.val();
+
+    if (data && data.secret) {
+        return res.json({ setup_done: true });
+    } else {
+        const secret = speakeasy.generateSecret({ name: `MoneyCard (${userId})` });
+        const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+
+        await db.ref(`users/${userId}/2fa_settings`).set({
+            secret: secret.base32,
+            setup_done: false
+        });
+
+        res.json({ setup_done: false, qr_code: qrCodeUrl, secret: secret.base32 });
+    }
+});
+
+// ==========================================
+// --- LOGIC: AUTO-SWITCHER AI ENGINE ---
+// ==========================================
+app.post('/api/ai-chat', async (req, res) => {
+    const { prompt, history, userId } = req.body;
+    if (!prompt) return res.status(400).json({ error: "No prompt" });
+    if (!genAI) return res.status(500).json({ error: "AI service not initialized (GEMINI_API_KEY missing?)" });
+
+    const modelList = ["gemini-1.5-flash", "gemini-1.0-pro", "gemini-pro"];
+    let finalReply = "";
+    let success = false;
+
+    for (let modelName of modelList) {
+        try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const chat = model.startChat({ history: history || [] });
+            const result = await chat.sendMessage(prompt);
+            const response = await result.response;
+            if (response.text()) {
+                finalReply = response.text();
+                success = true;
+                break;
+            }
+        } catch (e) {
+            console.log(`Model ${modelName} failed, switching...`, e.message);
+        }
+    }
+
+    if (!success) {
+        finalReply = "Sorry, I am having trouble connecting to my AI brain. Please try again later.";
+    }
+
+    if (userId) db.ref(`users/${userId}/chat_history`).push({ p: prompt, r: finalReply, ts: admin.database.ServerValue.TIMESTAMP });
+    res.json({ success: true, reply: finalReply });
+});
+
+
+// --- 2FA VERIFY ENDPOINT ---
+app.post('/api/2fa/verify', async (req, res) => {
+    const { userId, token } = req.body;
+    const snap = await db.ref(`users/${userId}/2fa_settings`).once('value');
+    const data = snap.val();
+
+    if (!data || !data.secret) return res.status(400).json({ success: false, message: "2FA not set up." });
+
+    const verified = speakeasy.totp.verify({
+        secret: data.secret,
+        encoding: 'base32',
+        token: token
+    });
+
+    if (verified) {
+        await db.ref(`users/${userId}/2fa_settings`).update({ setup_done: true });
+        res.json({ success: true });
+    } else {
+        res.json({ success: false, message: "Invalid 2FA token." });
+    }
+});
+
+
+// --- Speed Headers ---
+const speedHeaders = getSpeedHeaders(); // Use the helper
+
+app.post('/api/speed/add-crypto', async (req, res) => {
+    const { userId, amount, assetType } = req.body;
+
+    try {
+        const response = await axios.post('https://api.tryspeed.com/checkout-sessions', {
+            amount: parseFloat(amount),
+            currency: 'USD',
+            target_currency: assetType === 'SATS' ? 'BTC' : assetType,
+            payment_methods: assetType === 'SATS' ? ['lightning'] : ['onchain'],
+            metadata: { user_id: userId, asset: assetType },
+
+            success_url: `https://moneycard-8f457.web.app/dashboard.html`,
+            cancel_url: `https://moneycard-8f457.web.app/add-crypto.html`
+        }, { headers: speedHeaders });
+
+        res.json({ success: true, url: response.data.url });
+
+    } catch (e) {
+        console.error("Speed API Error:", e.response?.data || e.message);
+        res.status(500).json({ success: false, message: "Gateway Connection Error" });
+    }
+});
+
+
+app.post('/api/speed/withdraw', async (req, res) => {
+    const { userId, amountUSD, assetType, email } = req.body;
+    const amount = parseFloat(amountUSD);
+
+    try {
+        const walletRef = db.ref(`users/${userId}/wallets/${assetType}`);
+
+        const result = await walletRef.transaction((current) => {
+            if (current === null || (current.balance || 0) < amount) {
+                return;
+            }
+            return { ...current, balance: (current.balance || 0) - amount };
+        });
+
+        if (!result.committed) {
+            return res.status(400).json({ success: false, message: "Insufficient balance." });
+        }
+
+        try {
+            const response = await axios.post('https://api.tryspeed.com/withdrawal-links', {
+                amount: amount,
+                currency: 'USD',
+                target_currency: assetType === 'SATS' ? 'SATS' : assetType,
+                email: email || "user@moneycard.space",
+                metadata: { user_id: userId, asset: assetType }
+            }, { headers: speedHeaders });
+
+            res.json({ success: true, withdraw_url: response.data.url });
+
+        } catch (apiErr) {
+            console.error("Speed API Failed, Refunding...", apiErr.response?.data || apiErr.message);
+            await walletRef.transaction((current) => {
+                if (current) current.balance = (current.balance || 0) + amount;
+                return current;
+            });
+
+            const errorMsg = apiErr.response?.data?.errors?.[0]?.message || "Gateway Offline";
+            return res.status(500).json({ success: false, message: `Speed Error: ${errorMsg}. Balance Refunded.` });
+        }
+
+    } catch (e) {
+        console.error("Server Error in Speed Withdraw:", e);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+
+// ==========================================================
+// --- NEW: DIDIT REAL-TIME STATUS CHECK (404 FIX) ---
+// ==========================================================
+app.post('/api/check-kyc-status', async (req, res) => {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ success: false, message: "User ID missing" });
+
+    try {
+        const snapshot = await db.ref(`users/${userId}/profile`).once('value');
+        const profile = snapshot.val() || {};
+
+        let liveStatus = "NEW";
+        try {
+            const diditRes = await axios.get(`https://api.didit.me/v1/sessions?vendor_data=${userId}`, {
+                headers: { 'Authorization': `Bearer ${DIDIT_API_KEY}` }
+            });
+
+            if (diditRes.data.results && diditRes.data.results.length > 0) {
+                const latest = diditRes.data.results[0];
+                liveStatus = latest.status.toUpperCase();
+            }
+        } catch (apiErr) {
+            console.log("Didit API error, using DB fallback");
+            liveStatus = (profile.kyc_status || "NEW").toUpperCase();
+        }
+
+        if (liveStatus === 'COMPLETED' || liveStatus === 'APPROVED') {
+            await db.ref(`users/${userId}/profile`).update({ kyc_status: 'VERIFIED', step: 'COMPLETED' });
+            return res.json({ success: true, status: 'VERIFIED' });
+        }
+
+        if (liveStatus === 'PENDING' || liveStatus === 'IN_REVIEW') {
+            await db.ref(`users/${userId}/profile`).update({ kyc_status: 'PENDING' });
+            return res.json({ success: true, status: 'PENDING' });
+        }
+
+        if (liveStatus === 'REJECTED' || liveStatus === 'FAILED') {
+            await db.ref(`users/${userId}/profile`).update({ kyc_status: 'REJECTED' });
+            return res.json({ success: true, status: 'REJECTED' });
+        }
+
+        res.json({ success: true, status: 'NEW' });
+
+    } catch (error) {
+        console.error("Server Error in check-kyc-status:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// --- MIDDLEWARE: DEVELOPER WALLET DEDUCTION ---
+const validateDevAndDeduct = async (req, res, next) => {
+    const userKey = req.headers['x-api-key'];
+    const userId = req.headers['x-user-id'];
+    if (!userKey || !userId) return res.status(401).json({ success: false, message: "Missing Credentials" });
+
+    try {
+        const snapshot = await db.ref(`users/${userId}/api_settings`).once('value');
+        const settings = snapshot.val();
+        if (!settings || settings.key !== userKey) return res.status(403).json({ success: false, message: "Invalid API Key" });
+
+        const currentBalance = Number(settings.balance || 0);
+        if (currentBalance < 1) return res.status(402).json({ success: false, message: "Insufficient Balance" });
+
+        req.devUid = userId;
+        req.currentBalance = currentBalance;
+        next();
+    } catch (e) { res.status(500).json({ success: false }); }
+};
+
+
+// ==========================================================
+// --- SECTION 1: DEVELOPER APIs (v1) - Key Required ---
+// ==========================================================
+
+// 1. IFSC LOOKUP (FREE FOR DEVS)
+app.get('/api/v1/lookup/ifsc/:ifsc', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.get(`https://ifsc.razorpay.com/${req.params.ifsc}`);
+        res.json({ success: true, data: response.data });
+    } catch (e) { res.status(404).json({ success: false, message: "IFSC Not Found" }); }
+});
+
+// 2. PAN VERIFY (₹1)
+app.post('/api/v1/verify-pan', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/pan`,
+        { pan: req.body.pan.toUpperCase() }, { httpsAgent: agent, headers: getPanHeaders() });
+
+        const newBalance = req.currentBalance - 1;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, registered_name: response.data.registered_name, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// 3. BANK SYNC (₹2)
+app.post('/api/v1/bank-sync', validateDevAndDeduct, async (req, res) => {
+    try {
+        const { bank_account, ifsc } = req.body;
+        const response = await axios.post("https://api.cashfree.com/verification/bank-account/sync",
+        { bank_account, ifsc, name: "Dev Test", phone: "9999999999" }, { httpsAgent: agent, headers: getPanHeaders() });
+
+        const newBalance = req.currentBalance - 2;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, data: response.data, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// --- NEW: DEVELOPER v1 ARGOS VERIFY (₹5 Deduction) ---
+app.post('/api/v1/argos-verify', validateDevAndDeduct, async (req, res) => {
+    const { idNumber, idType, country, name } = req.body;
+    try {
+        const response = await axios.post('https://api.argos-identity.com/v1/verify', {
+            customer_id: req.devUid,
+            name: name,
+            id_type: idType,
+            id_number: idNumber,
+            issuing_country: country
+        }, { headers: { 'x-api-key': ARGOS_IDENTITY_API, 'Content-Type': 'application/json' } });
+
+        const newBalance = req.currentBalance - 5;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, data: response.data, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false, message: "Argos API Error" }); }
+});
+
+// 3. VEHICLE RC STATUS (₹1)
+app.get('/api/v1/vehicle-rc/:regNo', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.get(`https://api.cashfree.com/verification/vehicle-rc?reg_no=${req.params.regNo}`, { httpsAgent: agent, headers: getPanHeaders() });
+
+        const newBalance = req.currentBalance - 1;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, data: response.data, remaining: newBalance });
+    } catch (e) {
+        console.error("Cashfree RC API Error:", e.response ? e.response.data : e.message);
+        res.status(e.response ? e.response.status : 500).json({ success: false, message: e.response ? e.response.data.message : "Internal Server Error" });
+    }
+});
+
+// 4. ADVANCE EMPLOYMENT VERIFY (₹5)
+app.post('/api/v1/verify-employment', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/advance-employment`,
+        { verification_id: req.body.verification_id || `emp_${Date.now()}`, phone: req.body.phone },
+        { httpsAgent: agent, headers: getPanHeaders() });
+
+        const newBalance = req.currentBalance - 5;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, data: response.data, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false, message: "Employment API Error" }); }
+});
+
+// 5. VOTER ID VERIFY (₹2)
+app.post('/api/v1/verify-voterid', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/voter-id`,
+        { verification_id: req.body.verification_id || `voter_${Date.now()}`, epic_number: req.body.epic_number, name: req.body.name },
+        { httpsAgent: agent, headers: getPanHeaders() });
+
+        const newBalance = req.currentBalance - 2;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, data: response.data, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// 6. PASSPORT VERIFY (₹6)
+app.post('/api/v1/verify-passport', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/passport`,
+        req.body, { httpsAgent: agent, headers: getPanHeaders() });
+
+        const newBalance = req.currentBalance - 6;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, data: response.data, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// 7. DRIVING LICENSE VERIFY (₹3)
+app.post('/api/v1/verify-dl', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/driving-license`,
+        req.body, { httpsAgent: agent, headers: getPanHeaders() });
+
+        const newBalance = req.currentBalance - 3;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, data: response.data, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// 8. FACE LIVENESS CHECK (₹5)
+app.post('/api/v1/face-liveness', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/face-liveness`,
+        req.body, { httpsAgent: agent, headers: { ...getPanHeaders(), 'Content-Type': 'multipart/form-data' } });
+
+        const newBalance = req.currentBalance - 5;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, data: response.data, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// 9. NAME MATCH (₹2)
+app.post('/api/v1/name-match', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/name-match`,
+        req.body, { httpsAgent: agent, headers: getPanHeaders() });
+
+        const newBalance = req.currentBalance - 2;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, score: response.data.score, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// 10. REVERSE GEOCODING (₹2)
+app.post('/api/v1/reverse-geocode', validateDevAndDeduct, async (req, res) => {
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/reverse-geocoding`,
+        req.body, { httpsAgent: agent, headers: getPanHeaders() });
+
+        const newBalance = req.currentBalance - 2;
+        await db.ref(`users/${req.devUid}/api_settings/balance`).set(newBalance);
+
+        res.json({ success: true, address: response.data.address, remaining: newBalance });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+
+// ==========================================================
+// --- SECTION 2: USER PORTAL (INTERNAL - CASHFREE KYCs) ---
+// ==========================================================
+
+// --- PAN VERIFY ---
+app.post('/api/verify-pan', async (req, res) => {
+    const { pan, userId } = req.body;
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/pan`,
+        { pan: pan.toUpperCase() }, { httpsAgent: agent, headers: getPanHeaders() });
+        if (response.data.valid && userId) {
+            await db.ref(`users/${userId}/profile`).update({ registered_name: response.data.registered_name, pan_number: pan.toUpperCase(), step: 'DIGILOCKER' });
+        }
+        res.json({ success: true, registered_name: response.data.registered_name });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// --- DIGILOCKER URL ---
+app.post('/api/create-digilocker-url', async (req, res) => {
+    const { userId } = req.body;
+    const v_id = `v_${userId || 'user'}_${Date.now()}`;
+    try {
+        const response = await axios.post(`https://api.cashfree.com/verification/digilocker`, {
+            verification_id: v_id,
+            redirect_url: `https://money-card-p.vercel.app/api/callback?userId=${userId}`,
+            document_requested: ["AADHAAR"]
+        }, { httpsAgent: agent, headers: getPanHeaders() });
+        if(userId) await db.ref(`users/${userId}/profile`).update({ reference_id: response.data.reference_id });
+        res.json({ success: true, url: response.data.url });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// --- CALLBACK ---
+app.get('/api/callback', async (req, res) => {
+    const { userId } = req.query;
+    try {
+        const snap = await db.ref(`users/${userId}/profile`).once('value');
+        const refId = snap.val().reference_id;
+        await axios.get(`https://api.cashfree.com/verification/digilocker/document/AADHAAR?reference_id=${refId}`, {
+            httpsAgent: agent, headers: getPanHeaders()
+        });
+        await db.ref(`users/${userId}/profile`).update({ step: 'COMPLETED' });
+        res.send("<script>window.location.href='https://moneycard-8f457.web.app/index.html'</script>");
+    } catch (e) {
+        console.error("Digilocker Callback Error:", e);
+        res.redirect('https://moneycard-8f457.web.app/index.html');
+    }
+});
+
+
+// --- USER PORTAL - BANK SYNC (CASHFREE FLOW) ---
+app.post('/api/verify-bank-sync', async (req, res) => {
+    const { userId, bank_account, ifsc, name, phone, pan_number } = req.body;
+
+    if (!userId || !bank_account || !ifsc) {
+        return res.status(400).json({ success: false, message: "Details incomplete!" });
+    }
+
+    try {
+        const response = await axios.post(
+            "https://api.cashfree.com/verification/bank-account/sync",
+            {
+                bank_account: bank_account,
+                ifsc: ifsc.toUpperCase(),
+                name: name || "Merchant",
+                phone: phone || "916268520141"
+            },
+            {
+                headers: getPanHeaders(),
+                httpsAgent: agent
+            }
+        );
+
+        const d = response.data;
+
+        if (d.status === "SUCCESS" || d.sub_code === "200") {
+            const firebaseData = {
+                bank_info: {
+                    account_number: bank_account,
+                    ifsc: ifsc.toUpperCase(),
+                    bank_name: d.bank_name,
+                    branch: d.branch,
+                    city: d.city,
+                    micr: d.micr,
+                    account_status: d.status || "VALID"
+                },
+                kyc_details: {
+                    name_at_bank: d.name_at_bank,
+                    provided_name: name,
+                    pan_card: pan_number || "N/A"
+                },
+                meta: {
+                    reference_id: d.reference_id,
+                    verification_id: d.verification_id,
+                    verified_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+                }
+            };
+
+            await db.ref(`users/${userId}/bank_details`).set(firebaseData);
+            await db.ref(`users/${userId}/profile`).update({ step: 'BANK_ADDED' });
+
+            return res.json({ success: true, name: d.name_at_bank, data: firebaseData });
+        } else {
+            return res.status(400).json({ success: false, message: d.message || "Invalid Bank Details" });
+        }
+    } catch (e) {
+        console.error("Internal Bank Sync Error:", e.response?.data || e.message);
+        res.status(500).json({ success: false, error: "Gateway Auth Error" });
+    }
+});
+
+// --- SECTION: 2FA & DASHBOARD SECURITY ---
+app.get('/api/user/status', async (req, res) => {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: "User ID missing" });
+
+    try {
+        const snap = await db.ref(`users/${userId}`).once('value');
+        const user = snap.val();
+
+        res.json({
+            kyc: user?.profile?.kyc_status || 'NEW',
+            twoFA: user?.['2fa_settings']?.setup_done || false,
+            bank: !!user?.bank_details
+        });
+    } catch (e) {
+        console.error("Error fetching user status:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+
+// ==========================================
+// --- SECTION 3: GLOBAL PAY MONEY CARD QR ---
+// ==========================================
+app.post('/api/create-global-qr', async (req, res) => {
+    const { name, description, userId, selected_currency, networks } = req.body;
+
+    const final_currency = selected_currency || "USDT";
+    const primary_method = (networks && networks.length > 0) ? networks[0] : "ethereum";
+
+    try {
+        const response = await axios.post('https://api.tryspeed.com/oneqrs', {
+            name: name || `Global Pay QR`,
+            method: primary_method,
+            currency: final_currency,
+            target_currency: final_currency,
+            description: description || "Money Card Multi-Currency Payment"
+        }, { headers: getSpeedHeaders() });
+
+        const qr_link = response.data.url || "";
+        const qr_id = response.data.id || "";
+
+        if (userId && qr_link) {
+            await db.ref(`users/${userId}/latest_qr`).set({
+                qr_id: qr_id,
+                qr_url: qr_link,
+                currency: final_currency,
+                method: primary_method,
+                qr_name: name || "Global Pay QR",
+                updated_at: admin.database.ServerValue.TIMESTAMP
+            });
+        }
+
+        res.json({
+            success: true,
+            qr_url: qr_link,
+            qr_id: qr_id,
+            message: "Speed QR Created!"
+        });
+
+    } catch (e) {
+        console.error("Speed API Error creating QR:", e.response ? e.response.data : e.message);
+        res.status(500).json({
+            success: false,
+            message: e.response?.data?.errors?.[0]?.message || "Failed to create Speed QR"
+        });
+    }
+});
+
+
+app.get('/api/global-tools', async (req, res) => {
+    const { action, zip, country } = req.query;
+
+    if (action === 'geonames') {
+        try {
+            const username = GEONAMES_USERNAME;
+
+            const geoRes = await axios.get(`http://api.geonames.org/postalCodeLookupJSON?postalcode=${zip}&country=${country}&username=${username}`);
+
+            if (geoRes.data.postalcodes?.length > 0) {
+                const p = geoRes.data.postalcodes[0];
+                return res.json({
+                    success: true,
+                    city: p.adminName2 || p.placeName,
+                    state: p.adminName1
+                });
+            }
+            return res.json({ success: false, message: "No location found" });
+        } catch (e) {
+            console.error("Geonames API Error:", e);
+            return res.status(500).json({ success: false, error: e.message });
+        }
+    }
+    return res.status(400).json({ success: false, message: "Invalid action for global-tools." });
+});
+
+// Create Session
+app.post('/api/create-didit-session', async (req, res) => {
+    const { userId } = req.body;
+    try {
+        const response = await axios.post('https://api.didit.me/v1/sessions', {
+            workflowId: DIDIT_WORKFLOW_ID,
+            vendorData: userId,
+            redirect_url: `https://moneycard-8f457.web.app/index.html` // Redirect to frontend dashboard
+        }, {
+            headers: { 'Authorization': `Bearer ${DIDIT_API_KEY}`, 'Content-Type': 'application/json' }
+        });
+        res.json({ success: true, url: response.data.url });
+    } catch (e) {
+        console.error("Didit Create Session Error:", e.response?.data || e.message);
+        res.status(500).json({ success: false, message: "Failed to create Didit session." });
+    }
+});
+
+
+app.post('/api/speed/swap', async (req, res) => {
+    const { userId, amountUSD, fromAsset, toAsset } = req.body;
+    try {
+        const speedRes = await axios.post('https://api.tryspeed.com/balances/swap', {
+            amount: amountUSD.toString(),
+            currency: 'USD',
+            target_currency_swap_out: fromAsset === 'BTC' ? 'SATS' : fromAsset,
+            target_currency_swap_in: toAsset === 'BTC' ? 'SATS' : toAsset
+        }, { headers: getSpeedHeaders() });
+
+        const received = speedRes.data.target_amount_swapped;
+        const ref = db.ref(`users/${userId}/wallets`);
+
+        await ref.transaction((w) => {
+            if (w) {
+                const fKey = fromAsset === 'BTC' ? 'SATS' : fromAsset;
+                const tKey = toAsset === 'BTC' ? 'SATS' : toAsset;
+                if(w[fKey]) w[fKey].balance = (w[fKey].balance || 0) - parseFloat(amountUSD);
+                if(w[tKey]) w[tKey].balance = (w[tKey].balance || 0) + parseFloat(received);
+            }
+            return w;
+        });
+
+        res.json({ success: true, received });
+    } catch (e) {
+        console.error("Speed Swap Error:", e.response?.data || e.message);
+        res.status(500).json({ success: false, message: "Speed swap failed." });
+    }
+});
+
+
+// STATIC ADDRESS: Firebase check + Auto Generate
+app.post('/api/oxa/static', async (req, res) => {
+    const { userId, coin } = req.body;
+    try {
+        const addrRef = db.ref(`users/${userId}/wallets/oxapay_addresses/${coin}`);
+        const snap = await addrRef.once('value');
+        if (snap.exists()) return res.json({ status: 200, data: snap.val() });
+
+        const r = await axios.post('https://api.oxapay.com/v1/payment/static-address', {
+            network: (coin === 'BTC' || coin === 'ETH') ? coin : 'TRON',
+            to_currency: coin,
+            callback_url: "https://money-card-p.vercel.app/api/webhook", // OxaPay webhook points to our webhook handler
+            order_id: userId // OxaPay uses order_id to identify
+        }, getOxaHeaders(OXAPAY_MERCHANT_KEY));
+
+        if (r.data.status === 200) await addrRef.set(r.data.data);
+        res.json(r.data);
+    } catch (e) {
+        console.error("OxaPay Static Address Error:", e.response?.data || e.message);
+        res.status(500).json({ error: "Failed to get OxaPay static address." });
+    }
+});
+
+// YOUR CORRECT BALANCE LOGIC
+app.get('/api/oxa/balance', async (req, res) => {
+    try {
+        const r = await axios.get('https://api.oxapay.com/v1/general/account/balance', getOxaHeaders(OXAPAY_GENERAL_KEY));
+        res.json(r.data);
+    } catch (e) {
+        console.error("OxaPay Balance Error:", e.response?.data || e.message);
+        res.status(500).json({ status: 400, message: "Failed to fetch OxaPay balance." });
+    }
+});
+
+// MARKET PRICES (Real-time Prices for UI)
+app.get('/api/oxa/prices', async (req, res) => {
+    try {
+        const r = await axios.get('https://api.oxapay.com/v1/general/info/currencies', getOxaHeaders(OXAPAY_GENERAL_KEY));
+        res.json(r.data);
+    } catch (e) {
+        console.error("OxaPay Prices Error:", e.response?.data || e.message);
+        res.status(500).json({ error: "Failed to fetch OxaPay prices." });
+    }
+});
+
+// YOUR CORRECT CALCULATION LOGIC
+app.post('/api/oxa/calculate', async (req, res) => {
+    try {
+        const r = await axios.post('https://api.oxapay.com/v1/general/swap/calculate', req.body, getOxaHeaders(OXAPAY_GENERAL_KEY));
+        res.json(r.data);
+    } catch (e) {
+        console.error("OxaPay Calculate Error:", e.response?.data || e.message);
+        res.status(500).json({ status: 400, message: "Failed to calculate OxaPay swap." });
+    }
+});
+
+
+// 1. Sandbox.co.in Session Create
+app.post('/api/create-sandbox-session', async (req, res) => {
+    try {
+        const tokenResponse = await axios.post('https://api.sandbox.co.in/authenticate', {}, {
+            headers: {
+                'x-api-key': SANDBOX_CO_API,
+                'x-api-secret': SANDBOX_CO_SECRET,
+                'x-api-version': '1.0'
+            }
+        });
+        const token = tokenResponse.data.access_token;
+
+        const response = await axios.post('https://api.sandbox.co.in/kyc/entitylocker-sdk/sessions/create', {
+            "@entity": "in.co.sandbox.kyc.entitylocker.sdk.session_request",
+            "flow": "signin",
+            "doc_types": ["bank_statement"]
+        }, {
+            headers: {
+                'Authorization': token,
+                'x-api-key': SANDBOX_CO_API,
+                'x-api-version': '1.0',
+                'Content-Type': 'application/json'
+            }
+        });
+        res.json({ success: true, sessionId: response.data.data.id });
+    } catch (e) {
+        console.error("Sandbox Create Session Error:", e.response ? e.response.data : e.message);
+        res.status(500).json({
+            success: false,
+            message: e.response ? e.response.data.message : "Internal Server Error"
+        });
+    }
+});
+
+// 2. Sandbox.co.in Data Fetch
+app.get('/api/get-sandbox-balance/:sessionId', async (req, res) => {
+    try {
+        const tokenResponse = await axios.post('https://api.sandbox.co.in/authenticate', {}, {
+            headers: {
+                'x-api-key': SANDBOX_CO_API,
+                'x-api-secret': SANDBOX_CO_SECRET,
+                'x-api-version': '1.0'
+            }
+        });
+        const token = tokenResponse.data.access_token;
+
+        const response = await axios.get(`https://api.sandbox.co.in/kyc/entitylocker-sdk/sessions/${req.params.sessionId}/data`, {
+            headers: {
+                'Authorization': token,
+                'x-api-key': SANDBOX_CO_API,
+                'x-api-version': '1.0'
+            }
+        });
+
+        const bank = response.data.data.find(d => d.content && d.content.summary);
+        if (bank) {
+            res.json({
+                success: true,
+                balance: bank.content.summary.current_balance,
+                name: bank.content.summary.account_holder_name
+            });
+        } else {
+            res.json({ success: false, message: "No data found yet" });
+        }
+    } catch (e) {
+        console.error("Sandbox Get Balance Error:", e.response ? e.response.data : e.message);
+        res.status(500).json({ success: false, message: "Fetch failed" });
+    }
+});
+
+
+// Add this line to export the createShiprocketOrder function within the app object
+app.createShiprocketOrder = createShiprocketOrder;
+
+
+module.exports = app;
+
+

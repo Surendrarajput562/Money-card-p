@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyCard | Developer API Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        :root { --gold: #FFD700; --dark-bg: #080808; --card-bg: #121212; --text-gray: #a0a0a0; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--dark-bg); color: #fff; overflow-x: hidden; scroll-behavior: smooth; }
+        
+        /* Header & Nav */
+        header { display: flex; justify-content: space-between; padding: 20px 6%; align-items: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #222; }
+        .logo { font-size: 24px; font-weight: 800; color: var(--gold); letter-spacing: -1px; text-decoration: none; }
+        nav a { color: #fff; text-decoration: none; margin-left: 30px; font-weight: 500; font-size: 14px; transition: 0.3s; }
+        nav a:hover { color: var(--gold); }
+        .btn-auth { background: var(--gold); color: #000; padding: 10px 25px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; margin-left: 20px; }
+
+        /* Hero Section */
+        .hero { padding: 120px 6% 80px; text-align: center; background: radial-gradient(circle at top, #1a1a00 0%, #080808 70%); }
+        .hero h1 { font-size: 60px; font-weight: 800; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to bottom, #fff 40%, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { color: var(--text-gray); font-size: 18px; max-width: 800px; margin: 0 auto 40px; }
+        .trust-badges { display: flex; justify-content: center; gap: 40px; margin-top: 50px; opacity: 0.6; filter: grayscale(1); }
+
+        /* API Grid Sections */
+        .section-title { padding: 0 6%; margin-top: 80px; }
+        .section-title h2 { font-size: 32px; color: var(--gold); margin-bottom: 10px; }
+        .section-title p { color: var(--text-gray); margin-bottom: 30px; }
+
+        .api-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 0 6% 50px; }
+        .api-card { background: var(--card-bg); border: 1px solid #222; padding: 25px; border-radius: 16px; transition: 0.3s; cursor: pointer; }
+        .api-card:hover { border-color: var(--gold); transform: translateY(-5px); background: #181818; }
+        .api-card i { font-size: 24px; color: var(--gold); display: block; margin-bottom: 15px; }
+        .api-card h3 { font-size: 18px; margin: 0 0 10px; color: #eee; }
+        .api-card p { font-size: 13px; color: #777; line-height: 1.5; margin: 0; }
+        .tag { font-size: 10px; background: #222; color: var(--gold); padding: 4px 8px; border-radius: 4px; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; display: inline-block; }
+
+        /* Auth Modal */
+        #auth-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .auth-modal { background: #fff; color: #000; width: 100%; max-width: 400px; padding: 40px; border-radius: 24px; position: relative; }
+        .auth-modal h2 { font-size: 28px; font-weight: 800; margin-top: 0; letter-spacing: -1px; }
+        .auth-modal input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+        .auth-modal button { width: 100%; padding: 15px; background: #000; color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .auth-modal button:hover { opacity: 0.8; }
+        .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: #666; cursor: pointer; }
+
+        footer { padding: 80px 6%; border-top: 1px solid #222; background: #000; text-align: center; }
+        .footer-links { display: flex; justify-content: center; gap: 30px; margin-bottom: 30px; color: var(--text-gray); font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="#" class="logo">MONEYCARD <span style="font-weight: 300; font-size: 14px; color: #666;">DEV</span></a>
+    <nav>
+        <a href="#identity">Identity</a>
+        <a href="#banking">Banking</a>
+        <a href="#compliance">Compliance</a>
+        <a href="#utility">Utility</a>
+        <button class="btn-auth" onclick="toggleAuth('login')">Sign In</button>
+    </nav>
+</header>
+
+<section class="hero">
+    <h1>Scale your Business with <br><span style="color: var(--gold);">500+ Powerful APIs</span></h1>
+    <p>The complete infrastructure for Fintechs. Integrated KYC, Onboarding, Banking, and Crypto Exchange APIs for global developers.</p>
+    <button class="btn-auth" style="padding: 18px 45px; font-size: 18px; margin-left: 0;" onclick="toggleAuth('signup')">Get Started for Free</button>
+    
+    <div class="trust-badges">
+        <span>ISO 27001 SECURE</span>
+        <span>PCI-DSS COMPLIANT</span>
+        <span>256-BIT ENCRYPTION</span>
+    </div>
+</section>
+
+<div class="section-title" id="identity">
+    <span class="tag">Onboarding Stack</span>
+    <h2>Identity & KYC APIs</h2>
+    <p>Verify users instantly using official government sources.</p>
+</div>
+<div class="api-grid">
+    <div class="api-card"><h3>PAN Lite/360</h3><p>Real-time PAN verification with name & DOB match.</p></div>
+    <div class="api-card"><h3>Aadhaar Masking</h3><p>Securely mask Aadhaar numbers for RBI compliance.</p></div>
+    <div class="api-card"><h3>Video KYC (V-KYC)</h3><p>Full AI-based video interaction for digital onboarding.</p></div>
+    <div class="api-card"><h3>Passport & Voter ID</h3><p>Validate global and national identity documents.</p></div>
+    <div class="api-card"><h3>Face Liveness Check</h3><p>3D liveness detection to prevent spoofing attacks.</p></div>
+    <div class="api-card"><h3>DigiLocker Auth</h3><p>Direct document fetch from government lockers.</p></div>
+</div>
+
+<div class="section-title" id="banking">
+    <span class="tag">Lending Stack</span>
+    <h2>Banking & Credit APIs</h2>
+    <p>Verify accounts, analyze statements and check credit scores.</p>
+</div>
+<div class="api-grid">
+    <div class="api-card"><h3>Penny Drop (Bank Match)</h3><p>Verify bank account holder name with ₹1 deposit.</p></div>
+    <div class="api-card"><h3>UPI ID Verification</h3><p>Instant VPA validation before payouts.</p></div>
+    <div class="api-card"><h3>Credit Report (CIBIL)</h3><p>Fetch real-time credit scores for lending.</p></div>
+    <div class="api-card"><h3>Bank Statement Analysis</h3><p>Auto-categorize transactions and income patterns.</p></div>
+    <div class="api-card"><h3>IFSC & Branch Search</h3><p>Comprehensive database of all Indian bank branches.</p></div>
+    <div class="api-card"><h3>Payouts API</h3><p>Automated vendor and customer payments 24/7.</p></div>
+</div>
+
+<div class="section-title" id="compliance">
+    <span class="tag">Compliance Stack</span>
+    <h2>Corporate & Global APIs</h2>
+    <p>Business verification (KYB) and international identity solutions.</p>
+</div>
+<div class="api-grid">
+    <div class="api-card"><h3>GST Verification</h3><p>Verify business GSTIN and filing history.</p></div>
+    <div class="api-card"><h3>MCA Company ID (CIN)</h3><p>Get full director details and company data from ROC.</p></div>
+    <div class="api-card"><h3>FSSAI/Drug License</h3><p>Verify food and medical business licenses.</p></div>
+    <div class="api-card"><h3>Crypto Exchange API</h3><p>Seamless crypto-to-fiat conversion and wallets.</p></div>
+    <div class="api-card"><h3>Global ID (UAE/Oman/CA)</h3><p>Identity verification for international markets.</p></div>
+    <div class="api-card"><h3>Land Records (Bhulekh)</h3><p>Direct access to digital land records and ownership.</p></div>
+</div>
+
+<div id="auth-overlay">
+    <div class="auth-modal">
+        <h2 id="modal-title">Welcome Back</h2>
+        <div id="signup-only">
+            <input type="text" id="name" placeholder="Full Name">
+            <input type="text" id="phone" placeholder="Mobile Number">
+        </div>
+        <input type="email" id="email" placeholder="Work Email">
+        <input type="password" id="pass" placeholder="Password">
+        <button id="auth-main-btn" onclick="handleAuth()">Login</button>
+        <p class="switch-link" id="switch-link" onclick="switchMode()">Don't have an account? Sign Up</p>
+        <p style="text-align:center; font-size:12px; margin-top:10px; cursor:pointer;" onclick="toggleAuth()">Cancel</p>
+    </div>
+</div>
+
+<footer>
+    <div class="logo" style="margin-bottom: 20px;">MONEYCARD</div>
+    <div class="footer-links">
+        <span>Support: moneycard@zohomail.in</span>
+        <span>Documentation</span>
+        <span>API Status</span>
+        <span>Privacy Policy</span>
+    </div>
+    <p style="color: #444; font-size: 12px;">© 2026 MoneyCard Space. All Rights Reserved. Built for high-scale Fintechs.</p>
+</footer>
+
+<script>
+// --- FIREBASE CONFIG (smbrand-4543a) ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+    authDomain: "smbrand-4543a.firebaseapp.com",
+    databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+    projectId: "smbrand-4543a",
+    storageBucket: "smbrand-4543a.appspot.com",
+    messagingSenderId: "720775550032",
+    appId: "1:720775550032:web:0622548a007597778bad55"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+let authMode = 'login';
+
+function toggleAuth(mode = 'login') {
+    authMode = mode;
+    const overlay = document.getElementById('auth-overlay');
+    overlay.style.display = (overlay.style.display === 'flex') ? 'none' : 'flex';
+    updateModalUI();
+}
+
+function switchMode() {
+    authMode = (authMode === 'login') ? 'signup' : 'login';
+    updateModalUI();
+}
+
+function updateModalUI() {
+    document.getElementById('modal-title').innerText = (authMode === 'login') ? 'Welcome Back' : 'Create Dev Account';
+    document.getElementById('signup-only').style.display = (authMode === 'login') ? 'none' : 'block';
+    document.getElementById('auth-main-btn').innerText = (authMode === 'login') ? 'Login' : 'Create Account';
+    document.getElementById('switch-link').innerText = (authMode === 'login') ? "Don't have an account? Sign Up" : "Already registered? Login";
+}
+
+async function handleAuth() {
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('pass').value;
+    const name = document.getElementById('name').value;
+    const phone = document.getElementById('phone').value;
+
+    if(!email || !pass) return alert("Please fill all fields");
+
+    try {
+        if(authMode === 'signup') {
+            const res = await auth.createUserWithEmailAndPassword(email, pass);
+            await db.ref('users/' + res.user.uid).set({
+                name: name,
+                mobile: phone,
+                email: email,
+                wallet: 0,
+                role: 'developer',
+                createdAt: Date.now()
+            });
+            alert("Account Created! Redirecting to Dashboard...");
+        } else {
+            await auth.signInWithEmailAndPassword(email, pass);
+            alert("Login Successful!");
+        }
+        window.location.href = 'devloper'; // Redirect to your developer control panel
+    } catch (e) {
+        alert(e.message);
+    }
+}
+</script>
+</body>
+</html>
+

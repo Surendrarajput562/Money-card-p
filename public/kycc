@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyCard | Admin Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div id="loginSection" class="max-w-md mx-auto mt-20 p-8 glass rounded-[2.5rem] shadow-2xl">
+        <h1 class="text-3xl font-black italic text-blue-500 mb-6 text-center">ADMIN LOGIN</h1>
+        <div class="space-y-4">
+            <input type="email" id="admEmail" placeholder="Admin Email" class="w-full p-4 bg-slate-900 border border-slate-700 rounded-2xl outline-none focus:border-blue-500">
+            <input type="password" id="admPass" placeholder="Password" class="w-full p-4 bg-slate-900 border border-slate-700 rounded-2xl outline-none focus:border-blue-500">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black transition shadow-lg">ENTER PANEL</button>
+        </div>
+    </div>
+
+    <div id="adminPanel" class="max-w-5xl mx-auto hidden">
+        <div class="flex justify-between items-center mb-10 border-b border-slate-700 pb-5">
+            <h1 class="text-3xl font-black italic text-blue-500">MONEYCARD <span class="text-white">CONTROL</span></h1>
+            <button onclick="handleLogout()" class="text-red-500 font-bold text-sm bg-red-500/10 px-4 py-2 rounded-xl">LOGOUT</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="glass p-6 rounded-3xl">
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Total Users</p>
+                <h2 id="totalUsers" class="text-3xl font-black mt-1">0</h2>
+            </div>
+            <div class="glass p-6 rounded-3xl border-green-500/30">
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">System Status</p>
+                <h2 class="text-3xl font-black text-green-400 mt-1 italic">BYPASS ACTIVE</h2>
+            </div>
+        </div>
+
+        <div id="userList" class="space-y-4">
+            </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // 1. Handle Login
+        function handleLogin() {
+            const email = document.getElementById('admEmail').value;
+            const pass = document.getElementById('admPass').value;
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => { alert("Welcome Admin!"); })
+                .catch(e => { alert("Ghalat Password Hai!"); });
+        }
+
+        // 2. Auth State Listener
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadUsers();
+            } else {
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('adminPanel').classList.add('hidden');
+            }
+        });
+
+        // 3. Load Users from DB
+        function loadUsers() {
+            db.ref('users').on('value', snap => {
+                const users = snap.val();
+                const container = document.getElementById('userList');
+                container.innerHTML = "";
+                let count = 0;
+
+                for(let uid in users) {
+                    const p = users[uid].profile;
+                    if(!p) continue;
+                    count++;
+
+                    const div = document.createElement('div');
+                    div.className = "glass p-6 rounded-[2rem] flex flex-col md:flex-row justify-between items-center gap-6";
+                    div.innerHTML = `
+                        <div class="flex-1">
+                            <h3 class="text-xl font-black tracking-tight">${p.registered_name || 'No Name'}</h3>
+                            <p class="text-xs text-blue-400 font-mono mb-2">${uid}</p>
+                            <div class="flex gap-4 text-[10px] font-bold text-slate-500 uppercase">
+                                <span>📍 ${p.country || 'N/A'}</span>
+                                <span>📱 ${p.phone || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            ${p.kyc_status === 'VERIFIED' ? 
+                                `<span class="bg-green-500/20 text-green-500 border border-green-500 px-6 py-3 rounded-2xl font-black text-xs">✓ VERIFIED</span>` :
+                                `<button onclick="forceVerify('${uid}')" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-2xl font-black text-xs shadow-lg shadow-blue-900/40">VERIFY KYC NOW</button>`
+                            }
+                        </div>
+                    `;
+                    container.appendChild(div);
+                }
+                document.getElementById('totalUsers').innerText = count;
+            });
+        }
+
+        // 4. Force Verify Function
+        async function forceVerify(uid) {
+            if(confirm("Bhai, kya is user ko bina KYC ke verify karna hai?")) {
+                try {
+                    await db.ref(`users/${uid}/profile`).update({
+                        kyc_status: 'VERIFIED'
+                    });
+                    alert("User Verified! Ab uska dashboard khul gaya hoga.");
+                } catch(e) {
+                    alert("Bhai error aa gaya: " + e.message);
+                }
+            }
+        }
+
+        // 5. Logout
+        function handleLogout() {
+            auth.signOut();
+        }
+    </script>
+</body>
+</html>
+

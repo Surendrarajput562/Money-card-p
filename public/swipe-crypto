@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swipe Crypto - MoneyCard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
+        .glass-card { background: #111; border: 1px solid #222; border-radius: 1.5rem; padding: 1.2rem; }
+        .live-rate { color: #00ff00; font-family: monospace; font-weight: bold; font-size: 11px; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-4">
+
+    <div class="w-full max-w-md space-y-3">
+        <div class="mb-6">
+            <h2 class="text-3xl font-black italic">SWIPE</h2>
+            <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Binance Live Liquidity</p>
+        </div>
+
+        <div class="glass-card">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-bold text-zinc-500 uppercase">Pay</span>
+                <span id="from-rate" class="live-rate">Loading...</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <input type="number" id="input-amount" placeholder="0.00" class="bg-transparent text-4xl font-black outline-none w-full">
+                <select id="from-asset" onchange="updateUI()" class="bg-zinc-800 p-2 rounded-xl font-bold border-none outline-none">
+                    <option value="USDT">USDT</option>
+                    <option value="BTC">BTC</option>
+                    <option value="USDC">USDC</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex justify-center -my-6 relative z-10">
+            <div class="bg-black border border-zinc-800 p-3 rounded-full text-green-500 rotate-90 shadow-2xl">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-bold text-zinc-500 uppercase">Receive</span>
+                <span id="to-rate" class="live-rate">Loading...</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <input type="text" id="output-amount" placeholder="0.00" class="bg-transparent text-4xl font-black outline-none w-full text-zinc-500" readonly>
+                <select id="to-asset" onchange="updateUI()" class="bg-zinc-800 p-2 rounded-xl font-bold border-none outline-none">
+                    <option value="BTC">BTC</option>
+                    <option value="USDT">USDT</option>
+                    <option value="USDC">USDC</option>
+                </select>
+            </div>
+        </div>
+
+        <button onclick="executeSwap()" id="swap-btn" class="w-full py-5 bg-green-500 text-black font-black text-xl rounded-[1.5rem] mt-4 active:scale-95 transition-all">
+            CONFIRM SWIPE
+        </button>
+    </div>
+
+    <script>
+        let prices = { BTC: 0, USDT: 1, USDC: 1 };
+        const VERCEL_URL = "https://money-card-p.vercel.app";
+
+        async function getLiveRates() {
+            try {
+                const [btc, usdc] = await Promise.all([
+                    fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT').then(r => r.json()),
+                    fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDCUSDT').then(r => r.json())
+                ]);
+                prices.BTC = parseFloat(btc.price);
+                prices.USDC = parseFloat(usdc.price);
+                updateUI();
+            } catch (e) { console.error("Rate Error"); }
+        }
+
+        function updateUI() {
+            const f = document.getElementById('from-asset').value;
+            const t = document.getElementById('to-asset').value;
+            document.getElementById('from-rate').innerText = `$${prices[f].toFixed(2)}`;
+            document.getElementById('to-rate').innerText = `$${prices[t].toFixed(2)}`;
+            calculate();
+        }
+
+        function calculate() {
+            const val = document.getElementById('input-amount').value;
+            if(!val) return document.getElementById('output-amount').value = "";
+            const f = document.getElementById('from-asset').value;
+            const t = document.getElementById('to-asset').value;
+            const res = (val * prices[f]) / prices[t];
+            document.getElementById('output-amount').value = res.toFixed(t === 'BTC' ? 8 : 2);
+        }
+
+        async function executeSwap() {
+            const btn = document.getElementById('swap-btn');
+            const amt = document.getElementById('input-amount').value;
+            if(!amt) return;
+            
+            btn.disabled = true; btn.innerText = "SWAPPING...";
+            try {
+                const res = await fetch(`${VERCEL_URL}/api/speed/swap`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        userId: "USER_UID_HERE", // Dynamically pass this
+                        amountUSD: amt,
+                        fromAsset: document.getElementById('from-asset').value,
+                        toAsset: document.getElementById('to-asset').value
+                    })
+                });
+                const data = await res.json();
+                alert(data.success ? "Swap Success!" : "Swap Failed");
+            } catch (e) { alert("Network Error"); }
+            btn.disabled = false; btn.innerText = "CONFIRM SWIPE";
+        }
+
+        document.getElementById('input-amount').addEventListener('input', calculate);
+        setInterval(getLiveRates, 1000);
+        getLiveRates();
+    </script>
+</body>
+</html>
+
+

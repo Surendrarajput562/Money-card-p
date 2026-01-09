@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyCard | Merchant Activation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .step-card { display: none; }
+        .step-active { display: block; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-loading { pointer-events: none; opacity: 0.7; }
+        .dropdown-list { position: absolute; width: 100%; max-height: 250px; overflow-y: auto; background: white; border: 1px solid #e5e7eb; border-radius: 1rem; z-index: 100; display: none; margin-top: 5px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); color: black; }
+        .dropdown-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+        .dropdown-item:hover { background: #eff6ff; color: #2563eb; font-weight: bold; }
+        .show { display: block; }
+        .back-link { cursor: pointer; color: #6b7280; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 1rem; }
+        .iframe-container { width: 100%; height: 80vh; border-radius: 1.5rem; overflow: hidden; border: 1px solid #e5e7eb; }
+        .feature-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 2rem; padding: 2rem; transition: 0.3s; }
+        .feature-card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.08); }
+    </style>
+</head>
+<body class="bg-[#0f172a] text-white min-h-screen">
+
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <h1 class="text-3xl font-black text-blue-500 italic">MONEYCARD</h1>
+        <button id="navAuthBtn" onclick="openAuth('login')" class="bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-full font-bold shadow-lg transition">LOGIN</button>
+    </nav>
+
+    <div id="section-LANDING" class="step-card step-active max-w-7xl mx-auto px-6">
+        <div class="text-center py-20">
+            <h2 class="text-5xl md:text-7xl font-black mb-6 uppercase leading-tight italic">Your Gateway to <br><span class="text-blue-500">Crypto Commerce</span></h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-10 font-medium">Universal Crypto QR, Open Exchange Trading, and Instant Wallet Settlements. No manual investment, no entry for blacklisted gateways.</p>
+            <button onclick="openAuth('signup')" class="bg-white text-blue-900 px-12 py-5 rounded-2xl font-black text-xl hover:scale-105 transition shadow-2xl uppercase italic">Get Started Now</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-10">
+            <div class="feature-card">
+                <i class="fas fa-qrcode text-4xl text-blue-500 mb-6"></i>
+                <h3 class="text-xl font-bold mb-4 italic uppercase">Crypto QR</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Accept USDT and major tokens directly from any wallet. Fully automated conversion with zero manual involvement.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-chart-line text-4xl text-green-500 mb-6"></i>
+                <h3 class="text-xl font-bold mb-4 italic uppercase">Open Exchange</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Connect directly to open market liquidity. No middle-man, no delays. Pure decentralized trade flow.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-bolt text-4xl text-yellow-500 mb-6"></i>
+                <h3 class="text-xl font-bold mb-4 italic uppercase">Instant Wallet</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Non-custodial merchant settlements. Instant withdrawal to your bank account via automated gateways.</p>
+            </div>
+        </div>
+
+        <div class="mt-32 p-10 bg-black/40 rounded-[3rem] border border-white/5 mb-20">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+                <div>
+                    <h4 class="text-2xl font-black text-blue-500 mb-6 uppercase italic">Privacy & Security</h4>
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        MoneyCard uses end-to-end encryption for all merchant data. Your PAN name, Bank name, IFSC code, and Account numbers are stored in a secure. We do not store your private keys or trade logs beyond the settlement period. Your privacy is our priority—no third-party tracking or data sharing.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-2xl font-black text-red-500 mb-6 uppercase italic">No Entry Notice</h4>
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        MoneyCard is NOT a money investment platform. We strictly do not accept entries or money from: <br>
+                        <span class="text-white font-bold">Razorpay, Cashfree, Stripe, Paytm, PhonePe, Google Pay, Adyan, Revolut, etc.</span> <br>
+                        Manual money involvement and TRC transactions are blocked. We are purely a crypto-to-merchant technology solution.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-10 pt-10 border-t border-white/10 text-center opacity-40 text-[10px] uppercase font-bold tracking-widest">
+                © 2025 MONEYCARD GLOBAL • DECENTRALIZED MERCHANT PROTOCOL
+            </div>
+        </div>
+    </div>
+
+    <div id="section-AUTH" class="step-card max-w-md mx-auto py-10 px-6">
+        <div class="bg-white text-black p-10 rounded-[3rem] shadow-2xl relative">
+            <div class="flex gap-4 mb-8 bg-gray-100 p-2 rounded-2xl">
+                <button id="tab-login" onclick="setAuthMode('login')" class="flex-1 py-3 rounded-xl font-black text-xs uppercase transition">Login</button>
+                <button id="tab-signup" onclick="setAuthMode('signup')" class="flex-1 py-3 rounded-xl font-black text-xs uppercase transition">Sign Up</button>
+            </div>
+            
+            <h3 id="authTitle" class="text-2xl font-black mb-8 italic text-blue-600 text-center uppercase">Welcome Back</h3>
+            
+            <div class="space-y-4">
+                <input type="email" id="authEmail" placeholder="Email Address" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none focus:border-blue-500">
+                <input type="password" id="authPass" placeholder="Password" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none focus:border-blue-500">
+                <button id="authBtn" onclick="handleAuth(this)" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-xl mt-4 uppercase">Continue</button>
+                <button onclick="closeAuth()" class="w-full text-gray-400 font-bold text-xs py-2 uppercase">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-KYC" class="step-card max-w-md mx-auto py-10 px-6">
+        <div id="kycContainer">
+            <div id="step-LOCATION" class="kyc-substep hidden bg-white text-black p-8 rounded-[2.5rem] shadow-xl">
+                <h3 class="text-xl font-bold mb-6 text-blue-600 italic">Select Region</h3>
+                <div class="relative mb-4"><input type="text" id="countrySearch" placeholder="Search Country..." class="w-full p-4 bg-gray-50 border rounded-2xl outline-none" onclick="toggleList('countryList')" onkeyup="filterList('countrySearch', 'countryList')" readonly><div id="countryList" class="dropdown-list"></div></div>
+                <div class="relative mb-4"><input type="text" id="stateSearch" placeholder="Search State..." class="w-full p-4 bg-gray-50 border rounded-2xl outline-none" onclick="toggleList('stateList')" onkeyup="filterList('stateSearch', 'stateList')" readonly><div id="stateList" class="dropdown-list"></div></div>
+                <input type="text" id="distType" placeholder="Enter District" class="w-full p-4 bg-gray-50 border rounded-2xl mb-6 outline-none">
+                <button onclick="saveLocation(this)" class="w-full bg-black text-white py-4 rounded-2xl font-bold">Continue</button>
+            </div>
+
+            <div id="step-BASICS" class="kyc-substep hidden bg-white text-black p-8 rounded-[2.5rem] shadow-xl">
+                <h3 class="text-xl font-bold mb-6 text-blue-600 italic">Basic Info</h3>
+                <input type="text" id="inName" placeholder="Full Name" class="w-full p-4 bg-gray-50 border rounded-2xl mb-4 outline-none">
+                <input type="tel" id="inPhone" placeholder="Mobile Number" class="w-full p-4 bg-gray-50 border rounded-2xl mb-6 outline-none">
+                <button onclick="saveBasics(this)" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Next Step</button>
+            </div>
+
+            <div id="step-PAN" class="kyc-substep hidden bg-white text-black p-8 rounded-[2.5rem] shadow-xl text-center">
+                <h3 class="text-xl font-bold mb-6 italic text-blue-600">PAN Verification</h3>
+                <input type="text" id="inPan" placeholder="ABCDE1234F" class="w-full p-5 border-2 border-dashed rounded-2xl mb-6 text-center font-black text-2xl uppercase outline-none">
+                <button onclick="verifyPAN(this)" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Verify & Link</button>
+            </div>
+
+            <div id="step-GLOBAL_DOC" class="kyc-substep hidden bg-white text-black p-8 rounded-[2.5rem] shadow-xl text-center">
+                <h3 class="text-xl font-bold mb-4 italic text-blue-600">Global Verification</h3>
+                <button onclick="openDiditIframe()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold mb-4">Start Verification</button>
+                <button onclick="checkOnlyStatus(this)" class="w-full bg-gray-100 text-gray-700 py-4 rounded-2xl font-bold">Check Status</button>
+            </div>
+
+            <div id="step-IFRAME_VIEW" class="kyc-substep hidden bg-white p-4 rounded-[2.5rem] shadow-xl">
+                <div class="iframe-container"><iframe id="diditIframe" src="" class="w-full h-full" allow="camera; microphone; geolocation"></iframe></div>
+            </div>
+
+            <div id="step-DIGILOCKER" class="kyc-substep hidden bg-white text-black p-8 rounded-[2.5rem] shadow-xl text-center">
+                <h3 class="text-2xl font-black mb-4 italic uppercase">Aadhaar KYC</h3>
+                <button onclick="openDigi(this)" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Open DigiLocker</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        const VERCEL_URL = "https://money-card-p.vercel.app";
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCZ5P2t5xRhy5d0IXV6UWcvbkUWXqyPENA",
+            authDomain: "smbrand-4543a.firebaseapp.com",
+            databaseURL: "https://smbrand-4543a-default-rtdb.firebaseio.com",
+            projectId: "smbrand-4543a",
+            appId: "1:720775550032:web:0622548a007597778bad55"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        let userUID = "";
+        let authMode = 'login';
+
+        // --- AUTH UI CONTROLS ---
+        function openAuth(mode) {
+            setAuthMode(mode);
+            document.getElementById('section-LANDING').classList.remove('step-active');
+            document.getElementById('section-AUTH').classList.add('step-active');
+        }
+
+        function closeAuth() {
+            document.getElementById('section-AUTH').classList.remove('step-active');
+            document.getElementById('section-LANDING').classList.add('step-active');
+        }
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            document.getElementById('authTitle').innerText = mode === 'login' ? 'Welcome Back' : 'Create Merchant';
+            document.getElementById('tab-login').className = mode === 'login' ? 'flex-1 py-3 rounded-xl font-black text-xs uppercase bg-white shadow-sm' : 'flex-1 py-3 rounded-xl font-black text-xs uppercase';
+            document.getElementById('tab-signup').className = mode === 'signup' ? 'flex-1 py-3 rounded-xl font-black text-xs uppercase bg-white shadow-sm' : 'flex-1 py-3 rounded-xl font-black text-xs uppercase';
+        }
+
+        async function handleAuth(btn) {
+            const email = document.getElementById('authEmail').value.trim();
+            const pass = document.getElementById('authPass').value.trim();
+            if(!email || !pass) return alert("Fill all details");
+            setBtnLoading(btn, true, "Please wait...");
+            try {
+                if(authMode === 'login') await auth.signInWithEmailAndPassword(email, pass);
+                else await auth.createUserWithEmailAndPassword(email, pass);
+            } catch(e) { 
+                alert(e.message); 
+                setBtnLoading(btn, false, "Continue");
+            }
+        }
+
+        // --- APP FLOW ---
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                userUID = user.uid;
+                db.ref(`users/${userUID}/profile`).on('value', snap => {
+                    const data = snap.val();
+                    if(data?.kyc_status === 'VERIFIED') window.location.href = "deshboard.html";
+                    else {
+                        document.getElementById('section-LANDING').classList.remove('step-active');
+                        document.getElementById('section-AUTH').classList.remove('step-active');
+                        document.getElementById('section-KYC').classList.add('step-active');
+                        renderStep(data?.step || 'LOCATION');
+                    }
+                });
+                fetchCountries();
+            } else {
+                document.getElementById('section-LANDING').classList.add('step-active');
+                document.getElementById('section-KYC').classList.remove('step-active');
+            }
+        });
+
+        // --- KYC ENGINE (YOUR ORIGINAL LOGIC) ---
+        function renderStep(s) {
+            document.querySelectorAll('.kyc-substep').forEach(c => c.classList.add('hidden'));
+            const target = document.getElementById('step-' + s);
+            if(target) target.classList.remove('hidden');
+        }
+
+        async function saveLocation(btn) {
+            const country = document.getElementById('countrySearch').value;
+            const state = document.getElementById('stateSearch').value;
+            const dist = document.getElementById('distType').value.trim();
+            if(!country || !state || !dist) return alert("Fill all details");
+            setBtnLoading(btn, true, "Saving...");
+            await db.ref(`users/${userUID}/profile`).update({ country, state, district: dist, step: 'BASICS' });
+        }
+
+        async function saveBasics(btn) {
+            const name = document.getElementById('inName').value.trim();
+            const phone = document.getElementById('inPhone').value.trim();
+            if(!name || !phone) return alert("Enter Name & Phone");
+            setBtnLoading(btn, true, "Saving...");
+            const country = document.getElementById('countrySearch').value;
+            let nextStep = (country.includes("Bharat (India)")) ? "PAN" : "GLOBAL_DOC";
+            await db.ref(`users/${userUID}/profile`).update({ registered_name: name, phone, step: nextStep });
+        }
+
+        async function verifyPAN(btn) {
+            const pan = document.getElementById('inPan').value.trim();
+            if(!pan) return alert("Enter PAN");
+            setBtnLoading(btn, true, "Verifying...");
+            try {
+                const res = await fetch(`${VERCEL_URL}/api/verify-pan`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pan, userId: userUID })
+                });
+                const data = await res.json();
+                if(data.success) await db.ref(`users/${userUID}/profile`).update({ step: 'DIGILOCKER' });
+                else alert(data.message || "Invalid PAN");
+            } catch(e) { alert("PAN Verification Failed"); }
+            finally { setBtnLoading(btn, false, "Verify & Link"); }
+        }
+
+        async function openDigi(btn) {
+            const res = await fetch(`${VERCEL_URL}/api/create-digilocker-url`, { 
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: userUID }) 
+            });
+            const data = await res.json();
+            if(data.url) window.location.href = data.url;
+        }
+
+        function openDiditIframe() {
+            const url = `https://verify.didit.me/verify/DHIKVgxOQ_xLnQmeKlgQzA?vendorData=${userUID}`;
+            document.getElementById('diditIframe').src = url;
+            renderStep('IFRAME_VIEW');
+        }
+
+        // --- UTILS ---
+        async function fetchCountries() {
+            const snap = await db.ref('COUNTRIES/onboarding_config/countries').once('value');
+            const data = snap.val();
+            const list = document.getElementById('countryList');
+            if(!list) return;
+            list.innerHTML = "";
+            Object.values(data || {}).forEach(c => {
+                let div = document.createElement('div'); div.className = "dropdown-item";
+                div.innerText = `${c.name} (+${c.dial_code})`;
+                div.onclick = () => { document.getElementById('countrySearch').value = c.name; toggleList('countryList'); fetchStates(c.iso_code); };
+                list.appendChild(div);
+            });
+        }
+
+        async function fetchStates(iso) {
+            const snap = await db.ref(`STATE_REPOSITORY/STATE_REPOSITORY/${iso}`).once('value');
+            const data = snap.val();
+            const list = document.getElementById('stateList');
+            list.innerHTML = "";
+            Object.values(data || {}).forEach(s => {
+                let div = document.createElement('div'); div.className = "dropdown-item";
+                div.innerText = s.name;
+                div.onclick = () => { document.getElementById('stateSearch').value = s.name; toggleList('stateList'); };
+                list.appendChild(div);
+            });
+        }
+
+        function toggleList(id) {
+            const el = document.getElementById(id);
+            const isVisible = el.classList.contains('show');
+            document.querySelectorAll('.dropdown-list').forEach(l => l.classList.remove('show'));
+            if(!isVisible) el.classList.add('show');
+        }
+
+        function filterList(inpId, listId) {
+            const filter = document.getElementById(inpId).value.toUpperCase();
+            const items = document.getElementById(listId).getElementsByTagName('div');
+            for (let i = 0; i < items.length; i++) {
+                items[i].style.display = items[i].innerText.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            }
+        }
+
+        function setBtnLoading(btn, isL, txt) { 
+            btn.classList.toggle('btn-loading', isL); 
+            btn.innerHTML = isL ? `<i class="fas fa-spinner fa-spin"></i>` : txt; 
+        }
+
+        window.onclick = (e) => { if(!e.target.matches('input')) document.querySelectorAll('.dropdown-list').forEach(l => l.classList.remove('show')); }
+    </script>
+</body>
+</html>

@@ -6,6 +6,12 @@
       "source": "@transak/v1.0#2izauim8priz4o",
       "integrity": "sha512-fMCetl3zBMrl9uAioZq/lKYxHXGX1CTvwpOVKRoUTJRtcPcIzZEAr/Vvouo6Df5AB8pTJUVGu5PQztKSqKLQ5Q==",
       "installerVersion": "6.1.3"
+    },
+    {
+      "identifier": "speedapp",
+      "source": "@speedapp/v1.0#1450u16miiriedd",
+      "integrity": "sha512-3BMDLpHVf7OWaa2YJiQxxS55uLnr1Rqn7O8wm6YWeTUc8Ny5J/dZOGQj2HrL+HcKojK7PPCXt+syjdfU/U0EIw==",
+      "installerVersion": "6.1.3"
     }
   ]
 }

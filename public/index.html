@@ -1,90 +1,6 @@
 
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-
-    <link rel="manifest" href="manifest.json?v=10">
-
-    <meta name="theme-color" content="#d4af37">
-    <link rel="apple-touch-icon" href="3.png">
-    <link rel="icon" type="image/png" href="3.png">
-</head>
-<body>
-
-    <script>
-        // 3. Service Worker Registration with v10
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                // Registering with query param to force update
-                navigator.serviceWorker.register('./service-worker.js?v=10')
-                    .then(reg => console.log('Service Worker v10 Registered ✅'))
-                    .catch(err => console.log('Registration Failed ❌', err));
-            });
-        }
-    </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js"></script>
-    <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js"></script>
-
-    <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
-    <script>
-        window.ezstandalone = window.ezstandalone || {};
-        ezstandalone.cmd = ezstandalone.cmd || [];
-    </script>
-
-    <meta name="agd-partner-manual-verification" />
-
-    <title</title>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    
-    <style>
-        /* Aapka purana CSS yahan rahega */
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; margin: 0; }
-    </style>
-</head>
-<body>
-
-    <div id="main-content">
-        <h1></h1>
-        </div>
-
-    <div id="ezoic-pub-ad-placeholder-101"></div>
-
-</body>
-</html>
-
-
-
-
 
 
 
@@ -93,7 +9,7 @@
 <head>
 <meta name="ezoic-site-verification" content="IMKzZ6QBf58RbUtuR42DYLHnZUZKLl" />
 
-
+<meta name="google-site-verification" content="n3Rs6EjolARssIn0WZLBUa1KT7Zs74ENJDlShbPMiKk" />
 <meta name="agd-partner-manual-verification" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -434,27 +350,43 @@
 
 
 
+
+
+/* Modal Container Fix */
+#referral-modal .modal {
+    max-width: 95%; /* Mobile ke liye width */
+    width: 450px;
+    height: 85vh;   /* Total Height */
+    padding: 0;
+    display: flex;  /* Flexbox enable kiya */
+    flex-direction: column; 
+    background: white;
+    border-radius: 2.5rem;
+    overflow: hidden;
 }
-        /* New: Referral Iframe Modal */
-        #referral-modal .modal {
-            max-width: 90%;
-            height: 80vh;
-            padding: 0;
-        }
-        #referral-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-        }
-        .referral-header {
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-        }
+
+/* Header apni jagah fix rahega */
+.referral-header {
+    flex-shrink: 0; 
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    background: white;
+}
+
+/* IFRAME FIX: Isko flex-grow diya taaki bachi hui saari height ye le le */
+#referral-iframe {
+    width: 100%;
+    flex-grow: 1;    /* Ye sabse important hai */
+    border: none;
+    display: block;
+    height: 100%;   /* 400px wala kachra hata diya */
+}
+
+
+
         .referral-header h3 {
             margin: 0;
             font-size: 16px;
@@ -502,132 +434,6 @@
         background: rgba(0, 0, 0, 0.7); display: none;
         justify-content: center; align-items: center; z-index: 1000;
     }
-
-
-    #referral-iframe {
-        width: 100%; height: 400px; border: none; margin-top: 15px;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -961,77 +767,23 @@
 
 
 
+<div id="section-shop" class="page-section field-hidden">
+    <h2>Shop</h2>
+    <div class="card" style="margin-top: 10px;">
+        <h3>🔥 Special Offers</h3>
+        <p id="lo-loading-msg" style="font-size:12px; color:#666;">Loading content...</p>
+        <iframe
+            id="lo-iframe-content"
+            src="about:blank"
+            style="width: 100%; height: 500px; border: 1px solid #ccc; border-radius: 10px;"
+            title="lo.html content"
+        ></iframe>
+    </div>
+</div>
 
+<div id="section-profile" class="page-section field-hidden">
+    <h2>Profile</h2>       
 
-
-
-
-
-
-            
-
-
-            <div id="section-shop" class="page-section field-hidden">
-                <h2>Shop</h2>
-                <div class="card product-card-inner">
-                    <img src="https://via.placeholder.com/300x150" style="width:100%; border-radius:10px;">
-                    <h4>Gold Coin (24k) - 1g</h4>
-                    <div class="flex-between">
-                        <span class="pprice">₹6500</span>
-                        <button class="btn" style="width:auto;" onclick="openCheckout(6500, 'Gold Coin 1g')">Buy Now</button>
-                    </div>
-                </div>
-                <div class="card product-card-inner">
-                    <img src="https://via.placeholder.com/300x150" style="width:100%; border-radius:10px;">
-                    <h4>Silver Bar - 10g</h4>
-                    <div class="flex-between">
-                        <span class="pprice">₹900</span>
-                        <button class="btn" style="width:auto;" onclick="openCheckout(900, 'Silver Bar 10g')">Buy Now</button>
-                    </div>
-                </div>
-                
-                <div class="card" style="margin-top: 20px;">
-                    <h3>🔥 Special Offers</h3>
-                    <p id="lo-loading-msg" style="font-size:12px; color:#666;">Loading content...</p>
-                    <iframe 
-                        id="lo-iframe-content" 
-                        src="about:blank" 
-                        style="width: 100%; height: 350px; border: 1px solid #ccc; border-radius: 10px;"
-                        title="lo.html content"
-                    ></iframe>
-
-                    <h4 style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">Referral Actions</h4>
-                    <div class="referral-buttons-grid">
-                        <button class="ref-btn">Share Link</button>
-                        <button class="ref-btn">WhatsApp</button>
-                        <button class="ref-btn">Telegram</button>
-                        <button class="ref-btn">Copy Code</button>
-                        <button class="ref-btn">Invite 5</button>
-                        <button class="ref-btn">Offer 1</button>
-                        <button class="ref-btn">Offer 2</button>
-                        <button class="ref-btn">Promo 3</button>
-                        <button class="ref-btn">Reward 4</button>
-                        <button class="ref-btn">Bonus 5</button>
-                        <button class="ref-btn">Link 6</button>
-                        <button class="ref-btn">Link 7</button>
-                        <button class="ref-btn">Link 8</button>
-                        <button class="ref-btn">Link 9</button>
-                        <button class="ref-btn">Link 10</button>
-                        <button class="ref-btn">Link 11</button>
-                        <button class="ref-btn">Link 12</button>
-                        <button class="ref-btn">Link 13</button>
-                        <button class="ref-btn">Link 14</button>
-                        <button class="ref-btn">Link 15</button>
-                        <button class="ref-btn">Link 16</button>
-                        <button class="ref-btn">Link 17</button>
-                        <button class="ref-btn">Link 18</button>
-                        <button class="ref-btn">Link 19</button>
-                        <button class="ref-btn">Link 20</button>
-                    </div>
-                </div>
-                </div>
-            <div id="section-profile" class="page-section field-hidden">
-                <h2>Profile</h2>
 
                 <div class="profile-dp-container">
                     <div class="profile-dp" id="profile-dp-display">
@@ -1128,7 +880,12 @@
             <div class="modal">
                 <div class="referral-header">
                     <h3>Refer & Earn Program</h3>
-                    <button class="close-modal" onclick="document.getElementById('referral-modal').style.display='none'">&times;</button>
+
+<button class="close-modal" onclick="closeProgramModal()">&times;</button>
+
+
+
+
                 </div>
                 <iframe id="referral-iframe" src="about:blank"></iframe>
             </div>
@@ -1531,7 +1288,9 @@ programData.push({ title: "OPEN BANK", subtitle: "Digital A/C", file: "bankaccou
 // 2. CREDIT CARD (NEW)
 programData.push({ title: "CREDIT CARD", subtitle: "Apply Now", file: "creditcard", icon: "ri-bank-card-fill", color: colors[0], category: "grid" });
 // 3. DEMAT ACCOUNT (NEW)
-programData.push({ title: "DEMAT A/C", subtitle: "Stock Market", file: "demataccount", icon: "ri-stock-line", color: colors[5], category: "grid" });
+programData.push({ title: "DEMAT A/C", subtitle: "Stock Market", file: "kyc", icon: "ri-stock-line", color: colors[5], category: "grid" });
+
+
 // 4. BUSINESS LOAN (NEW)
 programData.push({ title: "BIZ LOAN", subtitle: "MSME/Startup", file: "businessloan", icon: "ri-hand-coin-line", color: colors[1], category: "grid" });
 
@@ -1686,18 +1445,60 @@ function generateButtons() {
     });
 }
 
-// --- 4. Modal Opening Function (Unchanged) ---
+
+// --- 1. Modal Kholne Ka Function (Naya Iframe Banane Wala) ---
 function openProgramModal(filename, title) {
     const modal = document.getElementById('referral-modal');
-    const iframe = document.getElementById('referral-iframe');
     const header = modal ? modal.querySelector('.referral-header h3') : null;
+    const modalBody = modal ? modal.querySelector('.modal') : null;
 
-    if (modal && iframe && header) {
-        iframe.src = filename;
+    if (modal && modalBody && header) {
+        // Purana iframe delete karo taaki memory load na ho
+        const oldIframe = document.getElementById('referral-iframe');
+        if (oldIframe) oldIframe.remove();
+
+        // Naya fresh iframe create karo
+        const newIframe = document.createElement('iframe');
+        newIframe.id = 'referral-iframe';
+        newIframe.style.width = "100%";
+        newIframe.style.flexGrow = "1"; // Full height lene ke liye
+        newIframe.style.border = "none";
+        
         header.textContent = title;
-        modal.style.display = 'flex';
+        modalBody.appendChild(newIframe); // Modal ke andar dalo
+        
+        setTimeout(() => {
+            newIframe.src = filename;
+            modal.style.display = 'flex';
+            // Scroll band karo (modal khulte waqt)
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        }, 50);
     }
 }
+
+// --- 2. Modal Band Karne Ka Function (Scroll Fix & Memory Clear) ---
+function closeProgramModal() {
+    const modal = document.getElementById('referral-modal');
+    const iframe = document.getElementById('referral-iframe');
+
+    if (modal) {
+        if (iframe) {
+            iframe.src = "about:blank"; // Pehle stop karo
+            iframe.remove(); // Fir delete maar do
+        }
+        
+        modal.style.display = 'none';
+        
+        // SABSE IMPORTANT: Scroll wapas laane ke liye
+        document.body.style.overflow = 'auto'; 
+        document.documentElement.style.overflow = 'auto';
+        
+        console.log("Scroll Enabled & Memory Cleared.");
+    }
+}
+
+
 
 // Initialize buttons
 window.addEventListener('DOMContentLoaded', generateButtons);
@@ -3649,20 +3450,11 @@ async function sendChatMessage() {
 
 // ... (अन्य सभी फ़ंक्शन और क्लोजिंग टैग) ...
 
-// Exact domains bina https:// ke
-const d1 = "moneycard.space";
-const d2 = "moneycard-8f457.web.app";
 
-const current = window.location.hostname;
 
-// Ye check karega ki host sahi hai ya nahi
-if (current === d1 || current === d2 || current.includes("moneycard") || current === "localhost") {
-    console.log("Welcome Boss! Domain Verified.");
-} else {
-    // Sirf hacker ke liye alert aur redirect
-    alert("Unauthorized Domain! Access Denied.");
-    window.location.href = "https://google.com";
-}
+
+
+
 
 
 
@@ -3679,6 +3471,5 @@ if (current === d1 || current === d2 || current.includes("moneycard") || current
     </script>
 </body>
 </html>
-
 
 

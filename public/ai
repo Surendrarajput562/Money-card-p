@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MoneyCard Admin - AI Live</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --green: #238636; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .main-box { max-width: 950px; margin: auto; background: var(--card); border: 1px solid #30363d; border-radius: 12px; padding: 20px; }
+        textarea, input { width: 100%; background: #010409; border: 1px solid #30363d; color: white; padding: 12px; border-radius: 6px; margin: 10px 0; box-sizing: border-box; }
+        .btn-grid { display: flex; gap: 10px; margin: 10px 0; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-ai { background: var(--green); }
+        .btn-tool { background: #30363d; }
+        #live-terminal { background: #000; border: 1px solid #30363d; border-radius: 8px; padding: 20px; min-height: 300px; margin-top: 20px; overflow: auto; }
+        pre { margin: 0; font-family: 'Consolas', monospace; color: #7ee787; white-space: pre-wrap; line-height: 1.5; }
+        .cursor { display: inline-block; width: 10px; height: 18px; background: #58a6ff; animation: blink 0.8s infinite; vertical-align: middle; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        #status-log { font-size: 12px; color: #8b949e; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="main-box">
+    <h2 style="color:white; margin:0 0 20px 0;">⚡ MoneyCard Gemini 2.5 Live Control</h2>
+
+    <div style="border-bottom: 1px solid #333; padding-bottom: 20px;">
+        <h3>📸 Product AI Filler</h3>
+        <input type="file" id="imageInput" accept="image/*">
+        <button class="btn-ai" id="generateDetailsBtn" onclick="generateProductDetails()">Gemini API से विवरण प्राप्त करें</button>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="text" id="prod-name" placeholder="Product Name">
+            <input type="text" id="prod-brand" placeholder="Brand">
+            <input type="number" id="prod-price" placeholder="Price">
+            <input type="number" id="prod-discount" placeholder="Discount">
+        </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3>💻 Live Coad Generator</h3>
+        <textarea id="codePrompt" placeholder="Bhai, konsa coad likhu? Bolo..."></textarea>
+        <div class="btn-grid">
+            <button class="btn-ai" onclick="generateLiveCode()">Coad Likho (Live)</button>
+            <button class="btn-tool" onclick="copyToClipboard()">Copy</button>
+            <button class="btn-tool" onclick="saveToFirebase()">Save to Cloud</button>
+        </div>
+    </div>
+
+    <div id="live-terminal">
+        <pre id="codeOutput"></pre><span id="cursor" class="cursor" style="display:none;"></span>
+    </div>
+    
+    <div id="status-log">Status: Ready. Using Gemini 2.5 Flash.</div>
+</div>
+
+<script>
+    const GEMINI_API_KEY = "AIzaSyBibyzgaAFIQh2e8By4HXbzZY9uqP_3TV0"; // Apni Key dalo
+    let currentCode = "";
+
+    const updateStatus = (msg) => document.getElementById('status-log').innerText = `Status: ${msg}`;
+
+    // --- LOGIC 1: PRODUCT FILLER (AS PER YOUR SCRIPT) ---
+    async function generateProductDetails() {
+        const file = document.getElementById('imageInput').files[0];
+        if(!file) return alert("Pehle Photo chuno!");
+
+        updateStatus("Image processing...");
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            const base64Data = reader.result.split(',')[1];
+            try {
+                // Hitting Gemini 2.5 Flash
+                const res = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    contents: [{
+                        parts: [
+                            { inlineData: { data: base64Data, mimeType: file.type } },
+                            { text: "Analyze image. Return strictly JSON: {name, brand, price, discount}" }
+                        ]
+                    }],
+                    generationConfig: { responseMimeType: "application/json" }
+                });
+                const data = JSON.parse(res.data.candidates[0].content.parts[0].text);
+                document.getElementById('prod-name').value = data.name || '';
+                document.getElementById('prod-brand').value = data.brand || '';
+                document.getElementById('prod-price').value = data.price || 0;
+                document.getElementById('prod-discount').value = data.discount || 0;
+                updateStatus("✅ Product Details Filled!");
+            } catch (e) { updateStatus("❌ Error: " + e.message); }
+        };
+    }
+
+    // --- LOGIC 2: LIVE CODE WRITING (TYPEWRITER STYLE) ---
+    async function generateLiveCode() {
+        const prompt = document.getElementById('codePrompt').value;
+        const output = document.getElementById('codeOutput');
+        const cursor = document.getElementById('cursor');
+        
+        if(!prompt) return alert("Kuch likho to sahi!");
+
+        output.textContent = "";
+        currentCode = "";
+        cursor.style.display = "inline-block";
+        updateStatus("AI soch raha hai...");
+
+        try {
+            const res = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                contents: [{
+                    parts: [{ text: `Write clean code for: ${prompt}. Only raw code, no talk, no backticks.` }]
+                }]
+            });
+
+            currentCode = res.data.candidates[0].content.parts[0].text.trim();
+            updateStatus("Writing Code...");
+
+            // Typewriter effect
+            let i = 0;
+            const type = () => {
+                if (i < currentCode.length) {
+                    output.textContent += currentCode.charAt(i);
+                    i++;
+                    setTimeout(type, 5);
+                } else {
+                    cursor.style.display = "none";
+                    updateStatus("✅ Code Written!");
+                }
+            };
+            type();
+
+        } catch (e) { updateStatus("❌ Error: " + e.message); cursor.style.display = "none"; }
+    }
+
+    function copyToClipboard() { navigator.clipboard.writeText(currentCode); alert("Coad Copy ho gaya!"); }
+    
+    function saveToFirebase() {
+        // Yahan tera firebase save logic
+        alert("Saving to Firebase...");
+        console.log("Cloud Saved:", currentCode);
+    }
+</script>
+
+</body>
+</html>

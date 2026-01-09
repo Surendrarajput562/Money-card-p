@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MoneyCard - Ultra Splitter</title>
+    <style>
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --accent: #238636; --blue: #58a6ff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .container { width: 100%; max-width: 1000px; margin: auto; background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #30363d; }
+        textarea#pasteArea { 
+            width: 100%; height: 150px; background: #010409; color: #7ee787; 
+            border: 1px solid #30363d; border-radius: 8px; padding: 15px; font-family: monospace; margin-bottom: 15px;
+        }
+        .file-box { 
+            background: #0d1117; border: 1px solid #30363d; border-radius: 8px; 
+            margin-top: 20px; padding: 15px; position: relative;
+        }
+        .file-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .filename { color: var(--blue); font-weight: bold; font-size: 16px; }
+        
+        /* Ye hai main part jahan se tu select kar sakega */
+        .code-view { 
+            background: #010409; color: #d1d5da; padding: 15px; border-radius: 6px; 
+            overflow: auto; max-height: 400px; white-space: pre; font-family: 'Consolas', monospace;
+            font-size: 13px; line-height: 1.5; border: 1px solid #222;
+            user-select: text !important; /* Force select allow */
+        }
+        
+        .copy-btn { background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .copy-btn:hover { background: #2ea043; }
+        #mainBtn { width: 100%; padding: 15px; background: var(--blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align:center;">⚡ MoneyCard - Section Slicer</h2>
+    <p style="text-align:center; color: #8b949e;">Pura combo yahan dalo, ye har file ko alag karke copy/select ka option dega.</p>
+    
+    <textarea id="pasteArea" placeholder="Yahan pura code ek sath paste karo..."></textarea>
+    <button id="mainBtn" onclick="processPaste()">PROCESS & VIEW SECTIONS</button>
+    
+    <div id="fileList"></div>
+</div>
+
+<script>
+    function processPaste() {
+        const text = document.getElementById('pasteArea').value;
+        const fileList = document.getElementById('fileList');
+        
+        if (!text) return alert("Pehle code toh dalo!");
+        fileList.innerHTML = "<p style='text-align:center'>Processing...</p>";
+
+        // Memory cleanup ke liye thoda wait
+        setTimeout(() => {
+            fileList.innerHTML = "";
+            const chunks = text.split(/```/);
+            
+            chunks.forEach((chunk, index) => {
+                let content = chunk.trim();
+                if (content.length < 30) return;
+
+                // Language name safai
+                content = content.replace(/^(javascript|html|css|json|text|js)\n/, "");
+
+                let name = `Section_${index}`;
+                if (content.includes("<!DOCTYPE") || content.includes("<html")) name = "index.html (FRONTEND)";
+                else if (content.includes("express") || content.includes("require(")) name = "index.js (BACKEND)";
+                else if (content.includes("webhook") || content.includes("handler")) name = "webhook.js (API)";
+                else if (content.includes('"dependencies"')) name = "package.json";
+
+                addFileBox(name, content);
+            });
+            
+            document.getElementById('pasteArea').value = ""; // Clear memory
+        }, 100);
+    }
+
+    function addFileBox(name, content) {
+        const container = document.getElementById('fileList');
+        const box = document.createElement('div');
+        box.className = 'file-box';
+        
+        // Encode content to safe string for button
+        const safeContent = btoa(unescape(encodeURIComponent(content)));
+
+        box.innerHTML = `
+            <div class="file-header">
+                <span class="filename">📄 ${name}</span>
+                <button class="copy-btn" onclick="copyFromBox(this, '${safeContent}')">COPY ALL</button>
+            </div>
+            <div class="code-view" tabindex="0">${escapeHtml(content)}</div>
+        `;
+        container.appendChild(box);
+    }
+
+    function copyFromBox(btn, base64Content) {
+        const text = decodeURIComponent(escape(atob(base64Content)));
+        navigator.clipboard.writeText(text).then(() => {
+            const original = btn.innerText;
+            btn.innerText = "✅ COPIED!";
+            btn.style.background = "#58a6ff";
+            setTimeout(() => { btn.innerText = original; btn.style.background = "#238636"; }, 2000);
+        });
+    }
+
+    function escapeHtml(text) {
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+</script>
+
+</body>
+</html>
